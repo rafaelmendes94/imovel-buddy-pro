@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -13,10 +13,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   Video, DollarSign, Calendar as CalendarIcon, Plus, Trash2, Edit, GripVertical,
-  CheckCircle2, Clock, Film, Send, Package, Search, ArrowUpDown
+  CheckCircle2, Clock, Film, Send, Package, Search, ChevronLeft, ChevronRight, MapPin
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay, isToday, startOfWeek, endOfWeek, addWeeks, subWeeks, isSameMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 
@@ -48,25 +48,27 @@ interface AgendaEvent {
   title: string;
   date: string;
   time: string;
+  endTime: string;
   type: "gravacao" | "entrega" | "reuniao" | "outro";
   notes: string;
+  location: string;
   jobId?: string;
 }
 
 // Kanban columns config
-const kanbanColumns: { key: VideoJob["status"]; label: string; icon: React.ReactNode; color: string }[] = [
-  { key: "gravar", label: "Para Gravar", icon: <Clock className="w-4 h-4" />, color: "bg-amber-500/20 text-amber-400 border-amber-500/30" },
-  { key: "gravado", label: "Gravado", icon: <Film className="w-4 h-4" />, color: "bg-blue-500/20 text-blue-400 border-blue-500/30" },
-  { key: "editando", label: "Editando", icon: <Video className="w-4 h-4" />, color: "bg-purple-500/20 text-purple-400 border-purple-500/30" },
-  { key: "entregue", label: "Entregue", icon: <Package className="w-4 h-4" />, color: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" },
-  { key: "enviado", label: "Enviado", icon: <Send className="w-4 h-4" />, color: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30" },
+const kanbanColumns: { key: VideoJob["status"]; label: string; icon: React.ReactNode; color: string; headerBg: string }[] = [
+  { key: "gravar", label: "Para Gravar", icon: <Clock className="w-4 h-4" />, color: "bg-amber-500/20 text-amber-400 border-amber-500/30", headerBg: "border-t-amber-500" },
+  { key: "gravado", label: "Gravado", icon: <Film className="w-4 h-4" />, color: "bg-blue-500/20 text-blue-400 border-blue-500/30", headerBg: "border-t-blue-500" },
+  { key: "editando", label: "Editando", icon: <Video className="w-4 h-4" />, color: "bg-purple-500/20 text-purple-400 border-purple-500/30", headerBg: "border-t-purple-500" },
+  { key: "entregue", label: "Entregue", icon: <Package className="w-4 h-4" />, color: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30", headerBg: "border-t-emerald-500" },
+  { key: "enviado", label: "Enviado", icon: <Send className="w-4 h-4" />, color: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30", headerBg: "border-t-cyan-500" },
 ];
 
-const eventTypeColors: Record<AgendaEvent["type"], string> = {
-  gravacao: "bg-amber-500",
-  entrega: "bg-emerald-500",
-  reuniao: "bg-blue-500",
-  outro: "bg-muted-foreground",
+const eventTypeConfig: Record<AgendaEvent["type"], { label: string; color: string; bg: string }> = {
+  gravacao: { label: "Gravação", color: "bg-amber-500", bg: "bg-amber-500/10 border-amber-500/30 text-amber-300" },
+  entrega: { label: "Entrega", color: "bg-emerald-500", bg: "bg-emerald-500/10 border-emerald-500/30 text-emerald-300" },
+  reuniao: { label: "Reunião", color: "bg-blue-500", bg: "bg-blue-500/10 border-blue-500/30 text-blue-300" },
+  outro: { label: "Outro", color: "bg-muted-foreground", bg: "bg-muted/30 border-border text-muted-foreground" },
 };
 
 // Initial mock data
@@ -87,26 +89,35 @@ const initialFinance: FinanceEntry[] = [
 ];
 
 const initialEvents: AgendaEvent[] = [
-  { id: "1", title: "Gravar Cobertura Ed. Marina", date: "2026-04-02", time: "09:00", type: "gravacao", notes: "Levar drone e gimbal", jobId: "1" },
-  { id: "2", title: "Entrega vídeo Tower One", date: "2026-03-28", time: "14:00", type: "entrega", notes: "Enviar link do drive", jobId: "3" },
-  { id: "3", title: "Reunião com Construtora Alpha", date: "2026-03-29", time: "10:00", type: "reuniao", notes: "Discutir pacote de 5 imóveis" },
+  { id: "1", title: "Gravar Cobertura Ed. Marina", date: "2026-04-02", time: "09:00", endTime: "11:00", type: "gravacao", notes: "Levar drone e gimbal", location: "Av. Beira Mar, 1200", jobId: "1" },
+  { id: "2", title: "Entrega vídeo Tower One", date: "2026-03-28", time: "14:00", endTime: "15:00", type: "entrega", notes: "Enviar link do drive", location: "" },
+  { id: "3", title: "Reunião com Construtora Alpha", date: "2026-03-29", time: "10:00", endTime: "11:30", type: "reuniao", notes: "Discutir pacote de 5 imóveis", location: "Escritório" },
+  { id: "4", title: "Gravar Apto Jardim Europa", date: "2026-03-27", time: "08:00", endTime: "10:00", type: "gravacao", notes: "Tour virtual 360", location: "Rua Europa, 450" },
+  { id: "5", title: "Editar vídeo Loft Studio", date: "2026-03-27", time: "14:00", endTime: "18:00", type: "outro", notes: "Finalizar color grading", location: "Estúdio" },
 ];
 
 export default function VideoMaker() {
   const [jobs, setJobs] = useState<VideoJob[]>(initialJobs);
   const [finance, setFinance] = useState<FinanceEntry[]>(initialFinance);
   const [events, setEvents] = useState<AgendaEvent[]>(initialEvents);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [searchFinance, setSearchFinance] = useState("");
   const [jobDialogOpen, setJobDialogOpen] = useState(false);
   const [eventDialogOpen, setEventDialogOpen] = useState(false);
   const [financeDialogOpen, setFinanceDialogOpen] = useState(false);
   const [editingJob, setEditingJob] = useState<VideoJob | null>(null);
+  const [editingEvent, setEditingEvent] = useState<AgendaEvent | null>(null);
   const [draggedJobId, setDraggedJobId] = useState<string | null>(null);
+  const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
+
+  // Agenda state
+  const [agendaView, setAgendaView] = useState<"month" | "week">("month");
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [currentWeek, setCurrentWeek] = useState(new Date());
+  const [selectedAgendaDate, setSelectedAgendaDate] = useState<Date | null>(new Date());
 
   // New job form
   const [newJob, setNewJob] = useState({ property: "", client: "", address: "", value: "", dueDate: "", notes: "", status: "gravar" as VideoJob["status"] });
-  const [newEvent, setNewEvent] = useState({ title: "", date: "", time: "", type: "gravacao" as AgendaEvent["type"], notes: "" });
+  const [newEvent, setNewEvent] = useState({ title: "", date: "", time: "", endTime: "", type: "gravacao" as AgendaEvent["type"], notes: "", location: "" });
   const [newFinance, setNewFinance] = useState({ property: "", client: "", value: "", dueDate: "", status: "pendente" as FinanceEntry["status"] });
 
   // Financial metrics
@@ -115,13 +126,51 @@ export default function VideoMaker() {
   const totalOverdue = finance.filter(f => f.status === "atrasado").reduce((s, f) => s + f.value, 0);
   const totalJobs = jobs.length;
 
-  // Kanban drag & drop
-  const handleDragStart = (jobId: string) => setDraggedJobId(jobId);
-  const handleDrop = (newStatus: VideoJob["status"]) => {
-    if (!draggedJobId) return;
-    setJobs(prev => prev.map(j => j.id === draggedJobId ? { ...j, status: newStatus } : j));
+  // Kanban drag & drop with touch support
+  const handleDragStart = (e: React.DragEvent, jobId: string) => {
+    setDraggedJobId(jobId);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", jobId);
+  };
+
+  const handleDragOver = (e: React.DragEvent, colKey: string) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setDragOverColumn(colKey);
+  };
+
+  const handleDragLeave = () => setDragOverColumn(null);
+
+  const handleDrop = (e: React.DragEvent, newStatus: VideoJob["status"]) => {
+    e.preventDefault();
+    const jobId = draggedJobId || e.dataTransfer.getData("text/plain");
+    if (!jobId) return;
+    const job = jobs.find(j => j.id === jobId);
+    if (job && job.status !== newStatus) {
+      setJobs(prev => prev.map(j => j.id === jobId ? { ...j, status: newStatus } : j));
+      const col = kanbanColumns.find(c => c.key === newStatus);
+      toast.success(`Movido para "${col?.label}"`);
+    }
     setDraggedJobId(null);
-    toast.success("Status atualizado!");
+    setDragOverColumn(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedJobId(null);
+    setDragOverColumn(null);
+  };
+
+  // Move job to next/prev status via buttons (mobile friendly)
+  const moveJob = (jobId: string, direction: "next" | "prev") => {
+    const job = jobs.find(j => j.id === jobId);
+    if (!job) return;
+    const statusOrder: VideoJob["status"][] = ["gravar", "gravado", "editando", "entregue", "enviado"];
+    const idx = statusOrder.indexOf(job.status);
+    const newIdx = direction === "next" ? idx + 1 : idx - 1;
+    if (newIdx < 0 || newIdx >= statusOrder.length) return;
+    setJobs(prev => prev.map(j => j.id === jobId ? { ...j, status: statusOrder[newIdx] } : j));
+    const col = kanbanColumns.find(c => c.key === statusOrder[newIdx]);
+    toast.success(`Movido para "${col?.label}"`);
   };
 
   // CRUD handlers
@@ -178,11 +227,23 @@ export default function VideoMaker() {
 
   const handleAddEvent = () => {
     if (!newEvent.title || !newEvent.date) return toast.error("Preencha título e data");
-    const event: AgendaEvent = { id: Date.now().toString(), ...newEvent };
-    setEvents(prev => [...prev, event]);
-    setNewEvent({ title: "", date: "", time: "", type: "gravacao", notes: "" });
+    if (editingEvent) {
+      setEvents(prev => prev.map(e => e.id === editingEvent.id ? { ...editingEvent, ...newEvent } : e));
+      toast.success("Evento atualizado!");
+    } else {
+      const event: AgendaEvent = { id: Date.now().toString(), ...newEvent };
+      setEvents(prev => [...prev, event]);
+      toast.success("Evento adicionado!");
+    }
+    setNewEvent({ title: "", date: "", time: "", endTime: "", type: "gravacao", notes: "", location: "" });
+    setEditingEvent(null);
     setEventDialogOpen(false);
-    toast.success("Evento adicionado!");
+  };
+
+  const handleEditEvent = (ev: AgendaEvent) => {
+    setEditingEvent(ev);
+    setNewEvent({ title: ev.title, date: ev.date, time: ev.time, endTime: ev.endTime, type: ev.type, notes: ev.notes, location: ev.location });
+    setEventDialogOpen(true);
   };
 
   const handleDeleteEvent = (id: string) => {
@@ -195,10 +256,27 @@ export default function VideoMaker() {
     f.client.toLowerCase().includes(searchFinance.toLowerCase())
   );
 
-  // Events for selected date
-  const selectedDateStr = selectedDate ? format(selectedDate, "yyyy-MM-dd") : "";
-  const eventsForDate = events.filter(e => e.date === selectedDateStr);
-  const datesWithEvents = events.map(e => new Date(e.date + "T12:00:00"));
+  // Agenda helpers
+  const getEventsForDate = (date: Date) => {
+    const dateStr = format(date, "yyyy-MM-dd");
+    return events.filter(e => e.date === dateStr).sort((a, b) => a.time.localeCompare(b.time));
+  };
+
+  // Month view days
+  const monthStart = startOfMonth(currentMonth);
+  const monthEnd = endOfMonth(currentMonth);
+  const calendarStart = startOfWeek(monthStart, { weekStartsOn: 0 });
+  const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 0 });
+  const monthDays = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
+
+  // Week view days
+  const weekStart = startOfWeek(currentWeek, { weekStartsOn: 0 });
+  const weekEnd = endOfWeek(currentWeek, { weekStartsOn: 0 });
+  const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
+
+  const weekDayNames = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+
+  const selectedDateEvents = selectedAgendaDate ? getEventsForDate(selectedAgendaDate) : [];
 
   return (
     <AppLayout>
@@ -300,40 +378,50 @@ export default function VideoMaker() {
               </Dialog>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-3 overflow-x-auto">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
               {kanbanColumns.map(col => {
                 const colJobs = jobs.filter(j => j.status === col.key);
+                const isOver = dragOverColumn === col.key;
+                const statusOrder: VideoJob["status"][] = ["gravar", "gravado", "editando", "entregue", "enviado"];
+                const colIdx = statusOrder.indexOf(col.key);
+
                 return (
                   <div
                     key={col.key}
-                    className="bg-muted/30 rounded-xl p-3 min-h-[300px] border border-border/50"
-                    onDragOver={e => e.preventDefault()}
-                    onDrop={() => handleDrop(col.key)}
+                    className={cn(
+                      "rounded-xl p-3 min-h-[350px] border-t-[3px] border border-border/50 bg-muted/20 transition-all duration-200",
+                      col.headerBg,
+                      isOver && "bg-accent/10 border-accent/40 scale-[1.01] shadow-lg shadow-accent/10",
+                    )}
+                    onDragOver={e => handleDragOver(e, col.key)}
+                    onDragLeave={handleDragLeave}
+                    onDrop={e => handleDrop(e, col.key)}
                   >
-                    <div className="flex items-center gap-2 mb-3">
-                      <Badge variant="outline" className={cn("gap-1", col.color)}>
+                    <div className="flex items-center gap-2 mb-3 pb-2 border-b border-border/30">
+                      <Badge variant="outline" className={cn("gap-1 text-xs", col.color)}>
                         {col.icon} {col.label}
                       </Badge>
-                      <span className="text-xs text-muted-foreground ml-auto">{colJobs.length}</span>
+                      <span className="text-xs font-bold text-muted-foreground ml-auto bg-muted/50 w-6 h-6 rounded-full flex items-center justify-center">{colJobs.length}</span>
                     </div>
                     <div className="space-y-2">
                       {colJobs.map(job => (
                         <Card
                           key={job.id}
                           draggable
-                          onDragStart={() => handleDragStart(job.id)}
+                          onDragStart={e => handleDragStart(e, job.id)}
+                          onDragEnd={handleDragEnd}
                           className={cn(
-                            "cursor-grab active:cursor-grabbing border-border/50 hover:border-accent/40 transition-all",
-                            draggedJobId === job.id && "opacity-50 scale-95"
+                            "cursor-grab active:cursor-grabbing border-border/50 hover:border-accent/40 transition-all duration-200 hover:shadow-md",
+                            draggedJobId === job.id && "opacity-40 scale-95 rotate-1"
                           )}
                         >
                           <CardContent className="p-3 space-y-2">
-                            <div className="flex items-start justify-between">
-                              <div className="flex items-center gap-1.5">
-                                <GripVertical className="w-3 h-3 text-muted-foreground" />
-                                <p className="text-sm font-medium text-foreground leading-tight">{job.property}</p>
+                            <div className="flex items-start justify-between gap-1">
+                              <div className="flex items-center gap-1.5 min-w-0">
+                                <GripVertical className="w-3.5 h-3.5 text-muted-foreground/50 flex-shrink-0" />
+                                <p className="text-sm font-medium text-foreground leading-tight truncate">{job.property}</p>
                               </div>
-                              <div className="flex gap-0.5">
+                              <div className="flex gap-0.5 flex-shrink-0">
                                 <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleEditJob(job)}>
                                   <Edit className="w-3 h-3" />
                                 </Button>
@@ -343,15 +431,36 @@ export default function VideoMaker() {
                               </div>
                             </div>
                             <p className="text-xs text-muted-foreground">{job.client}</p>
-                            {job.address && <p className="text-[11px] text-muted-foreground/70">{job.address}</p>}
+                            {job.address && <p className="text-[11px] text-muted-foreground/70 flex items-center gap-1"><MapPin className="w-3 h-3" />{job.address}</p>}
                             <div className="flex items-center justify-between pt-1">
                               <span className="text-xs font-semibold text-accent">R$ {job.value.toLocaleString("pt-BR")}</span>
                               {job.dueDate && <span className="text-[10px] text-muted-foreground">{format(new Date(job.dueDate + "T12:00:00"), "dd/MM")}</span>}
                             </div>
                             {job.notes && <p className="text-[11px] text-muted-foreground/60 truncate">{job.notes}</p>}
+                            {/* Mobile move buttons */}
+                            <div className="flex gap-1 pt-1 md:hidden">
+                              {colIdx > 0 && (
+                                <Button variant="outline" size="sm" className="h-6 text-[10px] flex-1 gap-0.5" onClick={() => moveJob(job.id, "prev")}>
+                                  <ChevronLeft className="w-3 h-3" /> {kanbanColumns[colIdx - 1].label}
+                                </Button>
+                              )}
+                              {colIdx < statusOrder.length - 1 && (
+                                <Button variant="outline" size="sm" className="h-6 text-[10px] flex-1 gap-0.5" onClick={() => moveJob(job.id, "next")}>
+                                  {kanbanColumns[colIdx + 1].label} <ChevronRight className="w-3 h-3" />
+                                </Button>
+                              )}
+                            </div>
                           </CardContent>
                         </Card>
                       ))}
+                      {colJobs.length === 0 && (
+                        <div className={cn(
+                          "border-2 border-dashed rounded-lg p-6 text-center transition-colors",
+                          isOver ? "border-accent/50 bg-accent/5" : "border-border/30"
+                        )}>
+                          <p className="text-xs text-muted-foreground/50">Arraste aqui</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
@@ -444,104 +553,240 @@ export default function VideoMaker() {
 
           {/* ==================== AGENDA ==================== */}
           <TabsContent value="agenda" className="space-y-4">
-            <div className="flex justify-end">
-              <Dialog open={eventDialogOpen} onOpenChange={setEventDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button size="sm" className="gap-1.5"><Plus className="w-4 h-4" /> Novo Evento</Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-md">
-                  <DialogHeader><DialogTitle>Novo Evento na Agenda</DialogTitle></DialogHeader>
-                  <div className="space-y-3">
-                    <div><Label>Título *</Label><Input value={newEvent.title} onChange={e => setNewEvent(p => ({ ...p, title: e.target.value }))} placeholder="Gravar Cobertura..." /></div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div><Label>Data *</Label><Input type="date" value={newEvent.date} onChange={e => setNewEvent(p => ({ ...p, date: e.target.value }))} /></div>
-                      <div><Label>Horário</Label><Input type="time" value={newEvent.time} onChange={e => setNewEvent(p => ({ ...p, time: e.target.value }))} /></div>
-                    </div>
-                    <div>
-                      <Label>Tipo</Label>
-                      <Select value={newEvent.type} onValueChange={v => setNewEvent(p => ({ ...p, type: v as AgendaEvent["type"] }))}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="gravacao">Gravação</SelectItem>
-                          <SelectItem value="entrega">Entrega</SelectItem>
-                          <SelectItem value="reuniao">Reunião</SelectItem>
-                          <SelectItem value="outro">Outro</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div><Label>Observações</Label><Textarea value={newEvent.notes} onChange={e => setNewEvent(p => ({ ...p, notes: e.target.value }))} rows={2} /></div>
-                    <Button onClick={handleAddEvent} className="w-full">Adicionar Evento</Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <Card className="lg:col-span-1">
-                <CardContent className="p-4">
-                  <Calendar
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={setSelectedDate}
-                    locale={ptBR}
-                    className="pointer-events-auto"
-                    modifiers={{ hasEvent: datesWithEvents }}
-                    modifiersClassNames={{ hasEvent: "bg-accent/20 font-bold text-accent" }}
-                  />
-                </CardContent>
-              </Card>
-
-              <Card className="lg:col-span-2">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">
-                    {selectedDate ? format(selectedDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR }) : "Selecione uma data"}
-                  </CardTitle>
-                  <CardDescription>{eventsForDate.length} evento(s)</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {eventsForDate.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-8">Nenhum evento nesta data</p>
-                  ) : eventsForDate.map(ev => (
-                    <div key={ev.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 border border-border/50">
-                      <div className={cn("w-3 h-3 rounded-full mt-1.5 flex-shrink-0", eventTypeColors[ev.type])} />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className="text-sm font-medium text-foreground">{ev.title}</p>
-                          <Badge variant="outline" className="text-[10px]">
-                            {ev.type === "gravacao" ? "Gravação" : ev.type === "entrega" ? "Entrega" : ev.type === "reuniao" ? "Reunião" : "Outro"}
-                          </Badge>
-                        </div>
-                        {ev.time && <p className="text-xs text-muted-foreground">{ev.time}</p>}
-                        {ev.notes && <p className="text-xs text-muted-foreground/70 mt-1">{ev.notes}</p>}
+            {/* Agenda header */}
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => agendaView === "month" ? setCurrentMonth(subMonths(currentMonth, 1)) : setCurrentWeek(subWeeks(currentWeek, 1))}>
+                  <ChevronLeft className="w-4 h-4" />
+                </Button>
+                <h3 className="text-lg font-semibold text-foreground min-w-[200px] text-center">
+                  {agendaView === "month"
+                    ? format(currentMonth, "MMMM yyyy", { locale: ptBR })
+                    : `${format(weekStart, "dd MMM", { locale: ptBR })} - ${format(weekEnd, "dd MMM yyyy", { locale: ptBR })}`
+                  }
+                </h3>
+                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => agendaView === "month" ? setCurrentMonth(addMonths(currentMonth, 1)) : setCurrentWeek(addWeeks(currentWeek, 1))}>
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+                <Button variant="ghost" size="sm" className="text-xs" onClick={() => { setCurrentMonth(new Date()); setCurrentWeek(new Date()); setSelectedAgendaDate(new Date()); }}>
+                  Hoje
+                </Button>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="flex rounded-lg border border-border overflow-hidden">
+                  <button className={cn("px-3 py-1.5 text-xs font-medium transition-colors", agendaView === "month" ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-muted")} onClick={() => setAgendaView("month")}>Mês</button>
+                  <button className={cn("px-3 py-1.5 text-xs font-medium transition-colors", agendaView === "week" ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-muted")} onClick={() => setAgendaView("week")}>Semana</button>
+                </div>
+                <Dialog open={eventDialogOpen} onOpenChange={(o) => { setEventDialogOpen(o); if (!o) { setEditingEvent(null); setNewEvent({ title: "", date: "", time: "", endTime: "", type: "gravacao", notes: "", location: "" }); } }}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" className="gap-1.5"><Plus className="w-4 h-4" /> Novo Evento</Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-md">
+                    <DialogHeader><DialogTitle>{editingEvent ? "Editar Evento" : "Novo Evento"}</DialogTitle></DialogHeader>
+                    <div className="space-y-3">
+                      <div><Label>Título *</Label><Input value={newEvent.title} onChange={e => setNewEvent(p => ({ ...p, title: e.target.value }))} placeholder="Gravar Cobertura..." /></div>
+                      <div className="grid grid-cols-3 gap-3">
+                        <div><Label>Data *</Label><Input type="date" value={newEvent.date} onChange={e => setNewEvent(p => ({ ...p, date: e.target.value }))} /></div>
+                        <div><Label>Início</Label><Input type="time" value={newEvent.time} onChange={e => setNewEvent(p => ({ ...p, time: e.target.value }))} /></div>
+                        <div><Label>Fim</Label><Input type="time" value={newEvent.endTime} onChange={e => setNewEvent(p => ({ ...p, endTime: e.target.value }))} /></div>
                       </div>
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive flex-shrink-0" onClick={() => handleDeleteEvent(ev.id)}>
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
-                    </div>
-                  ))}
-
-                  {/* All upcoming events */}
-                  <div className="pt-4 border-t border-border/50">
-                    <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Próximos Eventos</p>
-                    {events
-                      .filter(e => new Date(e.date + "T12:00:00") >= new Date())
-                      .sort((a, b) => a.date.localeCompare(b.date))
-                      .slice(0, 5)
-                      .map(ev => (
-                        <div key={ev.id} className="flex items-center gap-2 py-1.5">
-                          <div className={cn("w-2 h-2 rounded-full flex-shrink-0", eventTypeColors[ev.type])} />
-                          <span className="text-xs text-muted-foreground">{format(new Date(ev.date + "T12:00:00"), "dd/MM")}</span>
-                          <span className="text-xs text-foreground">{ev.title}</span>
-                          {ev.time && <span className="text-[10px] text-muted-foreground ml-auto">{ev.time}</span>}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <Label>Tipo</Label>
+                          <Select value={newEvent.type} onValueChange={v => setNewEvent(p => ({ ...p, type: v as AgendaEvent["type"] }))}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="gravacao">Gravação</SelectItem>
+                              <SelectItem value="entrega">Entrega</SelectItem>
+                              <SelectItem value="reuniao">Reunião</SelectItem>
+                              <SelectItem value="outro">Outro</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
+                        <div><Label>Local</Label><Input value={newEvent.location} onChange={e => setNewEvent(p => ({ ...p, location: e.target.value }))} placeholder="Endereço..." /></div>
+                      </div>
+                      <div><Label>Observações</Label><Textarea value={newEvent.notes} onChange={e => setNewEvent(p => ({ ...p, notes: e.target.value }))} rows={2} /></div>
+                      <Button onClick={handleAddEvent} className="w-full">{editingEvent ? "Salvar Alterações" : "Adicionar Evento"}</Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </div>
+
+            {/* Month View */}
+            {agendaView === "month" && (
+              <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-4">
+                <Card>
+                  <CardContent className="p-2 sm:p-4">
+                    {/* Day headers */}
+                    <div className="grid grid-cols-7 mb-1">
+                      {weekDayNames.map(d => (
+                        <div key={d} className="text-center text-xs font-semibold text-muted-foreground py-2">{d}</div>
                       ))}
+                    </div>
+                    {/* Day cells */}
+                    <div className="grid grid-cols-7 gap-px bg-border/30 rounded-lg overflow-hidden">
+                      {monthDays.map(day => {
+                        const dayEvents = getEventsForDate(day);
+                        const isSelected = selectedAgendaDate && isSameDay(day, selectedAgendaDate);
+                        const isCurrentMonth = isSameMonth(day, currentMonth);
+                        return (
+                          <button
+                            key={day.toISOString()}
+                            onClick={() => setSelectedAgendaDate(day)}
+                            className={cn(
+                              "min-h-[80px] p-1.5 text-left transition-colors bg-card hover:bg-accent/10 relative",
+                              !isCurrentMonth && "opacity-40",
+                              isSelected && "ring-2 ring-accent ring-inset bg-accent/5",
+                              isToday(day) && "bg-accent/10",
+                            )}
+                          >
+                            <span className={cn(
+                              "text-xs font-medium inline-flex items-center justify-center w-6 h-6 rounded-full",
+                              isToday(day) && "bg-accent text-accent-foreground",
+                            )}>
+                              {format(day, "d")}
+                            </span>
+                            <div className="mt-0.5 space-y-0.5">
+                              {dayEvents.slice(0, 3).map(ev => (
+                                <div key={ev.id} className={cn("text-[10px] px-1 py-0.5 rounded truncate border", eventTypeConfig[ev.type].bg)}>
+                                  {ev.time && <span className="font-semibold">{ev.time} </span>}{ev.title}
+                                </div>
+                              ))}
+                              {dayEvents.length > 3 && (
+                                <div className="text-[10px] text-muted-foreground text-center">+{dayEvents.length - 3} mais</div>
+                              )}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Side panel */}
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">
+                      {selectedAgendaDate ? format(selectedAgendaDate, "dd 'de' MMMM", { locale: ptBR }) : "Selecione uma data"}
+                    </CardTitle>
+                    <CardDescription>{selectedDateEvents.length} evento(s)</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {selectedDateEvents.length === 0 ? (
+                      <div className="text-center py-8">
+                        <CalendarIcon className="w-10 h-10 text-muted-foreground/30 mx-auto mb-2" />
+                        <p className="text-sm text-muted-foreground">Nenhum evento nesta data</p>
+                        <Button variant="outline" size="sm" className="mt-3 gap-1" onClick={() => { setNewEvent(p => ({ ...p, date: format(selectedAgendaDate!, "yyyy-MM-dd") })); setEventDialogOpen(true); }}>
+                          <Plus className="w-3 h-3" /> Adicionar
+                        </Button>
+                      </div>
+                    ) : selectedDateEvents.map(ev => (
+                      <EventCard key={ev.id} event={ev} onEdit={handleEditEvent} onDelete={handleDeleteEvent} />
+                    ))}
+
+                    {/* Upcoming */}
+                    <div className="pt-4 border-t border-border/50">
+                      <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Próximos Eventos</p>
+                      {events
+                        .filter(e => new Date(e.date + "T12:00:00") >= new Date())
+                        .sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time))
+                        .slice(0, 6)
+                        .map(ev => (
+                          <div key={ev.id} className="flex items-center gap-2 py-1.5 cursor-pointer hover:bg-muted/30 rounded px-1 -mx-1" onClick={() => { setSelectedAgendaDate(new Date(ev.date + "T12:00:00")); }}>
+                            <div className={cn("w-2 h-2 rounded-full flex-shrink-0", eventTypeConfig[ev.type].color)} />
+                            <span className="text-xs text-muted-foreground w-10">{format(new Date(ev.date + "T12:00:00"), "dd/MM")}</span>
+                            <span className="text-xs text-foreground flex-1 truncate">{ev.title}</span>
+                            {ev.time && <span className="text-[10px] text-muted-foreground">{ev.time}</span>}
+                          </div>
+                        ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* Week View */}
+            {agendaView === "week" && (
+              <Card>
+                <CardContent className="p-2 sm:p-4">
+                  <div className="grid grid-cols-7 gap-2">
+                    {weekDays.map(day => {
+                      const dayEvents = getEventsForDate(day);
+                      const isSelected = selectedAgendaDate && isSameDay(day, selectedAgendaDate);
+                      return (
+                        <div key={day.toISOString()} className={cn(
+                          "rounded-lg border border-border/50 p-2 min-h-[400px] transition-colors",
+                          isToday(day) && "border-accent/50 bg-accent/5",
+                          isSelected && "ring-2 ring-accent",
+                        )}>
+                          <button onClick={() => setSelectedAgendaDate(day)} className="w-full text-center mb-2">
+                            <div className="text-[10px] text-muted-foreground uppercase">{weekDayNames[getDay(day)]}</div>
+                            <div className={cn(
+                              "text-lg font-bold mx-auto w-9 h-9 rounded-full flex items-center justify-center",
+                              isToday(day) ? "bg-accent text-accent-foreground" : "text-foreground"
+                            )}>
+                              {format(day, "d")}
+                            </div>
+                          </button>
+                          <div className="space-y-1.5">
+                            {dayEvents.map(ev => (
+                              <div
+                                key={ev.id}
+                                onClick={() => handleEditEvent(ev)}
+                                className={cn("text-[11px] p-1.5 rounded border cursor-pointer hover:opacity-80 transition-opacity", eventTypeConfig[ev.type].bg)}
+                              >
+                                <div className="font-semibold">{ev.time}{ev.endTime ? ` - ${ev.endTime}` : ""}</div>
+                                <div className="truncate">{ev.title}</div>
+                                {ev.location && <div className="flex items-center gap-0.5 text-[10px] opacity-70 mt-0.5"><MapPin className="w-2.5 h-2.5" />{ev.location}</div>}
+                              </div>
+                            ))}
+                            {dayEvents.length === 0 && (
+                              <button onClick={() => { setNewEvent(p => ({ ...p, date: format(day, "yyyy-MM-dd") })); setEventDialogOpen(true); }} className="w-full text-center py-4 text-muted-foreground/30 hover:text-muted-foreground/60 transition-colors">
+                                <Plus className="w-4 h-4 mx-auto" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </CardContent>
               </Card>
-            </div>
+            )}
           </TabsContent>
         </Tabs>
       </div>
     </AppLayout>
+  );
+}
+
+// Event card component
+function EventCard({ event: ev, onEdit, onDelete }: { event: AgendaEvent; onEdit: (e: AgendaEvent) => void; onDelete: (id: string) => void }) {
+  const cfg = eventTypeConfig[ev.type];
+  return (
+    <div className={cn("p-3 rounded-lg border transition-colors hover:bg-muted/20", cfg.bg)}>
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            <p className="text-sm font-semibold truncate">{ev.title}</p>
+            <Badge variant="outline" className="text-[10px] flex-shrink-0">{cfg.label}</Badge>
+          </div>
+          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            {ev.time && <span className="font-medium">{ev.time}{ev.endTime ? ` - ${ev.endTime}` : ""}</span>}
+            {ev.location && <span className="flex items-center gap-0.5"><MapPin className="w-3 h-3" />{ev.location}</span>}
+          </div>
+          {ev.notes && <p className="text-xs text-muted-foreground/70 mt-1.5">{ev.notes}</p>}
+        </div>
+        <div className="flex gap-0.5 flex-shrink-0">
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onEdit(ev)}>
+            <Edit className="w-3.5 h-3.5" />
+          </Button>
+          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => onDelete(ev.id)}>
+            <Trash2 className="w-3.5 h-3.5" />
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 }
