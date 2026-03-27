@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { PropertyMap } from "@/components/PropertyMap";
 import { properties as initialProperties, formatCurrency, Property } from "@/data/mockData";
@@ -16,16 +16,21 @@ import {
   LayoutGrid,
   List,
   Map,
-  ChevronDown,
-  PartyPopper,
+  ChevronLeft,
+  ChevronRight,
+  CheckCircle2,
+  Clock,
+  Home,
+  Key,
+  Trophy,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const statusColors: Record<string, string> = {
-  Disponível: "bg-success/10 text-success",
-  Vendido: "bg-muted text-muted-foreground",
-  Reservado: "bg-warning/10 text-warning",
-  Alugado: "bg-info/10 text-info",
+const statusConfig: Record<Property["status"], { color: string; bg: string; border: string; icon: typeof Home }> = {
+  Disponível: { color: "text-success", bg: "bg-success/10", border: "border-success/30", icon: Home },
+  Vendido: { color: "text-destructive", bg: "bg-destructive/10", border: "border-destructive/30", icon: CheckCircle2 },
+  Reservado: { color: "text-warning", bg: "bg-warning/10", border: "border-warning/30", icon: Clock },
+  Alugado: { color: "text-info", bg: "bg-info/10", border: "border-info/30", icon: Key },
 };
 
 const allStatuses: Property["status"][] = ["Disponível", "Vendido", "Reservado", "Alugado"];
@@ -53,7 +58,6 @@ export default function Properties() {
   return (
     <AppLayout>
       <div className="p-6 lg:p-8 space-y-6">
-        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Imóveis</h1>
@@ -67,7 +71,6 @@ export default function Properties() {
           </button>
         </div>
 
-        {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -80,55 +83,41 @@ export default function Properties() {
             />
           </div>
           <div className="flex gap-2">
-            {["Todos", "Apartamento", "Casa", "Comercial", "Terreno"].map(
-              (type) => (
-                <button
-                  key={type}
-                  onClick={() => setFilterType(type)}
-                  className={cn(
-                    "px-3 py-2 rounded-lg text-xs font-medium transition-colors",
-                    filterType === type
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-secondary text-secondary-foreground hover:bg-muted"
-                  )}
-                >
-                  {type}
-                </button>
-              )
-            )}
+            {["Todos", "Apartamento", "Casa", "Comercial", "Terreno"].map((type) => (
+              <button
+                key={type}
+                onClick={() => setFilterType(type)}
+                className={cn(
+                  "px-3 py-2 rounded-lg text-xs font-medium transition-colors",
+                  filterType === type
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary text-secondary-foreground hover:bg-muted"
+                )}
+              >
+                {type}
+              </button>
+            ))}
           </div>
           <div className="flex border border-input rounded-lg overflow-hidden">
-            <button
-              onClick={() => setView("grid")}
-              className={cn(
-                "p-2.5 transition-colors",
-                view === "grid" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground"
-              )}
-            >
-              <LayoutGrid className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setView("list")}
-              className={cn(
-                "p-2.5 transition-colors",
-                view === "list" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground"
-              )}
-            >
-              <List className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setView("map")}
-              className={cn(
-                "p-2.5 transition-colors",
-                view === "map" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground"
-              )}
-            >
-              <Map className="w-4 h-4" />
-            </button>
+            {([
+              { key: "grid" as const, Icon: LayoutGrid },
+              { key: "list" as const, Icon: List },
+              { key: "map" as const, Icon: Map },
+            ]).map(({ key, Icon }) => (
+              <button
+                key={key}
+                onClick={() => setView(key)}
+                className={cn(
+                  "p-2.5 transition-colors",
+                  view === key ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground"
+                )}
+              >
+                <Icon className="w-4 h-4" />
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Content */}
         {view === "grid" ? (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
             {filtered.map((property) => (
@@ -156,78 +145,133 @@ export default function Properties() {
   );
 }
 
-// ---- Status Dropdown ----
-function StatusDropdown({
+// ---- Image Carousel ----
+function ImageCarousel({ images, alt }: { images: string[]; alt: string }) {
+  const [current, setCurrent] = useState(0);
+
+  const prev = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCurrent((c) => (c === 0 ? images.length - 1 : c - 1));
+  };
+  const next = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCurrent((c) => (c === images.length - 1 ? 0 : c + 1));
+  };
+
+  return (
+    <div className="relative h-48 overflow-hidden group/carousel">
+      {images.map((src, i) => (
+        <img
+          key={i}
+          src={src}
+          alt={`${alt} ${i + 1}`}
+          className={cn(
+            "absolute inset-0 w-full h-full object-cover transition-all duration-500",
+            i === current ? "opacity-100 scale-100" : "opacity-0 scale-105"
+          )}
+        />
+      ))}
+
+      {images.length > 1 && (
+        <>
+          <button
+            onClick={prev}
+            className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-foreground/60 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover/carousel:opacity-100 transition-opacity hover:bg-foreground/80"
+          >
+            <ChevronLeft className="w-4 h-4 text-background" />
+          </button>
+          <button
+            onClick={next}
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-foreground/60 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover/carousel:opacity-100 transition-opacity hover:bg-foreground/80"
+          >
+            <ChevronRight className="w-4 h-4 text-background" />
+          </button>
+          {/* Dots */}
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+            {images.map((_, i) => (
+              <button
+                key={i}
+                onClick={(e) => { e.stopPropagation(); setCurrent(i); }}
+                className={cn(
+                  "w-1.5 h-1.5 rounded-full transition-all",
+                  i === current ? "bg-background w-4" : "bg-background/50"
+                )}
+              />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ---- Status Bar (always visible, inline buttons) ----
+function StatusBar({
   currentStatus,
   onChangeStatus,
 }: {
   currentStatus: Property["status"];
   onChangeStatus: (status: Property["status"]) => void;
 }) {
-  const [open, setOpen] = useState(false);
-
   return (
-    <div className="relative">
-      <button
-        onClick={() => setOpen(!open)}
-        className={cn(
-          "flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold transition-colors",
-          statusColors[currentStatus]
-        )}
-      >
-        {currentStatus}
-        <ChevronDown className="w-3 h-3" />
-      </button>
-      {open && (
-        <div className="absolute top-full left-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-50 animate-scale-in overflow-hidden min-w-[130px]">
-          {allStatuses.map((status) => (
-            <button
-              key={status}
-              onClick={() => {
-                onChangeStatus(status);
-                setOpen(false);
-              }}
-              className={cn(
-                "w-full text-left px-3 py-2 text-xs font-medium transition-colors hover:bg-muted",
-                status === currentStatus && "bg-muted"
-              )}
-            >
-              <span className={cn("inline-block w-2 h-2 rounded-full mr-2", {
-                "bg-success": status === "Disponível",
-                "bg-muted-foreground": status === "Vendido",
-                "bg-warning": status === "Reservado",
-                "bg-info": status === "Alugado",
-              })} />
-              {status}
-            </button>
-          ))}
-        </div>
-      )}
+    <div className="flex gap-1.5">
+      {allStatuses.map((status) => {
+        const config = statusConfig[status];
+        const Icon = config.icon;
+        const isActive = status === currentStatus;
+        return (
+          <button
+            key={status}
+            onClick={() => onChangeStatus(status)}
+            className={cn(
+              "flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-semibold border transition-all duration-200",
+              isActive
+                ? `${config.bg} ${config.color} ${config.border} shadow-sm`
+                : "bg-muted/50 text-muted-foreground border-transparent hover:bg-muted"
+            )}
+          >
+            <Icon className="w-3 h-3" />
+            {status}
+          </button>
+        );
+      })}
     </div>
   );
 }
 
-// ---- Confetti Overlay ----
-function SoldConfetti() {
-  const particles = Array.from({ length: 20 }, (_, i) => ({
+// ---- Sold Celebration Overlay ----
+function SoldCelebration() {
+  const particles = Array.from({ length: 30 }, (_, i) => ({
     id: i,
-    left: `${Math.random() * 100}%`,
-    delay: `${Math.random() * 0.5}s`,
-    color: ["hsl(var(--accent))", "hsl(var(--success))", "hsl(var(--info))", "hsl(var(--warning))"][
-      Math.floor(Math.random() * 4)
-    ],
-    size: Math.random() * 6 + 4,
+    left: `${5 + Math.random() * 90}%`,
+    delay: `${Math.random() * 0.6}s`,
+    color: [
+      "hsl(var(--accent))",
+      "hsl(var(--success))",
+      "hsl(var(--info))",
+      "hsl(38 100% 65%)",
+      "hsl(0 84% 60%)",
+    ][Math.floor(Math.random() * 5)],
+    size: Math.random() * 8 + 4,
+    rotate: Math.random() * 360,
   }));
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-20 rounded-xl">
-      {/* VENDIDO stamp */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="animate-sold-stamp border-4 border-success text-success font-black text-3xl px-6 py-2 rounded-lg opacity-80 tracking-widest">
-          VENDIDO!
+      {/* Dark overlay */}
+      <div className="absolute inset-0 bg-foreground/40 animate-[fade-in_0.3s_ease-out]" />
+
+      {/* Trophy + text */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center animate-sold-stamp">
+        <div className="w-16 h-16 rounded-full gradient-gold flex items-center justify-center mb-2 shadow-lg">
+          <Trophy className="w-8 h-8 text-primary" />
+        </div>
+        <div className="bg-card/95 backdrop-blur-sm rounded-lg px-5 py-2 shadow-xl border border-accent/30">
+          <p className="text-lg font-black text-accent tracking-wider">VENDIDO!</p>
         </div>
       </div>
-      {/* Confetti particles */}
+
+      {/* Confetti */}
       {particles.map((p) => (
         <div
           key={p.id}
@@ -240,6 +284,7 @@ function SoldConfetti() {
             height: p.size,
             borderRadius: Math.random() > 0.5 ? "50%" : "2px",
             backgroundColor: p.color,
+            transform: `rotate(${p.rotate}deg)`,
           }}
         />
       ))}
@@ -255,14 +300,14 @@ function PropertyCard({
   property: Property;
   onStatusChange: (id: string, status: Property["status"]) => void;
 }) {
-  const [showConfetti, setShowConfetti] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
   const [animatePulse, setAnimatePulse] = useState(false);
 
   const handleStatusChange = (newStatus: Property["status"]) => {
     if (newStatus === "Vendido" && property.status !== "Vendido") {
-      setShowConfetti(true);
+      setShowCelebration(true);
       setAnimatePulse(true);
-      setTimeout(() => setShowConfetti(false), 2000);
+      setTimeout(() => setShowCelebration(false), 2500);
       setTimeout(() => setAnimatePulse(false), 800);
     }
     onStatusChange(property.id, newStatus);
@@ -271,46 +316,36 @@ function PropertyCard({
   return (
     <div
       className={cn(
-        "elevated-card rounded-xl overflow-hidden group relative",
+        "elevated-card rounded-xl overflow-hidden relative transition-all duration-300",
         animatePulse && "animate-sold-pulse"
       )}
     >
-      {showConfetti && <SoldConfetti />}
-      <div className="relative h-48 overflow-hidden">
-        <img
-          src={property.image}
-          alt={property.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-        />
-        <div className="absolute top-3 left-3">
-          <StatusDropdown
-            currentStatus={property.status}
-            onChangeStatus={handleStatusChange}
-          />
-        </div>
-        <div className="absolute top-3 right-3 flex gap-1.5">
-          <button className="w-8 h-8 rounded-lg bg-card/90 backdrop-blur-sm flex items-center justify-center hover:bg-card transition-colors">
-            <Download className="w-3.5 h-3.5 text-foreground" />
-          </button>
-          <button className="w-8 h-8 rounded-lg bg-card/90 backdrop-blur-sm flex items-center justify-center hover:bg-card transition-colors">
-            <Send className="w-3.5 h-3.5 text-foreground" />
-          </button>
-        </div>
-      </div>
+      {showCelebration && <SoldCelebration />}
+
+      <ImageCarousel images={property.images} alt={property.title} />
+
       <div className="p-4 space-y-3">
         <div>
-          <h3 className="font-semibold text-card-foreground text-sm">
-            {property.title}
-          </h3>
+          <h3 className="font-semibold text-card-foreground text-sm">{property.title}</h3>
           <div className="flex items-center gap-1 mt-1">
             <MapPin className="w-3 h-3 text-muted-foreground" />
             <p className="text-xs text-muted-foreground">{property.address}</p>
           </div>
         </div>
-        <p className="text-lg font-bold text-accent">
-          {formatCurrency(property.price)}
-        </p>
-        <div className="flex items-center gap-4 text-xs text-muted-foreground pt-2 border-t border-border">
+
+        <div className="flex items-center justify-between">
+          <p className="text-lg font-bold text-accent">{formatCurrency(property.price)}</p>
+          <div className="flex gap-1.5">
+            <button className="w-7 h-7 rounded-md bg-secondary flex items-center justify-center hover:bg-muted transition-colors">
+              <Download className="w-3.5 h-3.5 text-foreground" />
+            </button>
+            <button className="w-7 h-7 rounded-md bg-secondary flex items-center justify-center hover:bg-muted transition-colors">
+              <Send className="w-3.5 h-3.5 text-foreground" />
+            </button>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4 text-xs text-muted-foreground py-2 border-y border-border">
           {property.bedrooms > 0 && (
             <span className="flex items-center gap-1">
               <BedDouble className="w-3.5 h-3.5" /> {property.bedrooms}
@@ -330,6 +365,8 @@ function PropertyCard({
             <Ruler className="w-3.5 h-3.5" /> {property.area}m²
           </span>
         </div>
+
+        <StatusBar currentStatus={property.status} onChangeStatus={handleStatusChange} />
       </div>
     </div>
   );
@@ -343,14 +380,14 @@ function PropertyRow({
   property: Property;
   onStatusChange: (id: string, status: Property["status"]) => void;
 }) {
-  const [showConfetti, setShowConfetti] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
   const [animatePulse, setAnimatePulse] = useState(false);
 
   const handleStatusChange = (newStatus: Property["status"]) => {
     if (newStatus === "Vendido" && property.status !== "Vendido") {
-      setShowConfetti(true);
+      setShowCelebration(true);
       setAnimatePulse(true);
-      setTimeout(() => setShowConfetti(false), 2000);
+      setTimeout(() => setShowCelebration(false), 2500);
       setTimeout(() => setAnimatePulse(false), 800);
     }
     onStatusChange(property.id, newStatus);
@@ -359,37 +396,30 @@ function PropertyRow({
   return (
     <div
       className={cn(
-        "elevated-card rounded-xl p-4 flex items-center gap-4 relative overflow-hidden",
+        "elevated-card rounded-xl p-4 flex items-center gap-4 relative overflow-hidden transition-all duration-300",
         animatePulse && "animate-sold-pulse"
       )}
     >
-      {showConfetti && <SoldConfetti />}
+      {showCelebration && <SoldCelebration />}
       <img
-        src={property.image}
+        src={property.images[0]}
         alt={property.title}
         className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
       />
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <h3 className="font-semibold text-card-foreground text-sm truncate">
-            {property.title}
-          </h3>
-          <StatusDropdown
-            currentStatus={property.status}
-            onChangeStatus={handleStatusChange}
-          />
+      <div className="flex-1 min-w-0 space-y-2">
+        <div>
+          <h3 className="font-semibold text-card-foreground text-sm truncate">{property.title}</h3>
+          <p className="text-xs text-muted-foreground mt-0.5">{property.address}</p>
+          <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
+            {property.bedrooms > 0 && <span>{property.bedrooms} quartos</span>}
+            <span>{property.area}m²</span>
+            <span>{property.type}</span>
+          </div>
         </div>
-        <p className="text-xs text-muted-foreground mt-0.5">{property.address}</p>
-        <div className="flex items-center gap-4 mt-1.5 text-xs text-muted-foreground">
-          {property.bedrooms > 0 && <span>{property.bedrooms} quartos</span>}
-          <span>{property.area}m²</span>
-          <span>{property.type}</span>
-        </div>
+        <StatusBar currentStatus={property.status} onChangeStatus={handleStatusChange} />
       </div>
       <div className="text-right flex-shrink-0">
-        <p className="text-base font-bold text-accent">
-          {formatCurrency(property.price)}
-        </p>
+        <p className="text-base font-bold text-accent">{formatCurrency(property.price)}</p>
         <p className="text-xs text-muted-foreground mt-1">{property.broker}</p>
       </div>
       <div className="flex gap-1.5 flex-shrink-0">
