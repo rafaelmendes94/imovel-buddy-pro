@@ -32,6 +32,8 @@ import {
   Trophy,
   Award,
   Medal,
+  FileCheck,
+  Eye,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -79,6 +81,7 @@ const siteProperties = [
     empreendimento: "Ed. Navegantes",
     unitNumber: "Ap 501",
     boxNumber: "Box 15",
+    exclusivityTerm: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&h=1100&fit=crop",
   },
   {
     id: "site-2",
@@ -131,6 +134,7 @@ const siteProperties = [
     empreendimento: "Cond. Praia das Dunas",
     quadra: "Q-02",
     lote: "L-11",
+    exclusivityTerm: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&h=1100&fit=crop",
   },
   {
     id: "site-4",
@@ -183,6 +187,7 @@ const siteProperties = [
     empreendimento: "Cond. Arroio Teixeira",
     quadra: "Q-03",
     lote: "L-09",
+    exclusivityTerm: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&h=1100&fit=crop",
   },
   {
     id: "site-6",
@@ -742,6 +747,7 @@ export default function Site() {
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [priceSort, setPriceSort] = useState<"" | "asc" | "desc">("");
   const [showFullRanking, setShowFullRanking] = useState(false);
+  const [viewingTerm, setViewingTerm] = useState<string | null>(null);
 
   // Auto-rotate sold carousel (scroll 1 card at a time, 4 visible)
   const maxIndex = Math.max(0, soldProperties.length - 4);
