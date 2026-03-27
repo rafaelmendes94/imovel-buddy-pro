@@ -16,7 +16,9 @@ import {
   Save,
   Edit,
   Trash2,
+  Camera,
 } from "lucide-react";
+import { InfraMediaModal } from "@/components/InfraMediaModal";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/data/mockData";
 
@@ -110,6 +112,7 @@ export default function Condominiums() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
+  const [mediaCondo, setMediaCondo] = useState<Condominium | null>(null);
   const navigate = useNavigate();
 
   const filtered = condos.filter(
@@ -260,10 +263,23 @@ export default function Condominiums() {
                     <span key={a} className="px-2 py-0.5 rounded text-[10px] font-medium bg-muted text-muted-foreground">{a}</span>
                   ))}
                 </div>
+                <button
+                  onClick={(e) => { e.stopPropagation(); setMediaCondo(condo); }}
+                  className="flex items-center gap-1.5 w-full justify-center py-2 mt-2 rounded-lg bg-accent/10 text-accent text-xs font-semibold hover:bg-accent/20 transition-colors border border-accent/20"
+                >
+                  <Camera className="w-3.5 h-3.5" /> Ver Fotos e Vídeos
+                </button>
               </div>
             </div>
           ))}
         </div>
+
+        <InfraMediaModal
+          open={!!mediaCondo}
+          onClose={() => setMediaCondo(null)}
+          title={mediaCondo?.name || ""}
+          media={[]}
+        />
 
         {filtered.length === 0 && (
           <div className="text-center py-16 text-muted-foreground">
