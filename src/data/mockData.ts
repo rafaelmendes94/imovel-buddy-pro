@@ -16,6 +16,10 @@ export interface Property {
   createdAt: string;
   lat: number;
   lng: number;
+  decorated?: boolean;
+  seaView?: boolean;
+  acceptsExchange?: boolean;
+  paymentConditions?: string;
 }
 
 export interface Broker {
