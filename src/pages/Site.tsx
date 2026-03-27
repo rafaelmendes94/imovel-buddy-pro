@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { properties, formatCurrency, type Property } from "@/data/mockData";
 import { PropertyDetailModal } from "@/components/PropertyDetailModal";
+import { DollarSign, TrendingUp } from "lucide-react";
 import {
   Search,
   MapPin,
@@ -204,6 +205,84 @@ const siteProperties = [
     unitNumber: "Ap 801",
     boxNumber: "Box 25, 26",
   },
+  {
+    id: "site-7",
+    title: "Cobertura Triplex Vista Mar",
+    address: "Av. Beira Mar, 2200",
+    city: "Capão da Canoa",
+    type: "Apartamento" as const,
+    status: "Vendido" as const,
+    price: 2200000,
+    area: 320,
+    bedrooms: 4,
+    bathrooms: 4,
+    parking: 3,
+    broker: "Carlos Silva",
+    image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600&h=400&fit=crop",
+    images: [],
+    createdAt: "2024-02-20",
+    lat: -29.7440,
+    lng: -50.1010,
+    decorated: true,
+    seaView: true,
+    acceptsExchange: false,
+    paymentConditions: ["84x"],
+    empreendimento: "Ed. Grand Atlantique",
+    unitNumber: "Cobertura 01",
+    boxNumber: "Box 01, 02, 03",
+  },
+  {
+    id: "site-8",
+    title: "Casa em Condomínio Fechado",
+    address: "Rua das Palmeiras, 450",
+    city: "Xangri-lá",
+    type: "Casa" as const,
+    status: "Vendido" as const,
+    price: 1650000,
+    area: 400,
+    bedrooms: 5,
+    bathrooms: 4,
+    parking: 3,
+    broker: "Marcos Oliveira",
+    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&h=400&fit=crop",
+    images: [],
+    createdAt: "2024-01-15",
+    lat: -29.8000,
+    lng: -50.0550,
+    decorated: true,
+    seaView: false,
+    acceptsExchange: false,
+    paymentConditions: ["60x"],
+    empreendimento: "Cond. Jardim do Litoral",
+    quadra: "Q-01",
+    lote: "L-15",
+  },
+  {
+    id: "site-9",
+    title: "Apartamento Frente Mar Mobiliado",
+    address: "Av. Paraguassú, 1500",
+    city: "Capão da Canoa",
+    type: "Apartamento" as const,
+    status: "Vendido" as const,
+    price: 920000,
+    area: 110,
+    bedrooms: 3,
+    bathrooms: 2,
+    parking: 2,
+    broker: "Ana Rodrigues",
+    image: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=600&h=400&fit=crop",
+    images: [],
+    createdAt: "2024-03-01",
+    lat: -29.7500,
+    lng: -50.1050,
+    decorated: true,
+    seaView: true,
+    acceptsExchange: false,
+    paymentConditions: ["72x"],
+    empreendimento: "Ed. Mar Azul",
+    unitNumber: "Ap 702",
+    boxNumber: "Box 18",
+  },
 ];
 
 const condoProperties = [
@@ -240,6 +319,8 @@ const condoProperties = [
 ];
 
 const available = siteProperties.filter((p) => p.status === "Disponível");
+const soldProperties = siteProperties.filter((p) => p.status === "Vendido" || p.status === "Reservado");
+const soldValue = soldProperties.reduce((sum, p) => sum + p.price, 0);
 const featured = available.slice(0, 3);
 const apartments = available.filter((p) => p.type === "Apartamento");
 const houses = available.filter((p) => p.type === "Casa");
@@ -607,7 +688,16 @@ export default function Site() {
   const [filterType, setFilterType] = useState("");
   const [filterCondition, setFilterCondition] = useState("");
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  const [carouselIndex, setCarouselIndex] = useState(0);
 
+  // Auto-rotate sold carousel
+  useEffect(() => {
+    if (soldProperties.length <= 1) return;
+    const timer = setInterval(() => {
+      setCarouselIndex((prev) => (prev + 1) % soldProperties.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     setShowScrollTop(e.currentTarget.scrollTop > 400);
   };
@@ -894,6 +984,83 @@ export default function Site() {
             ) : (
               <p className="text-center py-12 text-gray-400">Nenhum imóvel encontrado com os filtros selecionados.</p>
             )}
+          </section>
+        )}
+
+        {/* Últimas Vendas - Carrossel */}
+        {!searchTerm && !hasActiveFilters && activeCategory === "todos" && soldProperties.length > 0 && (
+          <section>
+            <SectionHeader
+              title={`Últimas Vendas — VGV ${formatCurrency(soldValue)}`}
+              subtitle={`${soldProperties.length} imóveis vendidos`}
+              icon={TrendingUp}
+            />
+            <div className="relative rounded-2xl overflow-hidden shadow-xl bg-white border border-gray-100">
+              <div className="relative h-[420px] overflow-hidden">
+                <div
+                  className="flex h-full transition-transform duration-700 ease-in-out"
+                  style={{ transform: `translateX(-${carouselIndex * 100}%)` }}
+                >
+                  {soldProperties.map((p) => {
+                    const broker = brokerInfo[p.broker] || { photo: "", whatsapp: "" };
+                    const unitParts = [p.unitNumber, p.boxNumber, p.quadra, p.lote].filter(Boolean);
+                    return (
+                      <div key={p.id} className="min-w-full h-full relative flex-shrink-0">
+                        <img src={p.image} alt={p.title} className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                        <div className="absolute top-4 left-4">
+                          <span className="px-3 py-1.5 rounded-full text-xs font-bold bg-red-500 text-white uppercase tracking-wide">
+                            Vendido
+                          </span>
+                        </div>
+                        <div className="absolute bottom-0 left-0 right-0 p-6 space-y-3">
+                          <h3 className="text-2xl font-extrabold text-white drop-shadow-lg">{p.title}</h3>
+                          <div className="flex flex-wrap items-center gap-2">
+                            {p.empreendimento && (
+                              <span className="text-xs font-bold text-amber-300 bg-amber-900/50 px-2.5 py-1 rounded-lg backdrop-blur-sm">
+                                {p.empreendimento}
+                              </span>
+                            )}
+                            {unitParts.map((part) => (
+                              <span key={part} className="text-xs font-semibold text-white/90 bg-white/20 px-2 py-0.5 rounded-md backdrop-blur-sm">
+                                {part}
+                              </span>
+                            ))}
+                          </div>
+                          <div className="flex items-center gap-6">
+                            <p className="text-3xl font-extrabold text-amber-400 drop-shadow-lg">{formatCurrency(p.price)}</p>
+                            <div className="flex items-center gap-4 text-sm text-white/80">
+                              {p.area > 0 && <span className="flex items-center gap-1"><Ruler className="w-4 h-4" />{p.area}m²</span>}
+                              {p.bedrooms > 0 && <span className="flex items-center gap-1"><BedDouble className="w-4 h-4" />{p.bedrooms} qts</span>}
+                              {p.parking > 0 && <span className="flex items-center gap-1"><Car className="w-4 h-4" />{p.parking} vg</span>}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            {broker.photo && (
+                              <img src={broker.photo} alt={p.broker} className="w-8 h-8 rounded-full object-cover border-2 border-amber-400" />
+                            )}
+                            <span className="text-sm font-semibold text-white/90">{p.broker}</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                {/* Dots */}
+                <div className="absolute bottom-4 right-6 flex items-center gap-2">
+                  {soldProperties.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setCarouselIndex(i)}
+                      className={cn(
+                        "w-2.5 h-2.5 rounded-full transition-all",
+                        i === carouselIndex ? "bg-amber-400 w-6" : "bg-white/50 hover:bg-white/80"
+                      )}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
           </section>
         )}
 
