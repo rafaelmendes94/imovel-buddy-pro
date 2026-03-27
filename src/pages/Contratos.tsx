@@ -397,21 +397,43 @@ export default function Contratos() {
                 <div className="flex items-center justify-between px-5 py-3 border-b border-border bg-muted/30">
                   <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
                     <FileText className="w-4 h-4 text-primary" />
-                    Documento Gerado
+                    {isEditing ? "Editando Documento" : "Documento Gerado"}
                   </h3>
-                  {generatedText && (
+                  {generatedText && !isGenerating && (
                     <div className="flex items-center gap-1.5">
-                      <Button size="sm" variant="ghost" onClick={handleCopy}>
-                        <Copy className="w-3.5 h-3.5 mr-1" /> Copiar
-                      </Button>
-                      <Button size="sm" variant="ghost" onClick={handleDownload}>
-                        <Download className="w-3.5 h-3.5 mr-1" /> Baixar
-                      </Button>
+                      {isEditing ? (
+                        <>
+                          <Button size="sm" variant="ghost" onClick={handleSaveEdit} className="text-emerald-500 hover:text-emerald-400">
+                            <Check className="w-3.5 h-3.5 mr-1" /> Salvar
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={handleCancelEdit} className="text-destructive hover:text-destructive/80">
+                            <X className="w-3.5 h-3.5 mr-1" /> Cancelar
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <Button size="sm" variant="ghost" onClick={handleStartEdit}>
+                            <Pencil className="w-3.5 h-3.5 mr-1" /> Editar
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={handleCopy}>
+                            <Copy className="w-3.5 h-3.5 mr-1" /> Copiar
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={handleDownload}>
+                            <Download className="w-3.5 h-3.5 mr-1" /> Baixar
+                          </Button>
+                        </>
+                      )}
                     </div>
                   )}
                 </div>
                 <div className="p-5 min-h-[400px] max-h-[70vh] overflow-y-auto">
-                  {generatedText ? (
+                  {isEditing ? (
+                    <textarea
+                      value={editText}
+                      onChange={(e) => setEditText(e.target.value)}
+                      className="w-full h-full min-h-[380px] bg-transparent text-sm text-foreground font-sans leading-relaxed resize-none focus:outline-none border border-border rounded-lg p-3"
+                    />
+                  ) : generatedText ? (
                     <pre className="text-sm text-foreground whitespace-pre-wrap font-sans leading-relaxed">
                       {generatedText}
                       {isGenerating && (
