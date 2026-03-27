@@ -21,6 +21,39 @@ import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
+// Material types & client types
+const materialTypes = [
+  { value: "vr", label: "VR" },
+  { value: "vc", label: "VC" },
+  { value: "vr360", label: "VR 360" },
+  { value: "vc360", label: "VC 360" },
+  { value: "vcdn", label: "VCDN" },
+] as const;
+type MaterialType = typeof materialTypes[number]["value"];
+
+const clientTypes = [
+  { value: "assinante", label: "Assinante" },
+  { value: "construtor", label: "Construtor" },
+  { value: "particular", label: "Particular" },
+  { value: "mv_broker", label: "MV Broker" },
+] as const;
+type ClientType = typeof clientTypes[number]["value"];
+
+const materialTypeColors: Record<MaterialType, string> = {
+  vr: "bg-blue-500/15 text-blue-400 border-blue-500/30",
+  vc: "bg-purple-500/15 text-purple-400 border-purple-500/30",
+  vr360: "bg-cyan-500/15 text-cyan-400 border-cyan-500/30",
+  vc360: "bg-pink-500/15 text-pink-400 border-pink-500/30",
+  vcdn: "bg-amber-500/15 text-amber-400 border-amber-500/30",
+};
+
+const clientTypeColors: Record<ClientType, string> = {
+  assinante: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+  construtor: "bg-orange-500/15 text-orange-400 border-orange-500/30",
+  particular: "bg-sky-500/15 text-sky-400 border-sky-500/30",
+  mv_broker: "bg-violet-500/15 text-violet-400 border-violet-500/30",
+};
+
 // Types
 interface VideoJob {
   id: string;
@@ -28,6 +61,8 @@ interface VideoJob {
   client: string;
   address: string;
   value: number;
+  materialType: MaterialType;
+  clientType: ClientType;
   status: "gravar" | "gravado" | "editando" | "entregue" | "enviado";
   dueDate: string;
   notes: string;
@@ -38,6 +73,8 @@ interface FinanceEntry {
   id: string;
   property: string;
   client: string;
+  materialType: MaterialType;
+  clientType: ClientType;
   clientValue: number;
   editorCost: number;
   status: "pendente" | "pago" | "atrasado";
@@ -75,23 +112,23 @@ const eventTypeConfig: Record<AgendaEvent["type"], { label: string; color: strin
 
 // Initial mock data
 const initialJobs: VideoJob[] = [
-  { id: "1", property: "Cobertura Duplex - Ed. Marina", client: "Construtora Alpha", address: "Av. Beira Mar, 1200", value: 1500, status: "gravar", dueDate: "2026-04-02", notes: "Drone + interna", createdAt: "2026-03-25" },
-  { id: "2", property: "Apto 3Q - Cond. Jardins", client: "Imobiliária Beta", address: "Rua das Flores, 300", value: 800, status: "gravado", dueDate: "2026-03-30", notes: "Já gravado, aguardando edição", createdAt: "2026-03-20" },
-  { id: "3", property: "Sala Comercial - Tower One", client: "JB Imóveis", address: "Av. Central, 500", value: 600, status: "editando", dueDate: "2026-03-28", notes: "Edição com tour virtual", createdAt: "2026-03-18" },
-  { id: "4", property: "Casa 4Q - Cond. Alphaville", client: "RE/MAX", address: "Alameda dos Ipês, 45", value: 2000, status: "entregue", dueDate: "2026-03-26", notes: "Entregue via Google Drive", createdAt: "2026-03-10" },
-  { id: "5", property: "Loft Studio - Ed. Art Déco", client: "Exclusiva Imóveis", address: "Rua Augusta, 890", value: 500, status: "enviado", dueDate: "2026-03-22", notes: "", createdAt: "2026-03-05" },
+  { id: "1", property: "Cobertura Duplex - Ed. Marina", client: "Construtora Alpha", address: "Av. Beira Mar, 1200", value: 1500, materialType: "vr", clientType: "construtor", status: "gravar", dueDate: "2026-04-02", notes: "Drone + interna", createdAt: "2026-03-25" },
+  { id: "2", property: "Apto 3Q - Cond. Jardins", client: "Imobiliária Beta", address: "Rua das Flores, 300", value: 800, materialType: "vc", clientType: "assinante", status: "gravado", dueDate: "2026-03-30", notes: "Já gravado, aguardando edição", createdAt: "2026-03-20" },
+  { id: "3", property: "Sala Comercial - Tower One", client: "JB Imóveis", address: "Av. Central, 500", value: 600, materialType: "vr360", clientType: "mv_broker", status: "editando", dueDate: "2026-03-28", notes: "Edição com tour virtual", createdAt: "2026-03-18" },
+  { id: "4", property: "Casa 4Q - Cond. Alphaville", client: "RE/MAX", address: "Alameda dos Ipês, 45", value: 2000, materialType: "vc360", clientType: "particular", status: "entregue", dueDate: "2026-03-26", notes: "Entregue via Google Drive", createdAt: "2026-03-10" },
+  { id: "5", property: "Loft Studio - Ed. Art Déco", client: "Exclusiva Imóveis", address: "Rua Augusta, 890", value: 500, materialType: "vcdn", clientType: "assinante", status: "enviado", dueDate: "2026-03-22", notes: "", createdAt: "2026-03-05" },
 ];
 
 const initialFinance: FinanceEntry[] = [
-  { id: "1", property: "Cobertura Duplex - Ed. Marina", client: "Construtora Alpha", clientValue: 1500, editorCost: 400, status: "pendente", dueDate: "2026-04-05" },
-  { id: "2", property: "Apto 3Q - Cond. Jardins", client: "Imobiliária Beta", clientValue: 800, editorCost: 250, status: "pendente", dueDate: "2026-04-01" },
-  { id: "3", property: "Sala Comercial - Tower One", client: "JB Imóveis", clientValue: 600, editorCost: 200, status: "pago", dueDate: "2026-03-28", paidAt: "2026-03-27" },
-  { id: "4", property: "Casa 4Q - Cond. Alphaville", client: "RE/MAX", clientValue: 2000, editorCost: 600, status: "pago", dueDate: "2026-03-20", paidAt: "2026-03-19" },
-  { id: "5", property: "Loft Studio - Ed. Art Déco", client: "Exclusiva Imóveis", clientValue: 500, editorCost: 150, status: "pago", dueDate: "2026-03-15", paidAt: "2026-03-14" },
-  { id: "6", property: "Penthouse Ed. Atlântico", client: "Premium Imóveis", clientValue: 2500, editorCost: 700, status: "pago", dueDate: "2026-02-20", paidAt: "2026-02-19" },
-  { id: "7", property: "Casa Praia - Cond. Royal", client: "Royal Imóveis", clientValue: 1800, editorCost: 500, status: "pago", dueDate: "2026-02-10", paidAt: "2026-02-09" },
-  { id: "8", property: "Apt 2Q - Ed. Solar", client: "Solar Imóveis", clientValue: 700, editorCost: 200, status: "pago", dueDate: "2026-01-25", paidAt: "2026-01-24" },
-  { id: "9", property: "Sala Comercial Centro", client: "JB Imóveis", clientValue: 550, editorCost: 180, status: "pago", dueDate: "2026-01-15", paidAt: "2026-01-14" },
+  { id: "1", property: "Cobertura Duplex - Ed. Marina", client: "Construtora Alpha", materialType: "vr", clientType: "construtor", clientValue: 1500, editorCost: 400, status: "pendente", dueDate: "2026-04-05" },
+  { id: "2", property: "Apto 3Q - Cond. Jardins", client: "Imobiliária Beta", materialType: "vc", clientType: "assinante", clientValue: 800, editorCost: 250, status: "pendente", dueDate: "2026-04-01" },
+  { id: "3", property: "Sala Comercial - Tower One", client: "JB Imóveis", materialType: "vr360", clientType: "mv_broker", clientValue: 600, editorCost: 200, status: "pago", dueDate: "2026-03-28", paidAt: "2026-03-27" },
+  { id: "4", property: "Casa 4Q - Cond. Alphaville", client: "RE/MAX", materialType: "vc360", clientType: "particular", clientValue: 2000, editorCost: 600, status: "pago", dueDate: "2026-03-20", paidAt: "2026-03-19" },
+  { id: "5", property: "Loft Studio - Ed. Art Déco", client: "Exclusiva Imóveis", materialType: "vcdn", clientType: "assinante", clientValue: 500, editorCost: 150, status: "pago", dueDate: "2026-03-15", paidAt: "2026-03-14" },
+  { id: "6", property: "Penthouse Ed. Atlântico", client: "Premium Imóveis", materialType: "vr", clientType: "construtor", clientValue: 2500, editorCost: 700, status: "pago", dueDate: "2026-02-20", paidAt: "2026-02-19" },
+  { id: "7", property: "Casa Praia - Cond. Royal", client: "Royal Imóveis", materialType: "vc", clientType: "particular", clientValue: 1800, editorCost: 500, status: "pago", dueDate: "2026-02-10", paidAt: "2026-02-09" },
+  { id: "8", property: "Apt 2Q - Ed. Solar", client: "Solar Imóveis", materialType: "vr360", clientType: "assinante", clientValue: 700, editorCost: 200, status: "pago", dueDate: "2026-01-25", paidAt: "2026-01-24" },
+  { id: "9", property: "Sala Comercial Centro", client: "JB Imóveis", materialType: "vcdn", clientType: "mv_broker", clientValue: 550, editorCost: 180, status: "pago", dueDate: "2026-01-15", paidAt: "2026-01-14" },
 ];
 
 const initialEvents: AgendaEvent[] = [
@@ -124,9 +161,9 @@ export default function VideoMaker() {
   const [selectedAgendaDate, setSelectedAgendaDate] = useState<Date | null>(new Date());
 
   // Forms
-  const [newJob, setNewJob] = useState({ property: "", client: "", address: "", value: "", dueDate: "", notes: "", status: "gravar" as VideoJob["status"] });
+  const [newJob, setNewJob] = useState({ property: "", client: "", address: "", value: "", dueDate: "", notes: "", status: "gravar" as VideoJob["status"], materialType: "vr" as MaterialType, clientType: "assinante" as ClientType });
   const [newEvent, setNewEvent] = useState({ title: "", date: "", time: "", endTime: "", type: "gravacao" as AgendaEvent["type"], notes: "", location: "" });
-  const [newFinance, setNewFinance] = useState({ property: "", client: "", clientValue: "", editorCost: "", dueDate: "", status: "pendente" as FinanceEntry["status"] });
+  const [newFinance, setNewFinance] = useState({ property: "", client: "", clientValue: "", editorCost: "", dueDate: "", status: "pendente" as FinanceEntry["status"], materialType: "vr" as MaterialType, clientType: "assinante" as ClientType });
 
   // ====== FINANCIAL METRICS ======
   const paidEntries = finance.filter(f => f.status === "pago");
@@ -200,7 +237,7 @@ export default function VideoMaker() {
   // CRUD handlers
   const handleAddJob = () => {
     if (!newJob.property || !newJob.client) return toast.error("Preencha os campos obrigatórios");
-    const job: VideoJob = { id: Date.now().toString(), property: newJob.property, client: newJob.client, address: newJob.address, value: Number(newJob.value) || 0, status: newJob.status, dueDate: newJob.dueDate, notes: newJob.notes, createdAt: new Date().toISOString().split("T")[0] };
+    const job: VideoJob = { id: Date.now().toString(), property: newJob.property, client: newJob.client, address: newJob.address, value: Number(newJob.value) || 0, materialType: newJob.materialType, clientType: newJob.clientType, status: newJob.status, dueDate: newJob.dueDate, notes: newJob.notes, createdAt: new Date().toISOString().split("T")[0] };
     if (editingJob) {
       setJobs(prev => prev.map(j => j.id === editingJob.id ? { ...job, id: editingJob.id, createdAt: editingJob.createdAt } : j));
       toast.success("Trabalho atualizado!");
@@ -208,18 +245,18 @@ export default function VideoMaker() {
       setJobs(prev => [...prev, job]);
       toast.success("Novo trabalho adicionado!");
     }
-    setNewJob({ property: "", client: "", address: "", value: "", dueDate: "", notes: "", status: "gravar" });
+    setNewJob({ property: "", client: "", address: "", value: "", dueDate: "", notes: "", status: "gravar", materialType: "vr", clientType: "assinante" });
     setEditingJob(null);
     setJobDialogOpen(false);
   };
-  const handleEditJob = (job: VideoJob) => { setEditingJob(job); setNewJob({ property: job.property, client: job.client, address: job.address, value: String(job.value), dueDate: job.dueDate, notes: job.notes, status: job.status }); setJobDialogOpen(true); };
+  const handleEditJob = (job: VideoJob) => { setEditingJob(job); setNewJob({ property: job.property, client: job.client, address: job.address, value: String(job.value), dueDate: job.dueDate, notes: job.notes, status: job.status, materialType: job.materialType, clientType: job.clientType }); setJobDialogOpen(true); };
   const handleDeleteJob = (id: string) => { setJobs(prev => prev.filter(j => j.id !== id)); toast.success("Trabalho removido!"); };
 
   const handleAddFinance = () => {
     if (!newFinance.property || !newFinance.client) return toast.error("Preencha os campos obrigatórios");
-    const entry: FinanceEntry = { id: Date.now().toString(), property: newFinance.property, client: newFinance.client, clientValue: Number(newFinance.clientValue) || 0, editorCost: Number(newFinance.editorCost) || 0, status: newFinance.status, dueDate: newFinance.dueDate };
+    const entry: FinanceEntry = { id: Date.now().toString(), property: newFinance.property, client: newFinance.client, materialType: newFinance.materialType, clientType: newFinance.clientType, clientValue: Number(newFinance.clientValue) || 0, editorCost: Number(newFinance.editorCost) || 0, status: newFinance.status, dueDate: newFinance.dueDate };
     setFinance(prev => [...prev, entry]);
-    setNewFinance({ property: "", client: "", clientValue: "", editorCost: "", dueDate: "", status: "pendente" });
+    setNewFinance({ property: "", client: "", clientValue: "", editorCost: "", dueDate: "", status: "pendente", materialType: "vr", clientType: "assinante" });
     setFinanceDialogOpen(false);
     toast.success("Registro financeiro adicionado!");
   };
@@ -326,7 +363,7 @@ export default function VideoMaker() {
           {/* ==================== KANBAN ==================== */}
           <TabsContent value="kanban" className="space-y-4">
             <div className="flex justify-end">
-              <Dialog open={jobDialogOpen} onOpenChange={(o) => { setJobDialogOpen(o); if (!o) { setEditingJob(null); setNewJob({ property: "", client: "", address: "", value: "", dueDate: "", notes: "", status: "gravar" }); } }}>
+              <Dialog open={jobDialogOpen} onOpenChange={(o) => { setJobDialogOpen(o); if (!o) { setEditingJob(null); setNewJob({ property: "", client: "", address: "", value: "", dueDate: "", notes: "", status: "gravar", materialType: "vr", clientType: "assinante" }); } }}>
                 <DialogTrigger asChild><Button size="sm" className="gap-1.5"><Plus className="w-4 h-4" /> Novo Trabalho</Button></DialogTrigger>
                 <DialogContent className="max-w-md">
                   <DialogHeader><DialogTitle>{editingJob ? "Editar Trabalho" : "Novo Trabalho"}</DialogTitle></DialogHeader>
@@ -334,6 +371,10 @@ export default function VideoMaker() {
                     <div><Label>Imóvel *</Label><Input value={newJob.property} onChange={e => setNewJob(p => ({ ...p, property: e.target.value }))} placeholder="Ex: Cobertura Ed. Marina" /></div>
                     <div><Label>Cliente *</Label><Input value={newJob.client} onChange={e => setNewJob(p => ({ ...p, client: e.target.value }))} placeholder="Ex: Construtora Alpha" /></div>
                     <div><Label>Endereço</Label><Input value={newJob.address} onChange={e => setNewJob(p => ({ ...p, address: e.target.value }))} /></div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div><Label>Tipo de Material</Label><Select value={newJob.materialType} onValueChange={v => setNewJob(p => ({ ...p, materialType: v as MaterialType }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{materialTypes.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent></Select></div>
+                      <div><Label>Tipo de Cliente</Label><Select value={newJob.clientType} onValueChange={v => setNewJob(p => ({ ...p, clientType: v as ClientType }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{clientTypes.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent></Select></div>
+                    </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div><Label>Valor (R$)</Label><Input type="number" value={newJob.value} onChange={e => setNewJob(p => ({ ...p, value: e.target.value }))} /></div>
                       <div><Label>Prazo</Label><Input type="date" value={newJob.dueDate} onChange={e => setNewJob(p => ({ ...p, dueDate: e.target.value }))} /></div>
@@ -369,6 +410,10 @@ export default function VideoMaker() {
                               </div>
                             </div>
                             <p className="text-xs text-muted-foreground">{job.client}</p>
+                            <div className="flex items-center gap-1 flex-wrap">
+                              <Badge variant="outline" className={cn("text-[9px] h-4 px-1.5", materialTypeColors[job.materialType])}>{materialTypes.find(m => m.value === job.materialType)?.label}</Badge>
+                              <Badge variant="outline" className={cn("text-[9px] h-4 px-1.5", clientTypeColors[job.clientType])}>{clientTypes.find(c => c.value === job.clientType)?.label}</Badge>
+                            </div>
                             {job.address && <p className="text-[11px] text-muted-foreground/70 flex items-center gap-1"><MapPin className="w-3 h-3" />{job.address}</p>}
                             <div className="flex items-center justify-between pt-1">
                               <span className="text-xs font-semibold text-accent">{fmtBRL(job.value)}</span>
@@ -405,6 +450,10 @@ export default function VideoMaker() {
                     <div><Label>Imóvel *</Label><Input value={newFinance.property} onChange={e => setNewFinance(p => ({ ...p, property: e.target.value }))} /></div>
                     <div><Label>Cliente *</Label><Input value={newFinance.client} onChange={e => setNewFinance(p => ({ ...p, client: e.target.value }))} /></div>
                     <div className="grid grid-cols-2 gap-3">
+                      <div><Label>Tipo de Material</Label><Select value={newFinance.materialType} onValueChange={v => setNewFinance(p => ({ ...p, materialType: v as MaterialType }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{materialTypes.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent></Select></div>
+                      <div><Label>Tipo de Cliente</Label><Select value={newFinance.clientType} onValueChange={v => setNewFinance(p => ({ ...p, clientType: v as ClientType }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{clientTypes.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent></Select></div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
                       <div><Label>Valor Cobrado do Cliente (R$)</Label><Input type="number" value={newFinance.clientValue} onChange={e => setNewFinance(p => ({ ...p, clientValue: e.target.value }))} placeholder="1500" /></div>
                       <div><Label>Valor Pago ao Editor (R$)</Label><Input type="number" value={newFinance.editorCost} onChange={e => setNewFinance(p => ({ ...p, editorCost: e.target.value }))} placeholder="400" /></div>
                     </div>
@@ -424,6 +473,8 @@ export default function VideoMaker() {
                   <TableRow>
                     <TableHead>Imóvel</TableHead>
                     <TableHead>Cliente</TableHead>
+                    <TableHead>Material</TableHead>
+                    <TableHead>Tipo Cliente</TableHead>
                     <TableHead>Valor Cliente</TableHead>
                     <TableHead>Custo Editor</TableHead>
                     <TableHead>Lucro</TableHead>
@@ -434,11 +485,13 @@ export default function VideoMaker() {
                 </TableHeader>
                 <TableBody>
                   {filteredFinance.length === 0 ? (
-                    <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">Nenhum registro encontrado</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground py-8">Nenhum registro encontrado</TableCell></TableRow>
                   ) : filteredFinance.map(f => (
                     <TableRow key={f.id}>
                       <TableCell className="font-medium text-foreground">{f.property}</TableCell>
                       <TableCell className="text-muted-foreground">{f.client}</TableCell>
+                      <TableCell><Badge variant="outline" className={cn("text-[10px]", materialTypeColors[f.materialType])}>{materialTypes.find(m => m.value === f.materialType)?.label}</Badge></TableCell>
+                      <TableCell><Badge variant="outline" className={cn("text-[10px]", clientTypeColors[f.clientType])}>{clientTypes.find(c => c.value === f.clientType)?.label}</Badge></TableCell>
                       <TableCell className="font-semibold text-emerald-400">{fmtBRL(f.clientValue)}</TableCell>
                       <TableCell className="font-semibold text-red-400">{fmtBRL(f.editorCost)}</TableCell>
                       <TableCell className="font-semibold text-accent">{fmtBRL(f.clientValue - f.editorCost)}</TableCell>
