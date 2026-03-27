@@ -220,6 +220,7 @@ export default function CondominiumDetail() {
   const [selectedBlock, setSelectedBlock] = useState<string | null>(null);
   const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null);
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
+  const [implantationLightbox, setImplantationLightbox] = useState<number | null>(null);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
   const condo = mockCondos[id || ""];
