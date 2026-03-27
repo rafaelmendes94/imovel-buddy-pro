@@ -6,6 +6,8 @@ import {
   DollarSign,
   TrendingUp,
   Download,
+  ShoppingCart,
+  BarChart3,
 } from "lucide-react";
 import {
   salesData,
@@ -13,6 +15,7 @@ import {
   formatCurrency,
   properties,
   brokers,
+  salesRecords,
 } from "@/data/mockData";
 import {
   BarChart,
@@ -34,6 +37,12 @@ export default function Dashboard() {
   const available = properties.filter((p) => p.status === "Disponível").length;
   const totalRevenue = salesData.reduce((sum, d) => sum + d.receita, 0);
   const totalSales = salesData.reduce((sum, d) => sum + d.vendas, 0);
+
+  // VGV total cadastrado = sum of all property prices
+  const vgvCadastrado = properties.reduce((sum, p) => sum + p.price, 0);
+  // VGV vendido = sum of all salesRecords prices
+  const vgvVendido = salesRecords.reduce((sum, s) => sum + s.price, 0);
+  const qtdVendas = salesRecords.length;
 
   return (
     <AppLayout>
@@ -82,6 +91,46 @@ export default function Dashboard() {
             changeType="positive"
             icon={TrendingUp}
           />
+        </div>
+
+        {/* VGV Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="elevated-card rounded-xl p-5">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-lg bg-primary/10">
+                <BarChart3 className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">VGV Total Cadastrado</p>
+                <p className="text-xl font-bold text-foreground">{formatCurrency(vgvCadastrado)}</p>
+                <p className="text-[10px] text-muted-foreground">{totalProperties} imóveis no portfólio</p>
+              </div>
+            </div>
+          </div>
+          <div className="elevated-card rounded-xl p-5">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-lg bg-emerald-500/10">
+                <DollarSign className="w-5 h-5 text-emerald-500" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">VGV Total Vendido</p>
+                <p className="text-xl font-bold text-emerald-500">{formatCurrency(vgvVendido)}</p>
+                <p className="text-[10px] text-muted-foreground">{((vgvVendido / vgvCadastrado) * 100).toFixed(1)}% do cadastrado</p>
+              </div>
+            </div>
+          </div>
+          <div className="elevated-card rounded-xl p-5">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-lg bg-accent/10">
+                <ShoppingCart className="w-5 h-5 text-accent" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Quantidade de Vendas</p>
+                <p className="text-xl font-bold text-foreground">{qtdVendas}</p>
+                <p className="text-[10px] text-muted-foreground">Ticket médio: {formatCurrency(vgvVendido / qtdVendas)}</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Charts */}

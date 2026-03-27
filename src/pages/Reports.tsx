@@ -1,5 +1,7 @@
 import { useState, useMemo } from "react";
 import { AppLayout } from "@/components/AppLayout";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { MetricCard } from "@/components/MetricCard";
 import {
   salesRecords,
@@ -96,11 +98,17 @@ function FilterChip({ label, active, onClick }: { label: string; active: boolean
   );
 }
 
+const MONTH_MAP: Record<string, number> = {
+  "Jan": 0, "Fev": 1, "Mar": 2, "Abr": 3, "Mai": 4, "Jun": 5,
+  "Jul": 6, "Ago": 7, "Set": 8, "Out": 9, "Nov": 10, "Dez": 11,
+};
+
 export default function Reports() {
   const [filterCity, setFilterCity] = useState<string>("Todas");
   const [filterType, setFilterType] = useState<string>("Todos");
   const [filterSegment, setFilterSegment] = useState<string>("Todos");
   const [filterSeaView, setFilterSeaView] = useState<string>("Todos");
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     return salesRecords.filter(s => {
@@ -329,12 +337,13 @@ export default function Reports() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Revenue Bar Chart with trend indicators */}
           <div className="elevated-card rounded-xl p-5">
-            <h3 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-card-foreground mb-1 flex items-center gap-2">
               <BarChart3 className="w-4 h-4 text-accent" />
               Receita Mensal — Comparativo
             </h3>
+            <p className="text-[10px] text-muted-foreground mb-3">Clique em uma barra para ver as vendas do mês</p>
             <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={revenueBarData} barCategoryGap="20%">
+              <BarChart data={revenueBarData} barCategoryGap="20%" onClick={(data) => { if (data?.activeLabel) setSelectedMonth(data.activeLabel); }} style={{ cursor: "pointer" }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                 <XAxis dataKey="month" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
                 <YAxis tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v) => `${(v / 1000000).toFixed(1)}M`} />
@@ -627,6 +636,65 @@ export default function Reports() {
             </table>
           </div>
         </div>
+
+        {/* Month Sales Dialog */}
+        <Dialog open={!!selectedMonth} onOpenChange={() => setSelectedMonth(null)}>
+          <DialogContent className="max-w-3xl max-h-[80vh] overflow-auto">
+            <DialogHeader>
+              <DialogTitle>Vendas de {selectedMonth}</DialogTitle>
+            </DialogHeader>
+            {(() => {
+              const monthNum = selectedMonth ? MONTH_MAP[selectedMonth] : -1;
+              const monthSales = filtered.filter(s => {
+                const d = new Date(s.date);
+                return d.getMonth() === monthNum;
+              });
+              const totalVgv = monthSales.reduce((sum, s) => sum + s.price, 0);
+              return (
+                <div className="space-y-4">
+                  <div className="flex gap-4">
+                    <div className="p-3 rounded-lg bg-primary/10">
+                      <p className="text-xs text-muted-foreground">Total de Vendas</p>
+                      <p className="text-lg font-bold text-foreground">{monthSales.length}</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-emerald-500/10">
+                      <p className="text-xs text-muted-foreground">VGV do Mês</p>
+                      <p className="text-lg font-bold text-emerald-500">{formatCurrency(totalVgv)}</p>
+                    </div>
+                  </div>
+                  {monthSales.length === 0 ? (
+                    <p className="text-sm text-muted-foreground py-8 text-center">Nenhuma venda registrada neste mês</p>
+                  ) : (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Imóvel</TableHead>
+                          <TableHead>Cidade</TableHead>
+                          <TableHead>Tipo</TableHead>
+                          <TableHead>Segmento</TableHead>
+                          <TableHead>Corretor</TableHead>
+                          <TableHead className="text-right">Valor</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {monthSales.map(s => (
+                          <TableRow key={s.id}>
+                            <TableCell className="font-medium text-foreground">{s.propertyTitle}</TableCell>
+                            <TableCell className="text-muted-foreground">{s.city}</TableCell>
+                            <TableCell><Badge variant="outline" className="text-xs">{s.type}</Badge></TableCell>
+                            <TableCell><Badge className="text-xs" style={{ background: SEGMENT_COLORS[s.segment] + "33", color: SEGMENT_COLORS[s.segment], border: "none" }}>{s.segment}</Badge></TableCell>
+                            <TableCell className="text-muted-foreground">{s.broker}</TableCell>
+                            <TableCell className="text-right font-bold text-foreground">{formatCurrency(s.price)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  )}
+                </div>
+              );
+            })()}
+          </DialogContent>
+        </Dialog>
       </div>
     </AppLayout>
   );
