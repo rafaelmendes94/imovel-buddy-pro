@@ -144,9 +144,13 @@ export default function Reports() {
       if (filterSegment !== "Todos" && s.segment !== filterSegment) return false;
       if (filterSeaView === "Sim" && !s.seaView) return false;
       if (filterSeaView === "Não" && s.seaView) return false;
+      if (filterPeriod === "Dia" && !isToday(s.date)) return false;
+      if (filterPeriod === "Semana" && !isThisWeek(s.date)) return false;
+      if (filterPeriod === "Mês" && !isThisMonth(s.date)) return false;
+      if (filterPeriod === "Ano" && !isThisYear(s.date)) return false;
       return true;
     });
-  }, [filterCity, filterType, filterSegment, filterSeaView]);
+  }, [filterCity, filterType, filterSegment, filterSeaView, filterPeriod]);
 
   // VGV calculations
   const vgvYear = filtered.filter(s => isThisYear(s.date)).reduce((sum, s) => sum + s.price, 0);
