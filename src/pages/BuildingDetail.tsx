@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import { MiniMap } from "@/components/MiniMap";
 import { AppLayout } from "@/components/AppLayout";
 import { formatCurrency } from "@/data/mockData";
 import {
@@ -75,6 +76,8 @@ interface BuildingInfo {
   videoUrl: string;
   downloadUrl: string;
   units: Unit[];
+  lat: number;
+  lng: number;
 }
 
 const statusConfig: Record<string, { color: string; bg: string; bgLight: string; border: string; icon: typeof Home }> = {
@@ -118,6 +121,7 @@ const mockBuildings: Record<string, BuildingInfo> = {
   "1": {
     id: "1", name: "Edifício Aurora", address: "Av. Paulista, 1500", city: "São Paulo",
     floors: 25, totalUnits: 120, builder: "Construtora ABC", yearBuilt: "2024", status: "Pronto",
+    lat: -23.5629, lng: -46.6544,
     image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&h=500&fit=crop",
     amenities: ["Piscina", "Academia", "Salão de Festas", "Playground", "Segurança 24h", "Área Verde"],
     infrastructure: ["3 Elevadores sociais", "1 Elevador de serviço", "Gerador de emergência", "Sistema de combate a incêndio", "Cisterna 50.000L", "Portaria blindada", "CFTV 24h", "Bicicletário"],
@@ -136,6 +140,7 @@ const mockBuildings: Record<string, BuildingInfo> = {
   "2": {
     id: "2", name: "Torre Horizonte", address: "Rua Augusta, 2200", city: "São Paulo",
     floors: 32, totalUnits: 180, builder: "Incorporadora XYZ", yearBuilt: "2025", status: "Em construção",
+    lat: -23.5558, lng: -46.6621,
     image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&h=500&fit=crop",
     amenities: ["Piscina", "Academia", "Salão de Festas", "Quadra", "Segurança 24h", "Wi-Fi", "Estacionamento"],
     infrastructure: ["4 Elevadores sociais", "2 Elevadores de serviço", "Energia Solar", "Reuso de água", "Gerador full", "Portaria inteligente", "CFTV com IA", "Pet Place"],
@@ -152,6 +157,7 @@ const mockBuildings: Record<string, BuildingInfo> = {
   "3": {
     id: "3", name: "Residencial Parque Verde", address: "Al. Santos, 800", city: "São Paulo",
     floors: 18, totalUnits: 72, builder: "Green Build", yearBuilt: "2026", status: "Lançamento",
+    lat: -23.5672, lng: -46.6483,
     image: "https://images.unsplash.com/photo-1567449303078-57ad995bd329?w=800&h=500&fit=crop",
     amenities: ["Piscina", "Academia", "Churrasqueira", "Área Verde", "Segurança 24h"],
     infrastructure: ["2 Elevadores sociais", "Gerador parcial", "Cisterna 30.000L", "Portaria 24h", "CFTV", "Coworking"],
@@ -318,6 +324,23 @@ export default function BuildingDetail() {
               <span>{item.label}</span>
             </div>
           ))}
+        </div>
+        {/* Location Map */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-accent" /> Localização
+            </h3>
+            <a
+              href={`https://www.google.com/maps?q=${building.lat},${building.lng}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-info/10 text-info text-xs font-semibold hover:bg-info/20 transition-colors border border-info/20"
+            >
+              <ExternalLink className="w-3 h-3" /> Abrir no Google Maps
+            </a>
+          </div>
+          <MiniMap lat={building.lat} lng={building.lng} name={building.name} height="200px" />
         </div>
 
         <Tabs defaultValue="unidades" className="space-y-4">

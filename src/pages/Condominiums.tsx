@@ -17,6 +17,7 @@ import {
   Edit,
   Trash2,
   Camera,
+  Map,
 } from "lucide-react";
 import { InfraMediaModal } from "@/components/InfraMediaModal";
 import { cn } from "@/lib/utils";
@@ -33,6 +34,8 @@ interface Condominium {
   amenities: string[];
   type: "Horizontal" | "Vertical" | "Misto";
   image: string;
+  lat: number;
+  lng: number;
 }
 
 const initialCondominiums: Condominium[] = [
@@ -47,6 +50,8 @@ const initialCondominiums: Condominium[] = [
     amenities: ["Piscina", "Academia", "Segurança 24h", "Playground"],
     type: "Horizontal",
     image: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&h=300&fit=crop",
+    lat: -23.5013,
+    lng: -46.8753,
   },
   {
     id: "2",
@@ -59,6 +64,8 @@ const initialCondominiums: Condominium[] = [
     amenities: ["Piscina", "Salão de Festas", "Quadra", "Segurança 24h"],
     type: "Vertical",
     image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&h=300&fit=crop",
+    lat: -23.5505,
+    lng: -46.6333,
   },
   {
     id: "3",
@@ -71,6 +78,8 @@ const initialCondominiums: Condominium[] = [
     amenities: ["Área Verde", "Portaria", "Churrasqueira"],
     type: "Horizontal",
     image: "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?w=400&h=300&fit=crop",
+    lat: -23.6043,
+    lng: -46.9190,
   },
 ];
 
@@ -102,6 +111,8 @@ const emptyForm = {
   amenities: [] as string[],
   type: "Vertical" as Condominium["type"],
   image: "",
+  lat: -23.55,
+  lng: -46.63,
 };
 
 const allAmenities = ["Piscina", "Academia", "Segurança 24h", "Playground", "Portaria", "Salão de Festas", "Quadra", "Churrasqueira", "Área Verde"];
@@ -212,6 +223,14 @@ export default function Condominiums() {
                     <label className="text-xs font-medium text-muted-foreground mb-1 block">URL da Imagem</label>
                     <input value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} placeholder="https://..." className="w-full px-3 py-2 bg-background border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
                   </div>
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Latitude</label>
+                    <input type="number" step="0.0001" value={form.lat} onChange={(e) => setForm({ ...form, lat: +e.target.value })} className="w-full px-3 py-2 bg-background border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Longitude</label>
+                    <input type="number" step="0.0001" value={form.lng} onChange={(e) => setForm({ ...form, lng: +e.target.value })} className="w-full px-3 py-2 bg-background border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                  </div>
                   <div className="col-span-2">
                     <label className="text-xs font-medium text-muted-foreground mb-2 block">Comodidades</label>
                     <div className="flex flex-wrap gap-2">
@@ -268,13 +287,19 @@ export default function Condominiums() {
                     onClick={(e) => { e.stopPropagation(); navigate(`/condominios/${condo.id}`); }}
                     className="flex items-center gap-1.5 flex-1 justify-center py-2 rounded-lg bg-emerald-500/15 text-emerald-500 text-xs font-semibold hover:bg-emerald-500/25 transition-colors border border-emerald-500/30"
                   >
-                    <Home className="w-3.5 h-3.5" /> Imóveis à Venda
+                    <Home className="w-3.5 h-3.5" /> Imóveis
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); setMediaCondo(condo); }}
                     className="flex items-center gap-1.5 flex-1 justify-center py-2 rounded-lg bg-gradient-to-r from-foreground/10 to-foreground/5 text-foreground text-xs font-semibold hover:from-foreground/20 hover:to-foreground/10 transition-all border border-foreground/20"
                   >
-                    <Camera className="w-3.5 h-3.5" /> Fotos e Vídeos
+                    <Camera className="w-3.5 h-3.5" /> Mídia
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); window.open(`https://www.google.com/maps?q=${condo.lat},${condo.lng}`, "_blank"); }}
+                    className="flex items-center gap-1.5 flex-1 justify-center py-2 rounded-lg bg-info/10 text-info text-xs font-semibold hover:bg-info/20 transition-colors border border-info/20"
+                  >
+                    <Map className="w-3.5 h-3.5" /> Mapa
                   </button>
                 </div>
               </div>

@@ -13,6 +13,7 @@ import {
   Trash2,
   Camera,
   Home,
+  Map,
 } from "lucide-react";
 import { InfraMediaModal } from "@/components/InfraMediaModal";
 import { cn } from "@/lib/utils";
@@ -29,6 +30,8 @@ interface BuildingData {
   yearBuilt: string;
   status: "Em construção" | "Pronto" | "Lançamento";
   image: string;
+  lat: number;
+  lng: number;
 }
 
 const initialBuildings: BuildingData[] = [
@@ -43,6 +46,8 @@ const initialBuildings: BuildingData[] = [
     yearBuilt: "2024",
     status: "Pronto",
     image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&h=300&fit=crop",
+    lat: -23.5629,
+    lng: -46.6544,
   },
   {
     id: "2",
@@ -55,6 +60,8 @@ const initialBuildings: BuildingData[] = [
     yearBuilt: "2025",
     status: "Em construção",
     image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=400&h=300&fit=crop",
+    lat: -23.5558,
+    lng: -46.6621,
   },
   {
     id: "3",
@@ -67,6 +74,8 @@ const initialBuildings: BuildingData[] = [
     yearBuilt: "2026",
     status: "Lançamento",
     image: "https://images.unsplash.com/photo-1567449303078-57ad995bd329?w=400&h=300&fit=crop",
+    lat: -23.5672,
+    lng: -46.6483,
   },
 ];
 
@@ -86,6 +95,8 @@ const emptyForm: Omit<BuildingData, "id"> = {
   yearBuilt: "",
   status: "Lançamento",
   image: "",
+  lat: -23.55,
+  lng: -46.63,
 };
 
 export default function Buildings() {
@@ -214,6 +225,14 @@ export default function Buildings() {
                     <label className="text-xs font-medium text-muted-foreground mb-1 block">URL da Imagem</label>
                     <input value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} placeholder="https://..." className="w-full px-3 py-2 bg-background border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
                   </div>
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Latitude</label>
+                    <input type="number" step="0.0001" value={form.lat} onChange={(e) => setForm({ ...form, lat: +e.target.value })} className="w-full px-3 py-2 bg-background border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Longitude</label>
+                    <input type="number" step="0.0001" value={form.lng} onChange={(e) => setForm({ ...form, lng: +e.target.value })} className="w-full px-3 py-2 bg-background border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                  </div>
                 </div>
               </div>
               <div className="flex justify-end gap-3 p-5 border-t border-border">
@@ -265,13 +284,19 @@ export default function Buildings() {
                     onClick={(e) => { e.stopPropagation(); navigate(`/edificios/${building.id}`); }}
                     className="flex items-center gap-1.5 flex-1 justify-center py-2 rounded-lg bg-emerald-500/15 text-emerald-500 text-xs font-semibold hover:bg-emerald-500/25 transition-colors border border-emerald-500/30"
                   >
-                    <Home className="w-3.5 h-3.5" /> Imóveis à Venda
+                    <Home className="w-3.5 h-3.5" /> Imóveis
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); setMediaBuilding(building); }}
                     className="flex items-center gap-1.5 flex-1 justify-center py-2 rounded-lg bg-gradient-to-r from-foreground/10 to-foreground/5 text-foreground text-xs font-semibold hover:from-foreground/20 hover:to-foreground/10 transition-all border border-foreground/20"
                   >
-                    <Camera className="w-3.5 h-3.5" /> Fotos e Vídeos
+                    <Camera className="w-3.5 h-3.5" /> Mídia
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); window.open(`https://www.google.com/maps?q=${building.lat},${building.lng}`, "_blank"); }}
+                    className="flex items-center gap-1.5 flex-1 justify-center py-2 rounded-lg bg-info/10 text-info text-xs font-semibold hover:bg-info/20 transition-colors border border-info/20"
+                  >
+                    <Map className="w-3.5 h-3.5" /> Mapa
                   </button>
                 </div>
               </div>
