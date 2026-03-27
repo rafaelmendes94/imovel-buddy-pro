@@ -572,8 +572,8 @@ export default function Reports() {
                 <YAxis type="category" dataKey="name" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} width={100} />
                 <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "12px" }} formatter={(value: number) => [formatCurrency(value), "VGV"]} />
                 <Bar dataKey="vgv" radius={[0, 6, 6, 0]} animationDuration={1200}>
-                  {rankByCity.map((_, i) => (
-                    <Cell key={i} fill={i === 0 ? "hsl(var(--accent))" : i === 1 ? "hsl(var(--chart-2))" : "hsl(var(--chart-3))"} />
+                   {rankByCity.map((_, i) => (
+                    <Cell key={i} fill={i === 0 ? "hsl(142, 71%, 45%)" : i === 1 ? "hsl(142, 50%, 60%)" : "hsl(38, 92%, 50%)"} />
                   ))}
                 </Bar>
               </BarChart>
@@ -730,8 +730,8 @@ export default function Reports() {
                 <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} width={110} />
                 <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "12px" }} formatter={(value: number) => [formatCurrency(value), "VGV"]} />
                 <Bar dataKey="vgv" radius={[0, 6, 6, 0]} animationDuration={1200}>
-                  {rankByNeighborhood.map((_, i) => (
-                    <Cell key={i} fill={i === 0 ? "hsl(var(--accent))" : i === 1 ? "hsl(var(--chart-2))" : i === 2 ? "hsl(var(--chart-3))" : "hsl(var(--chart-5))"} />
+                   {rankByNeighborhood.map((_, i) => (
+                    <Cell key={i} fill={i === 0 ? "hsl(142, 71%, 45%)" : i === 1 ? "hsl(142, 50%, 60%)" : i === 2 ? "hsl(38, 92%, 50%)" : "hsl(0, 60%, 55%)"} />
                   ))}
                 </Bar>
               </BarChart>
