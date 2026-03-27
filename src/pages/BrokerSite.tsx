@@ -461,6 +461,8 @@ export default function BrokerSite() {
   const [userRating, setUserRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [viewingTerm, setViewingTerm] = useState<string | null>(null);
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const [carouselIndex, setCarouselIndex] = useState(0);
 
   if (!info) {
     return (
