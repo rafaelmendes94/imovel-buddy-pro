@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "@/hooks/use-toast";
 import {
   DollarSign, Users, AlertTriangle, CheckCircle2, Plus, Search,
-  Ban, TrendingUp, Calendar, Phone, Mail, CreditCard, UserPlus, ChevronDown, ChevronRight, Trash2
+  Ban, TrendingUp, Calendar, Phone, Mail, CreditCard, UserPlus, ChevronDown, ChevronRight, Trash2, MessageCircle
 } from "lucide-react";
 import { format, parseISO, isAfter, isBefore, startOfMonth, endOfMonth, addMonths, subMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -69,6 +69,9 @@ export default function Financeiro() {
   const [newSub, setNewSub] = useState({ name: "", email: "", phone: "", creci: "", plan: "monthly", notes: "" });
   const [newBroker, setNewBroker] = useState({ name: "", email: "", phone: "", creci: "" });
   const [expandedSub, setExpandedSub] = useState<string | null>(null);
+  const [showOverdueDialog, setShowOverdueDialog] = useState(false);
+  const [editingWhatsApp, setEditingWhatsApp] = useState<string | null>(null);
+  const [whatsAppInput, setWhatsAppInput] = useState("");
 
   const fetchData = async () => {
     setLoading(true);
@@ -269,6 +272,38 @@ export default function Financeiro() {
     fetchData();
   };
 
+  const handleSaveWhatsApp = async (subId: string) => {
+    const cleaned = whatsAppInput.replace(/\D/g, "");
+    await supabase.from("subscribers").update({ phone: cleaned }).eq("id", subId);
+    toast({ title: "WhatsApp salvo!" });
+    setEditingWhatsApp(null);
+    setWhatsAppInput("");
+    fetchData();
+  };
+
+  const formatPhoneForWhatsApp = (phone: string) => {
+    let cleaned = phone.replace(/\D/g, "");
+    if (cleaned.length <= 11 && !cleaned.startsWith("55")) {
+      cleaned = "55" + cleaned;
+    }
+    return cleaned;
+  };
+
+  const buildOverdueMessage = (sub: Subscriber) => {
+    const subOverdue = overduePayments.filter(p => p.subscriber_id === sub.id);
+    const total = subOverdue.reduce((s, p) => s + Number(p.amount), 0);
+    const months = subOverdue.map(p => p.reference_month).join(", ");
+    return `Olá ${sub.name.split(" ")[0]}, tudo bem? 🏠\n\nIdentificamos que sua assinatura possui *${subOverdue.length} pagamento(s) em atraso* referente(s) a: ${months}.\n\n💰 *Valor total em aberto: ${formatCurrency(total)}*\n\n📲 Para regularizar, realize o pagamento via PIX:\n\n🔑 *Chave PIX:* [SUA CHAVE PIX]\n\n⚠️ *Atenção:* O não pagamento pode resultar no *bloqueio do acesso* ao sistema para você e seus corretores vinculados.\n\nQualquer dúvida, estamos à disposição!\nEquipe Financeiro`;
+  };
+
+  const openWhatsApp = (phone: string, message?: string) => {
+    const formattedPhone = formatPhoneForWhatsApp(phone);
+    const url = message
+      ? `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`
+      : `https://wa.me/${formattedPhone}`;
+    window.open(url, "_blank");
+  };
+
   // Month filter options
   const monthOptions = useMemo(() => {
     const now = new Date();
@@ -423,11 +458,14 @@ export default function Financeiro() {
 
         {/* Alertas de atraso */}
         {overduePayments.length > 0 && (
-          <div className="flex items-center gap-3 p-4 rounded-xl border border-red-500/30 bg-red-500/10">
+          <div
+            className="flex items-center gap-3 p-4 rounded-xl border border-red-500/30 bg-red-500/10 cursor-pointer hover:bg-red-500/15 transition-colors"
+            onClick={() => setShowOverdueDialog(true)}
+          >
             <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0" />
             <div className="flex-1">
               <p className="text-sm font-semibold text-red-400">
-                {overduePayments.length} pagamento{overduePayments.length > 1 ? "s" : ""} em atraso!
+                {overduePayments.length} pagamento{overduePayments.length > 1 ? "s" : ""} em atraso! <span className="text-xs font-normal text-red-400/70">— Clique para ver detalhes</span>
               </p>
               <p className="text-xs text-red-400/70">
                 Assinantes: {subscribersWithOverdue.map(s => s.name).join(", ")}
@@ -507,7 +545,7 @@ export default function Financeiro() {
               </div>
             </CardContent>
           </Card>
-          <Card className="border-border border-red-500/30 bg-red-500/5">
+          <Card className="border-border border-red-500/30 bg-red-500/5 cursor-pointer hover:bg-red-500/10 transition-colors" onClick={() => setShowOverdueDialog(true)}>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-red-500/10">
@@ -613,9 +651,41 @@ export default function Financeiro() {
                                 <Mail className="w-3 h-3" /> {sub.email}
                               </div>
                             )}
-                            {sub.phone && (
+                            {sub.phone ? (
                               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                                 <Phone className="w-3 h-3" /> {sub.phone}
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-5 w-5 p-0 ml-1"
+                                  onClick={(e) => { e.stopPropagation(); openWhatsApp(sub.phone!); }}
+                                >
+                                  <MessageCircle className="w-3.5 h-3.5 text-emerald-500" />
+                                </Button>
+                              </div>
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="text-xs h-6 gap-1 text-muted-foreground"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingWhatsApp(sub.id);
+                                  setWhatsAppInput(sub.phone || "");
+                                }}
+                              >
+                                <MessageCircle className="w-3 h-3" /> Cadastrar WhatsApp
+                              </Button>
+                            )}
+                            {editingWhatsApp === sub.id && (
+                              <div className="flex items-center gap-1 mt-1" onClick={e => e.stopPropagation()}>
+                                <Input
+                                  value={whatsAppInput}
+                                  onChange={e => setWhatsAppInput(e.target.value)}
+                                  placeholder="(00) 00000-0000"
+                                  className="h-6 text-xs w-32"
+                                />
+                                <Button size="sm" className="h-6 text-xs px-2" onClick={() => handleSaveWhatsApp(sub.id)}>Salvar</Button>
                               </div>
                             )}
                           </div>
@@ -634,6 +704,16 @@ export default function Financeiro() {
                         <TableCell>{statusBadge(sub.status)}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center gap-1 justify-end" onClick={e => e.stopPropagation()}>
+                            {sub.phone && overduePayments.some(p => p.subscriber_id === sub.id) && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-xs h-7 text-emerald-500 border-emerald-500/30 hover:bg-emerald-500/10"
+                                onClick={() => openWhatsApp(sub.phone!, buildOverdueMessage(sub))}
+                              >
+                                <MessageCircle className="w-3 h-3 mr-1" /> Cobrar
+                              </Button>
+                            )}
                             <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => setShowBrokerDialog(sub.id)}>
                               <UserPlus className="w-3 h-3 mr-1" /> Corretor
                             </Button>
@@ -759,6 +839,105 @@ export default function Financeiro() {
                 <Input value={newBroker.creci} onChange={e => setNewBroker({ ...newBroker, creci: e.target.value })} placeholder="CRECI-RS 00000" />
               </div>
               <Button onClick={handleAddBroker} className="w-full">Adicionar Corretor</Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Overdue Details Dialog */}
+        <Dialog open={showOverdueDialog} onOpenChange={setShowOverdueDialog}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-red-400">
+                <AlertTriangle className="w-5 h-5" /> Pagamentos em Atraso — {formatCurrency(overdueTotal)}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 mt-4">
+              {subscribersWithOverdue.map(sub => {
+                const subOverdue = overduePayments.filter(p => p.subscriber_id === sub.id);
+                const subTotal = subOverdue.reduce((s, p) => s + Number(p.amount), 0);
+                return (
+                  <div key={sub.id} className="border border-border rounded-lg p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-red-500/10 flex items-center justify-center text-xs font-bold text-red-400">
+                          {sub.name.split(" ").map(n => n[0]).slice(0, 2).join("")}
+                        </div>
+                        <div>
+                          <p className="font-medium text-foreground">{sub.name}</p>
+                          <p className="text-xs text-muted-foreground">{sub.email || "Sem email"} • {sub.phone || "Sem telefone"}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-red-400">{formatCurrency(subTotal)}</span>
+                        {sub.phone ? (
+                          <Button
+                            size="sm"
+                            className="h-8 gap-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+                            onClick={() => openWhatsApp(sub.phone!, buildOverdueMessage(sub))}
+                          >
+                            <MessageCircle className="w-4 h-4" /> Cobrar via WhatsApp
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8 gap-1 text-xs"
+                            onClick={() => {
+                              setEditingWhatsApp(sub.id);
+                              setWhatsAppInput("");
+                            }}
+                          >
+                            <MessageCircle className="w-3.5 h-3.5" /> Cadastrar WhatsApp
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                    {editingWhatsApp === sub.id && (
+                      <div className="flex items-center gap-2">
+                        <Input
+                          value={whatsAppInput}
+                          onChange={e => setWhatsAppInput(e.target.value)}
+                          placeholder="(00) 00000-0000"
+                          className="h-8 text-sm max-w-[200px]"
+                        />
+                        <Button size="sm" className="h-8" onClick={() => handleSaveWhatsApp(sub.id)}>Salvar</Button>
+                      </div>
+                    )}
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="text-xs">Referência</TableHead>
+                          <TableHead className="text-xs">Vencimento</TableHead>
+                          <TableHead className="text-xs">Valor</TableHead>
+                          <TableHead className="text-xs text-right">Ação</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {subOverdue.map(p => (
+                          <TableRow key={p.id}>
+                            <TableCell className="text-sm">{p.reference_month}</TableCell>
+                            <TableCell className="text-sm">{format(parseISO(p.due_date), "dd/MM/yyyy")}</TableCell>
+                            <TableCell className="text-sm font-medium">{formatCurrency(Number(p.amount))}</TableCell>
+                            <TableCell className="text-right">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 text-xs text-emerald-500 border-emerald-500/30 hover:bg-emerald-500/10"
+                                onClick={() => handleTogglePayment(p)}
+                              >
+                                <CheckCircle2 className="w-3 h-3 mr-1" /> Confirmar Pgto
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                );
+              })}
+              {subscribersWithOverdue.length === 0 && (
+                <p className="text-center text-muted-foreground py-8">Nenhum pagamento em atraso 🎉</p>
+              )}
             </div>
           </DialogContent>
         </Dialog>
