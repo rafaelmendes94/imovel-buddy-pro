@@ -194,6 +194,32 @@ export default function Reports() {
       .sort((a, b) => b.vgv - a.vgv);
   }, [filtered]);
 
+  // Ranking by owner
+  const rankByOwner = useMemo(() => {
+    const map: Record<string, { count: number; vgv: number }> = {};
+    filtered.forEach(s => {
+      if (!map[s.owner]) map[s.owner] = { count: 0, vgv: 0 };
+      map[s.owner].count++;
+      map[s.owner].vgv += s.price;
+    });
+    return Object.entries(map)
+      .map(([name, data]) => ({ name, ...data }))
+      .sort((a, b) => b.vgv - a.vgv);
+  }, [filtered]);
+
+  // Ranking by neighborhood
+  const rankByNeighborhood = useMemo(() => {
+    const map: Record<string, { count: number; vgv: number }> = {};
+    filtered.forEach(s => {
+      if (!map[s.neighborhood]) map[s.neighborhood] = { count: 0, vgv: 0 };
+      map[s.neighborhood].count++;
+      map[s.neighborhood].vgv += s.price;
+    });
+    return Object.entries(map)
+      .map(([name, data]) => ({ name, ...data }))
+      .sort((a, b) => b.vgv - a.vgv);
+  }, [filtered]);
+
   // Bar chart data with month-over-month change indicators
   const revenueBarData = salesData.map((d, i) => {
     const prev = i > 0 ? salesData[i - 1].receita : d.receita;
@@ -595,6 +621,79 @@ export default function Reports() {
                     <Badge variant="outline" className="text-[10px] px-1.5 py-0">{item.count}</Badge>
                   </div>
                   <p className="text-sm font-bold text-accent">{formatCurrency(item.vgv)}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Owner & Neighborhood Rankings */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Ranking Proprietários */}
+          <div className="elevated-card rounded-xl p-5">
+            <h3 className="text-sm font-semibold text-card-foreground mb-3 flex items-center gap-2">
+              <Trophy className="w-4 h-4 text-accent" />
+              Ranking — Proprietários
+            </h3>
+            <div className="space-y-2">
+              {rankByOwner.map((item, idx) => {
+                const maxVgv = rankByOwner[0]?.vgv || 1;
+                const pct = (item.vgv / maxVgv) * 100;
+                return (
+                  <div key={item.name} className="space-y-1">
+                    <div className="flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2">
+                        <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                          idx === 0 ? "bg-accent/20 text-accent" : "bg-muted text-muted-foreground"
+                        }`}>{idx + 1}</span>
+                        <span className="font-medium text-card-foreground">{item.name}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0">{item.count} vendas</Badge>
+                        <span className="font-bold text-accent">{formatCurrency(item.vgv)}</span>
+                      </div>
+                    </div>
+                    <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                      <div className="h-full bg-accent rounded-full transition-all duration-700" style={{ width: `${pct}%` }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Ranking Bairros */}
+          <div className="elevated-card rounded-xl p-5">
+            <h3 className="text-sm font-semibold text-card-foreground mb-3 flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-accent" />
+              Ranking — Bairros
+            </h3>
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={rankByNeighborhood} layout="vertical" barCategoryGap="20%">
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
+                <XAxis type="number" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v) => `${(v / 1000000).toFixed(1)}M`} />
+                <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} width={110} />
+                <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "12px" }} formatter={(value: number) => [formatCurrency(value), "VGV"]} />
+                <Bar dataKey="vgv" radius={[0, 6, 6, 0]} animationDuration={1200}>
+                  {rankByNeighborhood.map((_, i) => (
+                    <Cell key={i} fill={i === 0 ? "hsl(var(--accent))" : i === 1 ? "hsl(var(--chart-2))" : i === 2 ? "hsl(var(--chart-3))" : "hsl(var(--chart-5))"} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+            <div className="mt-3 space-y-1.5">
+              {rankByNeighborhood.map((item, idx) => (
+                <div key={item.name} className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                      idx === 0 ? "bg-accent/20 text-accent" : "bg-muted text-muted-foreground"
+                    }`}>{idx + 1}</span>
+                    <span className="font-medium text-card-foreground">{item.name}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-[10px] px-1.5 py-0">{item.count} vendas</Badge>
+                    <span className="font-bold text-accent">{formatCurrency(item.vgv)}</span>
+                  </div>
                 </div>
               ))}
             </div>
