@@ -104,6 +104,14 @@ export default function Properties() {
               )}
             >
               <List className="w-4 h-4" />
+            <button
+              onClick={() => setView("map")}
+              className={cn(
+                "p-2.5 transition-colors",
+                view === "map" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground"
+              )}
+            >
+              <Map className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -115,12 +123,14 @@ export default function Properties() {
               <PropertyCard key={property.id} property={property} />
             ))}
           </div>
-        ) : (
+        ) : view === "list" ? (
           <div className="space-y-3">
             {filtered.map((property) => (
               <PropertyRow key={property.id} property={property} />
             ))}
           </div>
+        ) : (
+          <PropertyMap properties={filtered} />
         )}
 
         {filtered.length === 0 && (
