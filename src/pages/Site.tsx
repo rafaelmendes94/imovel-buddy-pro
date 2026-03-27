@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 import { properties, formatCurrency } from "@/data/mockData";
 import {
   Search,
