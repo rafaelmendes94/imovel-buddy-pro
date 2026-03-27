@@ -16,7 +16,6 @@ import {
   Globe,
   ClipboardCheck,
   Wallet,
-  Table2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -30,7 +29,6 @@ const navItems = [
   { icon: Camera, label: "Fotos da Cidade", path: "/fotos-cidade" },
   { icon: ClipboardCheck, label: "Avaliações", path: "/avaliacoes" },
   { icon: Wallet, label: "Financeiro", path: "/financeiro" },
-  { icon: Table2, label: "Tabelas", path: "/tabelas" },
   { icon: Users, label: "Corretores", path: "/corretores" },
   { icon: Settings, label: "Configurações", path: "/configuracoes" },
 ];
