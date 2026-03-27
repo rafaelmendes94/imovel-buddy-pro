@@ -126,6 +126,8 @@ export default function Reports() {
     setFilterSegment("Todos");
     setFilterSeaView("Todos");
   };
+
+  const filtered = useMemo(() => {
     return salesRecords.filter(s => {
       if (filterCity !== "Todas" && s.city !== filterCity) return false;
       if (filterType !== "Todos" && s.type !== filterType) return false;
