@@ -114,11 +114,20 @@ export default function Properties() {
   const [filterCondition, setFilterCondition] = useState("");
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [viewingTerm, setViewingTerm] = useState<string | null>(null);
+  const [editingProperty, setEditingProperty] = useState<Property | null>(null);
   const [favoriteIds, setFavoriteIds] = useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem("mv-favorites") || "[]"); } catch { return []; }
   });
 
   const xmlMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (xmlMenuRef.current && !xmlMenuRef.current.contains(e.target as Node)) setShowXmlMenu(false);
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
