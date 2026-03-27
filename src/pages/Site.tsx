@@ -246,7 +246,7 @@ const withPaymentConditions = available.filter((p) => p.paymentConditions);
 const condoLots = lots.filter((l) => l.title.toLowerCase().includes("condomínio") || l.title.toLowerCase().includes("reserva"));
 const neighborhoodLots = lots.filter((l) => !l.title.toLowerCase().includes("condomínio") && !l.title.toLowerCase().includes("reserva"));
 
-type Category = "todos" | "destaque" | "apartamentos" | "condominios" | "casas" | "lotes-cond" | "lotes-bairro" | "decorados" | "vista-mar" | "permuta" | "pagamento";
+type Category = "todos" | "destaque" | "apartamentos" | "condominios" | "casas" | "lotes-cond" | "lotes-bairro" | "decorados" | "vista-mar";
 
 const categories: { key: Category; label: string; icon: typeof Home }[] = [
   { key: "todos", label: "Todos", icon: Search },
@@ -258,8 +258,6 @@ const categories: { key: Category; label: string; icon: typeof Home }[] = [
   { key: "vista-mar", label: "Vista Mar", icon: Waves },
   { key: "lotes-cond", label: "Lotes Condomínio", icon: TreePine },
   { key: "lotes-bairro", label: "Lotes Bairro", icon: MapPin },
-  { key: "permuta", label: "Permuta", icon: Repeat },
-  { key: "pagamento", label: "Condições", icon: CreditCard },
 ];
 
 function PropertyCard({ property }: { property: typeof siteProperties[0] }) {
@@ -288,11 +286,6 @@ function PropertyCard({ property }: { property: typeof siteProperties[0] }) {
           {property.decorated && (
             <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/90 text-white backdrop-blur-sm flex items-center gap-1">
               <Paintbrush className="w-3 h-3" /> Decorado
-            </span>
-          )}
-          {property.acceptsExchange && (
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-500/90 text-white backdrop-blur-sm flex items-center gap-1">
-              <Repeat className="w-3 h-3" /> Permuta
             </span>
           )}
         </div>
@@ -336,10 +329,18 @@ function PropertyCard({ property }: { property: typeof siteProperties[0] }) {
             {property.parking > 0 && <span className="flex items-center gap-1"><Car className="w-3.5 h-3.5" />{property.parking} vagas</span>}
           </div>
         )}
-        {property.paymentConditions && (
-          <div className="flex items-center gap-1.5 text-[11px] text-emerald-700 bg-emerald-50 px-2.5 py-1.5 rounded-lg">
-            <CreditCard className="w-3.5 h-3.5" />
-            <span className="font-semibold">{property.paymentConditions}</span>
+        {property.paymentConditions && property.paymentConditions.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1.5">
+            {property.paymentConditions.map((cond) => (
+              <span key={cond} className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-700">
+                {cond}
+              </span>
+            ))}
+            {property.paymentConditionsOther && (
+              <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-gray-100 text-gray-600">
+                {property.paymentConditionsOther}
+              </span>
+            )}
           </div>
         )}
 
