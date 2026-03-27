@@ -141,6 +141,35 @@ const initialEvents: AgendaEvent[] = [
 
 const fmtBRL = (v: number) => `R$ ${v.toLocaleString("pt-BR")}`;
 
+function InlineEdit({ value, onSave, type = "text", className = "", formatDisplay }: { value: string | number; onSave: (v: string) => void; type?: string; className?: string; formatDisplay?: (v: string | number) => string }) {
+  const [editing, setEditing] = useState(false);
+  const [editValue, setEditValue] = useState(String(value));
+
+  if (!editing) {
+    return (
+      <span
+        className={cn("cursor-pointer hover:bg-accent/10 px-1.5 py-0.5 rounded transition-colors border border-transparent hover:border-accent/30", className)}
+        onClick={() => { setEditValue(String(value)); setEditing(true); }}
+        title="Clique para editar"
+      >
+        {formatDisplay ? formatDisplay(value) : value}
+      </span>
+    );
+  }
+
+  return (
+    <Input
+      autoFocus
+      type={type}
+      value={editValue}
+      onChange={e => setEditValue(e.target.value)}
+      onBlur={() => { onSave(editValue); setEditing(false); }}
+      onKeyDown={e => { if (e.key === "Enter") { onSave(editValue); setEditing(false); } if (e.key === "Escape") setEditing(false); }}
+      className="h-7 text-xs w-auto min-w-[60px] max-w-[160px] px-1.5"
+    />
+  );
+}
+
 export default function VideoMaker() {
   const [jobs, setJobs] = useState<VideoJob[]>(initialJobs);
   const [finance, setFinance] = useState<FinanceEntry[]>(initialFinance);
