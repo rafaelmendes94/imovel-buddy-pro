@@ -20,6 +20,11 @@ export interface Property {
   seaView?: boolean;
   acceptsExchange?: boolean;
   paymentConditions?: string;
+  empreendimento?: string;
+  unitNumber?: string;
+  boxNumber?: string;
+  quadra?: string;
+  lote?: string;
 }
 
 export interface Broker {
@@ -61,6 +66,9 @@ export const properties: Property[] = [
     seaView: true,
     acceptsExchange: true,
     paymentConditions: "Entrada + 48x",
+    empreendimento: "Ed. Atlântico Sul",
+    unitNumber: "Ap 302",
+    boxNumber: "Box 12",
   },
   {
     id: "2",
@@ -88,6 +96,9 @@ export const properties: Property[] = [
     seaView: true,
     acceptsExchange: false,
     paymentConditions: "Financiamento bancário",
+    empreendimento: "Ed. Panorama Beach",
+    unitNumber: "Cobertura 01",
+    boxNumber: "Box 01, 02, 03",
   },
   {
     id: "3",
@@ -115,6 +126,9 @@ export const properties: Property[] = [
     seaView: false,
     acceptsExchange: true,
     paymentConditions: "Entrada 30% + financiamento",
+    empreendimento: "Cond. Reserva das Dunas",
+    quadra: "Q-05",
+    lote: "L-18",
   },
   {
     id: "4",
@@ -141,6 +155,8 @@ export const properties: Property[] = [
     seaView: false,
     acceptsExchange: false,
     paymentConditions: "À vista",
+    empreendimento: "Centro Comercial Capão",
+    unitNumber: "Sala 205",
   },
   {
     id: "5",
@@ -167,6 +183,9 @@ export const properties: Property[] = [
     seaView: false,
     acceptsExchange: true,
     paymentConditions: "À vista ou 24x direto",
+    empreendimento: "Cond. Bosque do Litoral",
+    quadra: "Q-12",
+    lote: "L-07",
   },
   {
     id: "6",
@@ -194,8 +213,12 @@ export const properties: Property[] = [
     seaView: true,
     acceptsExchange: false,
     paymentConditions: "Financiamento bancário",
+    empreendimento: "Residencial Atlântida",
+    unitNumber: "Ap 104",
+    boxNumber: "Box 08",
   },
 ];
+
 export const brokers: Broker[] = [
   {
     id: "1",
