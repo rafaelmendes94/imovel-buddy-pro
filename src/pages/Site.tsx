@@ -688,7 +688,16 @@ export default function Site() {
   const [filterType, setFilterType] = useState("");
   const [filterCondition, setFilterCondition] = useState("");
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  const [carouselIndex, setCarouselIndex] = useState(0);
 
+  // Auto-rotate sold carousel
+  useEffect(() => {
+    if (soldProperties.length <= 1) return;
+    const timer = setInterval(() => {
+      setCarouselIndex((prev) => (prev + 1) % soldProperties.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     setShowScrollTop(e.currentTarget.scrollTop > 400);
   };
