@@ -11,7 +11,9 @@ import {
   Save,
   Edit,
   Trash2,
+  Camera,
 } from "lucide-react";
+import { InfraMediaModal } from "@/components/InfraMediaModal";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/data/mockData";
 
