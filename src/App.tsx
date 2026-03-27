@@ -21,6 +21,7 @@ import EmpreendimentoDetail from "./pages/EmpreendimentoDetail";
 import AllProperties from "./pages/AllProperties";
 import PartnerDetail from "./pages/PartnerDetail";
 import RankingPage from "./pages/RankingPage";
+import Avaliacoes from "./pages/Avaliacoes";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +49,7 @@ const App = () => (
           <Route path="/todos-imoveis" element={<AllProperties />} />
           <Route path="/parceiro/:slug" element={<PartnerDetail />} />
           <Route path="/ranking" element={<RankingPage />} />
+          <Route path="/avaliacoes" element={<Avaliacoes />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
