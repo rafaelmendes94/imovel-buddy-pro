@@ -458,11 +458,14 @@ export default function Financeiro() {
 
         {/* Alertas de atraso */}
         {overduePayments.length > 0 && (
-          <div className="flex items-center gap-3 p-4 rounded-xl border border-red-500/30 bg-red-500/10">
+          <div
+            className="flex items-center gap-3 p-4 rounded-xl border border-red-500/30 bg-red-500/10 cursor-pointer hover:bg-red-500/15 transition-colors"
+            onClick={() => setShowOverdueDialog(true)}
+          >
             <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0" />
             <div className="flex-1">
               <p className="text-sm font-semibold text-red-400">
-                {overduePayments.length} pagamento{overduePayments.length > 1 ? "s" : ""} em atraso!
+                {overduePayments.length} pagamento{overduePayments.length > 1 ? "s" : ""} em atraso! <span className="text-xs font-normal text-red-400/70">— Clique para ver detalhes</span>
               </p>
               <p className="text-xs text-red-400/70">
                 Assinantes: {subscribersWithOverdue.map(s => s.name).join(", ")}
