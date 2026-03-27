@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { properties, formatCurrency } from "@/data/mockData";
 import {
   Search,
