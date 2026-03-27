@@ -427,6 +427,9 @@ export default function Properties() {
                 onStatusChange={handleStatusChange}
                 onSelect={setSelectedProperty}
                 onViewTerm={setViewingTerm}
+                onEdit={setEditingProperty}
+                onShare={handleShareProperty}
+                onDownload={handleDownloadCard}
                 isFavorited={favoriteIds.includes(property.id)}
                 onToggleFavorite={toggleFavorite}
               />
@@ -440,6 +443,9 @@ export default function Properties() {
                 property={property}
                 onStatusChange={handleStatusChange}
                 onSelect={setSelectedProperty}
+                onEdit={setEditingProperty}
+                onShare={handleShareProperty}
+                onDownload={handleDownloadCard}
                 isFavorited={favoriteIds.includes(property.id)}
                 onToggleFavorite={toggleFavorite}
               />
