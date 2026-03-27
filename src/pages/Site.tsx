@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { properties, formatCurrency } from "@/data/mockData";
+import { properties, formatCurrency, type Property } from "@/data/mockData";
+import { PropertyDetailModal } from "@/components/PropertyDetailModal";
 import {
   Search,
   MapPin,
@@ -599,6 +600,7 @@ export default function Site() {
   const [filterPriceMax, setFilterPriceMax] = useState("");
   const [filterType, setFilterType] = useState("");
   const [filterCondition, setFilterCondition] = useState("");
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     setShowScrollTop(e.currentTarget.scrollTop > 400);
@@ -1034,6 +1036,13 @@ export default function Site() {
       >
         <ArrowUp className="w-5 h-5" />
       </button>
+      <PropertyDetailModal
+        property={selectedProperty}
+        onClose={() => setSelectedProperty(null)}
+        allProperties={siteProperties}
+        brokerInfo={brokerInfo}
+        onSelectSimilar={(p) => setSelectedProperty(p)}
+      />
     </div>
   );
 }
