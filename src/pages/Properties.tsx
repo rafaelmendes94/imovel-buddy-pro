@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { AppLayout } from "@/components/AppLayout";
+import { PropertyMap } from "@/components/PropertyMap";
 import { properties, formatCurrency, Property } from "@/data/mockData";
 import {
   Building2,
@@ -14,6 +15,7 @@ import {
   Send,
   LayoutGrid,
   List,
+  Map,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -27,7 +29,7 @@ const statusColors: Record<string, string> = {
 export default function Properties() {
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState<string>("Todos");
-  const [view, setView] = useState<"grid" | "list">("grid");
+  const [view, setView] = useState<"grid" | "list" | "map">("grid");
 
   const filtered = properties.filter((p) => {
     const matchesSearch =
