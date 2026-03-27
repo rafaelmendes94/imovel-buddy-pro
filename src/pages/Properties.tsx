@@ -683,13 +683,15 @@ function PropertyCard({
 
 // ---- PropertyRow (enhanced) ----
 function PropertyRow({
-  property, onStatusChange, onSelect, isFavorited, onToggleFavorite,
+  property, onStatusChange, onSelect, isFavorited, onToggleFavorite, onFilterByTitle, onFilterByCondition,
 }: {
   property: Property;
   onStatusChange: (id: string, status: Property["status"]) => void;
   onSelect?: (p: Property) => void;
   isFavorited?: boolean;
   onToggleFavorite?: (id: string) => void;
+  onFilterByTitle?: (title: string) => void;
+  onFilterByCondition?: (cond: string) => void;
 }) {
   const [showCelebration, setShowCelebration] = useState(false);
   const [animatePulse, setAnimatePulse] = useState(false);
