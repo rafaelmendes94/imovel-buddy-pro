@@ -169,6 +169,9 @@ const mockCondos: Record<string, CondoInfo> = {
       { url: "https://images.unsplash.com/photo-1575429198097-0414ec08e8cd?w=600&h=400&fit=crop", label: "Área Verde" },
       { url: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&h=400&fit=crop", label: "Portaria" },
     ],
+    implantationMedia: [
+      { type: "image", url: "https://images.unsplash.com/photo-1524813686514-a57563d77965?w=800&h=600&fit=crop", label: "Mapa do Loteamento" },
+    ],
     videoUrl: "",
     downloadUrl: "#",
     units: generateCondoUnits(["L1", "L2"], 10),
