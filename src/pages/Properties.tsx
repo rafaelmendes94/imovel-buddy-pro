@@ -428,6 +428,10 @@ export default function Properties() {
         allProperties={propertyList}
         brokerInfo={brokerInfo}
         onSelectSimilar={(p) => setSelectedProperty(p)}
+        onUpdateProperty={(updated) => {
+          setPropertyList((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+          setSelectedProperty(updated);
+        }}
       />
 
       {/* Term Viewer Modal */}
