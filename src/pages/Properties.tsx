@@ -621,21 +621,38 @@ function PropertyCard({
 
       <div className="p-4 space-y-3">
         <div>
-          <h3 className="font-semibold text-card-foreground text-sm cursor-pointer hover:text-primary transition-colors" onClick={() => onSelect?.(property)}>{property.title}</h3>
+          <h3 className="font-semibold text-card-foreground text-sm cursor-pointer hover:text-primary transition-colors"
+            onClick={() => onFilterByTitle?.(property.title)}
+            title="Clique para ver títulos semelhantes"
+          >{property.title}</h3>
           {(property.empreendimento || unitParts.length > 0) && (
             <div className="flex flex-wrap items-center gap-1 mt-1">
               {property.empreendimento && (
-                <span className="text-[10px] font-semibold text-accent bg-accent/10 px-1.5 py-0.5 rounded">{property.empreendimento}</span>
+                <Link
+                  to={`/empreendimento/${property.empreendimento.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`}
+                  className="text-[10px] font-semibold text-accent bg-accent/10 px-1.5 py-0.5 rounded hover:bg-accent/20 transition-colors"
+                  onClick={(e) => e.stopPropagation()}
+                  title="Abrir página do empreendimento"
+                >
+                  {property.empreendimento}
+                </Link>
               )}
               {unitParts.map((part) => (
                 <span key={part} className="text-[10px] font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">{part}</span>
               ))}
             </div>
           )}
-          <div className="flex items-center gap-1 mt-1">
-            <MapPin className="w-3 h-3 text-muted-foreground" />
-            <p className="text-xs text-muted-foreground">{property.address}, {property.city}</p>
-          </div>
+          <button
+            className="flex items-center gap-1 mt-1 hover:text-primary transition-colors group"
+            onClick={(e) => {
+              e.stopPropagation();
+              window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${property.address}, ${property.city}`)}`, "_blank");
+            }}
+            title="Abrir localização no Google Maps"
+          >
+            <MapPin className="w-3 h-3 text-muted-foreground group-hover:text-primary" />
+            <p className="text-xs text-muted-foreground group-hover:text-primary">{property.address}, {property.city}</p>
+          </button>
         </div>
 
         <div className="flex items-center gap-4 text-xs text-muted-foreground py-2 border-y border-border">
@@ -649,7 +666,14 @@ function PropertyCard({
         {property.paymentConditions && property.paymentConditions.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {property.paymentConditions.map((cond) => (
-              <span key={cond} className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400">{cond}</span>
+              <button
+                key={cond}
+                className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors cursor-pointer"
+                onClick={(e) => { e.stopPropagation(); onFilterByCondition?.(cond); }}
+                title={`Ver imóveis com condição "${cond}"`}
+              >
+                {cond}
+              </button>
             ))}
           </div>
         )}
