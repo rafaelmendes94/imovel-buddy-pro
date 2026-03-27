@@ -16,11 +16,10 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  AreaChart,
-  Area,
   PieChart,
   Pie,
   Cell,
+  ReferenceLine,
 } from "recharts";
 import {
   DollarSign,
