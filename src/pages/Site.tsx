@@ -880,6 +880,46 @@ export default function Site() {
           </section>
         )}
 
+        {/* Decorados */}
+        {!searchTerm && (activeCategory === "todos" || activeCategory === "decorados") && decorated.length > 0 && (
+          <section>
+            <SectionHeader title="Decorados" subtitle={`${decorated.length} imóveis com decoração inclusa`} icon={Paintbrush} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {decorated.map((p) => <PropertyCard key={p.id} property={p} />)}
+            </div>
+          </section>
+        )}
+
+        {/* Vista para o Mar */}
+        {!searchTerm && (activeCategory === "todos" || activeCategory === "vista-mar") && seaViewProperties.length > 0 && (
+          <section>
+            <SectionHeader title="Vista para o Mar" subtitle={`${seaViewProperties.length} imóveis com vista mar`} icon={Waves} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {seaViewProperties.map((p) => <PropertyCard key={p.id} property={p} />)}
+            </div>
+          </section>
+        )}
+
+        {/* Permuta */}
+        {!searchTerm && activeCategory === "permuta" && exchangeProperties.length > 0 && (
+          <section>
+            <SectionHeader title="Aceita Permuta" subtitle={`${exchangeProperties.length} imóveis que aceitam permuta`} icon={Repeat} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {exchangeProperties.map((p) => <PropertyCard key={p.id} property={p} />)}
+            </div>
+          </section>
+        )}
+
+        {/* Condições de Pagamento */}
+        {!searchTerm && activeCategory === "pagamento" && withPaymentConditions.length > 0 && (
+          <section>
+            <SectionHeader title="Condições de Pagamento" subtitle={`${withPaymentConditions.length} imóveis com condições especiais`} icon={CreditCard} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {withPaymentConditions.map((p) => <PropertyCard key={p.id} property={p} />)}
+            </div>
+          </section>
+        )}
+
         {/* Lotes Condomínio */}
         {!searchTerm && (activeCategory === "todos" || activeCategory === "lotes-cond") && condoLots.length > 0 && (
           <section>
