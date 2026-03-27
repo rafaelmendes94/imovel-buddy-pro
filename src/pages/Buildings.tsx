@@ -284,13 +284,19 @@ export default function Buildings() {
                     onClick={(e) => { e.stopPropagation(); navigate(`/edificios/${building.id}`); }}
                     className="flex items-center gap-1.5 flex-1 justify-center py-2 rounded-lg bg-emerald-500/15 text-emerald-500 text-xs font-semibold hover:bg-emerald-500/25 transition-colors border border-emerald-500/30"
                   >
-                    <Home className="w-3.5 h-3.5" /> Imóveis à Venda
+                    <Home className="w-3.5 h-3.5" /> Imóveis
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); setMediaBuilding(building); }}
                     className="flex items-center gap-1.5 flex-1 justify-center py-2 rounded-lg bg-gradient-to-r from-foreground/10 to-foreground/5 text-foreground text-xs font-semibold hover:from-foreground/20 hover:to-foreground/10 transition-all border border-foreground/20"
                   >
-                    <Camera className="w-3.5 h-3.5" /> Fotos e Vídeos
+                    <Camera className="w-3.5 h-3.5" /> Mídia
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); window.open(`https://www.google.com/maps?q=${building.lat},${building.lng}`, "_blank"); }}
+                    className="flex items-center gap-1.5 flex-1 justify-center py-2 rounded-lg bg-info/10 text-info text-xs font-semibold hover:bg-info/20 transition-colors border border-info/20"
+                  >
+                    <Map className="w-3.5 h-3.5" /> Mapa
                   </button>
                 </div>
               </div>
