@@ -2,7 +2,7 @@ import { useState } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import {
   FileText, ScrollText, Receipt, CreditCard, FileSignature, ShieldCheck,
-  Sparkles, Loader2, Download, Copy, ArrowLeft, ChevronRight,
+  Sparkles, Loader2, Download, Copy, ArrowLeft, ChevronRight, Pencil, Check, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
