@@ -116,8 +116,16 @@ export default function Reports() {
   const [filterSegment, setFilterSegment] = useState<string>("Todos");
   const [filterSeaView, setFilterSeaView] = useState<string>("Todos");
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+  const [showDetailedFilters, setShowDetailedFilters] = useState(false);
 
-  const filtered = useMemo(() => {
+  const activeFilterCount = [filterCity !== "Todas", filterType !== "Todos", filterSegment !== "Todos", filterSeaView !== "Todos"].filter(Boolean).length;
+
+  const clearAllFilters = () => {
+    setFilterCity("Todas");
+    setFilterType("Todos");
+    setFilterSegment("Todos");
+    setFilterSeaView("Todos");
+  };
     return salesRecords.filter(s => {
       if (filterCity !== "Todas" && s.city !== filterCity) return false;
       if (filterType !== "Todos" && s.type !== filterType) return false;
