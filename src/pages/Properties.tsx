@@ -150,10 +150,37 @@ export default function Properties() {
               {propertyList.length} imóveis cadastrados
             </p>
           </div>
-          <button className="flex items-center gap-2 px-4 py-2.5 rounded-lg gradient-gold text-primary text-sm font-semibold hover:opacity-90 transition-opacity self-start">
-            <Plus className="w-4 h-4" />
-            Novo Imóvel
-          </button>
+          <div className="flex gap-2 self-start">
+            <div className="relative" ref={xmlMenuRef}>
+              <button
+                onClick={() => setShowXmlMenu(!showXmlMenu)}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-card border border-input text-foreground text-sm font-medium hover:bg-muted transition-colors"
+              >
+                <FileCode className="w-4 h-4" />
+                Exportar XML
+                <ChevronDown className="w-3.5 h-3.5" />
+              </button>
+              {showXmlMenu && (
+                <div className="absolute right-0 top-full mt-1 w-56 bg-card border border-border rounded-lg shadow-xl z-50 py-1 animate-scale-in">
+                  <p className="px-3 py-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Selecione o portal</p>
+                  {xmlPortals.map((portal) => (
+                    <button
+                      key={portal.name}
+                      onClick={() => handleExportXml(portal.name)}
+                      className="w-full text-left px-3 py-2 hover:bg-muted transition-colors"
+                    >
+                      <span className="text-sm font-medium text-foreground block">{portal.name}</span>
+                      <span className="text-[11px] text-muted-foreground">{portal.description}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <button className="flex items-center gap-2 px-4 py-2.5 rounded-lg gradient-gold text-primary text-sm font-semibold hover:opacity-90 transition-opacity">
+              <Plus className="w-4 h-4" />
+              Novo Imóvel
+            </button>
+          </div>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3">
