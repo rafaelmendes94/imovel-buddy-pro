@@ -34,6 +34,7 @@ import {
   Medal,
   FileCheck,
   Eye,
+  Heart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { RoutePlanner } from "@/components/RoutePlanner";
@@ -362,7 +363,7 @@ const categories: { key: Category; label: string; icon: typeof Home }[] = [
   { key: "lotes-bairro", label: "Lotes Bairro", icon: MapPin },
 ];
 
-function PropertyCard({ property, onSelect, hideStamp, onViewTerm }: { property: typeof siteProperties[0]; onSelect?: (p: typeof siteProperties[0]) => void; hideStamp?: boolean; onViewTerm?: (url: string) => void }) {
+function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, onToggleFavorite }: { property: typeof siteProperties[0]; onSelect?: (p: typeof siteProperties[0]) => void; hideStamp?: boolean; onViewTerm?: (url: string) => void; isFavorited?: boolean; onToggleFavorite?: (id: string) => void }) {
   const [imgIndex, setImgIndex] = useState(0);
   const broker = brokerInfo[property.broker] || { photo: "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=100&h=100&fit=crop&crop=face", whatsapp: "5511999999999" };
   const whatsappMessage = encodeURIComponent(`Olá! Tenho interesse no imóvel: ${property.title} - ${formatCurrency(property.price)}`);
@@ -426,6 +427,20 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm }: { property:
             <FileCheck className="w-3 h-3" /> Ex.Assinada
           </button>
         )}
+        {/* Favorite heart button */}
+        <button
+          onClick={(e) => { e.stopPropagation(); onToggleFavorite?.(property.id); }}
+          className={cn(
+            "absolute z-20 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all hover:scale-110",
+            property.exclusivityTerm ? "top-12 right-3" : "top-3 right-3",
+            isFavorited
+              ? "bg-red-500 text-white"
+              : "bg-white/80 text-gray-600 hover:bg-white hover:text-red-500"
+          )}
+          title={isFavorited ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+        >
+          <Heart className={cn("w-4 h-4", isFavorited && "fill-current")} />
+        </button>
         <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
           <p className="text-xl font-bold text-white drop-shadow-lg">{formatCurrency(property.price)}</p>
           <div className="flex gap-1.5">
@@ -759,6 +774,21 @@ export default function Site() {
   const [priceSort, setPriceSort] = useState<"" | "asc" | "desc">("");
   const [showFullRanking, setShowFullRanking] = useState(false);
   const [viewingTerm, setViewingTerm] = useState<string | null>(null);
+  const [favoriteIds, setFavoriteIds] = useState<string[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem("mv-favorites") || "[]");
+    } catch { return []; }
+  });
+
+  const toggleFavorite = (id: string) => {
+    setFavoriteIds((prev) => {
+      const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
+      localStorage.setItem("mv-favorites", JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const favoritedProperties = siteProperties.filter((p) => favoriteIds.includes(p.id));
 
   // Auto-rotate sold carousel (scroll 1 card at a time, 4 visible)
   const maxIndex = Math.max(0, soldProperties.length - 4);
@@ -1121,7 +1151,7 @@ export default function Site() {
             />
             {filteredAll.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {filteredAll.map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} />)}
+                {filteredAll.map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} isFavorited={favoriteIds.includes(p.id)} onToggleFavorite={toggleFavorite} />)}
               </div>
             ) : (
               <p className="text-center py-12 text-gray-400">Nenhum imóvel encontrado com os filtros selecionados.</p>
@@ -1144,7 +1174,7 @@ export default function Site() {
               >
                 {soldProperties.map((p) => (
                   <div key={p.id} className="min-w-[calc(25%-18px)] flex-shrink-0">
-                    <PropertyCard property={{ ...p, status: "Vendido" as const }} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} hideStamp />
+                    <PropertyCard property={{ ...p, status: "Vendido" as const }} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} hideStamp isFavorited={favoriteIds.includes(p.id)} onToggleFavorite={toggleFavorite} />
                   </div>
                 ))}
               </div>
@@ -1295,7 +1325,7 @@ export default function Site() {
           <section>
             <SectionHeader title="Imóveis em Destaque" subtitle="Seleção especial dos melhores imóveis" icon={Star} />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {sortByPrice(featured).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} />)}
+              {sortByPrice(featured).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} isFavorited={favoriteIds.includes(p.id)} onToggleFavorite={toggleFavorite} />)}
             </div>
           </section>
         )}
@@ -1305,7 +1335,7 @@ export default function Site() {
           <section>
             <SectionHeader title="Apartamentos" subtitle={`${apartments.length} apartamentos disponíveis`} icon={Building2} />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {sortByPrice(apartments).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} />)}
+              {sortByPrice(apartments).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} isFavorited={favoriteIds.includes(p.id)} onToggleFavorite={toggleFavorite} />)}
             </div>
           </section>
         )}
@@ -1325,7 +1355,7 @@ export default function Site() {
           <section>
             <SectionHeader title="Casas" subtitle={`${houses.length} casas disponíveis`} icon={Home} />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {sortByPrice(houses).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} />)}
+              {sortByPrice(houses).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} isFavorited={favoriteIds.includes(p.id)} onToggleFavorite={toggleFavorite} />)}
             </div>
           </section>
         )}
@@ -1335,7 +1365,7 @@ export default function Site() {
           <section>
             <SectionHeader title="Decorados" subtitle={`${decorated.length} imóveis com decoração inclusa`} icon={Paintbrush} />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {sortByPrice(decorated).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} />)}
+              {sortByPrice(decorated).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} isFavorited={favoriteIds.includes(p.id)} onToggleFavorite={toggleFavorite} />)}
             </div>
           </section>
         )}
@@ -1345,7 +1375,7 @@ export default function Site() {
           <section>
             <SectionHeader title="Vista para o Mar" subtitle={`${seaViewProperties.length} imóveis com vista mar`} icon={Waves} />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {sortByPrice(seaViewProperties).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} />)}
+              {sortByPrice(seaViewProperties).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} isFavorited={favoriteIds.includes(p.id)} onToggleFavorite={toggleFavorite} />)}
             </div>
           </section>
         )}
@@ -1356,7 +1386,7 @@ export default function Site() {
           <section>
             <SectionHeader title="Lotes em Condomínio" subtitle={`${condoLots.length} lotes em condomínios fechados`} icon={TreePine} />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {sortByPrice(condoLots).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} />)}
+              {sortByPrice(condoLots).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} isFavorited={favoriteIds.includes(p.id)} onToggleFavorite={toggleFavorite} />)}
             </div>
           </section>
         )}
@@ -1366,7 +1396,7 @@ export default function Site() {
           <section>
             <SectionHeader title="Lotes em Bairro" subtitle={`${neighborhoodLots.length} lotes em bairros abertos`} icon={MapPin} />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {sortByPrice(neighborhoodLots).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} />)}
+              {sortByPrice(neighborhoodLots).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} isFavorited={favoriteIds.includes(p.id)} onToggleFavorite={toggleFavorite} />)}
             </div>
           </section>
         )}
@@ -1447,7 +1477,7 @@ export default function Site() {
       >
         <ArrowUp className="w-5 h-5" />
       </button>
-      <RoutePlanner properties={available} />
+      <RoutePlanner properties={favoritedProperties} />
       <SharkAI properties={siteProperties} onSelectProperty={setSelectedProperty} />
       <PropertyDetailModal
         property={selectedProperty}
