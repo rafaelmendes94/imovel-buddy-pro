@@ -1446,6 +1446,7 @@ export default function Site() {
       >
         <ArrowUp className="w-5 h-5" />
       </button>
+      <RoutePlanner properties={available} />
       <PropertyDetailModal
         property={selectedProperty}
         onClose={() => setSelectedProperty(null)}
