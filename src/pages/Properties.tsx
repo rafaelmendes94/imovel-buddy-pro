@@ -738,8 +738,22 @@ function PropertyRow({
       <img src={property.images[0] || property.image} alt={property.title} className="w-20 h-20 rounded-lg object-cover flex-shrink-0" />
       <div className="flex-1 min-w-0 space-y-2">
         <div>
-          <h3 className="font-semibold text-card-foreground text-sm truncate">{property.title}</h3>
-          <p className="text-xs text-muted-foreground mt-0.5">{property.address}, {property.city}</p>
+          <h3
+            className="font-semibold text-card-foreground text-sm truncate hover:text-primary cursor-pointer transition-colors"
+            onClick={(e) => { e.stopPropagation(); onFilterByTitle?.(property.title); }}
+            title="Ver títulos semelhantes"
+          >{property.title}</h3>
+          <button
+            className="text-xs text-muted-foreground mt-0.5 hover:text-primary transition-colors flex items-center gap-1"
+            onClick={(e) => {
+              e.stopPropagation();
+              window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${property.address}, ${property.city}`)}`, "_blank");
+            }}
+            title="Abrir no Google Maps"
+          >
+            <MapPin className="w-3 h-3" />
+            {property.address}, {property.city}
+          </button>
           <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
             {property.bedrooms > 0 && <span>{property.bedrooms} quartos</span>}
             <span>{property.area}m²</span>
