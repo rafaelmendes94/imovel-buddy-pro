@@ -337,10 +337,11 @@ export default function Reports() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Revenue Bar Chart with trend indicators */}
           <div className="elevated-card rounded-xl p-5">
-            <h3 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-card-foreground mb-1 flex items-center gap-2">
               <BarChart3 className="w-4 h-4 text-accent" />
               Receita Mensal — Comparativo
             </h3>
+            <p className="text-[10px] text-muted-foreground mb-3">Clique em uma barra para ver as vendas do mês</p>
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={revenueBarData} barCategoryGap="20%" onClick={(data) => { if (data?.activeLabel) setSelectedMonth(data.activeLabel); }} style={{ cursor: "pointer" }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
