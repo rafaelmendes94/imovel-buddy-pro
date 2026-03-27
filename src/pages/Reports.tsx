@@ -16,15 +16,15 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  AreaChart,
-  Area,
   PieChart,
   Pie,
   Cell,
+  ReferenceLine,
 } from "recharts";
 import {
   DollarSign,
   TrendingUp,
+  TrendingDown,
   Target,
   Calendar,
   Download,
@@ -37,6 +37,9 @@ import {
   BarChart3,
   CalendarDays,
   CalendarRange,
+  ArrowUp,
+  ArrowDown,
+  Minus,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
@@ -183,6 +186,19 @@ export default function Reports() {
       .sort((a, b) => b.vgv - a.vgv);
   }, [filtered]);
 
+  // Bar chart data with month-over-month change indicators
+  const revenueBarData = salesData.map((d, i) => {
+    const prev = i > 0 ? salesData[i - 1].receita : d.receita;
+    const change = ((d.receita - prev) / prev) * 100;
+    return {
+      ...d,
+      change: i === 0 ? 0 : change,
+      trend: i === 0 ? "neutral" : change > 0 ? "alta" : change < 0 ? "baixa" : "neutral",
+    };
+  });
+
+  const avgRevenue = salesData.reduce((sum, d) => sum + d.receita, 0) / salesData.length;
+
   // Pie chart data for segments
   const segmentPie = rankBySegment.map(s => ({
     name: s.name,
@@ -311,27 +327,54 @@ export default function Reports() {
 
         {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* Revenue evolution */}
+          {/* Revenue Bar Chart with trend indicators */}
           <div className="elevated-card rounded-xl p-5">
             <h3 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
               <BarChart3 className="w-4 h-4 text-accent" />
-              Evolução da Receita
+              Receita Mensal — Comparativo
             </h3>
             <ResponsiveContainer width="100%" height={260}>
-              <AreaChart data={salesData}>
-                <defs>
-                  <linearGradient id="colorReceita" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(var(--accent))" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="hsl(var(--accent))" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <BarChart data={revenueBarData} barCategoryGap="20%">
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                 <XAxis dataKey="month" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
                 <YAxis tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v) => `${(v / 1000000).toFixed(1)}M`} />
-                <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "12px" }} formatter={(value: number) => [formatCurrency(value), "Receita"]} />
-                <Area type="monotone" dataKey="receita" stroke="hsl(var(--accent))" strokeWidth={2.5} fillOpacity={1} fill="url(#colorReceita)" />
-              </AreaChart>
+                <Tooltip
+                  contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "12px" }}
+                  formatter={(value: number, name: string) => {
+                    if (name === "receita") return [formatCurrency(value), "Receita"];
+                    return [value, name];
+                  }}
+                />
+                <ReferenceLine y={avgRevenue} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" label={{ value: "Média", position: "right", fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+                <Bar dataKey="receita" radius={[6, 6, 0, 0]} animationDuration={1200} animationBegin={200}>
+                  {revenueBarData.map((entry, i) => (
+                    <Cell
+                      key={i}
+                      fill={entry.trend === "alta" ? "hsl(var(--chart-2))" : entry.trend === "baixa" ? "hsl(var(--chart-1))" : "hsl(var(--accent))"}
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
             </ResponsiveContainer>
+            {/* Month indicators */}
+            <div className="flex justify-around mt-3 px-2">
+              {revenueBarData.map((d, i) => (
+                <div key={i} className="flex flex-col items-center gap-0.5">
+                  {d.trend === "alta" ? (
+                    <ArrowUp className="w-3.5 h-3.5 text-emerald-500" />
+                  ) : d.trend === "baixa" ? (
+                    <ArrowDown className="w-3.5 h-3.5 text-destructive" />
+                  ) : (
+                    <Minus className="w-3.5 h-3.5 text-muted-foreground" />
+                  )}
+                  <span className={`text-[10px] font-bold ${
+                    d.trend === "alta" ? "text-emerald-500" : d.trend === "baixa" ? "text-destructive" : "text-muted-foreground"
+                  }`}>
+                    {i === 0 ? "—" : `${d.change > 0 ? "+" : ""}${d.change.toFixed(0)}%`}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Segment & Type Pies */}
@@ -387,96 +430,105 @@ export default function Reports() {
           </div>
         </div>
 
-        {/* Rankings */}
+        {/* Type & City Bar Chart Rankings */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* Ranking Empreendimentos */}
+          {/* Ranking Tipo de Imóvel - Bar Chart */}
           <div className="elevated-card rounded-xl p-5">
             <h3 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
-              <Trophy className="w-4 h-4 text-yellow-500" />
-              Ranking Empreendimentos Mais Vendidos
+              <Trophy className="w-4 h-4 text-accent" />
+              Ranking — Tipo de Imóvel Mais Vendido
             </h3>
-            <div className="space-y-3">
-              {rankByEmpreendimento.slice(0, 8).map((item, idx) => (
-                <div key={item.name} className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                      idx === 0 ? "bg-yellow-500/20 text-yellow-500" :
-                      idx === 1 ? "bg-gray-400/20 text-gray-400" :
-                      idx === 2 ? "bg-orange-500/20 text-orange-500" :
-                      "bg-muted text-muted-foreground"
-                    }`}>
-                      {idx + 1}
-                    </span>
-                    <div>
-                      <p className="text-sm font-medium text-card-foreground">{item.name}</p>
-                      <p className="text-[10px] text-muted-foreground">{item.city} · {item.type}</p>
-                    </div>
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={rankByType} layout="vertical" barCategoryGap="25%">
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
+                <XAxis type="number" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v) => `${(v / 1000000).toFixed(1)}M`} />
+                <YAxis type="category" dataKey="name" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} width={90} />
+                <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "12px" }} formatter={(value: number) => [formatCurrency(value), "VGV"]} />
+                <Bar dataKey="vgv" radius={[0, 6, 6, 0]} animationDuration={1200}>
+                  {rankByType.map((entry, i) => (
+                    <Cell key={i} fill={TYPE_COLORS[entry.name] || "hsl(var(--accent))"} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+            <div className="mt-3 space-y-1.5">
+              {rankByType.map((item, idx) => (
+                <div key={item.name} className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                      idx === 0 ? "bg-accent/20 text-accent" : "bg-muted text-muted-foreground"
+                    }`}>{idx + 1}</span>
+                    <span className="font-medium text-card-foreground">{item.name}</span>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm font-bold text-accent">{formatCurrency(item.vgv)}</p>
-                    <p className="text-[10px] text-muted-foreground">{item.count} {item.count === 1 ? "venda" : "vendas"}</p>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-[10px] px-1.5 py-0">{item.count} vendas</Badge>
+                    <span className="font-bold text-accent">{formatCurrency(item.vgv)}</span>
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Ranking Corretores */}
+          {/* Ranking Cidade - Bar Chart */}
           <div className="elevated-card rounded-xl p-5">
             <h3 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
-              <Trophy className="w-4 h-4 text-yellow-500" />
-              Ranking Corretores
+              <Trophy className="w-4 h-4 text-accent" />
+              Ranking — Cidade Mais Vendida
             </h3>
-            <div className="space-y-3">
-              {rankByBroker.map((item, idx) => {
-                const maxVgv = rankByBroker[0]?.vgv || 1;
-                const pct = (item.vgv / maxVgv) * 100;
-                return (
-                  <div key={item.name} className="space-y-1.5">
-                    <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-2">
-                        <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                          idx === 0 ? "bg-yellow-500/20 text-yellow-500" :
-                          idx === 1 ? "bg-gray-400/20 text-gray-400" :
-                          idx === 2 ? "bg-orange-500/20 text-orange-500" :
-                          "bg-muted text-muted-foreground"
-                        }`}>
-                          {idx + 1}
-                        </span>
-                        <span className="font-medium text-card-foreground">{item.name}</span>
-                      </div>
-                      <div className="flex items-center gap-3 text-xs">
-                        <span className="text-muted-foreground">{item.count} vendas</span>
-                        <span className="font-semibold text-accent">{formatCurrency(item.vgv)}</span>
-                      </div>
-                    </div>
-                    <div className="h-2 bg-muted rounded-full overflow-hidden">
-                      <div className="h-full gradient-gold rounded-full transition-all duration-700" style={{ width: `${pct}%` }} />
-                    </div>
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={rankByCity} layout="vertical" barCategoryGap="25%">
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
+                <XAxis type="number" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v) => `${(v / 1000000).toFixed(1)}M`} />
+                <YAxis type="category" dataKey="name" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} width={100} />
+                <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "12px" }} formatter={(value: number) => [formatCurrency(value), "VGV"]} />
+                <Bar dataKey="vgv" radius={[0, 6, 6, 0]} animationDuration={1200}>
+                  {rankByCity.map((_, i) => (
+                    <Cell key={i} fill={i === 0 ? "hsl(var(--accent))" : i === 1 ? "hsl(var(--chart-2))" : "hsl(var(--chart-3))"} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+            <div className="mt-3 space-y-1.5">
+              {rankByCity.map((item, idx) => (
+                <div key={item.name} className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                      idx === 0 ? "bg-accent/20 text-accent" : "bg-muted text-muted-foreground"
+                    }`}>{idx + 1}</span>
+                    <span className="font-medium text-card-foreground">{item.name}</span>
                   </div>
-                );
-              })}
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-[10px] px-1.5 py-0">{item.count} vendas</Badge>
+                    <span className="font-bold text-accent">{formatCurrency(item.vgv)}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
 
         {/* Bottom Rankings Row */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {/* By City */}
+          {/* Empreendimentos */}
           <div className="elevated-card rounded-xl p-5">
             <h3 className="text-sm font-semibold text-card-foreground mb-3 flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-accent" />
-              VGV por Cidade
+              <Trophy className="w-4 h-4 text-accent" />
+              Top Empreendimentos
             </h3>
             <div className="space-y-2">
-              {rankByCity.map((item, idx) => (
+              {rankByEmpreendimento.slice(0, 6).map((item, idx) => (
                 <div key={item.name} className="flex items-center justify-between py-1.5 border-b border-border/50 last:border-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground w-4">#{idx + 1}</span>
-                    <span className="text-sm font-medium text-card-foreground">{item.name}</span>
+                    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                      idx === 0 ? "bg-accent/20 text-accent" : "bg-muted text-muted-foreground"
+                    }`}>{idx + 1}</span>
+                    <div>
+                      <p className="text-xs font-medium text-card-foreground">{item.name}</p>
+                      <p className="text-[10px] text-muted-foreground">{item.city}</p>
+                    </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-bold text-accent">{formatCurrency(item.vgv)}</p>
+                    <p className="text-xs font-bold text-accent">{formatCurrency(item.vgv)}</p>
                     <p className="text-[10px] text-muted-foreground">{item.count} vendas</p>
                   </div>
                 </div>
@@ -484,27 +536,40 @@ export default function Reports() {
             </div>
           </div>
 
-          {/* By Type */}
+          {/* Corretores */}
           <div className="elevated-card rounded-xl p-5">
             <h3 className="text-sm font-semibold text-card-foreground mb-3 flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-accent" />
-              VGV por Tipo
+              <Trophy className="w-4 h-4 text-accent" />
+              Top Corretores
             </h3>
-            <div className="space-y-2">
-              {rankByType.map((item, idx) => (
-                <div key={item.name} className="flex items-center justify-between py-1.5 border-b border-border/50 last:border-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground w-4">#{idx + 1}</span>
-                    <span className="text-sm font-medium text-card-foreground">{item.name}</span>
-                    <Badge variant="outline" className="text-[10px] px-1.5 py-0">{item.count}</Badge>
+            <div className="space-y-2.5">
+              {rankByBroker.map((item, idx) => {
+                const maxVgv = rankByBroker[0]?.vgv || 1;
+                const pct = (item.vgv / maxVgv) * 100;
+                return (
+                  <div key={item.name} className="space-y-1">
+                    <div className="flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2">
+                        <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                          idx === 0 ? "bg-accent/20 text-accent" : "bg-muted text-muted-foreground"
+                        }`}>{idx + 1}</span>
+                        <span className="font-medium text-card-foreground">{item.name}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">{item.count} vendas</span>
+                        <span className="font-bold text-accent">{formatCurrency(item.vgv)}</span>
+                      </div>
+                    </div>
+                    <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                      <div className="h-full gradient-gold rounded-full transition-all duration-700" style={{ width: `${pct}%` }} />
+                    </div>
                   </div>
-                  <p className="text-sm font-bold text-accent">{formatCurrency(item.vgv)}</p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
-          {/* By Segment */}
+          {/* Segmento */}
           <div className="elevated-card rounded-xl p-5">
             <h3 className="text-sm font-semibold text-card-foreground mb-3 flex items-center gap-2">
               <Star className="w-4 h-4 text-accent" />
@@ -514,7 +579,9 @@ export default function Reports() {
               {rankBySegment.map((item, idx) => (
                 <div key={item.name} className="flex items-center justify-between py-1.5 border-b border-border/50 last:border-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground w-4">#{idx + 1}</span>
+                    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                      idx === 0 ? "bg-accent/20 text-accent" : "bg-muted text-muted-foreground"
+                    }`}>{idx + 1}</span>
                     <span className="text-sm font-medium text-card-foreground">{item.name}</span>
                     <Badge variant="outline" className="text-[10px] px-1.5 py-0">{item.count}</Badge>
                   </div>
