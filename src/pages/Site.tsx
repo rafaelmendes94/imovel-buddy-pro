@@ -68,7 +68,7 @@ const siteProperties = [
     decorated: false,
     seaView: true,
     acceptsExchange: true,
-    paymentConditions: "Entrada + 48x",
+    paymentConditions: ["48x", "Permuta"],
     empreendimento: "Ed. Navegantes",
     unitNumber: "Ap 501",
     boxNumber: "Box 15",
@@ -94,7 +94,7 @@ const siteProperties = [
     decorated: false,
     seaView: false,
     acceptsExchange: true,
-    paymentConditions: "À vista ou 24x",
+    paymentConditions: ["24x", "Permuta"],
     empreendimento: "Cond. Reserva do Litoral",
     quadra: "Q-08",
     lote: "L-22",
@@ -120,7 +120,7 @@ const siteProperties = [
     decorated: true,
     seaView: true,
     acceptsExchange: false,
-    paymentConditions: "Financiamento bancário",
+    paymentConditions: ["72x"],
     empreendimento: "Cond. Praia das Dunas",
     quadra: "Q-02",
     lote: "L-11",
@@ -146,7 +146,7 @@ const siteProperties = [
     decorated: false,
     seaView: false,
     acceptsExchange: false,
-    paymentConditions: "Entrada + 36x direto",
+    paymentConditions: ["36x"],
   },
   {
     id: "site-5",
@@ -169,7 +169,7 @@ const siteProperties = [
     decorated: true,
     seaView: false,
     acceptsExchange: true,
-    paymentConditions: "Entrada 30% + financiamento",
+    paymentConditions: ["36x", "Carro"],
   },
   {
     id: "site-6",
@@ -192,7 +192,7 @@ const siteProperties = [
     decorated: true,
     seaView: true,
     acceptsExchange: true,
-    paymentConditions: "Entrada + 60x ou permuta",
+    paymentConditions: ["60x", "Permuta"],
     empreendimento: "Ed. Alto Padrão Atlântida",
     unitNumber: "Ap 801",
     boxNumber: "Box 25, 26",
@@ -960,25 +960,6 @@ export default function Site() {
           </section>
         )}
 
-        {/* Permuta */}
-        {!searchTerm && !hasActiveFilters && activeCategory === "permuta" && exchangeProperties.length > 0 && (
-          <section>
-            <SectionHeader title="Aceita Permuta" subtitle={`${exchangeProperties.length} imóveis que aceitam permuta`} icon={Repeat} />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {exchangeProperties.map((p) => <PropertyCard key={p.id} property={p} />)}
-            </div>
-          </section>
-        )}
-
-        {/* Condições de Pagamento */}
-        {!searchTerm && !hasActiveFilters && activeCategory === "pagamento" && withPaymentConditions.length > 0 && (
-          <section>
-            <SectionHeader title="Condições de Pagamento" subtitle={`${withPaymentConditions.length} imóveis com condições especiais`} icon={CreditCard} />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {withPaymentConditions.map((p) => <PropertyCard key={p.id} property={p} />)}
-            </div>
-          </section>
-        )}
 
         {/* Lotes Condomínio */}
         {!searchTerm && !hasActiveFilters && (activeCategory === "todos" || activeCategory === "lotes-cond") && condoLots.length > 0 && (
