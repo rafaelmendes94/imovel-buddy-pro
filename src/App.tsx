@@ -23,6 +23,7 @@ import PartnerDetail from "./pages/PartnerDetail";
 import RankingPage from "./pages/RankingPage";
 import Avaliacoes from "./pages/Avaliacoes";
 import Financeiro from "./pages/Financeiro";
+import Tabelas from "./pages/Tabelas";
 
 const queryClient = new QueryClient();
 
@@ -52,6 +53,7 @@ const App = () => (
           <Route path="/ranking" element={<RankingPage />} />
           <Route path="/avaliacoes" element={<Avaliacoes />} />
           <Route path="/financeiro" element={<Financeiro />} />
+          <Route path="/tabelas" element={<Tabelas />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
