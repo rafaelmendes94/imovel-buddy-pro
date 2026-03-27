@@ -278,9 +278,6 @@ function PropertyCard({ property }: { property: typeof siteProperties[0] }) {
         <span className="absolute top-3 left-3 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-500 text-white uppercase tracking-wide">
           {property.status}
         </span>
-        <span className="absolute top-3 right-3 px-3 py-1 rounded-full text-[11px] font-semibold bg-white/90 text-gray-800 backdrop-blur-sm">
-          {property.type}
-        </span>
         {/* Feature badges */}
         <div className="absolute bottom-12 left-3 flex gap-1.5">
           {property.seaView && (
@@ -305,10 +302,32 @@ function PropertyCard({ property }: { property: typeof siteProperties[0] }) {
       </div>
       <div className="p-4 space-y-3">
         <h3 className="font-bold text-gray-900 text-base leading-tight">{property.title}</h3>
+        {property.empreendimento && (
+          <p className="text-[11px] font-semibold text-amber-700 bg-amber-50 px-2 py-1 rounded-md inline-block">
+            <Building2 className="w-3 h-3 inline mr-1" />{property.empreendimento}
+          </p>
+        )}
         <div className="flex items-center gap-1 text-gray-500 text-xs">
           <MapPin className="w-3.5 h-3.5" />
           <span>{property.address}, {property.city}</span>
         </div>
+        {/* Unit details: Ap/Box for apartments, Quadra/Lote for condos/terrenos */}
+        {(property.unitNumber || property.boxNumber || property.quadra || property.lote) && (
+          <div className="flex flex-wrap items-center gap-2 text-[11px] text-gray-600">
+            {property.unitNumber && (
+              <span className="px-2 py-0.5 rounded-md bg-gray-100 font-semibold">{property.unitNumber}</span>
+            )}
+            {property.boxNumber && (
+              <span className="px-2 py-0.5 rounded-md bg-gray-100 font-semibold">{property.boxNumber}</span>
+            )}
+            {property.quadra && (
+              <span className="px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 font-semibold">{property.quadra}</span>
+            )}
+            {property.lote && (
+              <span className="px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 font-semibold">{property.lote}</span>
+            )}
+          </div>
+        )}
         {(property.bedrooms > 0 || property.area > 0) && (
           <div className="flex items-center gap-4 pt-2 border-t border-gray-100 text-xs text-gray-600">
             <span className="flex items-center gap-1"><Ruler className="w-3.5 h-3.5" />{property.area}m²</span>
