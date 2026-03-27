@@ -858,6 +858,57 @@ export default function BrokerSite() {
           </section>
         )}
 
+        {/* Category-based sections */}
+        {!searchTerm && !hasActiveFilters && (
+          <>
+            {/* TODOS - show by city */}
+            {activeCategory === "todos" && (
+              <>
+                {/* Capão da Canoa */}
+                {byCityCapao.length > 0 && (
+                  <section>
+                    <SectionHeader title="Capão da Canoa" subtitle={`${byCityCapao.length} imóveis em Capão da Canoa`} icon={MapPin} />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {byCityCapao.map((p) => (
+                        <PropertyCard key={p.id} property={p} whatsapp={info.whatsapp} brokerName={brokerName} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} />
+                      ))}
+                    </div>
+                  </section>
+                )}
+
+                {/* Xangri-lá */}
+                {byCityXangrila.length > 0 && (
+                  <section>
+                    <SectionHeader title="Xangri-lá" subtitle={`${byCityXangrila.length} imóveis em Xangri-lá`} icon={MapPin} />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {byCityXangrila.map((p) => (
+                        <PropertyCard key={p.id} property={p} whatsapp={info.whatsapp} brokerName={brokerName} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} />
+                      ))}
+                    </div>
+                  </section>
+                )}
+              </>
+            )}
+
+            {/* Apartamentos */}
+            {activeCategory === "apartamentos" && renderSection("Apartamentos", `${apartments.length} apartamentos`, Building2, apartments)}
+
+            {/* Casas */}
+            {activeCategory === "casas" && renderSection("Casas", `${houses.length} casas`, Home, houses)}
+
+            {/* Terrenos */}
+            {activeCategory === "terrenos" && renderSection("Terrenos", `${lots.length} terrenos`, TreePine, lots)}
+
+            {/* Decorados */}
+            {activeCategory === "decorados" && renderSection("Decorados", `${decorated.length} imóveis decorados`, Paintbrush, decorated)}
+
+            {/* Vista Mar */}
+            {activeCategory === "vista-mar" && renderSection("Vista para o Mar", `${seaView.length} imóveis com vista mar`, Waves, seaView)}
+
+            {/* Permuta */}
+          </>
+        )}
+
         {/* Últimas Vendas Carousel */}
         {!searchTerm && !hasActiveFilters && soldProperties.length > 0 && activeCategory === "todos" && (
           <section>
@@ -912,7 +963,6 @@ export default function BrokerSite() {
                   </div>
                 ))}
               </div>
-              {/* Dots */}
               {soldProperties.length > 1 && (
                 <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
                   {soldProperties.map((_, i) => (
@@ -931,58 +981,6 @@ export default function BrokerSite() {
           </section>
         )}
 
-        {/* Category-based sections */}
-        {!searchTerm && !hasActiveFilters && (
-          <>
-            {/* TODOS - show by city */}
-            {activeCategory === "todos" && (
-              <>
-                {/* Capão da Canoa */}
-                {byCityCapao.length > 0 && (
-                  <section>
-                    <SectionHeader title="Capão da Canoa" subtitle={`${byCityCapao.length} imóveis em Capão da Canoa`} icon={MapPin} />
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {byCityCapao.map((p) => (
-                        <PropertyCard key={p.id} property={p} whatsapp={info.whatsapp} brokerName={brokerName} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} />
-                      ))}
-                    </div>
-                  </section>
-                )}
-
-                {/* Xangri-lá */}
-                {byCityXangrila.length > 0 && (
-                  <section>
-                    <SectionHeader title="Xangri-lá" subtitle={`${byCityXangrila.length} imóveis em Xangri-lá`} icon={MapPin} />
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {byCityXangrila.map((p) => (
-                        <PropertyCard key={p.id} property={p} whatsapp={info.whatsapp} brokerName={brokerName} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} />
-                      ))}
-                    </div>
-                  </section>
-                )}
-              </>
-            )}
-
-            {/* Apartamentos */}
-            {activeCategory === "apartamentos" && renderSection("Apartamentos", `${apartments.length} apartamentos`, Building2, apartments)}
-
-            {/* Casas */}
-            {activeCategory === "casas" && renderSection("Casas", `${houses.length} casas`, Home, houses)}
-
-            {/* Terrenos */}
-            {activeCategory === "terrenos" && renderSection("Terrenos", `${lots.length} terrenos`, TreePine, lots)}
-
-            {/* Decorados */}
-            {activeCategory === "decorados" && renderSection("Decorados", `${decorated.length} imóveis decorados`, Paintbrush, decorated)}
-
-            {/* Vista Mar */}
-            {activeCategory === "vista-mar" && renderSection("Vista para o Mar", `${seaView.length} imóveis com vista mar`, Waves, seaView)}
-
-            {/* Permuta */}
-          </>
-        )}
-
-        {/* Empty state */}
         {brokerProperties.length === 0 && (
           <p className="text-center py-16 text-gray-400 text-lg">
             Nenhum imóvel disponível no momento.
