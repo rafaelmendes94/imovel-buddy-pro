@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { properties, formatCurrency, type Property } from "@/data/mockData";
 import { PropertyDetailModal } from "@/components/PropertyDetailModal";
-import { DollarSign, TrendingUp } from "lucide-react";
 import {
   Search,
   MapPin,
@@ -13,6 +12,7 @@ import {
   Phone,
   Mail,
   ChevronRight,
+  ChevronLeft,
   Star,
   Building2,
   Fence,
@@ -27,8 +27,8 @@ import {
   CreditCard,
   SlidersHorizontal,
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
+  DollarSign,
+  TrendingUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
