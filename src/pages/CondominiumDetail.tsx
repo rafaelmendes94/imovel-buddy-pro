@@ -150,6 +150,10 @@ const mockCondos: Record<string, CondoInfo> = {
       { url: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&h=400&fit=crop", label: "Academia" },
       { url: "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=600&h=400&fit=crop", label: "Quadra" },
     ],
+    implantationMedia: [
+      { type: "image", url: "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=800&h=600&fit=crop", label: "Planta Geral" },
+      { type: "pdf", url: "#", label: "Implantação Torres.pdf" },
+    ],
     videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
     downloadUrl: "#",
     units: generateCondoUnits(["T1", "T2", "T3"], 15),
