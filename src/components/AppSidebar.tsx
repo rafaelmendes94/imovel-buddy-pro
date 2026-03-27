@@ -9,13 +9,20 @@ import {
   ChevronLeft,
   ChevronRight,
   Home,
-  TrendingUp,
+  Building,
+  MapPinned,
+  Camera,
+  Fence,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
   { icon: Building2, label: "Imóveis", path: "/imoveis" },
+  { icon: Building, label: "Edifícios", path: "/edificios" },
+  { icon: Fence, label: "Condomínios", path: "/condominios" },
+  { icon: MapPinned, label: "Mapas", path: "/mapas" },
+  { icon: Camera, label: "Fotos da Cidade", path: "/fotos-cidade" },
   { icon: Users, label: "Corretores", path: "/corretores" },
   { icon: FileText, label: "Relatórios", path: "/relatorios" },
   { icon: Settings, label: "Configurações", path: "/configuracoes" },
