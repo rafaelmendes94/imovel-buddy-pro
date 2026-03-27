@@ -433,10 +433,16 @@ function PropertyCard({ property, onSelect }: { property: typeof siteProperties[
             ))}
           </div>
         )}
-        <div className="flex items-center gap-1 text-gray-500 text-xs">
+        <a
+          href={googleMapsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1 text-gray-500 text-xs hover:text-amber-600 transition-colors"
+          onClick={(e) => e.stopPropagation()}
+        >
           <MapPin className="w-3.5 h-3.5" />
           <span>{property.address}, {property.city}</span>
-        </div>
+        </a>
         {(property.bedrooms > 0 || property.area > 0) && (
           <div className="flex items-center gap-4 pt-2 border-t border-gray-100 text-xs text-gray-600">
             <span className="flex items-center gap-1"><Ruler className="w-3.5 h-3.5" />{property.area}m²</span>
