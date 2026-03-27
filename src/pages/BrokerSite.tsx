@@ -70,6 +70,9 @@ const allSiteProperties = [
     seaView: true,
     acceptsExchange: true,
     paymentConditions: "Entrada + 48x",
+    empreendimento: "Ed. Navegantes",
+    unitNumber: "Ap 501",
+    boxNumber: "Box 15",
   },
   {
     id: "site-2",
@@ -93,6 +96,9 @@ const allSiteProperties = [
     seaView: false,
     acceptsExchange: true,
     paymentConditions: "À vista ou 24x",
+    empreendimento: "Cond. Reserva do Litoral",
+    quadra: "Q-08",
+    lote: "L-22",
   },
   {
     id: "site-3",
@@ -116,6 +122,9 @@ const allSiteProperties = [
     seaView: true,
     acceptsExchange: false,
     paymentConditions: "Financiamento bancário",
+    empreendimento: "Cond. Praia das Dunas",
+    quadra: "Q-02",
+    lote: "L-11",
   },
   {
     id: "site-5",
@@ -162,6 +171,9 @@ const allSiteProperties = [
     seaView: true,
     acceptsExchange: true,
     paymentConditions: "Entrada + 60x ou permuta",
+    empreendimento: "Ed. Alto Padrão Atlântida",
+    unitNumber: "Ap 801",
+    boxNumber: "Box 25, 26",
   },
 ];
 
