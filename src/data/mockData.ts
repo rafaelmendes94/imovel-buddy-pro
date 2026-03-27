@@ -26,12 +26,8 @@ export interface Property {
   boxNumber?: string;
   quadra?: string;
   lote?: string;
-  exclusivityTerm?: string;
+  exclusivityTerm?: string; // URL to PDF or image of the exclusivity term
   description?: string;
-  owner?: string;
-  ownerPhone?: string;
-  keyLocation?: string;
-  driveLink?: string;
 }
 
 export interface Broker {
@@ -76,10 +72,6 @@ export const properties: Property[] = [
     empreendimento: "Ed. Atlântico Sul",
     unitNumber: "Ap 302",
     boxNumber: "Box 12",
-    owner: "Roberto Mendes",
-    ownerPhone: "5551999880001",
-    keyLocation: "Portaria do Ed. Atlântico Sul",
-    driveLink: "https://drive.google.com/drive/folders/example1",
   },
   {
     id: "2",
@@ -110,10 +102,6 @@ export const properties: Property[] = [
     empreendimento: "Ed. Panorama Beach",
     unitNumber: "Cobertura 01",
     boxNumber: "Box 01, 02, 03",
-    owner: "Grupo Marina Empreendimentos",
-    ownerPhone: "5551999880002",
-    keyLocation: "Imobiliária Central - Rua Sepé, 100",
-    driveLink: "https://drive.google.com/drive/folders/example2",
   },
   {
     id: "3",
@@ -144,10 +132,6 @@ export const properties: Property[] = [
     empreendimento: "Cond. Reserva das Dunas",
     quadra: "Q-05",
     lote: "L-18",
-    owner: "Construtora Royal",
-    ownerPhone: "5551999880003",
-    keyLocation: "Com o proprietário",
-    driveLink: "https://drive.google.com/drive/folders/example3",
   },
   {
     id: "4",
@@ -176,9 +160,6 @@ export const properties: Property[] = [
     paymentConditions: ["12x"],
     empreendimento: "Centro Comercial Capão",
     unitNumber: "Sala 205",
-    owner: "Investimentos Capão Ltda",
-    ownerPhone: "5551999880004",
-    keyLocation: "Administração do prédio - 2º andar",
   },
   {
     id: "5",
@@ -208,9 +189,6 @@ export const properties: Property[] = [
     empreendimento: "Cond. Bosque do Litoral",
     quadra: "Q-12",
     lote: "L-07",
-    owner: "Paulo Ferreira",
-    ownerPhone: "5551999880005",
-    keyLocation: "N/A - Terreno aberto",
   },
   {
     id: "6",
@@ -241,10 +219,6 @@ export const properties: Property[] = [
     empreendimento: "Residencial Atlântida",
     unitNumber: "Ap 104",
     boxNumber: "Box 08",
-    owner: "Maria Clara Souza",
-    ownerPhone: "5551999880006",
-    keyLocation: "Portaria do Residencial Atlântida",
-    driveLink: "https://drive.google.com/drive/folders/example6",
   },
 ];
 
