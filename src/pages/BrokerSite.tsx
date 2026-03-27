@@ -464,6 +464,19 @@ export default function BrokerSite() {
   const carouselRef = useRef<HTMLDivElement>(null);
   const [carouselIndex, setCarouselIndex] = useState(0);
 
+  // Auto-scroll carousel for sold properties
+  const soldForCarousel = allSiteProperties.filter(
+    (p) => p.broker === (slug ? slug.split("-").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ") : "") && (p.status === "Vendido" || p.status === "Reservado")
+  );
+
+  useEffect(() => {
+    if (soldForCarousel.length <= 1) return;
+    const interval = setInterval(() => {
+      setCarouselIndex((prev) => (prev + 1) % soldForCarousel.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [soldForCarousel.length]);
+
   if (!info) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
