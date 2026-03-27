@@ -263,12 +263,20 @@ export default function Condominiums() {
                     <span key={a} className="px-2 py-0.5 rounded text-[10px] font-medium bg-muted text-muted-foreground">{a}</span>
                   ))}
                 </div>
-                <button
-                  onClick={(e) => { e.stopPropagation(); setMediaCondo(condo); }}
-                  className="flex items-center gap-1.5 w-full justify-center py-2 mt-2 rounded-lg bg-accent/10 text-accent text-xs font-semibold hover:bg-accent/20 transition-colors border border-accent/20"
-                >
-                  <Camera className="w-3.5 h-3.5" /> Ver Fotos e Vídeos
-                </button>
+                <div className="flex gap-2 mt-2">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setMediaCondo(condo); }}
+                    className="flex items-center gap-1.5 flex-1 justify-center py-2 rounded-lg bg-accent/10 text-accent text-xs font-semibold hover:bg-accent/20 transition-colors border border-accent/20"
+                  >
+                    <Camera className="w-3.5 h-3.5" /> Fotos e Vídeos
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); navigate(`/condominios/${condo.id}`); }}
+                    className="flex items-center gap-1.5 flex-1 justify-center py-2 rounded-lg bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/20 transition-colors border border-primary/20"
+                  >
+                    <Home className="w-3.5 h-3.5" /> Imóveis à Venda
+                  </button>
+                </div>
               </div>
             </div>
           ))}

@@ -12,6 +12,7 @@ import {
   Edit,
   Trash2,
   Camera,
+  Home,
 } from "lucide-react";
 import { InfraMediaModal } from "@/components/InfraMediaModal";
 import { cn } from "@/lib/utils";
@@ -259,12 +260,20 @@ export default function Buildings() {
                   <span className="flex items-center gap-1"><Building className="w-3.5 h-3.5" /> {building.units} unid.</span>
                   <span>{building.builder}</span>
                 </div>
-                <button
-                  onClick={(e) => { e.stopPropagation(); setMediaBuilding(building); }}
-                  className="flex items-center gap-1.5 w-full justify-center py-2 mt-2 rounded-lg bg-accent/10 text-accent text-xs font-semibold hover:bg-accent/20 transition-colors border border-accent/20"
-                >
-                  <Camera className="w-3.5 h-3.5" /> Ver Fotos e Vídeos
-                </button>
+                <div className="flex gap-2 mt-2">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setMediaBuilding(building); }}
+                    className="flex items-center gap-1.5 flex-1 justify-center py-2 rounded-lg bg-accent/10 text-accent text-xs font-semibold hover:bg-accent/20 transition-colors border border-accent/20"
+                  >
+                    <Camera className="w-3.5 h-3.5" /> Fotos e Vídeos
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); navigate(`/edificios/${building.id}`); }}
+                    className="flex items-center gap-1.5 flex-1 justify-center py-2 rounded-lg bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/20 transition-colors border border-primary/20"
+                  >
+                    <Home className="w-3.5 h-3.5" /> Imóveis à Venda
+                  </button>
+                </div>
               </div>
             </div>
           ))}
