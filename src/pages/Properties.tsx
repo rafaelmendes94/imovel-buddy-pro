@@ -146,7 +146,8 @@ export default function Properties() {
 }
 
 // ---- Image Carousel ----
-function ImageCarousel({ images, alt }: { images: string[]; alt: string }) {
+function ImageCarousel({ images: rawImages, alt }: { images?: string[]; alt: string }) {
+  const images = rawImages && rawImages.length > 0 ? rawImages : ["https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=300&fit=crop"];
   const [current, setCurrent] = useState(0);
 
   const prev = (e: React.MouseEvent) => {
