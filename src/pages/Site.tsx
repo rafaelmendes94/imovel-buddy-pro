@@ -782,6 +782,11 @@ export default function Site() {
     return matchSearch && matchCity && matchBedrooms && matchPriceMin && matchPriceMax && matchType && matchCondition;
   });
 
+  const sortByPrice = <T extends { price: number }>(arr: T[]): T[] => {
+    if (!priceSort) return arr;
+    return [...arr].sort((a, b) => priceSort === "asc" ? a.price - b.price : b.price - a.price);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 font-sans" onScroll={handleScroll}>
       <div id="site-top" />
