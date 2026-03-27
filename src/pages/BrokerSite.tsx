@@ -339,6 +339,10 @@ export default function BrokerSite() {
   const [filterPriceMax, setFilterPriceMax] = useState("");
   const [filterCondition, setFilterCondition] = useState("");
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const [userRating, setUserRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [viewingTerm, setViewingTerm] = useState<string | null>(null);
 
   if (!info) {
     return (
@@ -478,19 +482,49 @@ export default function BrokerSite() {
               <h1 className="text-3xl sm:text-4xl font-extrabold text-white">{brokerName}</h1>
               <p className="text-amber-400 font-bold text-sm tracking-wide">CRECI {info.creci}</p>
               <p className="text-gray-300 text-sm max-w-lg leading-relaxed">{info.bio}</p>
-              <div className="flex flex-wrap items-center gap-4 pt-2">
+              <div className="flex flex-wrap items-center gap-3 pt-2">
                 <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-2.5 border border-white/20">
                   <Building2 className="w-5 h-5 text-amber-400" />
                   <div>
                     <p className="text-white font-extrabold text-lg leading-none">{brokerProperties.length}</p>
-                    <p className="text-gray-400 text-[10px] uppercase tracking-wider">Imóveis</p>
+                    <p className="text-gray-400 text-[10px] uppercase tracking-wider">Em Carteira</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-2.5 border border-white/20">
-                  <MapPin className="w-5 h-5 text-amber-400" />
+                {/* Star Rating */}
+                <button
+                  onClick={() => setShowRatingModal(true)}
+                  className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-2.5 border border-white/20 hover:bg-white/20 transition-colors cursor-pointer"
+                >
+                  <div className="flex items-center gap-0.5">
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <Star
+                        key={s}
+                        className={cn(
+                          "w-4 h-4",
+                          s <= Math.round(info.rating) ? "text-amber-400 fill-amber-400" : "text-gray-500"
+                        )}
+                      />
+                    ))}
+                  </div>
                   <div>
-                    <p className="text-white font-extrabold text-lg leading-none">{formatCurrency(totalValue)}</p>
-                    <p className="text-gray-400 text-[10px] uppercase tracking-wider">Em carteira</p>
+                    <p className="text-white font-extrabold text-lg leading-none">{info.rating}</p>
+                    <p className="text-gray-400 text-[10px] uppercase tracking-wider">{info.totalRatings} avaliações</p>
+                  </div>
+                </button>
+                {/* Total Sales */}
+                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-2.5 border border-white/20">
+                  <DollarSign className="w-5 h-5 text-emerald-400" />
+                  <div>
+                    <p className="text-white font-extrabold text-lg leading-none">{formatCurrency(info.totalSoldValue)}</p>
+                    <p className="text-gray-400 text-[10px] uppercase tracking-wider">{info.totalSold} vendas</p>
+                  </div>
+                </div>
+                {/* Avg Days */}
+                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-2.5 border border-white/20">
+                  <Clock className="w-5 h-5 text-blue-400" />
+                  <div>
+                    <p className="text-white font-extrabold text-lg leading-none">{info.avgDaysToSell} dias</p>
+                    <p className="text-gray-400 text-[10px] uppercase tracking-wider">Média de venda</p>
                   </div>
                 </div>
                 <a
