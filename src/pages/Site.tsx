@@ -1150,6 +1150,86 @@ export default function Site() {
           </section>
         )}
 
+        {/* Ranking de Corretores */}
+        {!searchTerm && !hasActiveFilters && activeCategory === "todos" && soldProperties.length > 0 && (() => {
+          const brokerSales: Record<string, { count: number; value: number }> = {};
+          soldProperties.forEach((p) => {
+            if (!brokerSales[p.broker]) brokerSales[p.broker] = { count: 0, value: 0 };
+            brokerSales[p.broker].count++;
+            brokerSales[p.broker].value += p.price;
+          });
+          const ranking = Object.entries(brokerSales)
+            .map(([name, data]) => ({ name, ...data, photo: brokerInfo[name]?.photo || "" }))
+            .sort((a, b) => b.value - a.value);
+          const displayRanking = showFullRanking ? ranking : ranking.slice(0, 3);
+          const medalColors = ["from-amber-400 to-yellow-500", "from-gray-300 to-gray-400", "from-orange-400 to-orange-500"];
+          const medalIcons = [Trophy, Award, Medal];
+
+          return (
+            <section>
+              <SectionHeader title="Ranking de Corretores" subtitle="Os corretores que mais venderam" icon={Trophy} />
+              <div className="space-y-3">
+                {displayRanking.map((broker, i) => {
+                  const MedalIcon = medalIcons[i] || Star;
+                  const slug = broker.name.toLowerCase().replace(/\s+/g, "-");
+                  return (
+                    <Link
+                      key={broker.name}
+                      to={`/corretor/${slug}`}
+                      className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg hover:border-amber-200 transition-all group"
+                    >
+                      {/* Position */}
+                      <div className={cn(
+                        "w-12 h-12 rounded-xl flex items-center justify-center shadow-md flex-shrink-0",
+                        i < 3 ? `bg-gradient-to-br ${medalColors[i]} text-white` : "bg-gray-100 text-gray-500"
+                      )}>
+                        {i < 3 ? (
+                          <MedalIcon className="w-6 h-6" />
+                        ) : (
+                          <span className="text-lg font-extrabold">{i + 1}º</span>
+                        )}
+                      </div>
+
+                      {/* Photo */}
+                      <img
+                        src={broker.photo}
+                        alt={broker.name}
+                        className="w-12 h-12 rounded-full object-cover border-2 border-gray-200 group-hover:border-amber-400 transition-colors flex-shrink-0"
+                      />
+
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-gray-900 group-hover:text-amber-700 transition-colors">{broker.name}</p>
+                        <p className="text-xs text-gray-500">{broker.count} {broker.count === 1 ? "venda" : "vendas"}</p>
+                      </div>
+
+                      {/* Value */}
+                      <div className="text-right flex-shrink-0">
+                        <p className="text-lg font-extrabold text-emerald-600">{formatCurrency(broker.value)}</p>
+                        <p className="text-[10px] text-gray-400 uppercase tracking-wider">VGV vendido</p>
+                      </div>
+
+                      <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-amber-500 transition-colors flex-shrink-0" />
+                    </Link>
+                  );
+                })}
+              </div>
+              {ranking.length > 3 && (
+                <div className="flex justify-center mt-4">
+                  <button
+                    onClick={() => setShowFullRanking(!showFullRanking)}
+                    className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gray-900 text-white text-sm font-bold hover:bg-gray-800 transition-colors shadow-md hover:shadow-lg"
+                  >
+                    <Trophy className="w-4 h-4 text-amber-400" />
+                    {showFullRanking ? "Ver menos" : "Ver Ranking Completo"}
+                    <ChevronDown className={cn("w-4 h-4 transition-transform", showFullRanking && "rotate-180")} />
+                  </button>
+                </div>
+              )}
+            </section>
+          );
+        })()}
+
         {/* Parceiros MV Broker */}
         {!searchTerm && !hasActiveFilters && activeCategory === "todos" && (
           <section>
