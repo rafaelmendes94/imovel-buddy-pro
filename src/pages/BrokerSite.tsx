@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { properties, formatCurrency, type Property } from "@/data/mockData";
 import { PropertyDetailModal } from "@/components/PropertyDetailModal";
@@ -198,6 +198,110 @@ const allSiteProperties = [
     unitNumber: "Ap 801",
     boxNumber: "Box 25, 26",
   },
+  {
+    id: "sold-1",
+    title: "Cobertura Vista Mar Vendida",
+    address: "Av. Beira Mar, 900",
+    city: "Capão da Canoa",
+    type: "Apartamento" as const,
+    status: "Vendido" as const,
+    price: 1650000,
+    area: 200,
+    bedrooms: 3,
+    bathrooms: 3,
+    parking: 2,
+    broker: "Ana Rodrigues",
+    image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600&h=400&fit=crop",
+    images: [],
+    createdAt: "2024-01-10",
+    lat: -29.745,
+    lng: -50.103,
+    decorated: true,
+    seaView: true,
+    acceptsExchange: false,
+    paymentConditions: ["84x"],
+    empreendimento: "Ed. Atlântico Sul",
+    unitNumber: "Cobertura 02",
+    boxNumber: "Box 04, 05",
+  },
+  {
+    id: "sold-2",
+    title: "Casa Condomínio Vendida",
+    address: "Rua das Palmeiras, 200",
+    city: "Xangri-lá",
+    type: "Casa" as const,
+    status: "Vendido" as const,
+    price: 980000,
+    area: 220,
+    bedrooms: 3,
+    bathrooms: 2,
+    parking: 2,
+    broker: "Carlos Silva",
+    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&h=400&fit=crop",
+    images: [],
+    createdAt: "2024-02-05",
+    lat: -29.800,
+    lng: -50.055,
+    decorated: false,
+    seaView: false,
+    acceptsExchange: false,
+    paymentConditions: ["48x"],
+    empreendimento: "Cond. Reserva das Dunas",
+    quadra: "Q-03",
+    lote: "L-12",
+  },
+  {
+    id: "sold-3",
+    title: "Apartamento Atlântida Vendido",
+    address: "Av. Central, 350",
+    city: "Xangri-lá",
+    type: "Apartamento" as const,
+    status: "Vendido" as const,
+    price: 720000,
+    area: 85,
+    bedrooms: 2,
+    bathrooms: 1,
+    parking: 1,
+    broker: "Marcos Oliveira",
+    image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=600&h=400&fit=crop",
+    images: [],
+    createdAt: "2024-02-20",
+    lat: -29.788,
+    lng: -50.068,
+    decorated: false,
+    seaView: true,
+    acceptsExchange: false,
+    paymentConditions: ["72x"],
+    empreendimento: "Residencial Atlântida",
+    unitNumber: "Ap 205",
+    boxNumber: "Box 10",
+  },
+  {
+    id: "sold-4",
+    title: "Lote Bosque Vendido",
+    address: "Rua dos Coqueiros, 180",
+    city: "Xangri-lá",
+    type: "Terreno" as const,
+    status: "Vendido" as const,
+    price: 350000,
+    area: 480,
+    bedrooms: 0,
+    bathrooms: 0,
+    parking: 0,
+    broker: "Ana Rodrigues",
+    image: "https://images.unsplash.com/photo-1500076656116-558758c991c1?w=600&h=400&fit=crop",
+    images: [],
+    createdAt: "2024-03-01",
+    lat: -29.812,
+    lng: -50.043,
+    decorated: false,
+    seaView: false,
+    acceptsExchange: false,
+    paymentConditions: ["24x"],
+    empreendimento: "Cond. Bosque do Litoral",
+    quadra: "Q-10",
+    lote: "L-15",
+  },
 ];
 
 type Category = "todos" | "apartamentos" | "casas" | "terrenos" | "decorados" | "vista-mar";
@@ -339,6 +443,10 @@ export default function BrokerSite() {
   const brokerProperties = allSiteProperties.filter(
     (p) => p.broker === brokerName && p.status === "Disponível"
   );
+  const soldProperties = allSiteProperties.filter(
+    (p) => p.broker === brokerName && (p.status === "Vendido" || p.status === "Reservado")
+  );
+  const soldValue = soldProperties.reduce((sum, p) => sum + p.price, 0);
 
   const [activeCategory, setActiveCategory] = useState<Category>("todos");
   const [filterCity, setFilterCity] = useState("");
@@ -353,6 +461,21 @@ export default function BrokerSite() {
   const [userRating, setUserRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [viewingTerm, setViewingTerm] = useState<string | null>(null);
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const [carouselIndex, setCarouselIndex] = useState(0);
+
+  // Auto-scroll carousel for sold properties
+  const soldForCarousel = allSiteProperties.filter(
+    (p) => p.broker === (slug ? slug.split("-").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ") : "") && (p.status === "Vendido" || p.status === "Reservado")
+  );
+
+  useEffect(() => {
+    if (soldForCarousel.length <= 1) return;
+    const interval = setInterval(() => {
+      setCarouselIndex((prev) => (prev + 1) % soldForCarousel.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [soldForCarousel.length]);
 
   if (!info) {
     return (
@@ -732,6 +855,79 @@ export default function BrokerSite() {
             ) : (
               <p className="text-center py-12 text-gray-400">Nenhum imóvel encontrado.</p>
             )}
+          </section>
+        )}
+
+        {/* Últimas Vendas Carousel */}
+        {!searchTerm && !hasActiveFilters && soldProperties.length > 0 && activeCategory === "todos" && (
+          <section>
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-400 flex items-center justify-center shadow-md">
+                <DollarSign className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-extrabold text-gray-900">
+                  Últimas Vendas — {formatCurrency(soldValue)}
+                </h2>
+                <p className="text-sm text-gray-500">{soldProperties.length} imóveis vendidos</p>
+              </div>
+            </div>
+            <div className="relative overflow-hidden rounded-2xl bg-gray-900 shadow-xl">
+              <div
+                ref={carouselRef}
+                className="flex transition-transform duration-700 ease-in-out"
+                style={{ transform: `translateX(-${carouselIndex * 100}%)` }}
+              >
+                {soldProperties.map((p) => (
+                  <div key={p.id} className="min-w-full flex flex-col sm:flex-row">
+                    <div className="relative sm:w-1/2 h-56 sm:h-72 overflow-hidden">
+                      <img src={p.image} alt={p.title} className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent to-gray-900/50 hidden sm:block" />
+                      <span className="absolute top-3 left-3 px-3 py-1 rounded-full text-[11px] font-bold bg-red-500 text-white uppercase tracking-wide">
+                        Vendido
+                      </span>
+                    </div>
+                    <div className="sm:w-1/2 p-6 flex flex-col justify-center text-white space-y-3">
+                      <h3 className="text-xl font-bold">{p.title}</h3>
+                      {p.empreendimento && (
+                        <p className="text-amber-400 text-sm font-semibold">
+                          {p.empreendimento}
+                          {p.unitNumber && <span className="text-gray-400 ml-2">{p.unitNumber}</span>}
+                          {p.quadra && <span className="text-gray-400 ml-2">{p.quadra}</span>}
+                          {p.lote && <span className="text-gray-400 ml-1">{p.lote}</span>}
+                        </p>
+                      )}
+                      <div className="flex items-center gap-1.5 text-gray-400 text-sm">
+                        <MapPin className="w-4 h-4" />
+                        <span>{p.address}, {p.city}</span>
+                      </div>
+                      <p className="text-2xl font-black text-emerald-400">{formatCurrency(p.price)}</p>
+                      <div className="flex items-center gap-4 text-sm text-gray-400">
+                        {p.area > 0 && <span>{p.area}m²</span>}
+                        {p.bedrooms > 0 && <span>{p.bedrooms} quartos</span>}
+                        {p.bathrooms > 0 && <span>{p.bathrooms} ban.</span>}
+                        {p.parking > 0 && <span>{p.parking} vagas</span>}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {/* Dots */}
+              {soldProperties.length > 1 && (
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
+                  {soldProperties.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setCarouselIndex(i)}
+                      className={cn(
+                        "w-2.5 h-2.5 rounded-full transition-colors",
+                        i === carouselIndex ? "bg-amber-400" : "bg-white/30"
+                      )}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
           </section>
         )}
 
