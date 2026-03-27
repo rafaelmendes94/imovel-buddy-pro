@@ -88,6 +88,10 @@ export function AppSidebar() {
             </Link>
           );
         })}
+        {/* Cadastro Panel */}
+        <div className="px-2 pt-2 border-t border-sidebar-border">
+          <CadastroPanel collapsed={collapsed} />
+        </div>
       </nav>
 
       {/* Collapse toggle */}
