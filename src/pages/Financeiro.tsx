@@ -272,6 +272,38 @@ export default function Financeiro() {
     fetchData();
   };
 
+  const handleSaveWhatsApp = async (subId: string) => {
+    const cleaned = whatsAppInput.replace(/\D/g, "");
+    await supabase.from("subscribers").update({ phone: cleaned }).eq("id", subId);
+    toast({ title: "WhatsApp salvo!" });
+    setEditingWhatsApp(null);
+    setWhatsAppInput("");
+    fetchData();
+  };
+
+  const formatPhoneForWhatsApp = (phone: string) => {
+    let cleaned = phone.replace(/\D/g, "");
+    if (cleaned.length <= 11 && !cleaned.startsWith("55")) {
+      cleaned = "55" + cleaned;
+    }
+    return cleaned;
+  };
+
+  const buildOverdueMessage = (sub: Subscriber) => {
+    const subOverdue = overduePayments.filter(p => p.subscriber_id === sub.id);
+    const total = subOverdue.reduce((s, p) => s + Number(p.amount), 0);
+    const months = subOverdue.map(p => p.reference_month).join(", ");
+    return `Olá ${sub.name.split(" ")[0]}, tudo bem? 🏠\n\nIdentificamos que sua assinatura possui *${subOverdue.length} pagamento(s) em atraso* referente(s) a: ${months}.\n\n💰 *Valor total em aberto: ${formatCurrency(total)}*\n\n📲 Para regularizar, realize o pagamento via PIX:\n\n🔑 *Chave PIX:* [SUA CHAVE PIX]\n\n⚠️ *Atenção:* O não pagamento pode resultar no *bloqueio do acesso* ao sistema para você e seus corretores vinculados.\n\nQualquer dúvida, estamos à disposição!\nEquipe Financeiro`;
+  };
+
+  const openWhatsApp = (phone: string, message?: string) => {
+    const formattedPhone = formatPhoneForWhatsApp(phone);
+    const url = message
+      ? `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`
+      : `https://wa.me/${formattedPhone}`;
+    window.open(url, "_blank");
+  };
+
   // Month filter options
   const monthOptions = useMemo(() => {
     const now = new Date();
