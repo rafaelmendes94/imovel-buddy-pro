@@ -1211,9 +1211,8 @@ export default function BrokerSite() {
           </div>
         </div>
       )}
-          </div>
-        </div>
-      )}
+
+
 
       {/* Term Viewer Modal */}
       {viewingTerm && (
