@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "@/hooks/use-toast";
 import {
   DollarSign, Users, AlertTriangle, CheckCircle2, Plus, Search,
-  Ban, TrendingUp, Calendar, Phone, Mail, CreditCard, UserPlus, ChevronDown, ChevronRight, Trash2
+  Ban, TrendingUp, Calendar, Phone, Mail, CreditCard, UserPlus, ChevronDown, ChevronRight, Trash2, MessageCircle
 } from "lucide-react";
 import { format, parseISO, isAfter, isBefore, startOfMonth, endOfMonth, addMonths, subMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
