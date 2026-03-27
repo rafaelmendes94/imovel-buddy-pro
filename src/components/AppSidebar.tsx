@@ -21,6 +21,7 @@ import {
   Video,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CadastroPanel } from "./CadastroPanel";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
