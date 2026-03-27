@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import { MiniMap } from "@/components/MiniMap";
 import { AppLayout } from "@/components/AppLayout";
 import { formatCurrency } from "@/data/mockData";
 import {
@@ -70,6 +71,8 @@ interface CondoInfo {
   videoUrl: string;
   downloadUrl: string;
   units: Unit[];
+  lat: number;
+  lng: number;
 }
 
 const statusConfig: Record<string, { color: string; bg: string; bgLight: string; border: string }> = {
@@ -111,6 +114,7 @@ const mockCondos: Record<string, CondoInfo> = {
   "1": {
     id: "1", name: "Alphaville Residencial", address: "Al. Araguaia, 1500", city: "Barueri",
     blocks: ["A", "B", "C", "D", "E"], totalUnits: 350, monthlyFee: 1800, type: "Horizontal",
+    lat: -23.5013, lng: -46.8753,
     image: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&h=500&fit=crop",
     amenities: ["Piscina", "Academia", "Segurança 24h", "Playground", "Área Verde", "Churrasqueira"],
     infrastructure: ["Portaria blindada 24h", "CFTV com 120 câmeras", "Ruas asfaltadas", "Iluminação LED", "Rede de fibra óptica", "Coleta seletiva", "Reservatório 200.000L", "Parque linear"],
@@ -129,6 +133,7 @@ const mockCondos: Record<string, CondoInfo> = {
   "2": {
     id: "2", name: "Condomínio Parque das Flores", address: "Rua das Orquídeas, 200", city: "São Paulo",
     blocks: ["T1", "T2", "T3"], totalUnits: 180, monthlyFee: 2500, type: "Vertical",
+    lat: -23.5505, lng: -46.6333,
     image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&h=500&fit=crop",
     amenities: ["Piscina", "Salão de Festas", "Quadra", "Segurança 24h", "Academia"],
     infrastructure: ["3 Torres com 20 andares", "Elevadores inteligentes", "Gerador full", "Estação de tratamento", "Bicicletário", "Espaço coworking"],
@@ -144,6 +149,7 @@ const mockCondos: Record<string, CondoInfo> = {
   "3": {
     id: "3", name: "Vila Verde Condomínio", address: "Estrada Municipal, 3000", city: "Cotia",
     blocks: ["L1", "L2"], totalUnits: 90, monthlyFee: 950, type: "Horizontal",
+    lat: -23.6043, lng: -46.9190,
     image: "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?w=800&h=500&fit=crop",
     amenities: ["Área Verde", "Portaria", "Churrasqueira"],
     infrastructure: ["Portaria com guarita", "CFTV básico", "Ruas de paralelepípedo", "Iluminação pública", "Poço artesiano"],
