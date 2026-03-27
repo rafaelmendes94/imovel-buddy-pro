@@ -2,7 +2,7 @@ import { useState } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import {
   FileText, ScrollText, Receipt, CreditCard, FileSignature, ShieldCheck,
-  Sparkles, Loader2, Download, Copy, ArrowLeft, ChevronRight,
+  Sparkles, Loader2, Download, Copy, ArrowLeft, ChevronRight, Pencil, Check, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -142,17 +142,23 @@ export default function Contratos() {
   const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
   const [generatedText, setGeneratedText] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editText, setEditText] = useState("");
 
   const handleSelectTemplate = (template: Template) => {
     setSelectedTemplate(template);
     setFieldValues({});
     setGeneratedText("");
+    setIsEditing(false);
+    setEditText("");
   };
 
   const handleBack = () => {
     setSelectedTemplate(null);
     setFieldValues({});
     setGeneratedText("");
+    setIsEditing(false);
+    setEditText("");
   };
 
   const handleGenerate = async () => {
@@ -166,6 +172,7 @@ export default function Contratos() {
 
     setIsGenerating(true);
     setGeneratedText("");
+    setIsEditing(false);
 
     try {
       const resp = await fetch(CHAT_URL, {
@@ -241,13 +248,31 @@ export default function Contratos() {
     }
   };
 
+  const handleStartEdit = () => {
+    setEditText(generatedText);
+    setIsEditing(true);
+  };
+
+  const handleSaveEdit = () => {
+    setGeneratedText(editText);
+    setIsEditing(false);
+    toast.success("Documento atualizado!");
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditText("");
+  };
+
+  const currentText = isEditing ? editText : generatedText;
+
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(generatedText);
+    await navigator.clipboard.writeText(currentText);
     toast.success("Documento copiado para a área de transferência!");
   };
 
   const handleDownload = () => {
-    const blob = new Blob([generatedText], { type: "text/plain;charset=utf-8" });
+    const blob = new Blob([currentText], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -372,21 +397,43 @@ export default function Contratos() {
                 <div className="flex items-center justify-between px-5 py-3 border-b border-border bg-muted/30">
                   <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
                     <FileText className="w-4 h-4 text-primary" />
-                    Documento Gerado
+                    {isEditing ? "Editando Documento" : "Documento Gerado"}
                   </h3>
-                  {generatedText && (
+                  {generatedText && !isGenerating && (
                     <div className="flex items-center gap-1.5">
-                      <Button size="sm" variant="ghost" onClick={handleCopy}>
-                        <Copy className="w-3.5 h-3.5 mr-1" /> Copiar
-                      </Button>
-                      <Button size="sm" variant="ghost" onClick={handleDownload}>
-                        <Download className="w-3.5 h-3.5 mr-1" /> Baixar
-                      </Button>
+                      {isEditing ? (
+                        <>
+                          <Button size="sm" variant="ghost" onClick={handleSaveEdit} className="text-emerald-500 hover:text-emerald-400">
+                            <Check className="w-3.5 h-3.5 mr-1" /> Salvar
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={handleCancelEdit} className="text-destructive hover:text-destructive/80">
+                            <X className="w-3.5 h-3.5 mr-1" /> Cancelar
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <Button size="sm" variant="ghost" onClick={handleStartEdit}>
+                            <Pencil className="w-3.5 h-3.5 mr-1" /> Editar
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={handleCopy}>
+                            <Copy className="w-3.5 h-3.5 mr-1" /> Copiar
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={handleDownload}>
+                            <Download className="w-3.5 h-3.5 mr-1" /> Baixar
+                          </Button>
+                        </>
+                      )}
                     </div>
                   )}
                 </div>
                 <div className="p-5 min-h-[400px] max-h-[70vh] overflow-y-auto">
-                  {generatedText ? (
+                  {isEditing ? (
+                    <textarea
+                      value={editText}
+                      onChange={(e) => setEditText(e.target.value)}
+                      className="w-full h-full min-h-[380px] bg-transparent text-sm text-foreground font-sans leading-relaxed resize-none focus:outline-none border border-border rounded-lg p-3"
+                    />
+                  ) : generatedText ? (
                     <pre className="text-sm text-foreground whitespace-pre-wrap font-sans leading-relaxed">
                       {generatedText}
                       {isGenerating && (
