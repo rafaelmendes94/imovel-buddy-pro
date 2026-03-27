@@ -545,7 +545,7 @@ export default function Financeiro() {
               </div>
             </CardContent>
           </Card>
-          <Card className="border-border border-red-500/30 bg-red-500/5">
+          <Card className="border-border border-red-500/30 bg-red-500/5 cursor-pointer hover:bg-red-500/10 transition-colors" onClick={() => setShowOverdueDialog(true)}>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-red-500/10">
