@@ -476,6 +476,10 @@ export default function BrokerSite() {
   const [userRating, setUserRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [viewingTerm, setViewingTerm] = useState<string | null>(null);
+  const [commentText, setCommentText] = useState("");
+  const [authorName, setAuthorName] = useState("");
+  const [localComments, setLocalComments] = useState<{ author: string; avatar: string; rating: number; text: string; date: string }[]>([]);
+  const [submitted, setSubmitted] = useState(false);
   const carouselRef = useRef<HTMLDivElement>(null);
   const [carouselIndex, setCarouselIndex] = useState(0);
 
