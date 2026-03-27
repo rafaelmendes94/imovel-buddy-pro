@@ -135,6 +135,8 @@ export const properties: Property[] = [
     broker: "Marcos Oliveira",
     image: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400&h=300&fit=crop",
     createdAt: "2024-03-12",
+    lat: -23.5667,
+    lng: -46.6915,
   },
 ];
 
