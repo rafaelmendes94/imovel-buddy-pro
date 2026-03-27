@@ -29,6 +29,8 @@ interface BuildingData {
   yearBuilt: string;
   status: "Em construção" | "Pronto" | "Lançamento";
   image: string;
+  lat: number;
+  lng: number;
 }
 
 const initialBuildings: BuildingData[] = [
@@ -43,6 +45,8 @@ const initialBuildings: BuildingData[] = [
     yearBuilt: "2024",
     status: "Pronto",
     image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&h=300&fit=crop",
+    lat: -23.5629,
+    lng: -46.6544,
   },
   {
     id: "2",
@@ -55,6 +59,8 @@ const initialBuildings: BuildingData[] = [
     yearBuilt: "2025",
     status: "Em construção",
     image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=400&h=300&fit=crop",
+    lat: -23.5558,
+    lng: -46.6621,
   },
   {
     id: "3",
@@ -67,6 +73,8 @@ const initialBuildings: BuildingData[] = [
     yearBuilt: "2026",
     status: "Lançamento",
     image: "https://images.unsplash.com/photo-1567449303078-57ad995bd329?w=400&h=300&fit=crop",
+    lat: -23.5672,
+    lng: -46.6483,
   },
 ];
 

@@ -33,6 +33,8 @@ interface Condominium {
   amenities: string[];
   type: "Horizontal" | "Vertical" | "Misto";
   image: string;
+  lat: number;
+  lng: number;
 }
 
 const initialCondominiums: Condominium[] = [
@@ -47,6 +49,8 @@ const initialCondominiums: Condominium[] = [
     amenities: ["Piscina", "Academia", "Segurança 24h", "Playground"],
     type: "Horizontal",
     image: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&h=300&fit=crop",
+    lat: -23.5013,
+    lng: -46.8753,
   },
   {
     id: "2",
@@ -59,6 +63,8 @@ const initialCondominiums: Condominium[] = [
     amenities: ["Piscina", "Salão de Festas", "Quadra", "Segurança 24h"],
     type: "Vertical",
     image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&h=300&fit=crop",
+    lat: -23.5505,
+    lng: -46.6333,
   },
   {
     id: "3",
@@ -71,6 +77,8 @@ const initialCondominiums: Condominium[] = [
     amenities: ["Área Verde", "Portaria", "Churrasqueira"],
     type: "Horizontal",
     image: "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?w=400&h=300&fit=crop",
+    lat: -23.6043,
+    lng: -46.9190,
   },
 ];
 
