@@ -1174,7 +1174,7 @@ export default function Site() {
               >
                 {soldProperties.map((p) => (
                   <div key={p.id} className="min-w-[calc(25%-18px)] flex-shrink-0">
-                    <PropertyCard property={{ ...p, status: "Vendido" as const }} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} hideStamp />
+                    <PropertyCard property={{ ...p, status: "Vendido" as const }} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} hideStamp isFavorited={favoriteIds.includes(p.id)} onToggleFavorite={toggleFavorite} />
                   </div>
                 ))}
               </div>
@@ -1477,7 +1477,7 @@ export default function Site() {
       >
         <ArrowUp className="w-5 h-5" />
       </button>
-      <RoutePlanner properties={available} />
+      <RoutePlanner properties={favoritedProperties} />
       <SharkAI properties={siteProperties} onSelectProperty={setSelectedProperty} />
       <PropertyDetailModal
         property={selectedProperty}
