@@ -224,7 +224,7 @@ function SectionHeader({ title, subtitle, icon: Icon }: { title: string; subtitl
   );
 }
 
-function PropertyCard({ property, whatsapp, brokerName, onSelect }: { property: typeof allSiteProperties[0]; whatsapp: string; brokerName: string; onSelect?: (p: typeof allSiteProperties[0]) => void }) {
+function PropertyCard({ property, whatsapp, brokerName, onSelect, onViewTerm }: { property: typeof allSiteProperties[0]; whatsapp: string; brokerName: string; onSelect?: (p: typeof allSiteProperties[0]) => void; onViewTerm?: (url: string) => void }) {
   const whatsappMessage = encodeURIComponent(
     `Olá ${brokerName}! Tenho interesse no imóvel: ${property.title} - ${formatCurrency(property.price)}`
   );
@@ -242,6 +242,15 @@ function PropertyCard({ property, whatsapp, brokerName, onSelect }: { property: 
         <span className="absolute top-3 left-3 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-500 text-white uppercase tracking-wide">
           {property.status}
         </span>
+        {property.exclusivityTerm && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onViewTerm?.(property.exclusivityTerm!); }}
+            className="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-amber-500/90 text-white backdrop-blur-sm hover:bg-amber-600 transition-colors"
+            title="Ver termo de exclusividade"
+          >
+            <FileCheck className="w-3 h-3" /> Exclusivo
+          </button>
+        )}
         <div className="absolute bottom-12 left-3 flex gap-1.5 flex-wrap">
           {property.seaView && (
             <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/90 text-white backdrop-blur-sm flex items-center gap-1">
