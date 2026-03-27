@@ -30,8 +30,17 @@ export function MiniMap({ lat, lng, name, height = "250px", zoom = 15 }: MiniMap
       const map = L.map(mapRef.current).setView([lat, lng], zoom);
       mapInstanceRef.current = map;
 
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>',
+      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+        attribution: '&copy; Esri, Maxar, Earthstar Geographics',
+        maxZoom: 19,
+      }).addTo(map);
+
+      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}", {
+        maxZoom: 19,
+      }).addTo(map);
+
+      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}", {
+        maxZoom: 19,
       }).addTo(map);
 
       L.marker([lat, lng]).addTo(map).bindPopup(`<b>${name}</b>`).openPopup();
