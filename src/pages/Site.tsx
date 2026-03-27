@@ -798,7 +798,7 @@ export default function Site() {
             <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-500 to-amber-400 flex items-center justify-center">
               <Home className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-extrabold text-gray-900">Imob<span className="text-amber-500">CRM</span></span>
+            <span className="text-xl font-extrabold text-gray-900">MV <span className="text-amber-500">Broker</span> <span className="text-gray-500 text-sm font-bold">Conect</span></span>
           </div>
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
             {categories.slice(1).map((cat) => (
@@ -843,10 +843,10 @@ export default function Site() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28">
           <div className="max-w-2xl space-y-6">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight">
-              Encontre o imóvel dos seus <span className="text-amber-400">sonhos</span>
+              MV <span className="text-amber-400">Broker</span> Conect
             </h1>
             <p className="text-lg text-gray-300 leading-relaxed">
-              Apartamentos, casas, condomínios e lotes nas melhores localizações. Seu novo lar está aqui.
+              Conectando corretores a corretores e imóveis a clientes. Apartamentos, casas, condomínios e lotes nas melhores localizações.
             </p>
             <div className="flex items-center bg-white rounded-2xl p-2 shadow-xl max-w-lg">
               <Search className="w-5 h-5 text-gray-400 ml-3 flex-shrink-0" />
@@ -1103,7 +1103,48 @@ export default function Site() {
           </section>
         )}
 
-        {/* Destaques */}
+        {/* Parceiros MV Broker */}
+        {!searchTerm && !hasActiveFilters && activeCategory === "todos" && (
+          <section>
+            <SectionHeader title="Parceiros MV Broker" subtitle="Empresas que confiam na nossa rede" icon={Building2} />
+            <div className="relative overflow-hidden">
+              <div className="flex animate-scroll gap-8 items-center">
+                {[
+                  { name: "Construtora Litoral", logo: "https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?w=200&h=100&fit=crop" },
+                  { name: "Incorporadora Sul", logo: "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=200&h=100&fit=crop" },
+                  { name: "Imobiliária Central", logo: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=200&h=100&fit=crop" },
+                  { name: "Porto Seguro Imóveis", logo: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=200&h=100&fit=crop" },
+                  { name: "Engenharia & Projetos", logo: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=200&h=100&fit=crop" },
+                  { name: "Financeira Prime", logo: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=200&h=100&fit=crop" },
+                  { name: "Seguradora Atlas", logo: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=200&h=100&fit=crop" },
+                  { name: "Arquitetura Moderna", logo: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=200&h=100&fit=crop" },
+                  { name: "Design & Interiores", logo: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=200&h=100&fit=crop" },
+                  { name: "Solar Energia", logo: "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=200&h=100&fit=crop" },
+                ].concat([
+                  { name: "Construtora Litoral", logo: "https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?w=200&h=100&fit=crop" },
+                  { name: "Incorporadora Sul", logo: "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=200&h=100&fit=crop" },
+                  { name: "Imobiliária Central", logo: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=200&h=100&fit=crop" },
+                  { name: "Porto Seguro Imóveis", logo: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=200&h=100&fit=crop" },
+                  { name: "Engenharia & Projetos", logo: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=200&h=100&fit=crop" },
+                  { name: "Financeira Prime", logo: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=200&h=100&fit=crop" },
+                  { name: "Seguradora Atlas", logo: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=200&h=100&fit=crop" },
+                  { name: "Arquitetura Moderna", logo: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=200&h=100&fit=crop" },
+                  { name: "Design & Interiores", logo: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=200&h=100&fit=crop" },
+                  { name: "Solar Energia", logo: "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=200&h=100&fit=crop" },
+                ]).map((partner, i) => (
+                  <div key={`${partner.name}-${i}`} className="flex-shrink-0 w-40 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+                    <div className="h-20 overflow-hidden">
+                      <img src={partner.logo} alt={partner.name} className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity" />
+                    </div>
+                    <p className="text-[11px] font-bold text-gray-700 text-center py-2 px-1 truncate">{partner.name}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+
         {!searchTerm && !hasActiveFilters && (activeCategory === "todos" || activeCategory === "destaque") && (
           <section>
             <SectionHeader title="Imóveis em Destaque" subtitle="Seleção especial dos melhores imóveis" icon={Star} />
@@ -1213,10 +1254,10 @@ export default function Site() {
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-amber-400 flex items-center justify-center">
                   <Home className="w-4 h-4 text-white" />
                 </div>
-                <span className="text-lg font-extrabold text-white">Imob<span className="text-amber-400">CRM</span></span>
+                <span className="text-lg font-extrabold text-white">MV <span className="text-amber-400">Broker</span> <span className="text-gray-400 text-xs font-bold">Conect</span></span>
               </div>
               <p className="text-sm leading-relaxed">
-                Sua imobiliária de confiança. Encontre apartamentos, casas, condomínios e lotes nas melhores localizações.
+                Conectando corretores a corretores e imóveis a clientes. Sua plataforma de confiança no litoral.
               </p>
             </div>
             <div>
