@@ -148,8 +148,9 @@ const siteProperties = [
     seaView: false,
     acceptsExchange: false,
     paymentConditions: ["36x"],
-  },
-  {
+    empreendimento: "Loteamento Capão Novo",
+    quadra: "Q-14",
+    lote: "L-03",
     id: "site-5",
     title: "Sobrado Praia de Arroio Teixeira",
     address: "Rua Marítima, 350",
@@ -171,7 +172,9 @@ const siteProperties = [
     seaView: false,
     acceptsExchange: true,
     paymentConditions: ["36x", "Carro"],
-  },
+    empreendimento: "Cond. Arroio Teixeira",
+    quadra: "Q-03",
+    lote: "L-09",
   {
     id: "site-6",
     title: "Apartamento Alto Padrão Atlântida",
