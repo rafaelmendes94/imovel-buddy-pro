@@ -342,7 +342,7 @@ export default function Reports() {
               Receita Mensal — Comparativo
             </h3>
             <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={revenueBarData} barCategoryGap="20%">
+              <BarChart data={revenueBarData} barCategoryGap="20%" onClick={(data) => { if (data?.activeLabel) setSelectedMonth(data.activeLabel); }} style={{ cursor: "pointer" }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                 <XAxis dataKey="month" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
                 <YAxis tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v) => `${(v / 1000000).toFixed(1)}M`} />
