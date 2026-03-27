@@ -17,9 +17,11 @@ interface PropertyDetailModalProps {
   brokerInfo?: Record<string, { photo: string; whatsapp: string }>;
   onSelectSimilar?: (p: Property) => void;
   onUpdateProperty?: (updated: Property) => void;
+  onFilterByTitle?: (title: string) => void;
+  onFilterByCondition?: (cond: string) => void;
 }
 
-export function PropertyDetailModal({ property, onClose, allProperties, brokerInfo, onSelectSimilar, onUpdateProperty }: PropertyDetailModalProps) {
+export function PropertyDetailModal({ property, onClose, allProperties, brokerInfo, onSelectSimilar, onUpdateProperty, onFilterByTitle, onFilterByCondition }: PropertyDetailModalProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showVideo, setShowVideo] = useState(false);
   const [editingField, setEditingField] = useState<string | null>(null);
@@ -187,7 +189,13 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
         <div className="flex items-center justify-between p-4 border-b border-gray-100">
           <div className="flex items-center gap-3 min-w-0 flex-1">
             <h2 className="text-lg font-bold text-gray-900 truncate">
-              <EditableField field="title" value={property.title} label="título" />
+              <span
+                className="cursor-pointer hover:text-amber-600 transition-colors"
+                onClick={() => onFilterByTitle?.(property.title)}
+                title="Clique para ver títulos semelhantes"
+              >
+                <EditableField field="title" value={property.title} label="título" />
+              </span>
             </h2>
             <span className={cn(
               "px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide flex-shrink-0",
@@ -441,9 +449,14 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
               </p>
               <div className="flex flex-wrap gap-2">
                 {property.paymentConditions.map((cond) => (
-                  <span key={cond} className="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-emerald-700 border border-emerald-200 shadow-sm">
+                  <button
+                    key={cond}
+                    className="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-emerald-700 border border-emerald-200 shadow-sm hover:bg-emerald-50 transition-colors cursor-pointer"
+                    onClick={() => onFilterByCondition?.(cond)}
+                    title={`Ver imóveis com condição "${cond}"`}
+                  >
                     {cond}
-                  </span>
+                  </button>
                 ))}
                 {property.paymentConditionsOther && (
                   <span className="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-gray-600 border border-gray-200">
