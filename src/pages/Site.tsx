@@ -521,6 +521,13 @@ export default function Site() {
             </div>
           </section>
         )}
+        {/* Mapa Interativo */}
+        {!searchTerm && (activeCategory === "todos") && (
+          <section>
+            <SectionHeader title="Localização dos Imóveis" subtitle="Veja todos os imóveis no mapa" icon={MapPin} />
+            <SiteMap properties={available} />
+          </section>
+        )}
       </main>
 
       {/* Footer */}
