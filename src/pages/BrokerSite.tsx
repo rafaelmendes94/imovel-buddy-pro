@@ -1007,6 +1007,94 @@ export default function BrokerSite() {
         )}
       </main>
 
+      {/* Avaliações e Comentários Section */}
+      {info && (
+        <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+          <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                <MessageSquare className="w-5 h-5 text-amber-500" /> Avaliações e Comentários
+              </h2>
+              <button
+                onClick={() => setShowRatingModal(true)}
+                className="px-4 py-2 rounded-xl bg-amber-500 text-white text-sm font-bold hover:bg-amber-600 transition-colors flex items-center gap-2"
+              >
+                <Star className="w-4 h-4" /> Avaliar Corretor
+              </button>
+            </div>
+
+            {/* Rating overview */}
+            {(() => {
+              const allComments = [...(info.comments || []), ...localComments];
+              const avgRating = allComments.length > 0
+                ? (allComments.reduce((s, c) => s + c.rating, 0) / allComments.length).toFixed(1)
+                : info.rating.toFixed(1);
+              return (
+                <>
+                  <div className="flex items-center gap-6 mb-6 p-4 bg-amber-50 rounded-xl">
+                    <div className="text-center">
+                      <p className="text-4xl font-black text-amber-600">{avgRating}</p>
+                      <div className="flex items-center gap-0.5 mt-1">
+                        {[1, 2, 3, 4, 5].map((s) => (
+                          <Star key={s} className={cn("w-4 h-4", s <= Math.round(Number(avgRating)) ? "text-amber-400 fill-amber-400" : "text-gray-300")} />
+                        ))}
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">{info.totalRatings + localComments.length} avaliações</p>
+                    </div>
+                    <div className="flex-1 space-y-1.5">
+                      {[5, 4, 3, 2, 1].map((star) => {
+                        const count = allComments.filter(c => c.rating === star).length;
+                        const pct = allComments.length > 0 ? (count / allComments.length) * 100 : 0;
+                        return (
+                          <div key={star} className="flex items-center gap-2 text-xs">
+                            <span className="w-3 text-gray-500">{star}</span>
+                            <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+                            <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                              <div className="h-full bg-amber-400 rounded-full transition-all" style={{ width: `${pct}%` }} />
+                            </div>
+                            <span className="w-6 text-right text-gray-400">{count}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {submitted && (
+                    <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-sm text-emerald-700 font-medium flex items-center gap-2">
+                      <ThumbsUp className="w-4 h-4" /> Sua avaliação foi enviada com sucesso!
+                    </div>
+                  )}
+
+                  {allComments.length > 0 ? (
+                    <div className="space-y-4">
+                      {allComments.map((c, i) => (
+                        <div key={i} className="flex gap-3 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                          <img src={c.avatar} alt={c.author} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between">
+                              <p className="text-sm font-bold text-gray-900">{c.author}</p>
+                              <p className="text-[10px] text-gray-400">{c.date}</p>
+                            </div>
+                            <div className="flex items-center gap-0.5 mt-0.5">
+                              {[1, 2, 3, 4, 5].map((s) => (
+                                <Star key={s} className={cn("w-3 h-3", s <= c.rating ? "text-amber-400 fill-amber-400" : "text-gray-300")} />
+                              ))}
+                            </div>
+                            <p className="text-sm text-gray-600 mt-2 leading-relaxed">{c.text}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-center py-8 text-gray-400 text-sm">Nenhum comentário ainda. Seja o primeiro a avaliar!</p>
+                  )}
+                </>
+              );
+            })()}
+          </div>
+        </section>
+      )}
+
       {/* Footer */}
       <footer className="bg-gray-900 text-gray-400 py-10">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-4">
@@ -1042,10 +1130,10 @@ export default function BrokerSite() {
         onSelectSimilar={(p) => setSelectedProperty(p)}
       />
 
-      {/* Rating Modal */}
+      {/* Rating + Comment Modal */}
       {showRatingModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowRatingModal(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-5" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-5" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold text-gray-900">Avaliar {brokerName}</h3>
               <button onClick={() => setShowRatingModal(false)} className="p-1 rounded-lg hover:bg-gray-100">
@@ -1078,21 +1166,51 @@ export default function BrokerSite() {
                 </p>
               )}
             </div>
+            <div className="space-y-3">
+              <input
+                type="text"
+                placeholder="Seu nome"
+                value={authorName}
+                onChange={(e) => setAuthorName(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-gray-50"
+              />
+              <textarea
+                placeholder="Deixe seu comentário sobre este corretor..."
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                rows={3}
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-gray-50 resize-none"
+              />
+            </div>
             <button
-              disabled={userRating === 0}
+              disabled={userRating === 0 || !commentText.trim() || !authorName.trim()}
               onClick={() => {
+                if (userRating === 0 || !commentText.trim() || !authorName.trim()) return;
+                setLocalComments(prev => [...prev, {
+                  author: authorName,
+                  avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(authorName)}&background=f59e0b&color=fff`,
+                  rating: userRating,
+                  text: commentText,
+                  date: new Date().toISOString().split("T")[0],
+                }]);
+                setSubmitted(true);
                 setShowRatingModal(false);
-                // In production, this would save to the database
+                setCommentText("");
+                setAuthorName("");
+                setUserRating(0);
               }}
               className={cn(
-                "w-full py-2.5 rounded-xl font-bold text-sm transition-colors",
-                userRating > 0
+                "w-full py-3 rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2",
+                userRating > 0 && commentText.trim() && authorName.trim()
                   ? "bg-amber-500 text-white hover:bg-amber-600"
                   : "bg-gray-100 text-gray-400 cursor-not-allowed"
               )}
             >
-              Enviar Avaliação
+              <Send className="w-4 h-4" /> Enviar Avaliação
             </button>
+          </div>
+        </div>
+      )}
           </div>
         </div>
       )}
