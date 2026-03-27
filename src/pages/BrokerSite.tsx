@@ -747,6 +747,15 @@ export default function BrokerSite() {
           <p className="text-xs text-gray-600 pt-4">© 2024 ImobCRM. Todos os direitos reservados.</p>
         </div>
       </footer>
+      <PropertyDetailModal
+        property={selectedProperty}
+        onClose={() => setSelectedProperty(null)}
+        allProperties={allSiteProperties}
+        brokerInfo={Object.fromEntries(
+          Object.entries({ [brokerName]: { photo: info.photo, whatsapp: info.whatsapp } })
+        )}
+        onSelectSimilar={(p) => setSelectedProperty(p)}
+      />
     </div>
   );
 }
