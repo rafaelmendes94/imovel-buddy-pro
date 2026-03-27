@@ -410,6 +410,10 @@ export default function VideoMaker() {
                               </div>
                             </div>
                             <p className="text-xs text-muted-foreground">{job.client}</p>
+                            <div className="flex items-center gap-1 flex-wrap">
+                              <Badge variant="outline" className={cn("text-[9px] h-4 px-1.5", materialTypeColors[job.materialType])}>{materialTypes.find(m => m.value === job.materialType)?.label}</Badge>
+                              <Badge variant="outline" className={cn("text-[9px] h-4 px-1.5", clientTypeColors[job.clientType])}>{clientTypes.find(c => c.value === job.clientType)?.label}</Badge>
+                            </div>
                             {job.address && <p className="text-[11px] text-muted-foreground/70 flex items-center gap-1"><MapPin className="w-3 h-3" />{job.address}</p>}
                             <div className="flex items-center justify-between pt-1">
                               <span className="text-xs font-semibold text-accent">{fmtBRL(job.value)}</span>
@@ -445,6 +449,10 @@ export default function VideoMaker() {
                   <div className="space-y-3">
                     <div><Label>Imóvel *</Label><Input value={newFinance.property} onChange={e => setNewFinance(p => ({ ...p, property: e.target.value }))} /></div>
                     <div><Label>Cliente *</Label><Input value={newFinance.client} onChange={e => setNewFinance(p => ({ ...p, client: e.target.value }))} /></div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div><Label>Tipo de Material</Label><Select value={newFinance.materialType} onValueChange={v => setNewFinance(p => ({ ...p, materialType: v as MaterialType }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{materialTypes.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent></Select></div>
+                      <div><Label>Tipo de Cliente</Label><Select value={newFinance.clientType} onValueChange={v => setNewFinance(p => ({ ...p, clientType: v as ClientType }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{clientTypes.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent></Select></div>
+                    </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div><Label>Valor Cobrado do Cliente (R$)</Label><Input type="number" value={newFinance.clientValue} onChange={e => setNewFinance(p => ({ ...p, clientValue: e.target.value }))} placeholder="1500" /></div>
                       <div><Label>Valor Pago ao Editor (R$)</Label><Input type="number" value={newFinance.editorCost} onChange={e => setNewFinance(p => ({ ...p, editorCost: e.target.value }))} placeholder="400" /></div>
