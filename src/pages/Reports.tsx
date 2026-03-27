@@ -134,6 +134,7 @@ export default function Reports() {
     setFilterType("Todos");
     setFilterSegment("Todos");
     setFilterSeaView("Todos");
+    setFilterPeriod("Todos");
   };
 
   const filtered = useMemo(() => {
