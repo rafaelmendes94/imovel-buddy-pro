@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { properties, formatCurrency } from "@/data/mockData";
 import {
@@ -7,7 +8,6 @@ import {
   Car,
   Ruler,
   Phone,
-  Mail,
   Home,
   ArrowLeft,
   Star,
@@ -16,8 +16,14 @@ import {
   Repeat,
   CreditCard,
   Building2,
-  Share2,
+  TreePine,
+  Search,
+  X,
+  SlidersHorizontal,
+  ChevronDown,
+  Fence,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const brokerInfo: Record<string, { photo: string; whatsapp: string; creci: string; bio: string }> = {
   "Carlos Silva": {
@@ -40,7 +46,6 @@ const brokerInfo: Record<string, { photo: string; whatsapp: string; creci: strin
   },
 };
 
-// All properties including site extras
 const allSiteProperties = [
   ...properties,
   {
@@ -160,6 +165,114 @@ const allSiteProperties = [
   },
 ];
 
+type Category = "todos" | "apartamentos" | "casas" | "terrenos" | "decorados" | "vista-mar" | "permuta" | "pagamento";
+
+const categories: { key: Category; label: string; icon: typeof Home }[] = [
+  { key: "todos", label: "Todos", icon: Home },
+  { key: "apartamentos", label: "Apartamentos", icon: Building2 },
+  { key: "casas", label: "Casas", icon: Home },
+  { key: "terrenos", label: "Terrenos", icon: TreePine },
+  { key: "decorados", label: "Decorados", icon: Paintbrush },
+  { key: "vista-mar", label: "Vista Mar", icon: Waves },
+  { key: "permuta", label: "Permuta", icon: Repeat },
+  { key: "pagamento", label: "Pagamento", icon: CreditCard },
+];
+
+function SectionHeader({ title, subtitle, icon: Icon }: { title: string; subtitle: string; icon: typeof Home }) {
+  return (
+    <div className="flex items-center gap-3 mb-6">
+      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-amber-400 flex items-center justify-center shadow-md">
+        <Icon className="w-5 h-5 text-white" />
+      </div>
+      <div>
+        <h2 className="text-2xl font-extrabold text-gray-900">{title}</h2>
+        <p className="text-sm text-gray-500">{subtitle}</p>
+      </div>
+    </div>
+  );
+}
+
+function PropertyCard({ property, whatsapp, brokerName }: { property: typeof allSiteProperties[0]; whatsapp: string; brokerName: string }) {
+  const whatsappMessage = encodeURIComponent(
+    `Olá ${brokerName}! Tenho interesse no imóvel: ${property.title} - ${formatCurrency(property.price)}`
+  );
+
+  return (
+    <div className="group rounded-2xl overflow-hidden bg-white shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100">
+      <div className="relative h-52 overflow-hidden">
+        <img
+          src={property.image}
+          alt={property.title}
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+        <span className="absolute top-3 left-3 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-500 text-white uppercase tracking-wide">
+          {property.status}
+        </span>
+        <div className="absolute top-3 right-3 flex gap-1.5">
+          <span className="px-3 py-1 rounded-full text-[11px] font-semibold bg-white/90 text-gray-800 backdrop-blur-sm">
+            {property.type}
+          </span>
+          <span className="px-3 py-1 rounded-full text-[11px] font-semibold bg-amber-500/90 text-white backdrop-blur-sm">
+            {property.city}
+          </span>
+        </div>
+        <div className="absolute bottom-12 left-3 flex gap-1.5 flex-wrap">
+          {property.seaView && (
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/90 text-white backdrop-blur-sm flex items-center gap-1">
+              <Waves className="w-3 h-3" /> Vista Mar
+            </span>
+          )}
+          {property.decorated && (
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/90 text-white backdrop-blur-sm flex items-center gap-1">
+              <Paintbrush className="w-3 h-3" /> Decorado
+            </span>
+          )}
+          {property.acceptsExchange && (
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-500/90 text-white backdrop-blur-sm flex items-center gap-1">
+              <Repeat className="w-3 h-3" /> Permuta
+            </span>
+          )}
+        </div>
+        <div className="absolute bottom-3 left-3 right-3">
+          <p className="text-xl font-bold text-white drop-shadow-lg">
+            {formatCurrency(property.price)}
+          </p>
+        </div>
+      </div>
+      <div className="p-4 space-y-3">
+        <h3 className="font-bold text-gray-900 text-base leading-tight">{property.title}</h3>
+        <div className="flex items-center gap-1 text-gray-500 text-xs">
+          <MapPin className="w-3.5 h-3.5" />
+          <span>{property.address}, {property.city}</span>
+        </div>
+        {(property.bedrooms > 0 || property.area > 0) && (
+          <div className="flex items-center gap-4 pt-2 border-t border-gray-100 text-xs text-gray-600">
+            <span className="flex items-center gap-1"><Ruler className="w-3.5 h-3.5" />{property.area}m²</span>
+            {property.bedrooms > 0 && <span className="flex items-center gap-1"><BedDouble className="w-3.5 h-3.5" />{property.bedrooms} quartos</span>}
+            {property.bathrooms > 0 && <span className="flex items-center gap-1"><Bath className="w-3.5 h-3.5" />{property.bathrooms} ban.</span>}
+            {property.parking > 0 && <span className="flex items-center gap-1"><Car className="w-3.5 h-3.5" />{property.parking} vagas</span>}
+          </div>
+        )}
+        {property.paymentConditions && (
+          <div className="flex items-center gap-1.5 text-[11px] text-emerald-700 bg-emerald-50 px-2.5 py-1.5 rounded-lg">
+            <CreditCard className="w-3.5 h-3.5" />
+            <span className="font-semibold">{property.paymentConditions}</span>
+          </div>
+        )}
+        <a
+          href={`https://wa.me/${whatsapp}?text=${whatsappMessage}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-colors shadow-sm"
+        >
+          <Phone className="w-4 h-4" /> Tenho Interesse
+        </a>
+      </div>
+    </div>
+  );
+}
+
 export default function BrokerSite() {
   const { slug } = useParams<{ slug: string }>();
   const brokerName = slug
@@ -170,6 +283,14 @@ export default function BrokerSite() {
   const brokerProperties = allSiteProperties.filter(
     (p) => p.broker === brokerName && p.status === "Disponível"
   );
+
+  const [activeCategory, setActiveCategory] = useState<Category>("todos");
+  const [filterCity, setFilterCity] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const [filterBedrooms, setFilterBedrooms] = useState("");
+  const [filterPriceMin, setFilterPriceMin] = useState("");
+  const [filterPriceMax, setFilterPriceMax] = useState("");
 
   if (!info) {
     return (
@@ -184,11 +305,62 @@ export default function BrokerSite() {
     );
   }
 
+  const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax;
+
+  const clearFilters = () => {
+    setFilterCity("");
+    setFilterBedrooms("");
+    setFilterPriceMin("");
+    setFilterPriceMax("");
+    setSearchTerm("");
+  };
+
+  // Apply base filters (search + advanced)
+  const baseFiltered = brokerProperties.filter((p) => {
+    const matchSearch = !searchTerm ||
+      p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.city.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchCity = !filterCity || p.city === filterCity;
+    const matchBedrooms = !filterBedrooms || p.bedrooms >= parseInt(filterBedrooms);
+    const matchPriceMin = !filterPriceMin || p.price >= parseInt(filterPriceMin);
+    const matchPriceMax = !filterPriceMax || p.price <= parseInt(filterPriceMax);
+    return matchSearch && matchCity && matchBedrooms && matchPriceMin && matchPriceMax;
+  });
+
+  // Segmentations
+  const apartments = baseFiltered.filter((p) => p.type === "Apartamento");
+  const houses = baseFiltered.filter((p) => p.type === "Casa");
+  const lots = baseFiltered.filter((p) => p.type === "Terreno");
+  const decorated = baseFiltered.filter((p) => p.decorated);
+  const seaView = baseFiltered.filter((p) => p.seaView);
+  const exchange = baseFiltered.filter((p) => p.acceptsExchange);
+  const withPayment = baseFiltered.filter((p) => p.paymentConditions);
+
+  // City groups
+  const cities = [...new Set(brokerProperties.map((p) => p.city))];
+  const byCityCapao = baseFiltered.filter((p) => p.city === "Capão da Canoa");
+  const byCityXangrila = baseFiltered.filter((p) => p.city === "Xangri-lá");
+
   const whatsappGeneral = encodeURIComponent(
     `Olá ${brokerName}! Vi seu portfólio de imóveis e gostaria de mais informações.`
   );
 
   const totalValue = brokerProperties.reduce((sum, p) => sum + p.price, 0);
+
+  const renderSection = (title: string, subtitle: string, icon: typeof Home, items: typeof baseFiltered) => {
+    if (items.length === 0) return null;
+    return (
+      <section>
+        <SectionHeader title={title} subtitle={subtitle} icon={icon} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {items.map((p) => (
+            <PropertyCard key={p.id} property={p} whatsapp={info.whatsapp} brokerName={brokerName} />
+          ))}
+        </div>
+      </section>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
@@ -204,6 +376,20 @@ export default function BrokerSite() {
               <span className="text-lg font-extrabold text-gray-900">Imob<span className="text-amber-500">CRM</span></span>
             </div>
           </Link>
+          <nav className="hidden md:flex items-center gap-4 text-sm font-medium text-gray-600">
+            {categories.slice(1).map((cat) => (
+              <button
+                key={cat.key}
+                onClick={() => setActiveCategory(cat.key)}
+                className={cn(
+                  "hover:text-amber-600 transition-colors",
+                  activeCategory === cat.key && "text-amber-600 font-bold"
+                )}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </nav>
           <a
             href={`https://wa.me/${info.whatsapp}?text=${whatsappGeneral}`}
             target="_blank"
@@ -236,7 +422,7 @@ export default function BrokerSite() {
                 <Star className="w-5 h-5 text-white" />
               </div>
             </div>
-            <div className="text-center sm:text-left space-y-3">
+            <div className="text-center sm:text-left space-y-3 flex-1">
               <h1 className="text-3xl sm:text-4xl font-extrabold text-white">{brokerName}</h1>
               <p className="text-amber-400 font-bold text-sm tracking-wide">CRECI {info.creci}</p>
               <p className="text-gray-300 text-sm max-w-lg leading-relaxed">{info.bio}</p>
@@ -266,118 +452,245 @@ export default function BrokerSite() {
               </div>
             </div>
           </div>
+
+          {/* Search + Quick Actions inside hero */}
+          <div className="mt-8 space-y-4">
+            <div className="flex items-center bg-white rounded-2xl p-2 shadow-xl max-w-lg">
+              <Search className="w-5 h-5 text-gray-400 ml-3 flex-shrink-0" />
+              <input
+                type="text"
+                placeholder="Buscar imóvel por nome, endereço..."
+                value={searchTerm}
+                onChange={(e) => { setSearchTerm(e.target.value); setActiveCategory("todos"); }}
+                className="flex-1 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none bg-transparent"
+              />
+              {searchTerm && (
+                <button onClick={() => setSearchTerm("")} className="p-1.5 rounded-lg hover:bg-gray-100 mr-1">
+                  <X className="w-4 h-4 text-gray-400" />
+                </button>
+              )}
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                onClick={() => { setActiveCategory("permuta"); setSearchTerm(""); }}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-colors shadow-md",
+                  activeCategory === "permuta"
+                    ? "bg-orange-600 text-white"
+                    : "bg-orange-500 text-white hover:bg-orange-600"
+                )}
+              >
+                <Repeat className="w-4 h-4" /> Aceita Permuta
+              </button>
+              <button
+                onClick={() => { setActiveCategory("pagamento"); setSearchTerm(""); }}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-colors shadow-md",
+                  activeCategory === "pagamento"
+                    ? "bg-emerald-700 text-white"
+                    : "bg-emerald-600 text-white hover:bg-emerald-700"
+                )}
+              >
+                <CreditCard className="w-4 h-4" /> Condições de Pagamento
+              </button>
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/20 text-white text-sm font-bold hover:bg-white/30 transition-colors backdrop-blur-sm border border-white/30"
+              >
+                <SlidersHorizontal className="w-4 h-4" /> Filtros Avançados
+                <ChevronDown className={cn("w-4 h-4 transition-transform", showFilters && "rotate-180")} />
+              </button>
+            </div>
+            <div className="flex items-center gap-6 text-sm text-gray-300">
+              <span className="flex items-center gap-1.5"><Building2 className="w-4 h-4 text-amber-400" /> {apartments.length} Aptos</span>
+              <span className="flex items-center gap-1.5"><Home className="w-4 h-4 text-amber-400" /> {houses.length} Casas</span>
+              <span className="flex items-center gap-1.5"><TreePine className="w-4 h-4 text-amber-400" /> {lots.length} Terrenos</span>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Properties */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h2 className="text-2xl font-extrabold text-gray-900 mb-8">
-          Imóveis de {brokerName.split(" ")[0]}
-        </h2>
-
-        {brokerProperties.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {brokerProperties.map((property) => {
-              const whatsappMessage = encodeURIComponent(
-                `Olá ${brokerName}! Tenho interesse no imóvel: ${property.title} - ${formatCurrency(property.price)}`
-              );
-              return (
-                <div
-                  key={property.id}
-                  className="group rounded-2xl overflow-hidden bg-white shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100"
+      {/* Advanced Filters Panel */}
+      {showFilters && (
+        <div className="bg-white border-b border-gray-200 shadow-md">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">Cidade</label>
+                <select
+                  value={filterCity}
+                  onChange={(e) => setFilterCity(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-400"
                 >
-                  <div className="relative h-52 overflow-hidden">
-                    <img
-                      src={property.image}
-                      alt={property.title}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                    <span className="absolute top-3 left-3 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-500 text-white uppercase tracking-wide">
-                      {property.status}
-                    </span>
-                    <span className="absolute top-3 right-3 px-3 py-1 rounded-full text-[11px] font-semibold bg-white/90 text-gray-800 backdrop-blur-sm">
-                      {property.type}
-                    </span>
-                    <div className="absolute bottom-12 left-3 flex gap-1.5">
-                      {property.seaView && (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/90 text-white backdrop-blur-sm flex items-center gap-1">
-                          <Waves className="w-3 h-3" /> Vista Mar
-                        </span>
-                      )}
-                      {property.decorated && (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/90 text-white backdrop-blur-sm flex items-center gap-1">
-                          <Paintbrush className="w-3 h-3" /> Decorado
-                        </span>
-                      )}
-                      {property.acceptsExchange && (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-500/90 text-white backdrop-blur-sm flex items-center gap-1">
-                          <Repeat className="w-3 h-3" /> Permuta
-                        </span>
-                      )}
-                    </div>
-                    <div className="absolute bottom-3 left-3 right-3">
-                      <p className="text-xl font-bold text-white drop-shadow-lg">
-                        {formatCurrency(property.price)}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="p-4 space-y-3">
-                    <h3 className="font-bold text-gray-900 text-base leading-tight">
-                      {property.title}
-                    </h3>
-                    <div className="flex items-center gap-1 text-gray-500 text-xs">
-                      <MapPin className="w-3.5 h-3.5" />
-                      <span>
-                        {property.address}, {property.city}
-                      </span>
-                    </div>
-                    {(property.bedrooms > 0 || property.area > 0) && (
-                      <div className="flex items-center gap-4 pt-2 border-t border-gray-100 text-xs text-gray-600">
-                        <span className="flex items-center gap-1">
-                          <Ruler className="w-3.5 h-3.5" />
-                          {property.area}m²
-                        </span>
-                        {property.bedrooms > 0 && (
-                          <span className="flex items-center gap-1">
-                            <BedDouble className="w-3.5 h-3.5" />
-                            {property.bedrooms} quartos
-                          </span>
-                        )}
-                        {property.bathrooms > 0 && (
-                          <span className="flex items-center gap-1">
-                            <Bath className="w-3.5 h-3.5" />
-                            {property.bathrooms} ban.
-                          </span>
-                        )}
-                        {property.parking > 0 && (
-                          <span className="flex items-center gap-1">
-                            <Car className="w-3.5 h-3.5" />
-                            {property.parking} vagas
-                          </span>
-                        )}
-                      </div>
-                    )}
-                    {property.paymentConditions && (
-                      <div className="flex items-center gap-1.5 text-[11px] text-emerald-700 bg-emerald-50 px-2.5 py-1.5 rounded-lg">
-                        <CreditCard className="w-3.5 h-3.5" />
-                        <span className="font-semibold">{property.paymentConditions}</span>
-                      </div>
-                    )}
-                    <a
-                      href={`https://wa.me/${info.whatsapp}?text=${whatsappMessage}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-colors shadow-sm"
-                    >
-                      <Phone className="w-4 h-4" /> Tenho Interesse
-                    </a>
-                  </div>
-                </div>
-              );
-            })}
+                  <option value="">Todas</option>
+                  {cities.map((c) => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">Quartos (mín.)</label>
+                <select
+                  value={filterBedrooms}
+                  onChange={(e) => setFilterBedrooms(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                >
+                  <option value="">Qualquer</option>
+                  <option value="1">1+</option>
+                  <option value="2">2+</option>
+                  <option value="3">3+</option>
+                  <option value="4">4+</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">Preço mín.</label>
+                <select
+                  value={filterPriceMin}
+                  onChange={(e) => setFilterPriceMin(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                >
+                  <option value="">Sem mínimo</option>
+                  <option value="200000">R$ 200 mil</option>
+                  <option value="500000">R$ 500 mil</option>
+                  <option value="800000">R$ 800 mil</option>
+                  <option value="1000000">R$ 1 milhão</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">Preço máx.</label>
+                <select
+                  value={filterPriceMax}
+                  onChange={(e) => setFilterPriceMax(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                >
+                  <option value="">Sem máximo</option>
+                  <option value="500000">R$ 500 mil</option>
+                  <option value="800000">R$ 800 mil</option>
+                  <option value="1000000">R$ 1 milhão</option>
+                  <option value="1500000">R$ 1,5 milhão</option>
+                  <option value="2000000">R$ 2 milhões</option>
+                </select>
+              </div>
+              <div className="flex items-end gap-2">
+                <button
+                  onClick={() => { setActiveCategory("todos"); setShowFilters(false); }}
+                  className="flex-1 px-4 py-2 rounded-lg bg-amber-500 text-white text-sm font-bold hover:bg-amber-600 transition-colors"
+                >
+                  Buscar
+                </button>
+                {hasActiveFilters && (
+                  <button
+                    onClick={clearFilters}
+                    className="px-3 py-2 rounded-lg bg-gray-100 text-gray-600 text-sm font-medium hover:bg-gray-200 transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
-        ) : (
+        </div>
+      )}
+
+      {/* Category Filter Mobile */}
+      <div className="md:hidden sticky top-16 z-40 bg-white border-b border-gray-200 overflow-x-auto">
+        <div className="flex gap-1 p-2">
+          {categories.map((cat) => (
+            <button
+              key={cat.key}
+              onClick={() => setActiveCategory(cat.key)}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all",
+                activeCategory === cat.key
+                  ? "bg-amber-500 text-white shadow-sm"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              )}
+            >
+              <cat.icon className="w-3.5 h-3.5" />
+              {cat.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Properties */}
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
+
+        {/* Search results */}
+        {(searchTerm || hasActiveFilters) && (
+          <section>
+            <SectionHeader
+              title={searchTerm ? `Resultados para "${searchTerm}"` : "Resultados dos Filtros"}
+              subtitle={`${baseFiltered.length} imóveis encontrados`}
+              icon={Search}
+            />
+            {baseFiltered.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {baseFiltered.map((p) => (
+                  <PropertyCard key={p.id} property={p} whatsapp={info.whatsapp} brokerName={brokerName} />
+                ))}
+              </div>
+            ) : (
+              <p className="text-center py-12 text-gray-400">Nenhum imóvel encontrado.</p>
+            )}
+          </section>
+        )}
+
+        {/* Category-based sections */}
+        {!searchTerm && !hasActiveFilters && (
+          <>
+            {/* TODOS - show by city */}
+            {activeCategory === "todos" && (
+              <>
+                {/* Capão da Canoa */}
+                {byCityCapao.length > 0 && (
+                  <section>
+                    <SectionHeader title="Capão da Canoa" subtitle={`${byCityCapao.length} imóveis em Capão da Canoa`} icon={MapPin} />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {byCityCapao.map((p) => (
+                        <PropertyCard key={p.id} property={p} whatsapp={info.whatsapp} brokerName={brokerName} />
+                      ))}
+                    </div>
+                  </section>
+                )}
+
+                {/* Xangri-lá */}
+                {byCityXangrila.length > 0 && (
+                  <section>
+                    <SectionHeader title="Xangri-lá" subtitle={`${byCityXangrila.length} imóveis em Xangri-lá`} icon={MapPin} />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {byCityXangrila.map((p) => (
+                        <PropertyCard key={p.id} property={p} whatsapp={info.whatsapp} brokerName={brokerName} />
+                      ))}
+                    </div>
+                  </section>
+                )}
+              </>
+            )}
+
+            {/* Apartamentos */}
+            {activeCategory === "apartamentos" && renderSection("Apartamentos", `${apartments.length} apartamentos`, Building2, apartments)}
+
+            {/* Casas */}
+            {activeCategory === "casas" && renderSection("Casas", `${houses.length} casas`, Home, houses)}
+
+            {/* Terrenos */}
+            {activeCategory === "terrenos" && renderSection("Terrenos", `${lots.length} terrenos`, TreePine, lots)}
+
+            {/* Decorados */}
+            {activeCategory === "decorados" && renderSection("Decorados", `${decorated.length} imóveis decorados`, Paintbrush, decorated)}
+
+            {/* Vista Mar */}
+            {activeCategory === "vista-mar" && renderSection("Vista para o Mar", `${seaView.length} imóveis com vista mar`, Waves, seaView)}
+
+            {/* Permuta */}
+            {activeCategory === "permuta" && renderSection("Aceita Permuta", `${exchange.length} imóveis que aceitam permuta`, Repeat, exchange)}
+
+            {/* Pagamento */}
+            {activeCategory === "pagamento" && renderSection("Condições de Pagamento", `${withPayment.length} imóveis com condições especiais`, CreditCard, withPayment)}
+          </>
+        )}
+
+        {/* Empty state */}
+        {brokerProperties.length === 0 && (
           <p className="text-center py-16 text-gray-400 text-lg">
             Nenhum imóvel disponível no momento.
           </p>
@@ -395,9 +708,7 @@ export default function BrokerSite() {
               Imob<span className="text-amber-400">CRM</span>
             </span>
           </div>
-          <p className="text-sm">
-            {brokerName} — CRECI {info.creci}
-          </p>
+          <p className="text-sm">{brokerName} — CRECI {info.creci}</p>
           <div className="flex items-center justify-center gap-4">
             <a
               href={`https://wa.me/${info.whatsapp}`}
@@ -408,9 +719,7 @@ export default function BrokerSite() {
               <Phone className="w-4 h-4" /> WhatsApp
             </a>
           </div>
-          <p className="text-xs text-gray-600 pt-4">
-            © 2024 ImobCRM. Todos os direitos reservados.
-          </p>
+          <p className="text-xs text-gray-600 pt-4">© 2024 ImobCRM. Todos os direitos reservados.</p>
         </div>
       </footer>
     </div>
