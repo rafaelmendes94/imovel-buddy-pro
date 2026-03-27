@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import { MiniMap } from "@/components/MiniMap";
 import { AppLayout } from "@/components/AppLayout";
 import { formatCurrency } from "@/data/mockData";
 import {
@@ -75,6 +76,8 @@ interface BuildingInfo {
   videoUrl: string;
   downloadUrl: string;
   units: Unit[];
+  lat: number;
+  lng: number;
 }
 
 const statusConfig: Record<string, { color: string; bg: string; bgLight: string; border: string; icon: typeof Home }> = {
