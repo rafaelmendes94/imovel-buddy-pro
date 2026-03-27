@@ -36,6 +36,7 @@ import {
   Eye,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { RoutePlanner } from "@/components/RoutePlanner";
 
 // Broker info map
 const brokerInfo: Record<string, { photo: string; whatsapp: string }> = {
@@ -1445,6 +1446,7 @@ export default function Site() {
       >
         <ArrowUp className="w-5 h-5" />
       </button>
+      <RoutePlanner properties={available} />
       <PropertyDetailModal
         property={selectedProperty}
         onClose={() => setSelectedProperty(null)}
