@@ -64,6 +64,10 @@ const siteProperties = [
     createdAt: "2024-03-20",
     lat: -29.7430,
     lng: -50.0980,
+    decorated: false,
+    seaView: true,
+    acceptsExchange: true,
+    paymentConditions: "Entrada + 48x",
   },
   {
     id: "site-2",
@@ -83,6 +87,10 @@ const siteProperties = [
     createdAt: "2024-03-18",
     lat: -29.8020,
     lng: -50.0480,
+    decorated: false,
+    seaView: false,
+    acceptsExchange: true,
+    paymentConditions: "À vista ou 24x",
   },
   {
     id: "site-3",
@@ -102,6 +110,10 @@ const siteProperties = [
     createdAt: "2024-03-15",
     lat: -29.7950,
     lng: -50.0580,
+    decorated: true,
+    seaView: true,
+    acceptsExchange: false,
+    paymentConditions: "Financiamento bancário",
   },
   {
     id: "site-4",
@@ -121,6 +133,10 @@ const siteProperties = [
     createdAt: "2024-03-10",
     lat: -29.7600,
     lng: -50.0900,
+    decorated: false,
+    seaView: false,
+    acceptsExchange: false,
+    paymentConditions: "Entrada + 36x direto",
   },
   {
     id: "site-5",
@@ -140,6 +156,10 @@ const siteProperties = [
     createdAt: "2024-03-08",
     lat: -29.7350,
     lng: -50.1150,
+    decorated: true,
+    seaView: false,
+    acceptsExchange: true,
+    paymentConditions: "Entrada 30% + financiamento",
   },
   {
     id: "site-6",
@@ -159,6 +179,10 @@ const siteProperties = [
     createdAt: "2024-03-01",
     lat: -29.7850,
     lng: -50.0700,
+    decorated: true,
+    seaView: true,
+    acceptsExchange: true,
+    paymentConditions: "Entrada + 60x ou permuta",
   },
 ];
 
