@@ -274,35 +274,37 @@ export interface SaleRecord {
   propertyId: string;
   propertyTitle: string;
   city: string;
+  neighborhood: string;
+  owner: string;
   type: "Apartamento" | "Casa" | "Comercial" | "Terreno";
   segment: "Alto Padrão" | "Médio Padrão" | "Econômico" | "Luxo";
   broker: string;
   price: number;
-  date: string; // ISO date
+  date: string;
   empreendimento?: string;
   bedrooms: number;
   seaView: boolean;
 }
 
 export const salesRecords: SaleRecord[] = [
-  { id: "s1", propertyId: "6", propertyTitle: "Apartamento Praia de Atlântida", city: "Xangri-lá", type: "Apartamento", segment: "Médio Padrão", broker: "Marcos Oliveira", price: 620000, date: "2026-03-25", empreendimento: "Residencial Atlântida", bedrooms: 2, seaView: true },
-  { id: "s2", propertyId: "v1", propertyTitle: "Cobertura Ed. Marina", city: "Capão da Canoa", type: "Apartamento", segment: "Luxo", broker: "Carlos Silva", price: 2400000, date: "2026-03-20", empreendimento: "Ed. Marina Bay", bedrooms: 4, seaView: true },
-  { id: "s3", propertyId: "v2", propertyTitle: "Casa Condomínio Royal", city: "Xangri-lá", type: "Casa", segment: "Alto Padrão", broker: "Ana Rodrigues", price: 1850000, date: "2026-03-18", empreendimento: "Cond. Royal Park", bedrooms: 4, seaView: false },
-  { id: "s4", propertyId: "v3", propertyTitle: "Apt 2 quartos Atlântida", city: "Xangri-lá", type: "Apartamento", segment: "Médio Padrão", broker: "Marcos Oliveira", price: 480000, date: "2026-03-15", empreendimento: "Ed. Atlântida I", bedrooms: 2, seaView: true },
-  { id: "s5", propertyId: "v4", propertyTitle: "Sala Comercial Torre A", city: "Capão da Canoa", type: "Comercial", segment: "Médio Padrão", broker: "Carlos Silva", price: 320000, date: "2026-03-10", empreendimento: "Centro Comercial Capão", bedrooms: 0, seaView: false },
-  { id: "s6", propertyId: "v5", propertyTitle: "Terreno Cond. Bosque", city: "Xangri-lá", type: "Terreno", segment: "Alto Padrão", broker: "Ana Rodrigues", price: 450000, date: "2026-03-05", empreendimento: "Cond. Bosque do Litoral", bedrooms: 0, seaView: false },
-  { id: "s7", propertyId: "v6", propertyTitle: "Apt Vista Mar Premium", city: "Capão da Canoa", type: "Apartamento", segment: "Luxo", broker: "Carlos Silva", price: 1950000, date: "2026-02-28", empreendimento: "Ed. Atlântico Sul", bedrooms: 3, seaView: true },
-  { id: "s8", propertyId: "v7", propertyTitle: "Casa Térrea Atlantida Sul", city: "Atlântida", type: "Casa", segment: "Médio Padrão", broker: "Marcos Oliveira", price: 750000, date: "2026-02-20", empreendimento: "Cond. Atlântida Sul", bedrooms: 3, seaView: false },
-  { id: "s9", propertyId: "v8", propertyTitle: "Cobertura Duplex Xangri-lá", city: "Xangri-lá", type: "Apartamento", segment: "Luxo", broker: "Ana Rodrigues", price: 3200000, date: "2026-02-15", empreendimento: "Ed. Grand Marina", bedrooms: 5, seaView: true },
-  { id: "s10", propertyId: "v9", propertyTitle: "Terreno Esquina Premium", city: "Capão da Canoa", type: "Terreno", segment: "Alto Padrão", broker: "Carlos Silva", price: 580000, date: "2026-02-10", empreendimento: "Cond. Reserva Premium", bedrooms: 0, seaView: false },
-  { id: "s11", propertyId: "v10", propertyTitle: "Apt Econômico 1Q", city: "Capão da Canoa", type: "Apartamento", segment: "Econômico", broker: "Marcos Oliveira", price: 280000, date: "2026-02-05", empreendimento: "Residencial Capão", bedrooms: 1, seaView: false },
-  { id: "s12", propertyId: "v11", propertyTitle: "Casa Alto Padrão Beira Mar", city: "Atlântida", type: "Casa", segment: "Luxo", broker: "Ana Rodrigues", price: 4500000, date: "2026-01-28", empreendimento: "Cond. Beira Mar Exclusive", bedrooms: 5, seaView: true },
-  { id: "s13", propertyId: "v12", propertyTitle: "Sala Comercial Centro", city: "Xangri-lá", type: "Comercial", segment: "Econômico", broker: "Marcos Oliveira", price: 220000, date: "2026-01-20", empreendimento: "Galeria Xangri-lá", bedrooms: 0, seaView: false },
-  { id: "s14", propertyId: "v13", propertyTitle: "Apt 3Q Frente Mar", city: "Capão da Canoa", type: "Apartamento", segment: "Alto Padrão", broker: "Carlos Silva", price: 1100000, date: "2026-01-15", empreendimento: "Ed. Panorama Beach", bedrooms: 3, seaView: true },
-  { id: "s15", propertyId: "v14", propertyTitle: "Terreno Cond. Fechado", city: "Atlântida", type: "Terreno", segment: "Médio Padrão", broker: "Ana Rodrigues", price: 350000, date: "2026-01-10", empreendimento: "Cond. Atlântida Gardens", bedrooms: 0, seaView: false },
-  { id: "s16", propertyId: "v15", propertyTitle: "Casa Moderna 3 Suítes", city: "Xangri-lá", type: "Casa", segment: "Alto Padrão", broker: "Carlos Silva", price: 1650000, date: "2026-01-05", empreendimento: "Cond. Reserva das Dunas", bedrooms: 3, seaView: false },
-  { id: "s17", propertyId: "v16", propertyTitle: "Apt Studio Mobiliado", city: "Capão da Canoa", type: "Apartamento", segment: "Econômico", broker: "Marcos Oliveira", price: 195000, date: "2025-12-20", empreendimento: "Ed. Central Capão", bedrooms: 1, seaView: false },
-  { id: "s18", propertyId: "v17", propertyTitle: "Cobertura Premium", city: "Capão da Canoa", type: "Apartamento", segment: "Luxo", broker: "Carlos Silva", price: 3800000, date: "2025-12-15", empreendimento: "Ed. Blue Ocean", bedrooms: 4, seaView: true },
+  { id: "s1", propertyId: "6", propertyTitle: "Apartamento Praia de Atlântida", city: "Xangri-lá", neighborhood: "Atlântida", owner: "Roberto Mendes", type: "Apartamento", segment: "Médio Padrão", broker: "Marcos Oliveira", price: 620000, date: "2026-03-25", empreendimento: "Residencial Atlântida", bedrooms: 2, seaView: true },
+  { id: "s2", propertyId: "v1", propertyTitle: "Cobertura Ed. Marina", city: "Capão da Canoa", neighborhood: "Centro", owner: "Grupo Marina Empreendimentos", type: "Apartamento", segment: "Luxo", broker: "Carlos Silva", price: 2400000, date: "2026-03-20", empreendimento: "Ed. Marina Bay", bedrooms: 4, seaView: true },
+  { id: "s3", propertyId: "v2", propertyTitle: "Casa Condomínio Royal", city: "Xangri-lá", neighborhood: "Rainha do Mar", owner: "Construtora Royal", type: "Casa", segment: "Alto Padrão", broker: "Ana Rodrigues", price: 1850000, date: "2026-03-18", empreendimento: "Cond. Royal Park", bedrooms: 4, seaView: false },
+  { id: "s4", propertyId: "v3", propertyTitle: "Apt 2 quartos Atlântida", city: "Xangri-lá", neighborhood: "Atlântida", owner: "Roberto Mendes", type: "Apartamento", segment: "Médio Padrão", broker: "Marcos Oliveira", price: 480000, date: "2026-03-15", empreendimento: "Ed. Atlântida I", bedrooms: 2, seaView: true },
+  { id: "s5", propertyId: "v4", propertyTitle: "Sala Comercial Torre A", city: "Capão da Canoa", neighborhood: "Centro", owner: "Investimentos Capão Ltda", type: "Comercial", segment: "Médio Padrão", broker: "Carlos Silva", price: 320000, date: "2026-03-10", empreendimento: "Centro Comercial Capão", bedrooms: 0, seaView: false },
+  { id: "s6", propertyId: "v5", propertyTitle: "Terreno Cond. Bosque", city: "Xangri-lá", neighborhood: "Bosque do Litoral", owner: "Paulo Ferreira", type: "Terreno", segment: "Alto Padrão", broker: "Ana Rodrigues", price: 450000, date: "2026-03-05", empreendimento: "Cond. Bosque do Litoral", bedrooms: 0, seaView: false },
+  { id: "s7", propertyId: "v6", propertyTitle: "Apt Vista Mar Premium", city: "Capão da Canoa", neighborhood: "Navegantes", owner: "Grupo Marina Empreendimentos", type: "Apartamento", segment: "Luxo", broker: "Carlos Silva", price: 1950000, date: "2026-02-28", empreendimento: "Ed. Atlântico Sul", bedrooms: 3, seaView: true },
+  { id: "s8", propertyId: "v7", propertyTitle: "Casa Térrea Atlantida Sul", city: "Atlântida", neighborhood: "Atlântida Sul", owner: "Maria Clara Souza", type: "Casa", segment: "Médio Padrão", broker: "Marcos Oliveira", price: 750000, date: "2026-02-20", empreendimento: "Cond. Atlântida Sul", bedrooms: 3, seaView: false },
+  { id: "s9", propertyId: "v8", propertyTitle: "Cobertura Duplex Xangri-lá", city: "Xangri-lá", neighborhood: "Rainha do Mar", owner: "Construtora Royal", type: "Apartamento", segment: "Luxo", broker: "Ana Rodrigues", price: 3200000, date: "2026-02-15", empreendimento: "Ed. Grand Marina", bedrooms: 5, seaView: true },
+  { id: "s10", propertyId: "v9", propertyTitle: "Terreno Esquina Premium", city: "Capão da Canoa", neighborhood: "Zona Nova", owner: "Paulo Ferreira", type: "Terreno", segment: "Alto Padrão", broker: "Carlos Silva", price: 580000, date: "2026-02-10", empreendimento: "Cond. Reserva Premium", bedrooms: 0, seaView: false },
+  { id: "s11", propertyId: "v10", propertyTitle: "Apt Econômico 1Q", city: "Capão da Canoa", neighborhood: "Centro", owner: "Investimentos Capão Ltda", type: "Apartamento", segment: "Econômico", broker: "Marcos Oliveira", price: 280000, date: "2026-02-05", empreendimento: "Residencial Capão", bedrooms: 1, seaView: false },
+  { id: "s12", propertyId: "v11", propertyTitle: "Casa Alto Padrão Beira Mar", city: "Atlântida", neighborhood: "Beira Mar", owner: "Maria Clara Souza", type: "Casa", segment: "Luxo", broker: "Ana Rodrigues", price: 4500000, date: "2026-01-28", empreendimento: "Cond. Beira Mar Exclusive", bedrooms: 5, seaView: true },
+  { id: "s13", propertyId: "v12", propertyTitle: "Sala Comercial Centro", city: "Xangri-lá", neighborhood: "Centro", owner: "Investimentos Capão Ltda", type: "Comercial", segment: "Econômico", broker: "Marcos Oliveira", price: 220000, date: "2026-01-20", empreendimento: "Galeria Xangri-lá", bedrooms: 0, seaView: false },
+  { id: "s14", propertyId: "v13", propertyTitle: "Apt 3Q Frente Mar", city: "Capão da Canoa", neighborhood: "Navegantes", owner: "Grupo Marina Empreendimentos", type: "Apartamento", segment: "Alto Padrão", broker: "Carlos Silva", price: 1100000, date: "2026-01-15", empreendimento: "Ed. Panorama Beach", bedrooms: 3, seaView: true },
+  { id: "s15", propertyId: "v14", propertyTitle: "Terreno Cond. Fechado", city: "Atlântida", neighborhood: "Atlântida Sul", owner: "Paulo Ferreira", type: "Terreno", segment: "Médio Padrão", broker: "Ana Rodrigues", price: 350000, date: "2026-01-10", empreendimento: "Cond. Atlântida Gardens", bedrooms: 0, seaView: false },
+  { id: "s16", propertyId: "v15", propertyTitle: "Casa Moderna 3 Suítes", city: "Xangri-lá", neighborhood: "Bosque do Litoral", owner: "Construtora Royal", type: "Casa", segment: "Alto Padrão", broker: "Carlos Silva", price: 1650000, date: "2026-01-05", empreendimento: "Cond. Reserva das Dunas", bedrooms: 3, seaView: false },
+  { id: "s17", propertyId: "v16", propertyTitle: "Apt Studio Mobiliado", city: "Capão da Canoa", neighborhood: "Centro", owner: "Roberto Mendes", type: "Apartamento", segment: "Econômico", broker: "Marcos Oliveira", price: 195000, date: "2025-12-20", empreendimento: "Ed. Central Capão", bedrooms: 1, seaView: false },
+  { id: "s18", propertyId: "v17", propertyTitle: "Cobertura Premium", city: "Capão da Canoa", neighborhood: "Navegantes", owner: "Grupo Marina Empreendimentos", type: "Apartamento", segment: "Luxo", broker: "Carlos Silva", price: 3800000, date: "2025-12-15", empreendimento: "Ed. Blue Ocean", bedrooms: 4, seaView: true },
 ];
 
 export const salesData = [
