@@ -15,6 +15,7 @@ import Brokers from "./pages/Brokers";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import Site from "./pages/Site";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +37,7 @@ const App = () => (
           <Route path="/corretores" element={<Brokers />} />
           <Route path="/relatorios" element={<Reports />} />
           <Route path="/configuracoes" element={<Settings />} />
+          <Route path="/site" element={<Site />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
