@@ -3,6 +3,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { MetricCard } from "@/components/MetricCard";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   salesRecords,
   salesData,
@@ -42,21 +43,24 @@ import {
   ArrowUp,
   ArrowDown,
   Minus,
+  ChevronDown,
+  SlidersHorizontal,
+  X,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 const SEGMENT_COLORS: Record<string, string> = {
-  "Luxo": "hsl(var(--chart-1))",
-  "Alto Padrão": "hsl(var(--chart-2))",
-  "Médio Padrão": "hsl(var(--chart-3))",
-  "Econômico": "hsl(var(--chart-5))",
+  "Luxo": "hsl(142, 71%, 45%)",
+  "Alto Padrão": "hsl(142, 50%, 55%)",
+  "Médio Padrão": "hsl(38, 92%, 50%)",
+  "Econômico": "hsl(0, 72%, 51%)",
 };
 
 const TYPE_COLORS: Record<string, string> = {
-  "Apartamento": "hsl(var(--chart-1))",
-  "Casa": "hsl(var(--chart-2))",
-  "Comercial": "hsl(var(--chart-3))",
-  "Terreno": "hsl(var(--chart-5))",
+  "Apartamento": "hsl(142, 71%, 45%)",
+  "Casa": "hsl(142, 50%, 60%)",
+  "Comercial": "hsl(38, 92%, 50%)",
+  "Terreno": "hsl(0, 60%, 55%)",
 };
 
 const ALL_CITIES = [...new Set(salesRecords.map(s => s.city))].sort();
@@ -83,17 +87,20 @@ function isThisYear(dateStr: string) {
   return d.getFullYear() === 2026;
 }
 
-function FilterChip({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+function FilterChip({ label, active, onClick, onRemove }: { label: string; active: boolean; onClick: () => void; onRemove?: () => void }) {
   return (
     <button
       onClick={onClick}
-      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all inline-flex items-center gap-1 ${
         active
           ? "bg-accent text-accent-foreground shadow-sm"
           : "bg-muted text-muted-foreground hover:bg-muted/80"
       }`}
     >
       {label}
+      {active && onRemove && (
+        <X className="w-3 h-3 ml-0.5" onClick={(e) => { e.stopPropagation(); onRemove(); }} />
+      )}
     </button>
   );
 }
@@ -109,6 +116,16 @@ export default function Reports() {
   const [filterSegment, setFilterSegment] = useState<string>("Todos");
   const [filterSeaView, setFilterSeaView] = useState<string>("Todos");
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+  const [showDetailedFilters, setShowDetailedFilters] = useState(false);
+
+  const activeFilterCount = [filterCity !== "Todas", filterType !== "Todos", filterSegment !== "Todos", filterSeaView !== "Todos"].filter(Boolean).length;
+
+  const clearAllFilters = () => {
+    setFilterCity("Todas");
+    setFilterType("Todos");
+    setFilterSegment("Todos");
+    setFilterSeaView("Todos");
+  };
 
   const filtered = useMemo(() => {
     return salesRecords.filter(s => {
@@ -263,61 +280,97 @@ export default function Reports() {
           </button>
         </div>
 
-        {/* Filters */}
-        <div className="elevated-card rounded-xl p-4 space-y-3">
-          <div className="flex items-center gap-2 text-sm font-semibold text-card-foreground">
-            <Filter className="w-4 h-4" />
-            Filtros
+        {/* Filters - Quick Row + Expandable Details */}
+        <div className="elevated-card rounded-xl p-4 space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3 flex-wrap flex-1">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-card-foreground">
+                <Filter className="w-3.5 h-3.5" />
+                Filtros Rápidos
+              </div>
+              {/* Quick city chips */}
+              {ALL_CITIES.map(c => (
+                <FilterChip
+                  key={c}
+                  label={c}
+                  active={filterCity === c}
+                  onClick={() => setFilterCity(filterCity === c ? "Todas" : c)}
+                  onRemove={filterCity === c ? () => setFilterCity("Todas") : undefined}
+                />
+              ))}
+              {/* Quick type chips */}
+              {ALL_TYPES.map(t => (
+                <FilterChip
+                  key={t}
+                  label={t}
+                  active={filterType === t}
+                  onClick={() => setFilterType(filterType === t ? "Todos" : t)}
+                  onRemove={filterType === t ? () => setFilterType("Todos") : undefined}
+                />
+              ))}
+              {activeFilterCount > 0 && (
+                <button onClick={clearAllFilters} className="px-2 py-1 rounded-full text-[10px] font-medium text-destructive hover:bg-destructive/10 transition-colors flex items-center gap-1">
+                  <X className="w-3 h-3" /> Limpar ({activeFilterCount})
+                </button>
+              )}
+            </div>
+            <button
+              onClick={() => setShowDetailedFilters(!showDetailedFilters)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
+            >
+              <SlidersHorizontal className="w-3.5 h-3.5" />
+              Detalhado
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showDetailedFilters ? "rotate-180" : ""}`} />
+            </button>
           </div>
 
-          <div className="space-y-2">
-            <div>
-              <span className="text-xs text-muted-foreground font-medium flex items-center gap-1 mb-1.5">
-                <MapPin className="w-3 h-3" /> Cidade
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                <FilterChip label="Todas" active={filterCity === "Todas"} onClick={() => setFilterCity("Todas")} />
-                {ALL_CITIES.map(c => (
-                  <FilterChip key={c} label={c} active={filterCity === c} onClick={() => setFilterCity(c)} />
-                ))}
+          {showDetailedFilters && (
+            <div className="pt-2 border-t border-border/50 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div>
+                <span className="text-[10px] text-muted-foreground font-medium flex items-center gap-1 mb-1.5 uppercase tracking-wider">
+                  <MapPin className="w-3 h-3" /> Cidade
+                </span>
+                <div className="flex flex-wrap gap-1">
+                  <FilterChip label="Todas" active={filterCity === "Todas"} onClick={() => setFilterCity("Todas")} />
+                  {ALL_CITIES.map(c => (
+                    <FilterChip key={c} label={c} active={filterCity === c} onClick={() => setFilterCity(c)} />
+                  ))}
+                </div>
+              </div>
+              <div>
+                <span className="text-[10px] text-muted-foreground font-medium flex items-center gap-1 mb-1.5 uppercase tracking-wider">
+                  <Building2 className="w-3 h-3" /> Tipo
+                </span>
+                <div className="flex flex-wrap gap-1">
+                  <FilterChip label="Todos" active={filterType === "Todos"} onClick={() => setFilterType("Todos")} />
+                  {ALL_TYPES.map(t => (
+                    <FilterChip key={t} label={t} active={filterType === t} onClick={() => setFilterType(t)} />
+                  ))}
+                </div>
+              </div>
+              <div>
+                <span className="text-[10px] text-muted-foreground font-medium flex items-center gap-1 mb-1.5 uppercase tracking-wider">
+                  <Star className="w-3 h-3" /> Segmento
+                </span>
+                <div className="flex flex-wrap gap-1">
+                  <FilterChip label="Todos" active={filterSegment === "Todos"} onClick={() => setFilterSegment("Todos")} />
+                  {ALL_SEGMENTS.map(s => (
+                    <FilterChip key={s} label={s} active={filterSegment === s} onClick={() => setFilterSegment(s)} />
+                  ))}
+                </div>
+              </div>
+              <div>
+                <span className="text-[10px] text-muted-foreground font-medium flex items-center gap-1 mb-1.5 uppercase tracking-wider">
+                  <Home className="w-3 h-3" /> Vista Mar
+                </span>
+                <div className="flex flex-wrap gap-1">
+                  <FilterChip label="Todos" active={filterSeaView === "Todos"} onClick={() => setFilterSeaView("Todos")} />
+                  <FilterChip label="Sim" active={filterSeaView === "Sim"} onClick={() => setFilterSeaView("Sim")} />
+                  <FilterChip label="Não" active={filterSeaView === "Não"} onClick={() => setFilterSeaView("Não")} />
+                </div>
               </div>
             </div>
-
-            <div>
-              <span className="text-xs text-muted-foreground font-medium flex items-center gap-1 mb-1.5">
-                <Building2 className="w-3 h-3" /> Tipo de Imóvel
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                <FilterChip label="Todos" active={filterType === "Todos"} onClick={() => setFilterType("Todos")} />
-                {ALL_TYPES.map(t => (
-                  <FilterChip key={t} label={t} active={filterType === t} onClick={() => setFilterType(t)} />
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <span className="text-xs text-muted-foreground font-medium flex items-center gap-1 mb-1.5">
-                <Star className="w-3 h-3" /> Segmento
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                <FilterChip label="Todos" active={filterSegment === "Todos"} onClick={() => setFilterSegment("Todos")} />
-                {ALL_SEGMENTS.map(s => (
-                  <FilterChip key={s} label={s} active={filterSegment === s} onClick={() => setFilterSegment(s)} />
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <span className="text-xs text-muted-foreground font-medium flex items-center gap-1 mb-1.5">
-                <Home className="w-3 h-3" /> Vista Mar
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                <FilterChip label="Todos" active={filterSeaView === "Todos"} onClick={() => setFilterSeaView("Todos")} />
-                <FilterChip label="Sim" active={filterSeaView === "Sim"} onClick={() => setFilterSeaView("Sim")} />
-                <FilterChip label="Não" active={filterSeaView === "Não"} onClick={() => setFilterSeaView("Não")} />
-              </div>
-            </div>
-          </div>
+          )}
         </div>
 
         {/* VGV Metrics */}
@@ -386,7 +439,7 @@ export default function Reports() {
                   {revenueBarData.map((entry, i) => (
                     <Cell
                       key={i}
-                      fill={entry.trend === "alta" ? "hsl(var(--chart-2))" : entry.trend === "baixa" ? "hsl(var(--chart-1))" : "hsl(var(--accent))"}
+                      fill={entry.trend === "alta" ? "hsl(142, 71%, 45%)" : entry.trend === "baixa" ? "hsl(0, 72%, 51%)" : "hsl(var(--muted-foreground))"}
                     />
                   ))}
                 </Bar>
@@ -519,8 +572,8 @@ export default function Reports() {
                 <YAxis type="category" dataKey="name" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} width={100} />
                 <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "12px" }} formatter={(value: number) => [formatCurrency(value), "VGV"]} />
                 <Bar dataKey="vgv" radius={[0, 6, 6, 0]} animationDuration={1200}>
-                  {rankByCity.map((_, i) => (
-                    <Cell key={i} fill={i === 0 ? "hsl(var(--accent))" : i === 1 ? "hsl(var(--chart-2))" : "hsl(var(--chart-3))"} />
+                   {rankByCity.map((_, i) => (
+                    <Cell key={i} fill={i === 0 ? "hsl(142, 71%, 45%)" : i === 1 ? "hsl(142, 50%, 60%)" : "hsl(38, 92%, 50%)"} />
                   ))}
                 </Bar>
               </BarChart>
@@ -677,8 +730,8 @@ export default function Reports() {
                 <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} width={110} />
                 <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "12px" }} formatter={(value: number) => [formatCurrency(value), "VGV"]} />
                 <Bar dataKey="vgv" radius={[0, 6, 6, 0]} animationDuration={1200}>
-                  {rankByNeighborhood.map((_, i) => (
-                    <Cell key={i} fill={i === 0 ? "hsl(var(--accent))" : i === 1 ? "hsl(var(--chart-2))" : i === 2 ? "hsl(var(--chart-3))" : "hsl(var(--chart-5))"} />
+                   {rankByNeighborhood.map((_, i) => (
+                    <Cell key={i} fill={i === 0 ? "hsl(142, 71%, 45%)" : i === 1 ? "hsl(142, 50%, 60%)" : i === 2 ? "hsl(38, 92%, 50%)" : "hsl(0, 60%, 55%)"} />
                   ))}
                 </Bar>
               </BarChart>
