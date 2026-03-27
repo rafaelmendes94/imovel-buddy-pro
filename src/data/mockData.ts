@@ -13,6 +13,8 @@ export interface Property {
   broker: string;
   image: string;
   createdAt: string;
+  lat: number;
+  lng: number;
 }
 
 export interface Broker {
