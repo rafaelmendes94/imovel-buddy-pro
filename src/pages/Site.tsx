@@ -305,8 +305,183 @@ function CondoCard({ condo }: { condo: typeof condoProperties[0] }) {
     </div>
   );
 }
+function SiteMap({ properties: mapProperties }: { properties: typeof siteProperties }) {
+  const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<any>(null);
+  const [selectedProperty, setSelectedProperty] = useState<typeof siteProperties[0] | null>(null);
 
-function SectionHeader({ title, subtitle, icon: Icon }: { title: string; subtitle: string; icon: typeof Home }) {
+  useEffect(() => {
+    if (!mapRef.current) return;
+
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.remove();
+      mapInstanceRef.current = null;
+    }
+
+    const initMap = () => {
+      const L = (window as any).L;
+      if (!L || !mapRef.current) return;
+
+      const map = L.map(mapRef.current, {
+        zoomControl: false,
+      }).setView([-23.5505, -46.6333], 11);
+      mapInstanceRef.current = map;
+
+      // Zoom control on the right
+      L.control.zoom({ position: "topright" }).addTo(map);
+
+      // Realistic satellite-style tile layer
+      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+        attribution: '&copy; Esri, Maxar, Earthstar Geographics',
+        maxZoom: 19,
+      }).addTo(map);
+
+      // Street labels overlay on top of satellite
+      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}", {
+        maxZoom: 19,
+      }).addTo(map);
+
+      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}", {
+        maxZoom: 19,
+      }).addTo(map);
+
+      // Custom icon based on property type
+      const getIcon = (type: string) => {
+        const colors: Record<string, string> = {
+          Apartamento: "#f59e0b",
+          Casa: "#3b82f6",
+          Terreno: "#22c55e",
+          Comercial: "#8b5cf6",
+        };
+        const color = colors[type] || "#f59e0b";
+
+        return L.divIcon({
+          className: "custom-marker",
+          html: `<div style="
+            width: 36px; height: 36px; 
+            background: ${color}; 
+            border: 3px solid white; 
+            border-radius: 50%; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: 800; font-size: 13px;
+            cursor: pointer;
+            transition: transform 0.2s;
+          ">
+            <span style="filter: drop-shadow(0 1px 1px rgba(0,0,0,0.3));">
+              ${type === "Apartamento" ? "🏢" : type === "Casa" ? "🏠" : type === "Terreno" ? "🌳" : "🏬"}
+            </span>
+          </div>
+          <div style="
+            width: 12px; height: 12px; 
+            background: ${color}; 
+            transform: rotate(45deg); 
+            margin: -7px auto 0; 
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+          "></div>`,
+          iconSize: [36, 48],
+          iconAnchor: [18, 48],
+          popupAnchor: [0, -48],
+        });
+      };
+
+      mapProperties.forEach((p) => {
+        if (!p.lat || !p.lng) return;
+
+        const broker = brokerInfo[p.broker] || { photo: "", whatsapp: "5511999999999" };
+        const whatsMsg = encodeURIComponent(`Olá! Tenho interesse no imóvel: ${p.title}`);
+
+        const popup = L.popup({
+          maxWidth: 280,
+          className: "custom-popup",
+        }).setContent(`
+          <div style="font-family: system-ui, -apple-system, sans-serif; margin: -4px;">
+            <img src="${p.image}" alt="${p.title}" style="width:100%; height:120px; object-fit:cover; border-radius:8px 8px 0 0; margin-bottom:8px;" />
+            <div style="padding: 0 4px 4px;">
+              <h3 style="font-size:14px; font-weight:700; color:#1a1a1a; margin:0 0 4px;">${p.title}</h3>
+              <p style="font-size:11px; color:#666; margin:0 0 6px;">📍 ${p.address}, ${p.city}</p>
+              <p style="font-size:18px; font-weight:800; color:#f59e0b; margin:0 0 8px;">${formatCurrency(p.price)}</p>
+              <div style="display:flex; gap:12px; font-size:11px; color:#888; margin-bottom:10px;">
+                ${p.area > 0 ? `<span>📐 ${p.area}m²</span>` : ""}
+                ${p.bedrooms > 0 ? `<span>🛏 ${p.bedrooms} qts</span>` : ""}
+                ${p.parking > 0 ? `<span>🚗 ${p.parking} vg</span>` : ""}
+              </div>
+              <div style="display:flex; align-items:center; justify-content:space-between; padding-top:8px; border-top:1px solid #eee;">
+                <div style="display:flex; align-items:center; gap:6px;">
+                  ${broker.photo ? `<img src="${broker.photo}" style="width:28px; height:28px; border-radius:50%; object-fit:cover; border:2px solid #f59e0b;" />` : ""}
+                  <span style="font-size:11px; font-weight:600; color:#333;">${p.broker}</span>
+                </div>
+                <a href="https://wa.me/${broker.whatsapp}?text=${whatsMsg}" target="_blank" rel="noopener noreferrer" 
+                   style="display:inline-flex; align-items:center; gap:4px; padding:5px 10px; background:#22c55e; color:white; border-radius:8px; font-size:11px; font-weight:700; text-decoration:none;">
+                  📱 WhatsApp
+                </a>
+              </div>
+            </div>
+          </div>
+        `);
+
+        L.marker([p.lat, p.lng], { icon: getIcon(p.type) })
+          .addTo(map)
+          .bindPopup(popup);
+      });
+
+      // Fit bounds to all markers
+      const validProps = mapProperties.filter((p) => p.lat && p.lng);
+      if (validProps.length > 1) {
+        const bounds = L.latLngBounds(validProps.map((p) => [p.lat, p.lng]));
+        map.fitBounds(bounds, { padding: [40, 40] });
+      }
+    };
+
+    const L = (window as any).L;
+    if (L) {
+      initMap();
+    } else {
+      const existingLink = document.querySelector('link[href*="leaflet"]');
+      if (!existingLink) {
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+        document.head.appendChild(link);
+      }
+      const existingScript = document.querySelector('script[src*="leaflet"]');
+      if (!existingScript) {
+        const script = document.createElement("script");
+        script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+        script.onload = initMap;
+        document.head.appendChild(script);
+      } else {
+        existingScript.addEventListener("load", initMap);
+        setTimeout(initMap, 200);
+      }
+    }
+
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+    };
+  }, [mapProperties]);
+
+  return (
+    <div className="rounded-2xl overflow-hidden shadow-xl border border-gray-200 relative">
+      {/* Map legend */}
+      <div className="absolute top-4 left-4 z-[1000] bg-white/95 backdrop-blur-md rounded-xl p-3 shadow-lg border border-gray-100">
+        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Legenda</p>
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-2 text-xs"><span className="w-3 h-3 rounded-full bg-amber-500" /> Apartamento</div>
+          <div className="flex items-center gap-2 text-xs"><span className="w-3 h-3 rounded-full bg-blue-500" /> Casa</div>
+          <div className="flex items-center gap-2 text-xs"><span className="w-3 h-3 rounded-full bg-emerald-500" /> Terreno</div>
+          <div className="flex items-center gap-2 text-xs"><span className="w-3 h-3 rounded-full bg-violet-500" /> Comercial</div>
+        </div>
+      </div>
+      <div ref={mapRef} style={{ height: "500px", width: "100%" }} />
+    </div>
+  );
+}
+
+
   return (
     <div className="flex items-center gap-3 mb-6">
       <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-amber-400 flex items-center justify-center shadow-md">
