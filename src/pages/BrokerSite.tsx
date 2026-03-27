@@ -820,6 +820,95 @@ export default function BrokerSite() {
         )}
         onSelectSimilar={(p) => setSelectedProperty(p)}
       />
+
+      {/* Rating Modal */}
+      {showRatingModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowRatingModal(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-5" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-bold text-gray-900">Avaliar {brokerName}</h3>
+              <button onClick={() => setShowRatingModal(false)} className="p-1 rounded-lg hover:bg-gray-100">
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+            <div className="text-center space-y-3">
+              <p className="text-sm text-gray-500">Como você avalia este corretor?</p>
+              <div className="flex items-center justify-center gap-2">
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <button
+                    key={s}
+                    onMouseEnter={() => setHoverRating(s)}
+                    onMouseLeave={() => setHoverRating(0)}
+                    onClick={() => setUserRating(s)}
+                    className="p-1 transition-transform hover:scale-125"
+                  >
+                    <Star
+                      className={cn(
+                        "w-8 h-8 transition-colors",
+                        s <= (hoverRating || userRating) ? "text-amber-400 fill-amber-400" : "text-gray-300"
+                      )}
+                    />
+                  </button>
+                ))}
+              </div>
+              {userRating > 0 && (
+                <p className="text-sm font-semibold text-amber-600">
+                  Você deu {userRating} estrela{userRating > 1 ? "s" : ""}!
+                </p>
+              )}
+            </div>
+            <button
+              disabled={userRating === 0}
+              onClick={() => {
+                setShowRatingModal(false);
+                // In production, this would save to the database
+              }}
+              className={cn(
+                "w-full py-2.5 rounded-xl font-bold text-sm transition-colors",
+                userRating > 0
+                  ? "bg-amber-500 text-white hover:bg-amber-600"
+                  : "bg-gray-100 text-gray-400 cursor-not-allowed"
+              )}
+            >
+              Enviar Avaliação
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Term Viewer Modal */}
+      {viewingTerm && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setViewingTerm(null)}>
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-4 border-b border-gray-100">
+              <div className="flex items-center gap-2">
+                <FileCheck className="w-5 h-5 text-amber-500" />
+                <h3 className="text-base font-bold text-gray-900">Termo de Exclusividade</h3>
+              </div>
+              <div className="flex items-center gap-2">
+                <a
+                  href={viewingTerm}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
+                >
+                  <Eye className="w-3.5 h-3.5" /> Abrir original
+                </a>
+                <button onClick={() => setViewingTerm(null)} className="p-1 rounded-lg hover:bg-gray-100">
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+            </div>
+            <div className="overflow-auto max-h-[calc(90vh-60px)] p-4 bg-gray-50 flex items-center justify-center">
+              {viewingTerm.toLowerCase().endsWith(".pdf") ? (
+                <iframe src={viewingTerm} className="w-full h-[75vh] rounded-lg border border-gray-200" title="Termo de Exclusividade" />
+              ) : (
+                <img src={viewingTerm} alt="Termo de Exclusividade" className="max-w-full max-h-[75vh] object-contain rounded-lg shadow-md" />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
