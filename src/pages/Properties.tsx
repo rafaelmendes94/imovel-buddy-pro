@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { PropertyMap } from "@/components/PropertyMap";
-import { properties, formatCurrency, Property } from "@/data/mockData";
+import { properties as initialProperties, formatCurrency, Property } from "@/data/mockData";
 import {
   Building2,
   Search,
@@ -16,6 +16,8 @@ import {
   LayoutGrid,
   List,
   Map,
+  ChevronDown,
+  PartyPopper,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -26,12 +28,21 @@ const statusColors: Record<string, string> = {
   Alugado: "bg-info/10 text-info",
 };
 
+const allStatuses: Property["status"][] = ["Disponível", "Vendido", "Reservado", "Alugado"];
+
 export default function Properties() {
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState<string>("Todos");
   const [view, setView] = useState<"grid" | "list" | "map">("grid");
+  const [propertyList, setPropertyList] = useState<Property[]>(initialProperties);
 
-  const filtered = properties.filter((p) => {
+  const handleStatusChange = (propertyId: string, newStatus: Property["status"]) => {
+    setPropertyList((prev) =>
+      prev.map((p) => (p.id === propertyId ? { ...p, status: newStatus } : p))
+    );
+  };
+
+  const filtered = propertyList.filter((p) => {
     const matchesSearch =
       p.title.toLowerCase().includes(search.toLowerCase()) ||
       p.address.toLowerCase().includes(search.toLowerCase());
@@ -47,7 +58,7 @@ export default function Properties() {
           <div>
             <h1 className="text-2xl font-bold text-foreground">Imóveis</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              {properties.length} imóveis cadastrados
+              {propertyList.length} imóveis cadastrados
             </p>
           </div>
           <button className="flex items-center gap-2 px-4 py-2.5 rounded-lg gradient-gold text-primary text-sm font-semibold hover:opacity-90 transition-opacity self-start">
@@ -117,17 +128,17 @@ export default function Properties() {
           </div>
         </div>
 
-        {/* Grid */}
+        {/* Content */}
         {view === "grid" ? (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
             {filtered.map((property) => (
-              <PropertyCard key={property.id} property={property} />
+              <PropertyCard key={property.id} property={property} onStatusChange={handleStatusChange} />
             ))}
           </div>
         ) : view === "list" ? (
           <div className="space-y-3">
             {filtered.map((property) => (
-              <PropertyRow key={property.id} property={property} />
+              <PropertyRow key={property.id} property={property} onStatusChange={handleStatusChange} />
             ))}
           </div>
         ) : (
@@ -145,23 +156,138 @@ export default function Properties() {
   );
 }
 
-function PropertyCard({ property }: { property: Property }) {
+// ---- Status Dropdown ----
+function StatusDropdown({
+  currentStatus,
+  onChangeStatus,
+}: {
+  currentStatus: Property["status"];
+  onChangeStatus: (status: Property["status"]) => void;
+}) {
+  const [open, setOpen] = useState(false);
+
   return (
-    <div className="elevated-card rounded-xl overflow-hidden group">
+    <div className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        className={cn(
+          "flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold transition-colors",
+          statusColors[currentStatus]
+        )}
+      >
+        {currentStatus}
+        <ChevronDown className="w-3 h-3" />
+      </button>
+      {open && (
+        <div className="absolute top-full left-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-50 animate-scale-in overflow-hidden min-w-[130px]">
+          {allStatuses.map((status) => (
+            <button
+              key={status}
+              onClick={() => {
+                onChangeStatus(status);
+                setOpen(false);
+              }}
+              className={cn(
+                "w-full text-left px-3 py-2 text-xs font-medium transition-colors hover:bg-muted",
+                status === currentStatus && "bg-muted"
+              )}
+            >
+              <span className={cn("inline-block w-2 h-2 rounded-full mr-2", {
+                "bg-success": status === "Disponível",
+                "bg-muted-foreground": status === "Vendido",
+                "bg-warning": status === "Reservado",
+                "bg-info": status === "Alugado",
+              })} />
+              {status}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ---- Confetti Overlay ----
+function SoldConfetti() {
+  const particles = Array.from({ length: 20 }, (_, i) => ({
+    id: i,
+    left: `${Math.random() * 100}%`,
+    delay: `${Math.random() * 0.5}s`,
+    color: ["hsl(var(--accent))", "hsl(var(--success))", "hsl(var(--info))", "hsl(var(--warning))"][
+      Math.floor(Math.random() * 4)
+    ],
+    size: Math.random() * 6 + 4,
+  }));
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none z-20 rounded-xl">
+      {/* VENDIDO stamp */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="animate-sold-stamp border-4 border-success text-success font-black text-3xl px-6 py-2 rounded-lg opacity-80 tracking-widest">
+          VENDIDO!
+        </div>
+      </div>
+      {/* Confetti particles */}
+      {particles.map((p) => (
+        <div
+          key={p.id}
+          className="absolute animate-confetti-fall"
+          style={{
+            left: p.left,
+            top: "-10px",
+            animationDelay: p.delay,
+            width: p.size,
+            height: p.size,
+            borderRadius: Math.random() > 0.5 ? "50%" : "2px",
+            backgroundColor: p.color,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ---- PropertyCard ----
+function PropertyCard({
+  property,
+  onStatusChange,
+}: {
+  property: Property;
+  onStatusChange: (id: string, status: Property["status"]) => void;
+}) {
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [animatePulse, setAnimatePulse] = useState(false);
+
+  const handleStatusChange = (newStatus: Property["status"]) => {
+    if (newStatus === "Vendido" && property.status !== "Vendido") {
+      setShowConfetti(true);
+      setAnimatePulse(true);
+      setTimeout(() => setShowConfetti(false), 2000);
+      setTimeout(() => setAnimatePulse(false), 800);
+    }
+    onStatusChange(property.id, newStatus);
+  };
+
+  return (
+    <div
+      className={cn(
+        "elevated-card rounded-xl overflow-hidden group relative",
+        animatePulse && "animate-sold-pulse"
+      )}
+    >
+      {showConfetti && <SoldConfetti />}
       <div className="relative h-48 overflow-hidden">
         <img
           src={property.image}
           alt={property.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
-        <span
-          className={cn(
-            "absolute top-3 left-3 px-2.5 py-1 rounded-md text-[11px] font-semibold",
-            statusColors[property.status]
-          )}
-        >
-          {property.status}
-        </span>
+        <div className="absolute top-3 left-3">
+          <StatusDropdown
+            currentStatus={property.status}
+            onChangeStatus={handleStatusChange}
+          />
+        </div>
         <div className="absolute top-3 right-3 flex gap-1.5">
           <button className="w-8 h-8 rounded-lg bg-card/90 backdrop-blur-sm flex items-center justify-center hover:bg-card transition-colors">
             <Download className="w-3.5 h-3.5 text-foreground" />
@@ -209,9 +335,35 @@ function PropertyCard({ property }: { property: Property }) {
   );
 }
 
-function PropertyRow({ property }: { property: Property }) {
+// ---- PropertyRow ----
+function PropertyRow({
+  property,
+  onStatusChange,
+}: {
+  property: Property;
+  onStatusChange: (id: string, status: Property["status"]) => void;
+}) {
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [animatePulse, setAnimatePulse] = useState(false);
+
+  const handleStatusChange = (newStatus: Property["status"]) => {
+    if (newStatus === "Vendido" && property.status !== "Vendido") {
+      setShowConfetti(true);
+      setAnimatePulse(true);
+      setTimeout(() => setShowConfetti(false), 2000);
+      setTimeout(() => setAnimatePulse(false), 800);
+    }
+    onStatusChange(property.id, newStatus);
+  };
+
   return (
-    <div className="elevated-card rounded-xl p-4 flex items-center gap-4">
+    <div
+      className={cn(
+        "elevated-card rounded-xl p-4 flex items-center gap-4 relative overflow-hidden",
+        animatePulse && "animate-sold-pulse"
+      )}
+    >
+      {showConfetti && <SoldConfetti />}
       <img
         src={property.image}
         alt={property.title}
@@ -222,14 +374,10 @@ function PropertyRow({ property }: { property: Property }) {
           <h3 className="font-semibold text-card-foreground text-sm truncate">
             {property.title}
           </h3>
-          <span
-            className={cn(
-              "px-2 py-0.5 rounded text-[10px] font-semibold flex-shrink-0",
-              statusColors[property.status]
-            )}
-          >
-            {property.status}
-          </span>
+          <StatusDropdown
+            currentStatus={property.status}
+            onChangeStatus={handleStatusChange}
+          />
         </div>
         <p className="text-xs text-muted-foreground mt-0.5">{property.address}</p>
         <div className="flex items-center gap-4 mt-1.5 text-xs text-muted-foreground">
