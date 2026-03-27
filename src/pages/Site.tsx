@@ -735,6 +735,7 @@ export default function Site() {
   const [filterCondition, setFilterCondition] = useState("");
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [carouselIndex, setCarouselIndex] = useState(0);
+  const [priceSort, setPriceSort] = useState<"" | "asc" | "desc">("");
 
   // Auto-rotate sold carousel (scroll 1 card at a time, 4 visible)
   const maxIndex = Math.max(0, soldProperties.length - 4);
