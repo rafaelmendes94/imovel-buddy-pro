@@ -237,10 +237,10 @@ export default function Buildings() {
                   {building.status}
                 </span>
                 <div className="absolute top-3 right-3 flex gap-1.5">
-                  <button onClick={() => handleEdit(building)} className="w-7 h-7 rounded-md bg-card/90 backdrop-blur-sm flex items-center justify-center hover:bg-card transition-colors">
+                  <button onClick={(e) => { e.stopPropagation(); handleEdit(building); }} className="w-7 h-7 rounded-md bg-card/90 backdrop-blur-sm flex items-center justify-center hover:bg-card transition-colors">
                     <Edit className="w-3.5 h-3.5 text-foreground" />
                   </button>
-                  <button onClick={() => handleDelete(building.id)} className="w-7 h-7 rounded-md bg-card/90 backdrop-blur-sm flex items-center justify-center hover:bg-destructive/90 transition-colors">
+                  <button onClick={(e) => { e.stopPropagation(); handleDelete(building.id); }} className="w-7 h-7 rounded-md bg-card/90 backdrop-blur-sm flex items-center justify-center hover:bg-destructive/90 transition-colors">
                     <Trash2 className="w-3.5 h-3.5 text-foreground" />
                   </button>
                 </div>
