@@ -112,6 +112,7 @@ export default function Condominiums() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
+  const [mediaCondo, setMediaCondo] = useState<Condominium | null>(null);
   const navigate = useNavigate();
 
   const filtered = condos.filter(
