@@ -18,6 +18,7 @@ import NotFound from "./pages/NotFound";
 import Site from "./pages/Site";
 import BrokerSite from "./pages/BrokerSite";
 import EmpreendimentoDetail from "./pages/EmpreendimentoDetail";
+import AllProperties from "./pages/AllProperties";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,7 @@ const App = () => (
           <Route path="/site" element={<Site />} />
           <Route path="/corretor/:slug" element={<BrokerSite />} />
           <Route path="/empreendimento/:slug" element={<EmpreendimentoDetail />} />
+          <Route path="/todos-imoveis" element={<AllProperties />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
