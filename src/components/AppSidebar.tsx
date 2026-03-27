@@ -19,6 +19,7 @@ import {
   Table2,
   FileSignature,
   Video,
+  Clapperboard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CadastroPanel } from "./CadastroPanel";
