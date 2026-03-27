@@ -1022,30 +1022,8 @@ export default function Site() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
 
-        {/* Quick Sort Filter */}
-        <div className="flex items-center justify-end gap-2">
-          <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Ordenar por preço:</span>
-          <div className="flex rounded-lg border border-gray-200 overflow-hidden">
-            <button
-              onClick={() => setPriceSort(priceSort === "asc" ? "" : "asc")}
-              className={cn(
-                "px-3 py-1.5 text-xs font-bold transition-colors",
-                priceSort === "asc" ? "bg-amber-500 text-white" : "bg-white text-gray-600 hover:bg-gray-50"
-              )}
-            >
-              ↑ Menor
-            </button>
-            <button
-              onClick={() => setPriceSort(priceSort === "desc" ? "" : "desc")}
-              className={cn(
-                "px-3 py-1.5 text-xs font-bold transition-colors border-l border-gray-200",
-                priceSort === "desc" ? "bg-amber-500 text-white" : "bg-white text-gray-600 hover:bg-gray-50"
-              )}
-            >
-              ↓ Maior
-            </button>
-          </div>
-        </div>
+
+
 
         {/* Search / Filter results */}
         {(searchTerm || hasActiveFilters) && (
@@ -1228,12 +1206,12 @@ export default function Site() {
         {/* Ver Todos os Imóveis */}
         {!searchTerm && !hasActiveFilters && activeCategory === "todos" && (
           <div className="flex justify-center">
-            <button
-              onClick={() => { setActiveCategory("todos"); setSearchTerm(""); setPriceSort(""); }}
+            <Link
+              to="/todos-imoveis"
               className="px-8 py-4 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-400 text-white text-base font-extrabold hover:from-amber-600 hover:to-amber-500 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
             >
               <Search className="w-5 h-5" /> Ver Todos os Imóveis ({available.length})
-            </button>
+            </Link>
           </div>
         )}
         {/* Mapa Interativo */}
