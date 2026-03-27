@@ -517,12 +517,20 @@ export default function VideoMaker() {
                     <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground py-8">Nenhum registro encontrado</TableCell></TableRow>
                   ) : filteredFinance.map(f => (
                     <TableRow key={f.id}>
-                      <TableCell className="font-medium text-foreground">{f.property}</TableCell>
-                      <TableCell className="text-muted-foreground">{f.client}</TableCell>
+                      <TableCell className="font-medium text-foreground">
+                        <InlineEdit value={f.property} onSave={v => { setFinance(prev => prev.map(x => x.id === f.id ? { ...x, property: v } : x)); toast.success("Atualizado!"); }} />
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        <InlineEdit value={f.client} onSave={v => { setFinance(prev => prev.map(x => x.id === f.id ? { ...x, client: v } : x)); toast.success("Atualizado!"); }} />
+                      </TableCell>
                       <TableCell><Badge variant="outline" className={cn("text-[10px]", materialTypeColors[f.materialType])}>{materialTypes.find(m => m.value === f.materialType)?.label}</Badge></TableCell>
                       <TableCell><Badge variant="outline" className={cn("text-[10px]", clientTypeColors[f.clientType])}>{clientTypes.find(c => c.value === f.clientType)?.label}</Badge></TableCell>
-                      <TableCell className="font-semibold text-emerald-400">{fmtBRL(f.clientValue)}</TableCell>
-                      <TableCell className="font-semibold text-red-400">{fmtBRL(f.editorCost)}</TableCell>
+                      <TableCell>
+                        <InlineEdit value={f.clientValue} type="number" className="font-semibold text-emerald-400" formatDisplay={v => fmtBRL(Number(v))} onSave={v => { setFinance(prev => prev.map(x => x.id === f.id ? { ...x, clientValue: Number(v) || 0 } : x)); toast.success("Atualizado!"); }} />
+                      </TableCell>
+                      <TableCell>
+                        <InlineEdit value={f.editorCost} type="number" className="font-semibold text-red-400" formatDisplay={v => fmtBRL(Number(v))} onSave={v => { setFinance(prev => prev.map(x => x.id === f.id ? { ...x, editorCost: Number(v) || 0 } : x)); toast.success("Atualizado!"); }} />
+                      </TableCell>
                       <TableCell className="font-semibold text-accent">{fmtBRL(f.clientValue - f.editorCost)}</TableCell>
                       <TableCell className="text-muted-foreground">{f.dueDate ? format(new Date(f.dueDate + "T12:00:00"), "dd/MM/yyyy") : "-"}</TableCell>
                       <TableCell>
