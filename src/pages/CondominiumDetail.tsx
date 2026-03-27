@@ -308,17 +308,58 @@ export default function CondominiumDetail() {
           ))}
         </div>
 
-        <Tabs defaultValue="espelho" className="space-y-4">
+        <Tabs defaultValue="unidades" className="space-y-4">
           <TabsList className="bg-secondary">
+            <TabsTrigger value="unidades">Imóveis à Venda</TabsTrigger>
             <TabsTrigger value="espelho">Espelho de Vendas</TabsTrigger>
-            <TabsTrigger value="unidades">Unidades</TabsTrigger>
             <TabsTrigger value="infra">Infraestrutura</TabsTrigger>
-            <TabsTrigger value="galeria">Galeria</TabsTrigger>
           </TabsList>
+
+          {/* Units for Sale (only available) */}
+          <TabsContent value="unidades" className="space-y-3">
+            <div className="flex gap-2 flex-wrap">
+              <button onClick={() => setSelectedBlock(null)} className={cn("px-3 py-1.5 rounded-lg text-xs font-medium transition-colors", !selectedBlock ? "bg-accent text-accent-foreground" : "bg-secondary text-secondary-foreground hover:bg-muted")}>Todos</button>
+              {condo.blocks.map((b) => (
+                <button key={b} onClick={() => setSelectedBlock(b)} className={cn("px-3 py-1.5 rounded-lg text-xs font-medium transition-colors", selectedBlock === b ? "bg-accent text-accent-foreground" : "bg-secondary text-secondary-foreground hover:bg-muted")}>Bloco {b}</button>
+              ))}
+            </div>
+            {(() => {
+              const activeUnits = displayedUnits.filter((u) => u.status === "Disponível");
+              if (activeUnits.length === 0) return <p className="text-center py-8 text-muted-foreground text-sm">Nenhuma unidade disponível neste filtro</p>;
+              return (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {activeUnits.map((unit) => {
+                    const unitImage = condo.infraPhotos[Math.abs(Number(unit.id)) % condo.infraPhotos.length]?.url || condo.image;
+                    return (
+                      <div key={unit.id} className="rounded-xl border border-border bg-card overflow-hidden hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setSelectedUnit(unit)}>
+                        <div className="relative h-32 overflow-hidden">
+                          <img src={unitImage} alt={`Unidade ${unit.number}`} className="w-full h-full object-cover" />
+                          <span className="absolute top-2 left-2 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-success text-primary-foreground">Disponível</span>
+                          <span className="absolute top-2 right-2 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-card/90 text-foreground backdrop-blur-sm">{unit.number}</span>
+                        </div>
+                        <div className="p-3 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-medium text-muted-foreground">{unit.type}</span>
+                            <span className="text-xs text-muted-foreground">Bloco {unit.block}</span>
+                          </div>
+                          <p className="text-base font-bold text-accent">{formatCurrency(unit.price)}</p>
+                          <div className="flex items-center gap-3 text-[11px] text-muted-foreground border-t border-border pt-2">
+                            <span className="flex items-center gap-1"><Ruler className="w-3 h-3" />{unit.area}m²</span>
+                            <span className="flex items-center gap-1"><BedDouble className="w-3 h-3" />{unit.bedrooms}q</span>
+                            <span className="flex items-center gap-1"><Bath className="w-3 h-3" />{unit.bathrooms}b</span>
+                            <span className="flex items-center gap-1"><Car className="w-3 h-3" />{unit.parking}v</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+          </TabsContent>
 
           {/* Sales Mirror */}
           <TabsContent value="espelho" className="space-y-4">
-            {/* Legend + filter */}
             <div className="flex flex-wrap gap-3 items-center justify-between">
               <div className="flex flex-wrap gap-3 items-center">
                 {Object.entries(statusConfig).map(([key, cfg]) => (
@@ -345,7 +386,6 @@ export default function CondominiumDetail() {
               </div>
             </div>
 
-            {/* Mirror Grid by Block */}
             <div className="space-y-4">
               {condo.blocks.map((block) => {
                 const blockUnits = condo.units.filter((u) => u.block === block);
@@ -381,7 +421,6 @@ export default function CondominiumDetail() {
               })}
             </div>
 
-            {/* Summary */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {[
                 { label: "Preço médio", value: formatCurrency(totalPotential / condo.units.length) },
@@ -397,46 +436,31 @@ export default function CondominiumDetail() {
             </div>
           </TabsContent>
 
-          {/* Units List */}
-          <TabsContent value="unidades" className="space-y-3">
-            <div className="flex gap-2 flex-wrap">
-              <button onClick={() => setSelectedBlock(null)} className={cn("px-3 py-1.5 rounded-lg text-xs font-medium transition-colors", !selectedBlock ? "bg-accent text-accent-foreground" : "bg-secondary text-secondary-foreground hover:bg-muted")}>Todos</button>
-              {condo.blocks.map((b) => (
-                <button key={b} onClick={() => setSelectedBlock(b)} className={cn("px-3 py-1.5 rounded-lg text-xs font-medium transition-colors", selectedBlock === b ? "bg-accent text-accent-foreground" : "bg-secondary text-secondary-foreground hover:bg-muted")}>Bloco {b}</button>
-              ))}
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border text-muted-foreground text-xs">
-                    <th className="text-left py-3 px-3">Unid.</th><th className="text-left py-3 px-3">Bloco</th>
-                    <th className="text-left py-3 px-3">Tipo</th><th className="text-left py-3 px-3">Área</th>
-                    <th className="text-left py-3 px-3">Quartos</th><th className="text-left py-3 px-3">Valor</th>
-                    <th className="text-left py-3 px-3">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {displayedUnits.map((unit) => {
-                    const cfg = statusConfig[unit.status];
-                    return (
-                      <tr key={unit.id} className="border-b border-border/50 hover:bg-muted/30 cursor-pointer" onClick={() => setSelectedUnit(unit)}>
-                        <td className="py-2.5 px-3 font-mono font-semibold text-foreground">{unit.number}</td>
-                        <td className="py-2.5 px-3 text-muted-foreground">{unit.block}</td>
-                        <td className="py-2.5 px-3 text-muted-foreground">{unit.type}</td>
-                        <td className="py-2.5 px-3 text-muted-foreground">{unit.area}m²</td>
-                        <td className="py-2.5 px-3 text-muted-foreground">{unit.bedrooms}</td>
-                        <td className="py-2.5 px-3 font-semibold text-foreground">{formatCurrency(unit.price)}</td>
-                        <td className="py-2.5 px-3"><span className={cn("px-2 py-0.5 rounded text-[11px] font-semibold text-primary-foreground", cfg.bg)}>{unit.status}</span></td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </TabsContent>
-
-          {/* Infrastructure */}
+          {/* Infrastructure + Gallery merged */}
           <TabsContent value="infra" className="space-y-5">
+            {/* Gallery on top */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-bold text-foreground">Fotos da Infraestrutura</h3>
+                <span className="text-xs text-muted-foreground">{condo.infraPhotos.length} fotos</span>
+              </div>
+              <InfraGallery photos={condo.infraPhotos} onSelect={setLightboxIdx} />
+            </div>
+
+            {condo.videoUrl && (
+              <a href={condo.videoUrl} target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-3 p-4 rounded-xl bg-muted/50 border border-border hover:border-accent/40 transition-colors group">
+                <div className="w-14 h-14 rounded-lg bg-destructive/10 flex items-center justify-center flex-shrink-0 group-hover:bg-destructive/20 transition-colors">
+                  <Play className="w-6 h-6 text-destructive" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">Assistir tour virtual</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Abrir vídeo em nova aba</p>
+                </div>
+                <ExternalLink className="w-4 h-4 text-muted-foreground ml-auto" />
+              </a>
+            )}
+
             <div>
               <h3 className="text-sm font-bold text-foreground mb-3">Comodidades</h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
@@ -460,32 +484,6 @@ export default function CondominiumDetail() {
                 ))}
               </div>
             </div>
-          </TabsContent>
-
-          {/* Gallery */}
-          <TabsContent value="galeria" className="space-y-5">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-foreground">Fotos da Infraestrutura</h3>
-              <span className="text-xs text-muted-foreground">{condo.infraPhotos.length} fotos</span>
-            </div>
-            <InfraGallery photos={condo.infraPhotos} onSelect={setLightboxIdx} />
-
-            {condo.videoUrl && (
-              <div className="mt-4">
-                <h3 className="text-sm font-bold text-foreground mb-3">Vídeo do Empreendimento</h3>
-                <a href={condo.videoUrl} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-3 p-4 rounded-xl bg-muted/50 border border-border hover:border-accent/40 transition-colors group">
-                  <div className="w-14 h-14 rounded-lg bg-destructive/10 flex items-center justify-center flex-shrink-0 group-hover:bg-destructive/20 transition-colors">
-                    <Play className="w-6 h-6 text-destructive" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">Assistir tour virtual</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">Abrir vídeo em nova aba</p>
-                  </div>
-                  <ExternalLink className="w-4 h-4 text-muted-foreground ml-auto" />
-                </a>
-              </div>
-            )}
           </TabsContent>
         </Tabs>
 
