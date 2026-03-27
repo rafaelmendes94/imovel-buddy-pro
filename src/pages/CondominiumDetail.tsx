@@ -129,6 +129,11 @@ const mockCondos: Record<string, CondoInfo> = {
       { url: "https://images.unsplash.com/photo-1558036117-15d82a90b9b1?w=600&h=400&fit=crop", label: "Portaria" },
       { url: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&h=400&fit=crop", label: "Churrasqueira" },
     ],
+    implantationMedia: [
+      { type: "image", url: "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=800&h=600&fit=crop", label: "Planta de Implantação" },
+      { type: "image", url: "https://images.unsplash.com/photo-1524813686514-a57563d77965?w=800&h=600&fit=crop", label: "Mapa do Loteamento" },
+      { type: "pdf", url: "#", label: "Implantação Completa.pdf" },
+    ],
     videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
     downloadUrl: "#",
     units: generateCondoUnits(["A", "B", "C", "D", "E"], 12),
