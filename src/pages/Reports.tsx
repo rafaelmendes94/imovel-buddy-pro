@@ -186,6 +186,19 @@ export default function Reports() {
       .sort((a, b) => b.vgv - a.vgv);
   }, [filtered]);
 
+  // Bar chart data with month-over-month change indicators
+  const revenueBarData = salesData.map((d, i) => {
+    const prev = i > 0 ? salesData[i - 1].receita : d.receita;
+    const change = ((d.receita - prev) / prev) * 100;
+    return {
+      ...d,
+      change: i === 0 ? 0 : change,
+      trend: i === 0 ? "neutral" : change > 0 ? "alta" : change < 0 ? "baixa" : "neutral",
+    };
+  });
+
+  const avgRevenue = salesData.reduce((sum, d) => sum + d.receita, 0) / salesData.length;
+
   // Pie chart data for segments
   const segmentPie = rankBySegment.map(s => ({
     name: s.name,
