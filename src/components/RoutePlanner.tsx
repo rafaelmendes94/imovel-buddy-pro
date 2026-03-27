@@ -1,15 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { formatCurrency, type Property } from "@/data/mockData";
 import {
   Navigation,
   X,
   MapPin,
-  Check,
   Trash2,
-  ExternalLink,
   ChevronUp,
   ChevronDown,
   Route,
+  Heart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -19,23 +18,33 @@ interface RoutePlannerProps {
 
 export function RoutePlanner({ properties }: RoutePlannerProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [orderedIds, setOrderedIds] = useState<string[]>([]);
   const [showAppChoice, setShowAppChoice] = useState(false);
 
-  const toggleProperty = (id: string) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-    );
-  };
+  // Sync ordered list with incoming favorites
+  useEffect(() => {
+    setOrderedIds((prev) => {
+      const propIds = new Set(properties.map((p) => p.id));
+      // Keep existing order for props that still exist, add new ones at end
+      const kept = prev.filter((id) => propIds.has(id));
+      const newOnes = properties
+        .filter((p) => !kept.includes(p.id))
+        .map((p) => p.id);
+      return [...kept, ...newOnes];
+    });
+  }, [properties]);
 
-  const removeProperty = (id: string) => {
-    setSelectedIds((prev) => prev.filter((x) => x !== id));
+  const orderedProperties = orderedIds
+    .map((id) => properties.find((p) => p.id === id))
+    .filter(Boolean) as Property[];
+
+  const removeFromRoute = (id: string) => {
+    setOrderedIds((prev) => prev.filter((x) => x !== id));
   };
 
   const moveUp = (index: number) => {
     if (index === 0) return;
-    setSelectedIds((prev) => {
+    setOrderedIds((prev) => {
       const arr = [...prev];
       [arr[index - 1], arr[index]] = [arr[index], arr[index - 1]];
       return arr;
@@ -43,7 +52,7 @@ export function RoutePlanner({ properties }: RoutePlannerProps) {
   };
 
   const moveDown = (index: number) => {
-    setSelectedIds((prev) => {
+    setOrderedIds((prev) => {
       if (index >= prev.length - 1) return prev;
       const arr = [...prev];
       [arr[index], arr[index + 1]] = [arr[index + 1], arr[index]];
@@ -51,24 +60,9 @@ export function RoutePlanner({ properties }: RoutePlannerProps) {
     });
   };
 
-  const selectedProperties = selectedIds
-    .map((id) => properties.find((p) => p.id === id))
-    .filter(Boolean) as Property[];
-
-  const filteredProperties = properties.filter(
-    (p) =>
-      !selectedIds.includes(p.id) &&
-      (!searchTerm ||
-        p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.city.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
-
   const openGoogleMaps = () => {
-    if (selectedProperties.length === 0) return;
-    const waypoints = selectedProperties.map(
-      (p) => `${p.lat},${p.lng}`
-    );
+    if (orderedProperties.length === 0) return;
+    const waypoints = orderedProperties.map((p) => `${p.lat},${p.lng}`);
     const origin = waypoints[0];
     const destination = waypoints[waypoints.length - 1];
     const waypointsParam =
@@ -81,10 +75,8 @@ export function RoutePlanner({ properties }: RoutePlannerProps) {
   };
 
   const openWaze = () => {
-    if (selectedProperties.length === 0) return;
-    // Waze only supports single destination, so we open the last one
-    // For multiple stops, we use the first as navigate and show a note
-    const dest = selectedProperties[selectedProperties.length - 1];
+    if (orderedProperties.length === 0) return;
+    const dest = orderedProperties[orderedProperties.length - 1];
     const url = `https://waze.com/ul?ll=${dest.lat},${dest.lng}&navigate=yes`;
     window.open(url, "_blank");
     setShowAppChoice(false);
@@ -97,16 +89,16 @@ export function RoutePlanner({ properties }: RoutePlannerProps) {
         onClick={() => setIsOpen(true)}
         className={cn(
           "fixed bottom-6 left-6 z-50 flex items-center gap-2 px-5 py-3 rounded-full shadow-2xl font-bold text-sm transition-all hover:scale-105",
-          selectedIds.length > 0
-            ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white"
-            : "bg-white text-gray-800 border border-gray-200 hover:border-blue-300"
+          properties.length > 0
+            ? "bg-gradient-to-r from-red-500 to-rose-500 text-white"
+            : "bg-white text-gray-800 border border-gray-200 hover:border-red-300"
         )}
       >
-        <Route className="w-5 h-5" />
+        <Heart className={cn("w-5 h-5", properties.length > 0 && "fill-current")} />
         Traçar Rota
-        {selectedIds.length > 0 && (
+        {properties.length > 0 && (
           <span className="ml-1 w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs font-black">
-            {selectedIds.length}
+            {properties.length}
           </span>
         )}
       </button>
@@ -118,15 +110,15 @@ export function RoutePlanner({ properties }: RoutePlannerProps) {
             {/* Header */}
             <div className="flex items-center justify-between p-5 border-b border-gray-100">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center shadow-md">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-rose-500 flex items-center justify-center shadow-md">
                   <Route className="w-5 h-5 text-white" />
                 </div>
                 <div>
                   <h2 className="text-lg font-extrabold text-gray-900">
-                    Planejar Rota
+                    Rota de Visitas
                   </h2>
                   <p className="text-xs text-gray-500">
-                    Selecione imóveis para visitar
+                    Imóveis favoritados com ❤️
                   </p>
                 </div>
               </div>
@@ -139,21 +131,35 @@ export function RoutePlanner({ properties }: RoutePlannerProps) {
             </div>
 
             <div className="flex-1 overflow-y-auto">
-              {/* Selected properties - route order */}
-              {selectedProperties.length > 0 && (
-                <div className="p-4 border-b border-gray-100">
+              {orderedProperties.length === 0 ? (
+                <div className="p-8 text-center">
+                  <Heart className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                  <p className="text-sm font-bold text-gray-700 mb-1">
+                    Nenhum imóvel favoritado
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    Clique no ❤️ dos imóveis para adicioná-los à rota de visitas
+                  </p>
+                </div>
+              ) : (
+                <div className="p-4">
                   <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
-                    Rota ({selectedProperties.length} paradas)
+                    Ordem de visita ({orderedProperties.length} paradas)
                   </p>
                   <div className="space-y-2">
-                    {selectedProperties.map((p, i) => (
+                    {orderedProperties.map((p, i) => (
                       <div
                         key={p.id}
-                        className="flex items-center gap-3 p-3 rounded-xl bg-blue-50 border border-blue-100"
+                        className="flex items-center gap-3 p-3 rounded-xl bg-rose-50 border border-rose-100"
                       >
-                        <div className="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-black flex-shrink-0">
+                        <div className="w-7 h-7 rounded-full bg-red-500 text-white flex items-center justify-center text-xs font-black flex-shrink-0">
                           {i + 1}
                         </div>
+                        <img
+                          src={p.image}
+                          alt={p.title}
+                          className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
+                        />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-bold text-gray-900 truncate">
                             {p.title}
@@ -161,24 +167,27 @@ export function RoutePlanner({ properties }: RoutePlannerProps) {
                           <p className="text-[11px] text-gray-500 truncate">
                             {p.address}, {p.city}
                           </p>
+                          <p className="text-xs font-bold text-amber-600">
+                            {formatCurrency(p.price)}
+                          </p>
                         </div>
                         <div className="flex items-center gap-1 flex-shrink-0">
                           <button
                             onClick={() => moveUp(i)}
-                            className="p-1 rounded hover:bg-blue-100 text-blue-600 disabled:opacity-30"
+                            className="p-1 rounded hover:bg-rose-100 text-rose-600 disabled:opacity-30"
                             disabled={i === 0}
                           >
                             <ChevronUp className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => moveDown(i)}
-                            className="p-1 rounded hover:bg-blue-100 text-blue-600 disabled:opacity-30"
-                            disabled={i === selectedProperties.length - 1}
+                            className="p-1 rounded hover:bg-rose-100 text-rose-600 disabled:opacity-30"
+                            disabled={i === orderedProperties.length - 1}
                           >
                             <ChevronDown className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={() => removeProperty(p.id)}
+                            onClick={() => removeFromRoute(p.id)}
                             className="p-1 rounded hover:bg-red-100 text-red-500"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -189,66 +198,6 @@ export function RoutePlanner({ properties }: RoutePlannerProps) {
                   </div>
                 </div>
               )}
-
-              {/* Search */}
-              <div className="p-4 pb-2">
-                <div className="flex items-center bg-gray-100 rounded-xl px-3 py-2">
-                  <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                  <input
-                    type="text"
-                    placeholder="Buscar imóvel..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="flex-1 px-2 py-1 text-sm bg-transparent focus:outline-none text-gray-900 placeholder:text-gray-400"
-                  />
-                  {searchTerm && (
-                    <button onClick={() => setSearchTerm("")}>
-                      <X className="w-4 h-4 text-gray-400" />
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Available properties */}
-              <div className="p-4 pt-2 space-y-1.5">
-                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                  Imóveis disponíveis ({filteredProperties.length})
-                </p>
-                {filteredProperties.length === 0 && (
-                  <p className="text-sm text-gray-400 text-center py-4">
-                    Nenhum imóvel encontrado.
-                  </p>
-                )}
-                {filteredProperties.map((p) => (
-                  <button
-                    key={p.id}
-                    onClick={() => toggleProperty(p.id)}
-                    className="flex items-center gap-3 p-3 rounded-xl w-full text-left hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-200"
-                  >
-                    <img
-                      src={p.image}
-                      alt={p.title}
-                      className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-gray-900 truncate">
-                        {p.title}
-                      </p>
-                      <p className="text-[11px] text-gray-500 truncate">
-                        {p.address}, {p.city}
-                      </p>
-                      <p className="text-xs font-bold text-amber-600">
-                        {formatCurrency(p.price)}
-                      </p>
-                    </div>
-                    <div className="w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center flex-shrink-0">
-                      {selectedIds.includes(p.id) && (
-                        <Check className="w-4 h-4 text-blue-600" />
-                      )}
-                    </div>
-                  </button>
-                ))}
-              </div>
             </div>
 
             {/* Footer action */}
@@ -269,7 +218,7 @@ export function RoutePlanner({ properties }: RoutePlannerProps) {
                       <span className="text-sm font-bold text-gray-900">
                         Google Maps
                       </span>
-                      {selectedProperties.length > 2 && (
+                      {orderedProperties.length > 2 && (
                         <span className="text-[10px] text-gray-500">
                           Com paradas intermediárias
                         </span>
@@ -286,7 +235,7 @@ export function RoutePlanner({ properties }: RoutePlannerProps) {
                         Waze
                       </span>
                       <span className="text-[10px] text-gray-500">
-                        {selectedProperties.length > 1
+                        {orderedProperties.length > 1
                           ? "Último destino"
                           : "Navegação direta"}
                       </span>
@@ -302,18 +251,18 @@ export function RoutePlanner({ properties }: RoutePlannerProps) {
               ) : (
                 <button
                   onClick={() => setShowAppChoice(true)}
-                  disabled={selectedProperties.length === 0}
+                  disabled={orderedProperties.length === 0}
                   className={cn(
                     "w-full flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl text-sm font-bold transition-all shadow-md",
-                    selectedProperties.length > 0
-                      ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-700 hover:to-blue-600 hover:shadow-lg"
+                    orderedProperties.length > 0
+                      ? "bg-gradient-to-r from-red-500 to-rose-500 text-white hover:from-red-600 hover:to-rose-600 hover:shadow-lg"
                       : "bg-gray-200 text-gray-400 cursor-not-allowed"
                   )}
                 >
                   <Navigation className="w-5 h-5" />
-                  {selectedProperties.length > 0
-                    ? `Iniciar Rota (${selectedProperties.length} ${selectedProperties.length === 1 ? "imóvel" : "imóveis"})`
-                    : "Selecione imóveis para traçar rota"}
+                  {orderedProperties.length > 0
+                    ? `Iniciar Rota (${orderedProperties.length} ${orderedProperties.length === 1 ? "imóvel" : "imóveis"})`
+                    : "Favorite imóveis para traçar rota"}
                 </button>
               )}
             </div>
