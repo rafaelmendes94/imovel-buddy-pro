@@ -438,6 +438,8 @@ export default function Properties() {
           setPropertyList((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
           setSelectedProperty(updated);
         }}
+        onFilterByTitle={(title) => { setSelectedProperty(null); setSearch(title.split(" ").slice(0, 2).join(" ")); setActiveCategory("todos"); }}
+        onFilterByCondition={(cond) => { setSelectedProperty(null); setFilterCondition(cond); setShowFilters(true); setActiveCategory("todos"); }}
       />
 
       {/* Term Viewer Modal */}
