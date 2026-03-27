@@ -412,31 +412,6 @@ export default function Reports() {
                   </div>
                 </div>
               </div>
-              {/* Month & Year specific filters */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <span className="text-[10px] text-muted-foreground font-medium flex items-center gap-1 mb-1.5 uppercase tracking-wider">
-                    <CalendarDays className="w-3 h-3" /> Mês Específico
-                  </span>
-                  <div className="flex flex-wrap gap-1">
-                    <FilterChip label="Todos" active={filterMonth === null} onClick={() => setFilterMonth(null)} />
-                    {ALL_MONTHS.map((m, i) => (
-                      <FilterChip key={m} label={m} active={filterMonth === i} onClick={() => setFilterMonth(filterMonth === i ? null : i)} onRemove={filterMonth === i ? () => setFilterMonth(null) : undefined} />
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <span className="text-[10px] text-muted-foreground font-medium flex items-center gap-1 mb-1.5 uppercase tracking-wider">
-                    <CalendarRange className="w-3 h-3" /> Ano Específico
-                  </span>
-                  <div className="flex flex-wrap gap-1">
-                    <FilterChip label="Todos" active={filterYear === null} onClick={() => setFilterYear(null)} />
-                    {ALL_YEARS.map(y => (
-                      <FilterChip key={y} label={String(y)} active={filterYear === y} onClick={() => setFilterYear(filterYear === y ? null : y)} onRemove={filterYear === y ? () => setFilterYear(null) : undefined} />
-                    ))}
-                  </div>
-                </div>
-              </div>
             </div>
           )}
         </div>
