@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -10,7 +10,6 @@ import {
   ChevronRight,
   Home,
   Building,
-  MapPinned,
   Camera,
   Fence,
   Globe,
@@ -18,13 +17,19 @@ import {
   Wallet,
   Table2,
   FileSignature,
-  Video,
   Clapperboard,
+  GripVertical,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CadastroPanel } from "./CadastroPanel";
 
-const navItems = [
+interface NavItem {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  path: string;
+}
+
+const defaultNavItems: NavItem[] = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
   { icon: FileText, label: "Relatórios", path: "/relatorios" },
   { icon: Globe, label: "Site", path: "/site" },
@@ -41,9 +46,61 @@ const navItems = [
   { icon: Settings, label: "Configurações", path: "/configuracoes" },
 ];
 
+function loadSavedOrder(): NavItem[] {
+  try {
+    const saved = localStorage.getItem("sidebar-order");
+    if (!saved) return defaultNavItems;
+    const paths: string[] = JSON.parse(saved);
+    const mapped = paths.map(p => defaultNavItems.find(n => n.path === p)).filter(Boolean) as NavItem[];
+    // add any new items not in saved order
+    const missing = defaultNavItems.filter(n => !paths.includes(n.path));
+    return [...mapped, ...missing];
+  } catch {
+    return defaultNavItems;
+  }
+}
+
 export function AppSidebar() {
   const [collapsed, setCollapsed] = useState(false);
+  const [navItems, setNavItems] = useState<NavItem[]>(loadSavedOrder);
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
+  const [overIdx, setOverIdx] = useState<number | null>(null);
   const location = useLocation();
+
+  const handleDragStart = useCallback((e: React.DragEvent, idx: number) => {
+    setDragIdx(idx);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", String(idx));
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setOverIdx(idx);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent, dropIdx: number) => {
+    e.preventDefault();
+    if (dragIdx === null || dragIdx === dropIdx) {
+      setDragIdx(null);
+      setOverIdx(null);
+      return;
+    }
+    setNavItems(prev => {
+      const items = [...prev];
+      const [moved] = items.splice(dragIdx, 1);
+      items.splice(dropIdx, 0, moved);
+      localStorage.setItem("sidebar-order", JSON.stringify(items.map(i => i.path)));
+      return items;
+    });
+    setDragIdx(null);
+    setOverIdx(null);
+  }, [dragIdx]);
+
+  const handleDragEnd = useCallback(() => {
+    setDragIdx(null);
+    setOverIdx(null);
+  }, []);
 
   return (
     <aside
@@ -53,7 +110,7 @@ export function AppSidebar() {
       )}
     >
       {/* Logo */}
-      <div className="flex items-center gap-3 px-4 h-16 border-b border-sidebar-border">
+      <div className="flex items-center gap-3 px-4 h-16 border-b border-sidebar-border flex-shrink-0">
         <div className="w-9 h-9 rounded-lg gradient-gold flex items-center justify-center flex-shrink-0">
           <Home className="w-5 h-5 text-primary" />
         </div>
@@ -69,34 +126,54 @@ export function AppSidebar() {
         )}
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 py-4 px-2 space-y-1">
-        {navItems.map((item) => {
+      {/* Navigation - scrollable */}
+      <nav className="flex-1 py-2 px-2 space-y-0.5 overflow-y-auto scrollbar-thin">
+        {navItems.map((item, idx) => {
           const isActive = location.pathname === item.path;
+          const isDragging = dragIdx === idx;
+          const isOver = overIdx === idx && dragIdx !== null && dragIdx !== idx;
+
           return (
-            <Link
+            <div
               key={item.path}
-              to={item.path}
+              draggable
+              onDragStart={e => handleDragStart(e, idx)}
+              onDragOver={e => handleDragOver(e, idx)}
+              onDrop={e => handleDrop(e, idx)}
+              onDragEnd={handleDragEnd}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
-                isActive
-                  ? "bg-sidebar-accent text-sidebar-primary"
-                  : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                "group relative transition-all duration-150",
+                isDragging && "opacity-40 scale-95",
+                isOver && "before:absolute before:inset-x-1 before:top-0 before:h-0.5 before:bg-accent before:rounded-full",
               )}
             >
-              <item.icon className="w-5 h-5 flex-shrink-0" />
-              {!collapsed && <span>{item.label}</span>}
-            </Link>
+              <Link
+                to={item.path}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+                  isActive
+                    ? "bg-sidebar-accent text-sidebar-primary"
+                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                )}
+              >
+                {!collapsed && (
+                  <GripVertical className="w-3.5 h-3.5 text-muted-foreground/30 group-hover:text-muted-foreground/70 flex-shrink-0 cursor-grab active:cursor-grabbing transition-colors" />
+                )}
+                <item.icon className="w-5 h-5 flex-shrink-0" />
+                {!collapsed && <span>{item.label}</span>}
+              </Link>
+            </div>
           );
         })}
+
         {/* Cadastro Panel */}
-        <div className="px-2 pt-2 border-t border-sidebar-border">
+        <div className={cn("pt-2 border-t border-sidebar-border mt-2", collapsed ? "px-0" : "px-1")}>
           <CadastroPanel collapsed={collapsed} />
         </div>
       </nav>
 
       {/* Collapse toggle */}
-      <div className="p-2 border-t border-sidebar-border">
+      <div className="p-2 border-t border-sidebar-border flex-shrink-0">
         <button
           onClick={() => setCollapsed(!collapsed)}
           className="w-full flex items-center justify-center py-2 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
