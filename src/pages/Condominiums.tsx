@@ -222,6 +222,14 @@ export default function Condominiums() {
                     <label className="text-xs font-medium text-muted-foreground mb-1 block">URL da Imagem</label>
                     <input value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} placeholder="https://..." className="w-full px-3 py-2 bg-background border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
                   </div>
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Latitude</label>
+                    <input type="number" step="0.0001" value={form.lat} onChange={(e) => setForm({ ...form, lat: +e.target.value })} className="w-full px-3 py-2 bg-background border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Longitude</label>
+                    <input type="number" step="0.0001" value={form.lng} onChange={(e) => setForm({ ...form, lng: +e.target.value })} className="w-full px-3 py-2 bg-background border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                  </div>
                   <div className="col-span-2">
                     <label className="text-xs font-medium text-muted-foreground mb-2 block">Comodidades</label>
                     <div className="flex flex-wrap gap-2">
