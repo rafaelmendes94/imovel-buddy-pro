@@ -304,8 +304,13 @@ function PropertyCard({ property }: { property: typeof siteProperties[0] }) {
             {property.parking > 0 && <span className="flex items-center gap-1"><Car className="w-3.5 h-3.5" />{property.parking} vagas</span>}
           </div>
         )}
+        {property.paymentConditions && (
+          <div className="flex items-center gap-1.5 text-[11px] text-emerald-700 bg-emerald-50 px-2.5 py-1.5 rounded-lg">
+            <CreditCard className="w-3.5 h-3.5" />
+            <span className="font-semibold">{property.paymentConditions}</span>
+          </div>
+        )}
 
-        {/* Broker info + WhatsApp */}
         <div className="flex items-center justify-between pt-2 border-t border-gray-100">
           <div className="flex items-center gap-2">
             <img
