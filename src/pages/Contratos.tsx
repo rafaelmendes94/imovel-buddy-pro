@@ -142,17 +142,23 @@ export default function Contratos() {
   const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
   const [generatedText, setGeneratedText] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editText, setEditText] = useState("");
 
   const handleSelectTemplate = (template: Template) => {
     setSelectedTemplate(template);
     setFieldValues({});
     setGeneratedText("");
+    setIsEditing(false);
+    setEditText("");
   };
 
   const handleBack = () => {
     setSelectedTemplate(null);
     setFieldValues({});
     setGeneratedText("");
+    setIsEditing(false);
+    setEditText("");
   };
 
   const handleGenerate = async () => {
@@ -166,6 +172,7 @@ export default function Contratos() {
 
     setIsGenerating(true);
     setGeneratedText("");
+    setIsEditing(false);
 
     try {
       const resp = await fetch(CHAT_URL, {
@@ -241,13 +248,31 @@ export default function Contratos() {
     }
   };
 
+  const handleStartEdit = () => {
+    setEditText(generatedText);
+    setIsEditing(true);
+  };
+
+  const handleSaveEdit = () => {
+    setGeneratedText(editText);
+    setIsEditing(false);
+    toast.success("Documento atualizado!");
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditText("");
+  };
+
+  const currentText = isEditing ? editText : generatedText;
+
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(generatedText);
+    await navigator.clipboard.writeText(currentText);
     toast.success("Documento copiado para a área de transferência!");
   };
 
   const handleDownload = () => {
-    const blob = new Blob([generatedText], { type: "text/plain;charset=utf-8" });
+    const blob = new Blob([currentText], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
