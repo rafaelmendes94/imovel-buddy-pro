@@ -12,6 +12,7 @@ export interface Property {
   parking: number;
   broker: string;
   image: string;
+  images: string[];
   createdAt: string;
   lat: number;
   lng: number;
@@ -44,6 +45,11 @@ export const properties: Property[] = [
     parking: 2,
     broker: "Carlos Silva",
     image: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=300&fit=crop",
+    images: [
+      "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=300&fit=crop",
+      "https://images.unsplash.com/photo-1560185893-a55cbc8c57e8?w=400&h=300&fit=crop",
+      "https://images.unsplash.com/photo-1560185007-cde436f6a4d0?w=400&h=300&fit=crop",
+    ],
     createdAt: "2024-01-15",
     lat: -23.5629,
     lng: -46.6685,
@@ -62,6 +68,11 @@ export const properties: Property[] = [
     parking: 3,
     broker: "Ana Rodrigues",
     image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=400&h=300&fit=crop",
+    images: [
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=400&h=300&fit=crop",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=400&h=300&fit=crop",
+      "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=400&h=300&fit=crop",
+    ],
     createdAt: "2024-02-10",
     lat: -23.5868,
     lng: -46.6826,
@@ -80,6 +91,11 @@ export const properties: Property[] = [
     parking: 4,
     broker: "Carlos Silva",
     image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&h=300&fit=crop",
+    images: [
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&h=300&fit=crop",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&h=300&fit=crop",
+      "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?w=400&h=300&fit=crop",
+    ],
     createdAt: "2024-03-05",
     lat: -23.4977,
     lng: -46.8490,
@@ -98,6 +114,10 @@ export const properties: Property[] = [
     parking: 1,
     broker: "Marcos Oliveira",
     image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop",
+    images: [
+      "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop",
+      "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=400&h=300&fit=crop",
+    ],
     createdAt: "2024-01-20",
     lat: -23.5475,
     lng: -46.6361,
@@ -116,6 +136,10 @@ export const properties: Property[] = [
     parking: 0,
     broker: "Ana Rodrigues",
     image: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&h=300&fit=crop",
+    images: [
+      "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&h=300&fit=crop",
+      "https://images.unsplash.com/photo-1500076656116-558758c991c1?w=400&h=300&fit=crop",
+    ],
     createdAt: "2024-02-28",
     lat: -23.6036,
     lng: -46.8780,
@@ -134,6 +158,11 @@ export const properties: Property[] = [
     parking: 1,
     broker: "Marcos Oliveira",
     image: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400&h=300&fit=crop",
+    images: [
+      "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400&h=300&fit=crop",
+      "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400&h=300&fit=crop",
+      "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=400&h=300&fit=crop",
+    ],
     createdAt: "2024-03-12",
     lat: -23.5667,
     lng: -46.6915,
