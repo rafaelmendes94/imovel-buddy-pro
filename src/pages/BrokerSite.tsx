@@ -339,6 +339,10 @@ export default function BrokerSite() {
   const brokerProperties = allSiteProperties.filter(
     (p) => p.broker === brokerName && p.status === "Disponível"
   );
+  const soldProperties = allSiteProperties.filter(
+    (p) => p.broker === brokerName && (p.status === "Vendido" || p.status === "Reservado")
+  );
+  const soldValue = soldProperties.reduce((sum, p) => sum + p.price, 0);
 
   const [activeCategory, setActiveCategory] = useState<Category>("todos");
   const [filterCity, setFilterCity] = useState("");
