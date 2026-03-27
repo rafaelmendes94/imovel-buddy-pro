@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import {
   Building,
@@ -90,6 +91,7 @@ export default function Buildings() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
+  const navigate = useNavigate();
 
   const filtered = buildings.filter(
     (b) =>
@@ -224,7 +226,7 @@ export default function Buildings() {
         {/* Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {filtered.map((building) => (
-            <div key={building.id} className="elevated-card rounded-xl overflow-hidden group">
+            <div key={building.id} className="elevated-card rounded-xl overflow-hidden group cursor-pointer" onClick={() => navigate(`/edificios/${building.id}`)}>
               <div className="relative h-44 overflow-hidden">
                 <img
                   src={building.image || "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&h=300&fit=crop"}

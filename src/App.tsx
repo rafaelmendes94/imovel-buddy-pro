@@ -6,7 +6,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Dashboard from "./pages/Dashboard";
 import Properties from "./pages/Properties";
 import Buildings from "./pages/Buildings";
+import BuildingDetail from "./pages/BuildingDetail";
 import Condominiums from "./pages/Condominiums";
+import CondominiumDetail from "./pages/CondominiumDetail";
 import Maps from "./pages/Maps";
 import CityPhotos from "./pages/CityPhotos";
 import Brokers from "./pages/Brokers";
@@ -26,7 +28,9 @@ const App = () => (
           <Route path="/" element={<Dashboard />} />
           <Route path="/imoveis" element={<Properties />} />
           <Route path="/edificios" element={<Buildings />} />
+          <Route path="/edificios/:id" element={<BuildingDetail />} />
           <Route path="/condominios" element={<Condominiums />} />
+          <Route path="/condominios/:id" element={<CondominiumDetail />} />
           <Route path="/mapas" element={<Maps />} />
           <Route path="/fotos-cidade" element={<CityPhotos />} />
           <Route path="/corretores" element={<Brokers />} />
