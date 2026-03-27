@@ -212,6 +212,9 @@ const categories: { key: Category; label: string; icon: typeof Home }[] = [
 ];
 
 function PropertyCard({ property }: { property: typeof siteProperties[0] }) {
+  const broker = brokerInfo[property.broker] || { photo: "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=100&h=100&fit=crop&crop=face", whatsapp: "5511999999999" };
+  const whatsappMessage = encodeURIComponent(`Olá! Tenho interesse no imóvel: ${property.title} - ${formatCurrency(property.price)}`);
+
   return (
     <div className="group rounded-2xl overflow-hidden bg-white shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100">
       <div className="relative h-52 overflow-hidden">
@@ -245,9 +248,30 @@ function PropertyCard({ property }: { property: typeof siteProperties[0] }) {
             {property.parking > 0 && <span className="flex items-center gap-1"><Car className="w-3.5 h-3.5" />{property.parking} vagas</span>}
           </div>
         )}
-        <button className="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 text-white text-sm font-bold hover:from-amber-600 hover:to-amber-500 transition-all shadow-sm">
-          Tenho Interesse
-        </button>
+
+        {/* Broker info + WhatsApp */}
+        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+          <div className="flex items-center gap-2">
+            <img
+              src={broker.photo}
+              alt={property.broker}
+              className="w-8 h-8 rounded-full object-cover border-2 border-amber-400"
+            />
+            <div>
+              <p className="text-xs font-semibold text-gray-800 leading-tight">{property.broker}</p>
+              <p className="text-[10px] text-gray-400">Corretor(a)</p>
+            </div>
+          </div>
+          <a
+            href={`https://wa.me/${broker.whatsapp}?text=${whatsappMessage}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500 text-white text-xs font-bold hover:bg-emerald-600 transition-colors shadow-sm"
+          >
+            <Phone className="w-3.5 h-3.5" />
+            WhatsApp
+          </a>
+        </div>
       </div>
     </div>
   );
