@@ -675,6 +675,30 @@ export default function Site() {
                 </button>
               )}
             </div>
+
+            {/* Quick action buttons */}
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                onClick={() => { setActiveCategory("permuta"); setSearchTerm(""); }}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-orange-500 text-white text-sm font-bold hover:bg-orange-600 transition-colors shadow-md"
+              >
+                <Repeat className="w-4 h-4" /> Aceita Permuta
+              </button>
+              <button
+                onClick={() => { setActiveCategory("pagamento"); setSearchTerm(""); }}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700 transition-colors shadow-md"
+              >
+                <CreditCard className="w-4 h-4" /> Condições de Pagamento
+              </button>
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/20 text-white text-sm font-bold hover:bg-white/30 transition-colors backdrop-blur-sm border border-white/30"
+              >
+                <SlidersHorizontal className="w-4 h-4" /> Filtros Avançados
+                <ChevronDown className={cn("w-4 h-4 transition-transform", showFilters && "rotate-180")} />
+              </button>
+            </div>
+
             <div className="flex items-center gap-6 text-sm text-gray-300">
               <span className="flex items-center gap-1.5"><Building2 className="w-4 h-4 text-amber-400" /> {apartments.length} Apartamentos</span>
               <span className="flex items-center gap-1.5"><Home className="w-4 h-4 text-amber-400" /> {houses.length} Casas</span>
@@ -683,6 +707,101 @@ export default function Site() {
           </div>
         </div>
       </section>
+
+      {/* Advanced Filters Panel */}
+      {showFilters && (
+        <div className="bg-white border-b border-gray-200 shadow-md">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">Cidade</label>
+                <select
+                  value={filterCity}
+                  onChange={(e) => setFilterCity(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                >
+                  <option value="">Todas</option>
+                  <option value="Capão da Canoa">Capão da Canoa</option>
+                  <option value="Xangri-lá">Xangri-lá</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">Tipo</label>
+                <select
+                  value={filterType}
+                  onChange={(e) => setFilterType(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                >
+                  <option value="">Todos</option>
+                  <option value="Apartamento">Apartamento</option>
+                  <option value="Casa">Casa</option>
+                  <option value="Terreno">Terreno</option>
+                  <option value="Comercial">Comercial</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">Quartos (mín.)</label>
+                <select
+                  value={filterBedrooms}
+                  onChange={(e) => setFilterBedrooms(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                >
+                  <option value="">Qualquer</option>
+                  <option value="1">1+</option>
+                  <option value="2">2+</option>
+                  <option value="3">3+</option>
+                  <option value="4">4+</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">Preço mín.</label>
+                <select
+                  value={filterPriceMin}
+                  onChange={(e) => setFilterPriceMin(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                >
+                  <option value="">Sem mínimo</option>
+                  <option value="200000">R$ 200 mil</option>
+                  <option value="500000">R$ 500 mil</option>
+                  <option value="800000">R$ 800 mil</option>
+                  <option value="1000000">R$ 1 milhão</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">Preço máx.</label>
+                <select
+                  value={filterPriceMax}
+                  onChange={(e) => setFilterPriceMax(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                >
+                  <option value="">Sem máximo</option>
+                  <option value="500000">R$ 500 mil</option>
+                  <option value="800000">R$ 800 mil</option>
+                  <option value="1000000">R$ 1 milhão</option>
+                  <option value="1500000">R$ 1,5 milhão</option>
+                  <option value="2000000">R$ 2 milhões</option>
+                </select>
+              </div>
+              <div className="flex items-end gap-2">
+                <button
+                  onClick={() => { setActiveCategory("todos"); setShowFilters(false); }}
+                  className="flex-1 px-4 py-2 rounded-lg bg-amber-500 text-white text-sm font-bold hover:bg-amber-600 transition-colors"
+                >
+                  Buscar
+                </button>
+                {hasActiveFilters && (
+                  <button
+                    onClick={clearFilters}
+                    className="px-3 py-2 rounded-lg bg-gray-100 text-gray-600 text-sm font-medium hover:bg-gray-200 transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Category Filter Mobile */}
       <div className="md:hidden sticky top-16 z-40 bg-white border-b border-gray-200 overflow-x-auto">
