@@ -16,6 +16,7 @@ import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import Site from "./pages/Site";
+import BrokerSite from "./pages/BrokerSite";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,7 @@ const App = () => (
           <Route path="/relatorios" element={<Reports />} />
           <Route path="/configuracoes" element={<Settings />} />
           <Route path="/site" element={<Site />} />
+          <Route path="/corretor/:slug" element={<BrokerSite />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
