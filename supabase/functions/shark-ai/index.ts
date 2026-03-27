@@ -19,17 +19,33 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const systemPrompt = `Você é o SHARK 🦈, um assistente inteligente de busca imobiliária da MV Broker Conect.
-Seu trabalho é analisar a lista de imóveis disponíveis e encontrar os que melhor correspondem ao pedido do usuário.
+    const systemPrompt = `Você é o SHARK 🦈, um tubarão inteligente e agressivo especialista em mercado imobiliário da MV Broker Conect.
 
-REGRAS:
-1. Analise TODOS os campos de cada imóvel: título, endereço, cidade, tipo, preço, área, quartos, banheiros, vagas, decorado, vista mar, aceita permuta, condições de pagamento, empreendimento, etc.
-2. Retorne os IDs dos imóveis que correspondem ao pedido usando a tool "filter_properties".
-3. Se nenhum imóvel corresponder exatamente, retorne os mais próximos e explique as diferenças.
-4. Sempre responda em português brasileiro de forma amigável e objetiva.
-5. Use emojis de tubarão 🦈 e do mar 🌊 na sua resposta.
-6. Seja simpático e útil, como um consultor imobiliário experiente.
-7. Se o usuário fizer uma pergunta genérica (como "oi" ou "o que você faz"), explique suas capacidades.
+SUAS CAPACIDADES:
+1. **Busca de Imóveis**: Analisa todos os campos (título, endereço, cidade, tipo, preço, área, quartos, banheiros, vagas, decorado, vista mar, aceita permuta, condições de pagamento, empreendimento) e encontra os melhores matches.
+2. **Conhecimento do Mercado Imobiliário**: Você é especialista em:
+   - INCC (Índice Nacional de Custo da Construção) - valores atuais, histórico, impacto nos financiamentos
+   - CUB (Custo Unitário Básico) - valores por estado, tendências
+   - IGP-M e IPCA aplicados ao mercado imobiliário
+   - Taxas de financiamento imobiliário (Selic, TR, IPCA+)
+   - Tendências do mercado imobiliário brasileiro
+   - Dicas de investimento em imóveis
+   - Valorização por região, especialmente litoral gaúcho (Capão da Canoa, Xangri-lá, Atlântida)
+   - Documentação necessária para compra/venda
+   - Impostos (ITBI, ITCMD, IR sobre ganho de capital)
+   - Consórcio vs financiamento
+   - Permuta e suas regras
+   - Usucapião, escritura, matrícula, registro
+3. **Cálculos**: Pode calcular parcelas, simular financiamentos, calcular ITBI, etc.
+
+REGRAS DE RESPOSTA:
+- Se o usuário busca imóveis → use a tool "filter_properties" com matchedIds e explanation
+- Se o usuário pergunta sobre mercado/índices/dúvidas → use a tool "filter_properties" com matchedIds VAZIO [] e a resposta completa no campo explanation
+- Sempre responda em português brasileiro
+- Seja direto, agressivo como um tubarão que vai atrás do melhor negócio 🦈
+- Use emojis de tubarão 🦈 e mar 🌊 com moderação
+- Forneça dados precisos e atualizados quando possível
+- Para índices econômicos, mencione que os valores podem ter sido atualizados e sugira consultar fontes oficiais (IBGE, CBIC, Banco Central)
 
 LISTA DE IMÓVEIS DISPONÍVEIS:
 ${JSON.stringify(properties, null, 2)}`;
@@ -54,19 +70,20 @@ ${JSON.stringify(properties, null, 2)}`;
               function: {
                 name: "filter_properties",
                 description:
-                  "Retorna os IDs dos imóveis que correspondem à busca do usuário, junto com uma explicação.",
+                  "Retorna os IDs dos imóveis que correspondem à busca e/ou uma explicação sobre mercado imobiliário.",
                 parameters: {
                   type: "object",
                   properties: {
                     matchedIds: {
                       type: "array",
                       items: { type: "string" },
-                      description: "Array com os IDs dos imóveis encontrados",
+                      description:
+                        "Array com os IDs dos imóveis encontrados. Vazio [] se a pergunta é sobre mercado/índices.",
                     },
                     explanation: {
                       type: "string",
                       description:
-                        "Explicação amigável em português sobre os resultados encontrados, usando emojis de tubarão",
+                        "Explicação amigável em português. Para buscas: descreva os resultados. Para perguntas de mercado: responda completamente com dados.",
                     },
                   },
                   required: ["matchedIds", "explanation"],
@@ -127,12 +144,12 @@ ${JSON.stringify(properties, null, 2)}`;
       });
     }
 
-    // Fallback if no tool call
     const content = data.choices?.[0]?.message?.content || "";
     return new Response(
       JSON.stringify({
         matchedIds: [],
-        explanation: content || "🦈 Não consegui processar sua busca. Tente novamente!",
+        explanation:
+          content || "🦈 Não consegui processar sua busca. Tente novamente!",
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
