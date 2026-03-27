@@ -570,6 +570,8 @@ export default function Site() {
   const [filterPriceMin, setFilterPriceMin] = useState("");
   const [filterPriceMax, setFilterPriceMax] = useState("");
   const [filterType, setFilterType] = useState("");
+  const [filterPermuta, setFilterPermuta] = useState(false);
+  const [filterPagamento, setFilterPagamento] = useState(false);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     setShowScrollTop(e.currentTarget.scrollTop > 400);
@@ -585,10 +587,12 @@ export default function Site() {
     setFilterPriceMin("");
     setFilterPriceMax("");
     setFilterType("");
+    setFilterPermuta(false);
+    setFilterPagamento(false);
     setSearchTerm("");
   };
 
-  const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterType;
+  const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterType || filterPermuta || filterPagamento;
 
   const filteredAll = available.filter((p) => {
     const matchSearch = !searchTerm ||
@@ -600,7 +604,9 @@ export default function Site() {
     const matchPriceMin = !filterPriceMin || p.price >= parseInt(filterPriceMin);
     const matchPriceMax = !filterPriceMax || p.price <= parseInt(filterPriceMax);
     const matchType = !filterType || p.type === filterType;
-    return matchSearch && matchCity && matchBedrooms && matchPriceMin && matchPriceMax && matchType;
+    const matchPermuta = !filterPermuta || p.acceptsExchange;
+    const matchPagamento = !filterPagamento || !!p.paymentConditions;
+    return matchSearch && matchCity && matchBedrooms && matchPriceMin && matchPriceMax && matchType && matchPermuta && matchPagamento;
   });
 
   return (
@@ -683,18 +689,6 @@ export default function Site() {
             {/* Quick action buttons */}
             <div className="flex flex-wrap items-center gap-3">
               <button
-                onClick={() => { setActiveCategory("permuta"); setSearchTerm(""); }}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-orange-500 text-white text-sm font-bold hover:bg-orange-600 transition-colors shadow-md"
-              >
-                <Repeat className="w-4 h-4" /> Aceita Permuta
-              </button>
-              <button
-                onClick={() => { setActiveCategory("pagamento"); setSearchTerm(""); }}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700 transition-colors shadow-md"
-              >
-                <CreditCard className="w-4 h-4" /> Condições de Pagamento
-              </button>
-              <button
                 onClick={() => setShowFilters(!showFilters)}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/20 text-white text-sm font-bold hover:bg-white/30 transition-colors backdrop-blur-sm border border-white/30"
               >
@@ -716,7 +710,7 @@ export default function Site() {
       {showFilters && (
         <div className="bg-white border-b border-gray-200 shadow-md">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-8 gap-3">
               <div>
                 <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">Cidade</label>
                 <select
@@ -785,6 +779,32 @@ export default function Site() {
                   <option value="1500000">R$ 1,5 milhão</option>
                   <option value="2000000">R$ 2 milhões</option>
                 </select>
+              </div>
+              <div className="flex items-end">
+                <button
+                  onClick={() => { setFilterPermuta(!filterPermuta); setActiveCategory("todos"); }}
+                  className={cn(
+                    "w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-bold transition-colors",
+                    filterPermuta
+                      ? "bg-orange-500 text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-orange-50 hover:text-orange-600 border border-gray-200"
+                  )}
+                >
+                  <Repeat className="w-3.5 h-3.5" /> Permuta
+                </button>
+              </div>
+              <div className="flex items-end">
+                <button
+                  onClick={() => { setFilterPagamento(!filterPagamento); setActiveCategory("todos"); }}
+                  className={cn(
+                    "w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-bold transition-colors",
+                    filterPagamento
+                      ? "bg-emerald-500 text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-emerald-50 hover:text-emerald-600 border border-gray-200"
+                  )}
+                >
+                  <CreditCard className="w-3.5 h-3.5" /> Pagamento
+                </button>
               </div>
               <div className="flex items-end gap-2">
                 <button
