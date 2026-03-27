@@ -704,6 +704,16 @@ export default function Financeiro() {
                         <TableCell>{statusBadge(sub.status)}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center gap-1 justify-end" onClick={e => e.stopPropagation()}>
+                            {sub.phone && overduePayments.some(p => p.subscriber_id === sub.id) && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-xs h-7 text-emerald-500 border-emerald-500/30 hover:bg-emerald-500/10"
+                                onClick={() => openWhatsApp(sub.phone!, buildOverdueMessage(sub))}
+                              >
+                                <MessageCircle className="w-3 h-3 mr-1" /> Cobrar
+                              </Button>
+                            )}
                             <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => setShowBrokerDialog(sub.id)}>
                               <UserPlus className="w-3 h-3 mr-1" /> Corretor
                             </Button>
