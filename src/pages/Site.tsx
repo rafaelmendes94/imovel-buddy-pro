@@ -151,6 +151,8 @@ const siteProperties = [
     empreendimento: "Loteamento Capão Novo",
     quadra: "Q-14",
     lote: "L-03",
+  },
+  {
     id: "site-5",
     title: "Sobrado Praia de Arroio Teixeira",
     address: "Rua Marítima, 350",
