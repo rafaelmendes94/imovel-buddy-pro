@@ -237,7 +237,7 @@ export default function VideoMaker() {
   // CRUD handlers
   const handleAddJob = () => {
     if (!newJob.property || !newJob.client) return toast.error("Preencha os campos obrigatórios");
-    const job: VideoJob = { id: Date.now().toString(), property: newJob.property, client: newJob.client, address: newJob.address, value: Number(newJob.value) || 0, status: newJob.status, dueDate: newJob.dueDate, notes: newJob.notes, createdAt: new Date().toISOString().split("T")[0] };
+    const job: VideoJob = { id: Date.now().toString(), property: newJob.property, client: newJob.client, address: newJob.address, value: Number(newJob.value) || 0, materialType: newJob.materialType, clientType: newJob.clientType, status: newJob.status, dueDate: newJob.dueDate, notes: newJob.notes, createdAt: new Date().toISOString().split("T")[0] };
     if (editingJob) {
       setJobs(prev => prev.map(j => j.id === editingJob.id ? { ...job, id: editingJob.id, createdAt: editingJob.createdAt } : j));
       toast.success("Trabalho atualizado!");
@@ -245,18 +245,18 @@ export default function VideoMaker() {
       setJobs(prev => [...prev, job]);
       toast.success("Novo trabalho adicionado!");
     }
-    setNewJob({ property: "", client: "", address: "", value: "", dueDate: "", notes: "", status: "gravar" });
+    setNewJob({ property: "", client: "", address: "", value: "", dueDate: "", notes: "", status: "gravar", materialType: "vr", clientType: "assinante" });
     setEditingJob(null);
     setJobDialogOpen(false);
   };
-  const handleEditJob = (job: VideoJob) => { setEditingJob(job); setNewJob({ property: job.property, client: job.client, address: job.address, value: String(job.value), dueDate: job.dueDate, notes: job.notes, status: job.status }); setJobDialogOpen(true); };
+  const handleEditJob = (job: VideoJob) => { setEditingJob(job); setNewJob({ property: job.property, client: job.client, address: job.address, value: String(job.value), dueDate: job.dueDate, notes: job.notes, status: job.status, materialType: job.materialType, clientType: job.clientType }); setJobDialogOpen(true); };
   const handleDeleteJob = (id: string) => { setJobs(prev => prev.filter(j => j.id !== id)); toast.success("Trabalho removido!"); };
 
   const handleAddFinance = () => {
     if (!newFinance.property || !newFinance.client) return toast.error("Preencha os campos obrigatórios");
-    const entry: FinanceEntry = { id: Date.now().toString(), property: newFinance.property, client: newFinance.client, clientValue: Number(newFinance.clientValue) || 0, editorCost: Number(newFinance.editorCost) || 0, status: newFinance.status, dueDate: newFinance.dueDate };
+    const entry: FinanceEntry = { id: Date.now().toString(), property: newFinance.property, client: newFinance.client, materialType: newFinance.materialType, clientType: newFinance.clientType, clientValue: Number(newFinance.clientValue) || 0, editorCost: Number(newFinance.editorCost) || 0, status: newFinance.status, dueDate: newFinance.dueDate };
     setFinance(prev => [...prev, entry]);
-    setNewFinance({ property: "", client: "", clientValue: "", editorCost: "", dueDate: "", status: "pendente" });
+    setNewFinance({ property: "", client: "", clientValue: "", editorCost: "", dueDate: "", status: "pendente", materialType: "vr", clientType: "assinante" });
     setFinanceDialogOpen(false);
     toast.success("Registro financeiro adicionado!");
   };
