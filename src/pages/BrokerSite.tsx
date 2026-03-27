@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { properties, formatCurrency } from "@/data/mockData";
+import { properties, formatCurrency, type Property } from "@/data/mockData";
+import { PropertyDetailModal } from "@/components/PropertyDetailModal";
 import {
   MapPin,
   BedDouble,
@@ -316,6 +317,7 @@ export default function BrokerSite() {
   const [filterPriceMin, setFilterPriceMin] = useState("");
   const [filterPriceMax, setFilterPriceMax] = useState("");
   const [filterCondition, setFilterCondition] = useState("");
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
 
   if (!info) {
     return (
