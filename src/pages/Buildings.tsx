@@ -93,6 +93,7 @@ export default function Buildings() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
+  const [mediaBuilding, setMediaBuilding] = useState<BuildingData | null>(null);
   const navigate = useNavigate();
 
   const filtered = buildings.filter(
