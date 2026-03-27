@@ -366,48 +366,75 @@ export default function Reports() {
           </div>
 
           {showDetailedFilters && (
-            <div className="pt-2 border-t border-border/50 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              <div>
-                <span className="text-[10px] text-muted-foreground font-medium flex items-center gap-1 mb-1.5 uppercase tracking-wider">
-                  <MapPin className="w-3 h-3" /> Cidade
-                </span>
-                <div className="flex flex-wrap gap-1">
-                  <FilterChip label="Todas" active={filterCity === "Todas"} onClick={() => setFilterCity("Todas")} />
-                  {ALL_CITIES.map(c => (
-                    <FilterChip key={c} label={c} active={filterCity === c} onClick={() => setFilterCity(c)} />
-                  ))}
+            <div className="pt-2 border-t border-border/50 space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div>
+                  <span className="text-[10px] text-muted-foreground font-medium flex items-center gap-1 mb-1.5 uppercase tracking-wider">
+                    <MapPin className="w-3 h-3" /> Cidade
+                  </span>
+                  <div className="flex flex-wrap gap-1">
+                    <FilterChip label="Todas" active={filterCity === "Todas"} onClick={() => setFilterCity("Todas")} />
+                    {ALL_CITIES.map(c => (
+                      <FilterChip key={c} label={c} active={filterCity === c} onClick={() => setFilterCity(c)} />
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <span className="text-[10px] text-muted-foreground font-medium flex items-center gap-1 mb-1.5 uppercase tracking-wider">
+                    <Building2 className="w-3 h-3" /> Tipo
+                  </span>
+                  <div className="flex flex-wrap gap-1">
+                    <FilterChip label="Todos" active={filterType === "Todos"} onClick={() => setFilterType("Todos")} />
+                    {ALL_TYPES.map(t => (
+                      <FilterChip key={t} label={t} active={filterType === t} onClick={() => setFilterType(t)} />
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <span className="text-[10px] text-muted-foreground font-medium flex items-center gap-1 mb-1.5 uppercase tracking-wider">
+                    <Star className="w-3 h-3" /> Segmento
+                  </span>
+                  <div className="flex flex-wrap gap-1">
+                    <FilterChip label="Todos" active={filterSegment === "Todos"} onClick={() => setFilterSegment("Todos")} />
+                    {ALL_SEGMENTS.map(s => (
+                      <FilterChip key={s} label={s} active={filterSegment === s} onClick={() => setFilterSegment(s)} />
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <span className="text-[10px] text-muted-foreground font-medium flex items-center gap-1 mb-1.5 uppercase tracking-wider">
+                    <Home className="w-3 h-3" /> Vista Mar
+                  </span>
+                  <div className="flex flex-wrap gap-1">
+                    <FilterChip label="Todos" active={filterSeaView === "Todos"} onClick={() => setFilterSeaView("Todos")} />
+                    <FilterChip label="Sim" active={filterSeaView === "Sim"} onClick={() => setFilterSeaView("Sim")} />
+                    <FilterChip label="Não" active={filterSeaView === "Não"} onClick={() => setFilterSeaView("Não")} />
+                  </div>
                 </div>
               </div>
-              <div>
-                <span className="text-[10px] text-muted-foreground font-medium flex items-center gap-1 mb-1.5 uppercase tracking-wider">
-                  <Building2 className="w-3 h-3" /> Tipo
-                </span>
-                <div className="flex flex-wrap gap-1">
-                  <FilterChip label="Todos" active={filterType === "Todos"} onClick={() => setFilterType("Todos")} />
-                  {ALL_TYPES.map(t => (
-                    <FilterChip key={t} label={t} active={filterType === t} onClick={() => setFilterType(t)} />
-                  ))}
+              {/* Month & Year specific filters */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <span className="text-[10px] text-muted-foreground font-medium flex items-center gap-1 mb-1.5 uppercase tracking-wider">
+                    <CalendarDays className="w-3 h-3" /> Mês Específico
+                  </span>
+                  <div className="flex flex-wrap gap-1">
+                    <FilterChip label="Todos" active={filterMonth === null} onClick={() => setFilterMonth(null)} />
+                    {ALL_MONTHS.map((m, i) => (
+                      <FilterChip key={m} label={m} active={filterMonth === i} onClick={() => setFilterMonth(filterMonth === i ? null : i)} onRemove={filterMonth === i ? () => setFilterMonth(null) : undefined} />
+                    ))}
+                  </div>
                 </div>
-              </div>
-              <div>
-                <span className="text-[10px] text-muted-foreground font-medium flex items-center gap-1 mb-1.5 uppercase tracking-wider">
-                  <Star className="w-3 h-3" /> Segmento
-                </span>
-                <div className="flex flex-wrap gap-1">
-                  <FilterChip label="Todos" active={filterSegment === "Todos"} onClick={() => setFilterSegment("Todos")} />
-                  {ALL_SEGMENTS.map(s => (
-                    <FilterChip key={s} label={s} active={filterSegment === s} onClick={() => setFilterSegment(s)} />
-                  ))}
-                </div>
-              </div>
-              <div>
-                <span className="text-[10px] text-muted-foreground font-medium flex items-center gap-1 mb-1.5 uppercase tracking-wider">
-                  <Home className="w-3 h-3" /> Vista Mar
-                </span>
-                <div className="flex flex-wrap gap-1">
-                  <FilterChip label="Todos" active={filterSeaView === "Todos"} onClick={() => setFilterSeaView("Todos")} />
-                  <FilterChip label="Sim" active={filterSeaView === "Sim"} onClick={() => setFilterSeaView("Sim")} />
-                  <FilterChip label="Não" active={filterSeaView === "Não"} onClick={() => setFilterSeaView("Não")} />
+                <div>
+                  <span className="text-[10px] text-muted-foreground font-medium flex items-center gap-1 mb-1.5 uppercase tracking-wider">
+                    <CalendarRange className="w-3 h-3" /> Ano Específico
+                  </span>
+                  <div className="flex flex-wrap gap-1">
+                    <FilterChip label="Todos" active={filterYear === null} onClick={() => setFilterYear(null)} />
+                    {ALL_YEARS.map(y => (
+                      <FilterChip key={y} label={String(y)} active={filterYear === y} onClick={() => setFilterYear(filterYear === y ? null : y)} onRemove={filterYear === y ? () => setFilterYear(null) : undefined} />
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
