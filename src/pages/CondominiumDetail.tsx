@@ -32,6 +32,8 @@ import {
   ChevronRight,
   Percent,
   TrendingUp,
+  FileText,
+  MapPinned,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -68,6 +70,7 @@ interface CondoInfo {
   amenities: string[];
   infrastructure: string[];
   infraPhotos: InfraPhoto[];
+  implantationMedia: { type: "image" | "pdf"; url: string; label: string }[];
   videoUrl: string;
   downloadUrl: string;
   units: Unit[];
@@ -126,6 +129,11 @@ const mockCondos: Record<string, CondoInfo> = {
       { url: "https://images.unsplash.com/photo-1558036117-15d82a90b9b1?w=600&h=400&fit=crop", label: "Portaria" },
       { url: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&h=400&fit=crop", label: "Churrasqueira" },
     ],
+    implantationMedia: [
+      { type: "image", url: "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=800&h=600&fit=crop", label: "Planta de Implantação" },
+      { type: "image", url: "https://images.unsplash.com/photo-1524813686514-a57563d77965?w=800&h=600&fit=crop", label: "Mapa do Loteamento" },
+      { type: "pdf", url: "#", label: "Implantação Completa.pdf" },
+    ],
     videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
     downloadUrl: "#",
     units: generateCondoUnits(["A", "B", "C", "D", "E"], 12),
@@ -142,6 +150,10 @@ const mockCondos: Record<string, CondoInfo> = {
       { url: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&h=400&fit=crop", label: "Academia" },
       { url: "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=600&h=400&fit=crop", label: "Quadra" },
     ],
+    implantationMedia: [
+      { type: "image", url: "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=800&h=600&fit=crop", label: "Planta Geral" },
+      { type: "pdf", url: "#", label: "Implantação Torres.pdf" },
+    ],
     videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
     downloadUrl: "#",
     units: generateCondoUnits(["T1", "T2", "T3"], 15),
@@ -156,6 +168,9 @@ const mockCondos: Record<string, CondoInfo> = {
     infraPhotos: [
       { url: "https://images.unsplash.com/photo-1575429198097-0414ec08e8cd?w=600&h=400&fit=crop", label: "Área Verde" },
       { url: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&h=400&fit=crop", label: "Portaria" },
+    ],
+    implantationMedia: [
+      { type: "image", url: "https://images.unsplash.com/photo-1524813686514-a57563d77965?w=800&h=600&fit=crop", label: "Mapa do Loteamento" },
     ],
     videoUrl: "",
     downloadUrl: "#",
@@ -205,6 +220,7 @@ export default function CondominiumDetail() {
   const [selectedBlock, setSelectedBlock] = useState<string | null>(null);
   const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null);
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
+  const [implantationLightbox, setImplantationLightbox] = useState<number | null>(null);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
   const condo = mockCondos[id || ""];
@@ -470,6 +486,38 @@ export default function CondominiumDetail() {
               <InfraGallery photos={condo.infraPhotos} onSelect={setLightboxIdx} />
             </div>
 
+            {/* Mapa de Implantação */}
+            {condo.implantationMedia.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                    <MapPinned className="w-4 h-4 text-accent" /> Mapa de Implantação
+                  </h3>
+                  <span className="text-xs text-muted-foreground">{condo.implantationMedia.length} arquivo(s)</span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {condo.implantationMedia.map((media, idx) => (
+                    media.type === "image" ? (
+                      <button key={idx} onClick={() => setImplantationLightbox(idx)} className="group relative rounded-xl overflow-hidden aspect-[3/2] border border-border hover:border-accent/50 transition-all">
+                        <img src={media.url} alt={media.label} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 to-transparent" />
+                        <span className="absolute bottom-2 left-2 text-xs font-semibold text-primary-foreground">{media.label}</span>
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Image className="w-6 h-6 text-primary-foreground drop-shadow-lg" />
+                        </div>
+                      </button>
+                    ) : (
+                      <a key={idx} href={media.url} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl border border-border bg-muted/50 hover:border-accent/40 transition-colors aspect-[3/2]">
+                        <FileText className="w-8 h-8 text-destructive" />
+                        <span className="text-xs font-medium text-foreground text-center">{media.label}</span>
+                        <span className="text-[10px] text-muted-foreground">Clique para abrir</span>
+                      </a>
+                    )
+                  ))}
+                </div>
+              </div>
+            )}
+
             {condo.videoUrl && (
               <a href={condo.videoUrl} target="_blank" rel="noopener noreferrer"
                 className="flex items-center gap-3 p-4 rounded-xl bg-muted/50 border border-border hover:border-accent/40 transition-colors group">
@@ -514,6 +562,11 @@ export default function CondominiumDetail() {
         {lightboxIdx !== null && (
           <PhotoLightbox photos={condo.infraPhotos} startIdx={lightboxIdx} onClose={() => setLightboxIdx(null)} />
         )}
+        {implantationLightbox !== null && (() => {
+          const imgMedia = condo.implantationMedia.filter(m => m.type === "image");
+          const photos = imgMedia.map(m => ({ url: m.url, label: m.label }));
+          return <PhotoLightbox photos={photos} startIdx={implantationLightbox} onClose={() => setImplantationLightbox(null)} />;
+        })()}
 
         {/* Unit Detail Modal */}
         {selectedUnit && (
