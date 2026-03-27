@@ -23,27 +23,46 @@ import {
   SlidersHorizontal,
   ChevronDown,
   Fence,
+  DollarSign,
+  Clock,
+  FileCheck,
+  Eye,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const brokerInfo: Record<string, { photo: string; whatsapp: string; creci: string; bio: string }> = {
+const brokerInfo: Record<string, { photo: string; whatsapp: string; creci: string; bio: string; totalSold: number; totalSoldValue: number; avgDaysToSell: number; rating: number; totalRatings: number }> = {
   "Carlos Silva": {
     photo: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&h=400&fit=crop&crop=face",
     whatsapp: "5511999990001",
     creci: "123456-RS",
     bio: "Especialista em imóveis de alto padrão no litoral norte gaúcho. Mais de 10 anos de experiência no mercado imobiliário.",
+    totalSold: 24,
+    totalSoldValue: 8500000,
+    avgDaysToSell: 45,
+    rating: 4.7,
+    totalRatings: 18,
   },
   "Ana Rodrigues": {
     photo: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=400&fit=crop&crop=face",
     whatsapp: "5511999990002",
     creci: "234567-RS",
     bio: "Corretora dedicada com foco em lotes e terrenos. Atendimento personalizado para encontrar o melhor investimento.",
+    totalSold: 18,
+    totalSoldValue: 6200000,
+    avgDaysToSell: 38,
+    rating: 4.9,
+    totalRatings: 14,
   },
   "Marcos Oliveira": {
     photo: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face",
     whatsapp: "5511999990003",
     creci: "345678-RS",
     bio: "Consultor imobiliário com amplo conhecimento do mercado de Capão da Canoa e Xangri-lá. Foco em resultados.",
+    totalSold: 31,
+    totalSoldValue: 12100000,
+    avgDaysToSell: 32,
+    rating: 4.5,
+    totalRatings: 22,
   },
 };
 
@@ -74,6 +93,7 @@ const allSiteProperties = [
     empreendimento: "Ed. Navegantes",
     unitNumber: "Ap 501",
     boxNumber: "Box 15",
+    exclusivityTerm: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&h=1100&fit=crop",
   },
   {
     id: "site-2",
@@ -126,6 +146,7 @@ const allSiteProperties = [
     empreendimento: "Cond. Praia das Dunas",
     quadra: "Q-02",
     lote: "L-11",
+    exclusivityTerm: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&h=1100&fit=crop",
   },
   {
     id: "site-5",
@@ -203,7 +224,7 @@ function SectionHeader({ title, subtitle, icon: Icon }: { title: string; subtitl
   );
 }
 
-function PropertyCard({ property, whatsapp, brokerName, onSelect }: { property: typeof allSiteProperties[0]; whatsapp: string; brokerName: string; onSelect?: (p: typeof allSiteProperties[0]) => void }) {
+function PropertyCard({ property, whatsapp, brokerName, onSelect, onViewTerm }: { property: typeof allSiteProperties[0]; whatsapp: string; brokerName: string; onSelect?: (p: typeof allSiteProperties[0]) => void; onViewTerm?: (url: string) => void }) {
   const whatsappMessage = encodeURIComponent(
     `Olá ${brokerName}! Tenho interesse no imóvel: ${property.title} - ${formatCurrency(property.price)}`
   );
@@ -221,6 +242,15 @@ function PropertyCard({ property, whatsapp, brokerName, onSelect }: { property: 
         <span className="absolute top-3 left-3 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-500 text-white uppercase tracking-wide">
           {property.status}
         </span>
+        {property.exclusivityTerm && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onViewTerm?.(property.exclusivityTerm!); }}
+            className="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-amber-500/90 text-white backdrop-blur-sm hover:bg-amber-600 transition-colors"
+            title="Ver termo de exclusividade"
+          >
+            <FileCheck className="w-3 h-3" /> Exclusivo
+          </button>
+        )}
         <div className="absolute bottom-12 left-3 flex gap-1.5 flex-wrap">
           {property.seaView && (
             <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/90 text-white backdrop-blur-sm flex items-center gap-1">
@@ -318,6 +348,10 @@ export default function BrokerSite() {
   const [filterPriceMax, setFilterPriceMax] = useState("");
   const [filterCondition, setFilterCondition] = useState("");
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const [userRating, setUserRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [viewingTerm, setViewingTerm] = useState<string | null>(null);
 
   if (!info) {
     return (
@@ -386,7 +420,7 @@ export default function BrokerSite() {
         <SectionHeader title={title} subtitle={subtitle} icon={icon} />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {items.map((p) => (
-            <PropertyCard key={p.id} property={p} whatsapp={info.whatsapp} brokerName={brokerName} onSelect={setSelectedProperty} />
+            <PropertyCard key={p.id} property={p} whatsapp={info.whatsapp} brokerName={brokerName} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} />
           ))}
         </div>
       </section>
@@ -457,19 +491,49 @@ export default function BrokerSite() {
               <h1 className="text-3xl sm:text-4xl font-extrabold text-white">{brokerName}</h1>
               <p className="text-amber-400 font-bold text-sm tracking-wide">CRECI {info.creci}</p>
               <p className="text-gray-300 text-sm max-w-lg leading-relaxed">{info.bio}</p>
-              <div className="flex flex-wrap items-center gap-4 pt-2">
+              <div className="flex flex-wrap items-center gap-3 pt-2">
                 <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-2.5 border border-white/20">
                   <Building2 className="w-5 h-5 text-amber-400" />
                   <div>
                     <p className="text-white font-extrabold text-lg leading-none">{brokerProperties.length}</p>
-                    <p className="text-gray-400 text-[10px] uppercase tracking-wider">Imóveis</p>
+                    <p className="text-gray-400 text-[10px] uppercase tracking-wider">Em Carteira</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-2.5 border border-white/20">
-                  <MapPin className="w-5 h-5 text-amber-400" />
+                {/* Star Rating */}
+                <button
+                  onClick={() => setShowRatingModal(true)}
+                  className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-2.5 border border-white/20 hover:bg-white/20 transition-colors cursor-pointer"
+                >
+                  <div className="flex items-center gap-0.5">
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <Star
+                        key={s}
+                        className={cn(
+                          "w-4 h-4",
+                          s <= Math.round(info.rating) ? "text-amber-400 fill-amber-400" : "text-gray-500"
+                        )}
+                      />
+                    ))}
+                  </div>
                   <div>
-                    <p className="text-white font-extrabold text-lg leading-none">{formatCurrency(totalValue)}</p>
-                    <p className="text-gray-400 text-[10px] uppercase tracking-wider">Em carteira</p>
+                    <p className="text-white font-extrabold text-lg leading-none">{info.rating}</p>
+                    <p className="text-gray-400 text-[10px] uppercase tracking-wider">{info.totalRatings} avaliações</p>
+                  </div>
+                </button>
+                {/* Total Sales */}
+                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-2.5 border border-white/20">
+                  <DollarSign className="w-5 h-5 text-emerald-400" />
+                  <div>
+                    <p className="text-white font-extrabold text-lg leading-none">{formatCurrency(info.totalSoldValue)}</p>
+                    <p className="text-gray-400 text-[10px] uppercase tracking-wider">{info.totalSold} vendas</p>
+                  </div>
+                </div>
+                {/* Avg Days */}
+                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-2.5 border border-white/20">
+                  <Clock className="w-5 h-5 text-blue-400" />
+                  <div>
+                    <p className="text-white font-extrabold text-lg leading-none">{info.avgDaysToSell} dias</p>
+                    <p className="text-gray-400 text-[10px] uppercase tracking-wider">Média de venda</p>
                   </div>
                 </div>
                 <a
@@ -654,7 +718,7 @@ export default function BrokerSite() {
             {baseFiltered.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {baseFiltered.map((p) => (
-                  <PropertyCard key={p.id} property={p} whatsapp={info.whatsapp} brokerName={brokerName} onSelect={setSelectedProperty} />
+                  <PropertyCard key={p.id} property={p} whatsapp={info.whatsapp} brokerName={brokerName} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} />
                 ))}
               </div>
             ) : (
@@ -675,7 +739,7 @@ export default function BrokerSite() {
                     <SectionHeader title="Capão da Canoa" subtitle={`${byCityCapao.length} imóveis em Capão da Canoa`} icon={MapPin} />
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                       {byCityCapao.map((p) => (
-                        <PropertyCard key={p.id} property={p} whatsapp={info.whatsapp} brokerName={brokerName} onSelect={setSelectedProperty} />
+                        <PropertyCard key={p.id} property={p} whatsapp={info.whatsapp} brokerName={brokerName} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} />
                       ))}
                     </div>
                   </section>
@@ -687,7 +751,7 @@ export default function BrokerSite() {
                     <SectionHeader title="Xangri-lá" subtitle={`${byCityXangrila.length} imóveis em Xangri-lá`} icon={MapPin} />
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                       {byCityXangrila.map((p) => (
-                        <PropertyCard key={p.id} property={p} whatsapp={info.whatsapp} brokerName={brokerName} onSelect={setSelectedProperty} />
+                        <PropertyCard key={p.id} property={p} whatsapp={info.whatsapp} brokerName={brokerName} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} />
                       ))}
                     </div>
                   </section>
@@ -756,6 +820,95 @@ export default function BrokerSite() {
         )}
         onSelectSimilar={(p) => setSelectedProperty(p)}
       />
+
+      {/* Rating Modal */}
+      {showRatingModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowRatingModal(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-5" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-bold text-gray-900">Avaliar {brokerName}</h3>
+              <button onClick={() => setShowRatingModal(false)} className="p-1 rounded-lg hover:bg-gray-100">
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+            <div className="text-center space-y-3">
+              <p className="text-sm text-gray-500">Como você avalia este corretor?</p>
+              <div className="flex items-center justify-center gap-2">
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <button
+                    key={s}
+                    onMouseEnter={() => setHoverRating(s)}
+                    onMouseLeave={() => setHoverRating(0)}
+                    onClick={() => setUserRating(s)}
+                    className="p-1 transition-transform hover:scale-125"
+                  >
+                    <Star
+                      className={cn(
+                        "w-8 h-8 transition-colors",
+                        s <= (hoverRating || userRating) ? "text-amber-400 fill-amber-400" : "text-gray-300"
+                      )}
+                    />
+                  </button>
+                ))}
+              </div>
+              {userRating > 0 && (
+                <p className="text-sm font-semibold text-amber-600">
+                  Você deu {userRating} estrela{userRating > 1 ? "s" : ""}!
+                </p>
+              )}
+            </div>
+            <button
+              disabled={userRating === 0}
+              onClick={() => {
+                setShowRatingModal(false);
+                // In production, this would save to the database
+              }}
+              className={cn(
+                "w-full py-2.5 rounded-xl font-bold text-sm transition-colors",
+                userRating > 0
+                  ? "bg-amber-500 text-white hover:bg-amber-600"
+                  : "bg-gray-100 text-gray-400 cursor-not-allowed"
+              )}
+            >
+              Enviar Avaliação
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Term Viewer Modal */}
+      {viewingTerm && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setViewingTerm(null)}>
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-4 border-b border-gray-100">
+              <div className="flex items-center gap-2">
+                <FileCheck className="w-5 h-5 text-amber-500" />
+                <h3 className="text-base font-bold text-gray-900">Termo de Exclusividade</h3>
+              </div>
+              <div className="flex items-center gap-2">
+                <a
+                  href={viewingTerm}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
+                >
+                  <Eye className="w-3.5 h-3.5" /> Abrir original
+                </a>
+                <button onClick={() => setViewingTerm(null)} className="p-1 rounded-lg hover:bg-gray-100">
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+            </div>
+            <div className="overflow-auto max-h-[calc(90vh-60px)] p-4 bg-gray-50 flex items-center justify-center">
+              {viewingTerm.toLowerCase().endsWith(".pdf") ? (
+                <iframe src={viewingTerm} className="w-full h-[75vh] rounded-lg border border-gray-200" title="Termo de Exclusividade" />
+              ) : (
+                <img src={viewingTerm} alt="Termo de Exclusividade" className="max-w-full max-h-[75vh] object-contain rounded-lg shadow-md" />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
