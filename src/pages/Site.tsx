@@ -68,7 +68,7 @@ const siteProperties = [
     decorated: false,
     seaView: true,
     acceptsExchange: true,
-    paymentConditions: "Entrada + 48x",
+    paymentConditions: ["48x", "Permuta"],
     empreendimento: "Ed. Navegantes",
     unitNumber: "Ap 501",
     boxNumber: "Box 15",
@@ -94,7 +94,7 @@ const siteProperties = [
     decorated: false,
     seaView: false,
     acceptsExchange: true,
-    paymentConditions: "À vista ou 24x",
+    paymentConditions: ["24x", "Permuta"],
     empreendimento: "Cond. Reserva do Litoral",
     quadra: "Q-08",
     lote: "L-22",
@@ -120,7 +120,7 @@ const siteProperties = [
     decorated: true,
     seaView: true,
     acceptsExchange: false,
-    paymentConditions: "Financiamento bancário",
+    paymentConditions: ["72x"],
     empreendimento: "Cond. Praia das Dunas",
     quadra: "Q-02",
     lote: "L-11",
@@ -146,7 +146,7 @@ const siteProperties = [
     decorated: false,
     seaView: false,
     acceptsExchange: false,
-    paymentConditions: "Entrada + 36x direto",
+    paymentConditions: ["36x"],
   },
   {
     id: "site-5",
@@ -169,7 +169,7 @@ const siteProperties = [
     decorated: true,
     seaView: false,
     acceptsExchange: true,
-    paymentConditions: "Entrada 30% + financiamento",
+    paymentConditions: ["36x", "Carro"],
   },
   {
     id: "site-6",
@@ -192,7 +192,7 @@ const siteProperties = [
     decorated: true,
     seaView: true,
     acceptsExchange: true,
-    paymentConditions: "Entrada + 60x ou permuta",
+    paymentConditions: ["60x", "Permuta"],
     empreendimento: "Ed. Alto Padrão Atlântida",
     unitNumber: "Ap 801",
     boxNumber: "Box 25, 26",
@@ -246,7 +246,7 @@ const withPaymentConditions = available.filter((p) => p.paymentConditions);
 const condoLots = lots.filter((l) => l.title.toLowerCase().includes("condomínio") || l.title.toLowerCase().includes("reserva"));
 const neighborhoodLots = lots.filter((l) => !l.title.toLowerCase().includes("condomínio") && !l.title.toLowerCase().includes("reserva"));
 
-type Category = "todos" | "destaque" | "apartamentos" | "condominios" | "casas" | "lotes-cond" | "lotes-bairro" | "decorados" | "vista-mar" | "permuta" | "pagamento";
+type Category = "todos" | "destaque" | "apartamentos" | "condominios" | "casas" | "lotes-cond" | "lotes-bairro" | "decorados" | "vista-mar";
 
 const categories: { key: Category; label: string; icon: typeof Home }[] = [
   { key: "todos", label: "Todos", icon: Search },
@@ -258,8 +258,6 @@ const categories: { key: Category; label: string; icon: typeof Home }[] = [
   { key: "vista-mar", label: "Vista Mar", icon: Waves },
   { key: "lotes-cond", label: "Lotes Condomínio", icon: TreePine },
   { key: "lotes-bairro", label: "Lotes Bairro", icon: MapPin },
-  { key: "permuta", label: "Permuta", icon: Repeat },
-  { key: "pagamento", label: "Condições", icon: CreditCard },
 ];
 
 function PropertyCard({ property }: { property: typeof siteProperties[0] }) {
@@ -288,11 +286,6 @@ function PropertyCard({ property }: { property: typeof siteProperties[0] }) {
           {property.decorated && (
             <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/90 text-white backdrop-blur-sm flex items-center gap-1">
               <Paintbrush className="w-3 h-3" /> Decorado
-            </span>
-          )}
-          {property.acceptsExchange && (
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-500/90 text-white backdrop-blur-sm flex items-center gap-1">
-              <Repeat className="w-3 h-3" /> Permuta
             </span>
           )}
         </div>
@@ -336,10 +329,18 @@ function PropertyCard({ property }: { property: typeof siteProperties[0] }) {
             {property.parking > 0 && <span className="flex items-center gap-1"><Car className="w-3.5 h-3.5" />{property.parking} vagas</span>}
           </div>
         )}
-        {property.paymentConditions && (
-          <div className="flex items-center gap-1.5 text-[11px] text-emerald-700 bg-emerald-50 px-2.5 py-1.5 rounded-lg">
-            <CreditCard className="w-3.5 h-3.5" />
-            <span className="font-semibold">{property.paymentConditions}</span>
+        {property.paymentConditions && property.paymentConditions.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1.5">
+            {property.paymentConditions.map((cond) => (
+              <span key={cond} className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-700">
+                {cond}
+              </span>
+            ))}
+            {property.paymentConditionsOther && (
+              <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-gray-100 text-gray-600">
+                {property.paymentConditionsOther}
+              </span>
+            )}
           </div>
         )}
 
@@ -601,8 +602,7 @@ export default function Site() {
   const [filterPriceMin, setFilterPriceMin] = useState("");
   const [filterPriceMax, setFilterPriceMax] = useState("");
   const [filterType, setFilterType] = useState("");
-  const [filterPermuta, setFilterPermuta] = useState(false);
-  const [filterPagamento, setFilterPagamento] = useState(false);
+  const [filterCondition, setFilterCondition] = useState("");
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     setShowScrollTop(e.currentTarget.scrollTop > 400);
@@ -618,12 +618,11 @@ export default function Site() {
     setFilterPriceMin("");
     setFilterPriceMax("");
     setFilterType("");
-    setFilterPermuta(false);
-    setFilterPagamento(false);
+    setFilterCondition("");
     setSearchTerm("");
   };
 
-  const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterType || filterPermuta || filterPagamento;
+  const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterType || filterCondition;
 
   const filteredAll = available.filter((p) => {
     const matchSearch = !searchTerm ||
@@ -635,9 +634,10 @@ export default function Site() {
     const matchPriceMin = !filterPriceMin || p.price >= parseInt(filterPriceMin);
     const matchPriceMax = !filterPriceMax || p.price <= parseInt(filterPriceMax);
     const matchType = !filterType || p.type === filterType;
-    const matchPermuta = !filterPermuta || p.acceptsExchange;
-    const matchPagamento = !filterPagamento || !!p.paymentConditions;
-    return matchSearch && matchCity && matchBedrooms && matchPriceMin && matchPriceMax && matchType && matchPermuta && matchPagamento;
+    const matchCondition = !filterCondition || (
+      Array.isArray(p.paymentConditions) && p.paymentConditions.some(c => c.toLowerCase().includes(filterCondition.toLowerCase()))
+    );
+    return matchSearch && matchCity && matchBedrooms && matchPriceMin && matchPriceMax && matchType && matchCondition;
   });
 
   return (
@@ -811,31 +811,25 @@ export default function Site() {
                   <option value="2000000">R$ 2 milhões</option>
                 </select>
               </div>
-              <div className="flex items-end">
-                <button
-                  onClick={() => { setFilterPermuta(!filterPermuta); setActiveCategory("todos"); }}
-                  className={cn(
-                    "w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-bold transition-colors",
-                    filterPermuta
-                      ? "bg-orange-500 text-white"
-                      : "bg-gray-100 text-gray-600 hover:bg-orange-50 hover:text-orange-600 border border-gray-200"
-                  )}
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">Condições</label>
+                <select
+                  value={filterCondition}
+                  onChange={(e) => setFilterCondition(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-400"
                 >
-                  <Repeat className="w-3.5 h-3.5" /> Permuta
-                </button>
-              </div>
-              <div className="flex items-end">
-                <button
-                  onClick={() => { setFilterPagamento(!filterPagamento); setActiveCategory("todos"); }}
-                  className={cn(
-                    "w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-bold transition-colors",
-                    filterPagamento
-                      ? "bg-emerald-500 text-white"
-                      : "bg-gray-100 text-gray-600 hover:bg-emerald-50 hover:text-emerald-600 border border-gray-200"
-                  )}
-                >
-                  <CreditCard className="w-3.5 h-3.5" /> Pagamento
-                </button>
+                  <option value="">Todas</option>
+                  <option value="12x">12x</option>
+                  <option value="24x">24x</option>
+                  <option value="36x">36x</option>
+                  <option value="48x">48x</option>
+                  <option value="60x">60x</option>
+                  <option value="72x">72x</option>
+                  <option value="84x">84x</option>
+                  <option value="100x">100x</option>
+                  <option value="Permuta">Permuta</option>
+                  <option value="Carro">Carro</option>
+                </select>
               </div>
               <div className="flex items-end gap-2">
                 <button
@@ -959,25 +953,6 @@ export default function Site() {
           </section>
         )}
 
-        {/* Permuta */}
-        {!searchTerm && !hasActiveFilters && activeCategory === "permuta" && exchangeProperties.length > 0 && (
-          <section>
-            <SectionHeader title="Aceita Permuta" subtitle={`${exchangeProperties.length} imóveis que aceitam permuta`} icon={Repeat} />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {exchangeProperties.map((p) => <PropertyCard key={p.id} property={p} />)}
-            </div>
-          </section>
-        )}
-
-        {/* Condições de Pagamento */}
-        {!searchTerm && !hasActiveFilters && activeCategory === "pagamento" && withPaymentConditions.length > 0 && (
-          <section>
-            <SectionHeader title="Condições de Pagamento" subtitle={`${withPaymentConditions.length} imóveis com condições especiais`} icon={CreditCard} />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {withPaymentConditions.map((p) => <PropertyCard key={p.id} property={p} />)}
-            </div>
-          </section>
-        )}
 
         {/* Lotes Condomínio */}
         {!searchTerm && !hasActiveFilters && (activeCategory === "todos" || activeCategory === "lotes-cond") && condoLots.length > 0 && (

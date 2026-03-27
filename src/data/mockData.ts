@@ -19,7 +19,8 @@ export interface Property {
   decorated?: boolean;
   seaView?: boolean;
   acceptsExchange?: boolean;
-  paymentConditions?: string;
+  paymentConditions?: string[];
+  paymentConditionsOther?: string;
   empreendimento?: string;
   unitNumber?: string;
   boxNumber?: string;
@@ -65,7 +66,7 @@ export const properties: Property[] = [
     decorated: true,
     seaView: true,
     acceptsExchange: true,
-    paymentConditions: "Entrada + 48x",
+    paymentConditions: ["48x", "Permuta"],
     empreendimento: "Ed. Atlântico Sul",
     unitNumber: "Ap 302",
     boxNumber: "Box 12",
@@ -95,7 +96,7 @@ export const properties: Property[] = [
     decorated: true,
     seaView: true,
     acceptsExchange: false,
-    paymentConditions: "Financiamento bancário",
+    paymentConditions: ["72x", "Financiamento bancário"],
     empreendimento: "Ed. Panorama Beach",
     unitNumber: "Cobertura 01",
     boxNumber: "Box 01, 02, 03",
@@ -125,7 +126,7 @@ export const properties: Property[] = [
     decorated: true,
     seaView: false,
     acceptsExchange: true,
-    paymentConditions: "Entrada 30% + financiamento",
+    paymentConditions: ["36x", "Permuta", "Carro"],
     empreendimento: "Cond. Reserva das Dunas",
     quadra: "Q-05",
     lote: "L-18",
@@ -154,7 +155,7 @@ export const properties: Property[] = [
     decorated: false,
     seaView: false,
     acceptsExchange: false,
-    paymentConditions: "À vista",
+    paymentConditions: ["12x"],
     empreendimento: "Centro Comercial Capão",
     unitNumber: "Sala 205",
   },
@@ -182,7 +183,7 @@ export const properties: Property[] = [
     decorated: false,
     seaView: false,
     acceptsExchange: true,
-    paymentConditions: "À vista ou 24x direto",
+    paymentConditions: ["24x", "Permuta"],
     empreendimento: "Cond. Bosque do Litoral",
     quadra: "Q-12",
     lote: "L-07",
@@ -212,7 +213,7 @@ export const properties: Property[] = [
     decorated: false,
     seaView: true,
     acceptsExchange: false,
-    paymentConditions: "Financiamento bancário",
+    paymentConditions: ["84x", "Financiamento bancário"],
     empreendimento: "Residencial Atlântida",
     unitNumber: "Ap 104",
     boxNumber: "Box 08",
