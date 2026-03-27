@@ -6,12 +6,18 @@ import { PropertyDetailModal } from "@/components/PropertyDetailModal";
 import { RoutePlanner } from "@/components/RoutePlanner";
 import { SharkAI } from "@/components/SharkAI";
 import { properties as initialProperties, formatCurrency, Property } from "@/data/mockData";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "@/hooks/use-toast";
 import {
   Building2, Search, Plus, MapPin, BedDouble, Bath, Car, Ruler,
   Download, Send, LayoutGrid, List, Map, ChevronLeft, ChevronRight,
   CheckCircle2, Clock, Home, Key, Trophy, FileCode, ChevronDown,
   Star, Fence, TreePine, Waves, Paintbrush, Filter, X, SlidersHorizontal,
   Phone, Heart, FileCheck, Eye, Repeat, CreditCard, DollarSign, Ban,
+  Pencil, HardDrive, User, KeyRound, ExternalLink, Copy, MessageCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -108,11 +114,20 @@ export default function Properties() {
   const [filterCondition, setFilterCondition] = useState("");
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [viewingTerm, setViewingTerm] = useState<string | null>(null);
+  const [editingProperty, setEditingProperty] = useState<Property | null>(null);
   const [favoriteIds, setFavoriteIds] = useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem("mv-favorites") || "[]"); } catch { return []; }
   });
 
   const xmlMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (xmlMenuRef.current && !xmlMenuRef.current.contains(e.target as Node)) setShowXmlMenu(false);
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -146,6 +161,34 @@ export default function Properties() {
   const clearFilters = () => {
     setFilterCity(""); setFilterBedrooms(""); setFilterPriceMin(""); setFilterPriceMax(""); setFilterCondition("");
     setSearch("");
+  };
+
+  const handleSaveEdit = (updated: Property) => {
+    setPropertyList((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+    setEditingProperty(null);
+    toast({ title: "Imóvel atualizado!" });
+  };
+
+  const handleShareProperty = (property: Property) => {
+    const text = `🏠 *${property.title}*\n📍 ${property.address}, ${property.city}\n💰 ${formatCurrency(property.price)}\n📐 ${property.area}m²${property.bedrooms > 0 ? ` | ${property.bedrooms} quartos` : ""}${property.parking > 0 ? ` | ${property.parking} vagas` : ""}\n👤 Corretor: ${property.broker}`;
+    if (navigator.share) {
+      navigator.share({ title: property.title, text });
+    } else {
+      navigator.clipboard.writeText(text);
+      toast({ title: "Copiado para a área de transferência!" });
+    }
+  };
+
+  const handleDownloadCard = (property: Property) => {
+    const text = `FICHA DO IMÓVEL\n${"=".repeat(40)}\n${property.title}\n${property.address}, ${property.city}\nPreço: ${formatCurrency(property.price)}\nÁrea: ${property.area}m²\nQuartos: ${property.bedrooms} | Banheiros: ${property.bathrooms} | Vagas: ${property.parking}\nTipo: ${property.type} | Status: ${property.status}\nCorretor: ${property.broker}\n${property.owner ? `Proprietário: ${property.owner}` : ""}\n${property.ownerPhone ? `Tel. Proprietário: ${property.ownerPhone}` : ""}\n${property.keyLocation ? `Chaves: ${property.keyLocation}` : ""}\n${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}\n${property.paymentConditions ? `Condições: ${property.paymentConditions.join(", ")}` : ""}`;
+    const blob = new Blob([text], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `imovel_${property.id}_${property.title.replace(/\s+/g, "_")}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast({ title: "Ficha baixada!" });
   };
 
   // Cities for filter
@@ -384,6 +427,9 @@ export default function Properties() {
                 onStatusChange={handleStatusChange}
                 onSelect={setSelectedProperty}
                 onViewTerm={setViewingTerm}
+                onEdit={setEditingProperty}
+                onShare={handleShareProperty}
+                onDownload={handleDownloadCard}
                 isFavorited={favoriteIds.includes(property.id)}
                 onToggleFavorite={toggleFavorite}
               />
@@ -397,6 +443,9 @@ export default function Properties() {
                 property={property}
                 onStatusChange={handleStatusChange}
                 onSelect={setSelectedProperty}
+                onEdit={setEditingProperty}
+                onShare={handleShareProperty}
+                onDownload={handleDownloadCard}
                 isFavorited={favoriteIds.includes(property.id)}
                 onToggleFavorite={toggleFavorite}
               />
@@ -458,7 +507,111 @@ export default function Properties() {
           </div>
         </div>
       )}
+
+      {/* Edit Property Dialog */}
+      <Dialog open={!!editingProperty} onOpenChange={() => setEditingProperty(null)}>
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Pencil className="w-4 h-4" /> Editar Imóvel</DialogTitle>
+          </DialogHeader>
+          {editingProperty && (
+            <EditPropertyForm property={editingProperty} onSave={handleSaveEdit} onCancel={() => setEditingProperty(null)} />
+          )}
+        </DialogContent>
+      </Dialog>
     </AppLayout>
+  );
+}
+
+// ---- Edit Form ----
+function EditPropertyForm({ property, onSave, onCancel }: { property: Property; onSave: (p: Property) => void; onCancel: () => void }) {
+  const [form, setForm] = useState({ ...property });
+  const up = (key: string, value: any) => setForm((prev) => ({ ...prev, [key]: value }));
+
+  return (
+    <div className="space-y-3 mt-2">
+      <div className="grid grid-cols-2 gap-3">
+        <div className="col-span-2">
+          <label className="text-xs font-medium text-muted-foreground">Título</label>
+          <Input value={form.title} onChange={(e) => up("title", e.target.value)} />
+        </div>
+        <div>
+          <label className="text-xs font-medium text-muted-foreground">Preço (R$)</label>
+          <Input type="number" value={form.price} onChange={(e) => up("price", Number(e.target.value))} />
+        </div>
+        <div>
+          <label className="text-xs font-medium text-muted-foreground">Área (m²)</label>
+          <Input type="number" value={form.area} onChange={(e) => up("area", Number(e.target.value))} />
+        </div>
+        <div>
+          <label className="text-xs font-medium text-muted-foreground">Quartos</label>
+          <Input type="number" value={form.bedrooms} onChange={(e) => up("bedrooms", Number(e.target.value))} />
+        </div>
+        <div>
+          <label className="text-xs font-medium text-muted-foreground">Banheiros</label>
+          <Input type="number" value={form.bathrooms} onChange={(e) => up("bathrooms", Number(e.target.value))} />
+        </div>
+        <div>
+          <label className="text-xs font-medium text-muted-foreground">Vagas</label>
+          <Input type="number" value={form.parking} onChange={(e) => up("parking", Number(e.target.value))} />
+        </div>
+        <div>
+          <label className="text-xs font-medium text-muted-foreground">Cidade</label>
+          <Input value={form.city} onChange={(e) => up("city", e.target.value)} />
+        </div>
+        <div className="col-span-2">
+          <label className="text-xs font-medium text-muted-foreground">Endereço</label>
+          <Input value={form.address} onChange={(e) => up("address", e.target.value)} />
+        </div>
+        <div>
+          <label className="text-xs font-medium text-muted-foreground">Empreendimento</label>
+          <Input value={form.empreendimento || ""} onChange={(e) => up("empreendimento", e.target.value)} />
+        </div>
+        <div>
+          <label className="text-xs font-medium text-muted-foreground">Corretor</label>
+          <Input value={form.broker} onChange={(e) => up("broker", e.target.value)} />
+        </div>
+      </div>
+      <div className="border-t border-border pt-3 space-y-3">
+        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Proprietário & Chaves</p>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-xs font-medium text-muted-foreground">Proprietário</label>
+            <Input value={form.owner || ""} onChange={(e) => up("owner", e.target.value)} placeholder="Nome do proprietário" />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground">Telefone Proprietário</label>
+            <Input value={form.ownerPhone || ""} onChange={(e) => up("ownerPhone", e.target.value)} placeholder="5551999..." />
+          </div>
+          <div className="col-span-2">
+            <label className="text-xs font-medium text-muted-foreground">Onde ficam as chaves</label>
+            <Input value={form.keyLocation || ""} onChange={(e) => up("keyLocation", e.target.value)} placeholder="Ex: Portaria, imobiliária, etc." />
+          </div>
+          <div className="col-span-2">
+            <label className="text-xs font-medium text-muted-foreground">Link Google Drive</label>
+            <Input value={form.driveLink || ""} onChange={(e) => up("driveLink", e.target.value)} placeholder="https://drive.google.com/..." />
+          </div>
+        </div>
+      </div>
+      <div className="border-t border-border pt-3 space-y-3">
+        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Características</p>
+        <div className="flex flex-wrap gap-3">
+          <label className="flex items-center gap-2 text-xs text-foreground">
+            <input type="checkbox" checked={form.decorated || false} onChange={(e) => up("decorated", e.target.checked)} className="rounded" /> Decorado
+          </label>
+          <label className="flex items-center gap-2 text-xs text-foreground">
+            <input type="checkbox" checked={form.seaView || false} onChange={(e) => up("seaView", e.target.checked)} className="rounded" /> Vista Mar
+          </label>
+          <label className="flex items-center gap-2 text-xs text-foreground">
+            <input type="checkbox" checked={form.acceptsExchange || false} onChange={(e) => up("acceptsExchange", e.target.checked)} className="rounded" /> Aceita Permuta
+          </label>
+        </div>
+      </div>
+      <div className="flex gap-2 pt-2">
+        <Button onClick={() => onSave(form)} className="flex-1">Salvar Alterações</Button>
+        <Button variant="outline" onClick={onCancel}>Cancelar</Button>
+      </div>
+    </div>
   );
 }
 
@@ -536,12 +689,15 @@ function SoldCelebration() {
 
 // ---- PropertyCard (enhanced) ----
 function PropertyCard({
-  property, onStatusChange, onSelect, onViewTerm, isFavorited, onToggleFavorite,
+  property, onStatusChange, onSelect, onViewTerm, onEdit, onShare, onDownload, isFavorited, onToggleFavorite,
 }: {
   property: Property;
   onStatusChange: (id: string, status: Property["status"]) => void;
   onSelect?: (p: Property) => void;
   onViewTerm?: (url: string) => void;
+  onEdit?: (p: Property) => void;
+  onShare?: (p: Property) => void;
+  onDownload?: (p: Property) => void;
   isFavorited?: boolean;
   onToggleFavorite?: (id: string) => void;
 }) {
@@ -567,7 +723,6 @@ function PropertyCard({
       <div className="relative cursor-pointer" onClick={() => onSelect?.(property)}>
         <ImageCarousel images={property.images} alt={property.title} />
 
-        {/* Status badge */}
         <span className={cn("absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide z-10",
           property.status === "Vendido" ? "bg-red-500 text-white" :
           property.status === "Reservado" ? "bg-amber-500 text-white" :
@@ -577,7 +732,6 @@ function PropertyCard({
           {property.status}
         </span>
 
-        {/* Exclusivity badge */}
         {property.exclusivityTerm && (
           <button onClick={(e) => { e.stopPropagation(); onViewTerm?.(property.exclusivityTerm!); }}
             className="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-amber-500/90 text-white backdrop-blur-sm hover:bg-amber-600 transition-colors z-20 shadow-md"
@@ -586,7 +740,6 @@ function PropertyCard({
           </button>
         )}
 
-        {/* Favorite */}
         <button onClick={(e) => { e.stopPropagation(); onToggleFavorite?.(property.id); }}
           className={cn("absolute z-20 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all hover:scale-110",
             property.exclusivityTerm ? "top-12 right-3" : "top-3 right-3",
@@ -596,14 +749,19 @@ function PropertyCard({
           <Heart className={cn("w-4 h-4", isFavorited && "fill-current")} />
         </button>
 
-        {/* Price + badges */}
-        <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
-          <p className="text-xl font-bold text-white drop-shadow-lg">{formatCurrency(property.price)}</p>
-          <div className="flex gap-1">
-            {property.seaView && <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-blue-500/90 text-white backdrop-blur-sm flex items-center gap-0.5"><Waves className="w-2.5 h-2.5" /> Mar</span>}
-            {property.decorated && <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-purple-500/90 text-white backdrop-blur-sm flex items-center gap-0.5"><Paintbrush className="w-2.5 h-2.5" /> Dec.</span>}
-            {property.acceptsExchange && <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/90 text-white backdrop-blur-sm flex items-center gap-0.5"><Repeat className="w-2.5 h-2.5" /> Permuta</span>}
-          </div>
+        {/* Edit button */}
+        <button onClick={(e) => { e.stopPropagation(); onEdit?.(property); }}
+          className="absolute bottom-3 left-3 z-20 w-8 h-8 rounded-full bg-foreground/50 backdrop-blur-sm text-white flex items-center justify-center hover:bg-primary transition-colors shadow-md"
+          title="Editar imóvel"
+        >
+          <Pencil className="w-3.5 h-3.5" />
+        </button>
+
+        <div className="absolute bottom-3 right-3 flex items-end gap-1">
+          <p className="text-xl font-bold text-white drop-shadow-lg mr-1">{formatCurrency(property.price)}</p>
+          {property.seaView && <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-blue-500/90 text-white backdrop-blur-sm flex items-center gap-0.5"><Waves className="w-2.5 h-2.5" /> Mar</span>}
+          {property.decorated && <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-purple-500/90 text-white backdrop-blur-sm flex items-center gap-0.5"><Paintbrush className="w-2.5 h-2.5" /> Dec.</span>}
+          {property.acceptsExchange && <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/90 text-white backdrop-blur-sm flex items-center gap-0.5"><Repeat className="w-2.5 h-2.5" /> Permuta</span>}
         </div>
       </div>
 
@@ -612,12 +770,8 @@ function PropertyCard({
           <h3 className="font-semibold text-card-foreground text-sm cursor-pointer hover:text-primary transition-colors" onClick={() => onSelect?.(property)}>{property.title}</h3>
           {(property.empreendimento || unitParts.length > 0) && (
             <div className="flex flex-wrap items-center gap-1 mt-1">
-              {property.empreendimento && (
-                <span className="text-[10px] font-semibold text-accent bg-accent/10 px-1.5 py-0.5 rounded">{property.empreendimento}</span>
-              )}
-              {unitParts.map((part) => (
-                <span key={part} className="text-[10px] font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">{part}</span>
-              ))}
+              {property.empreendimento && <span className="text-[10px] font-semibold text-accent bg-accent/10 px-1.5 py-0.5 rounded">{property.empreendimento}</span>}
+              {unitParts.map((part) => <span key={part} className="text-[10px] font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">{part}</span>)}
             </div>
           )}
           <div className="flex items-center gap-1 mt-1">
@@ -633,12 +787,36 @@ function PropertyCard({
           <span className="flex items-center gap-1"><Ruler className="w-3.5 h-3.5" /> {property.area}m²</span>
         </div>
 
-        {/* Payment conditions */}
         {property.paymentConditions && property.paymentConditions.length > 0 && (
           <div className="flex flex-wrap gap-1">
-            {property.paymentConditions.map((cond) => (
-              <span key={cond} className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400">{cond}</span>
-            ))}
+            {property.paymentConditions.map((cond) => <span key={cond} className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400">{cond}</span>)}
+          </div>
+        )}
+
+        {/* Owner & Key info */}
+        {(property.owner || property.keyLocation) && (
+          <div className="bg-muted/50 rounded-lg p-2.5 space-y-1.5 border border-border">
+            {property.owner && (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <User className="w-3 h-3 text-primary" />
+                  <span className="text-[11px] font-semibold text-foreground">{property.owner}</span>
+                </div>
+                {property.ownerPhone && (
+                  <a href={`https://wa.me/${property.ownerPhone}`} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
+                    className="flex items-center gap-1 text-[10px] font-bold text-emerald-500 hover:text-emerald-600 transition-colors"
+                  >
+                    <MessageCircle className="w-3 h-3" /> {property.ownerPhone.replace(/^55/, "").replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3")}
+                  </a>
+                )}
+              </div>
+            )}
+            {property.keyLocation && (
+              <div className="flex items-center gap-1.5">
+                <KeyRound className="w-3 h-3 text-amber-500" />
+                <span className="text-[10px] text-muted-foreground">Chaves: <span className="font-semibold text-foreground">{property.keyLocation}</span></span>
+              </div>
+            )}
           </div>
         )}
 
@@ -651,10 +829,7 @@ function PropertyCard({
               <p className="text-[9px] text-muted-foreground">Corretor(a)</p>
             </div>
           </div>
-          <a
-            href={`https://wa.me/${broker.whatsapp}?text=${whatsappMessage}`}
-            target="_blank"
-            rel="noopener noreferrer"
+          <a href={`https://wa.me/${broker.whatsapp}?text=${whatsappMessage}`} target="_blank" rel="noopener noreferrer"
             className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-600 text-white text-[11px] font-bold hover:bg-emerald-700 transition-colors shadow-sm"
             onClick={(e) => e.stopPropagation()}
           >
@@ -662,7 +837,25 @@ function PropertyCard({
           </a>
         </div>
 
-        {/* Status change bar */}
+        {/* Action buttons row */}
+        <div className="flex items-center gap-1.5 pt-1" onClick={(e) => e.stopPropagation()}>
+          <button onClick={() => onShare?.(property)} className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg bg-secondary text-secondary-foreground text-[10px] font-semibold hover:bg-muted transition-colors" title="Compartilhar">
+            <Send className="w-3 h-3" /> Compartilhar
+          </button>
+          <button onClick={() => onDownload?.(property)} className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg bg-secondary text-secondary-foreground text-[10px] font-semibold hover:bg-muted transition-colors" title="Baixar ficha">
+            <Download className="w-3 h-3" /> Baixar
+          </button>
+          {property.driveLink ? (
+            <a href={property.driveLink} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg bg-blue-500/10 text-blue-500 text-[10px] font-semibold hover:bg-blue-500/20 transition-colors" title="Abrir no Drive">
+              <HardDrive className="w-3 h-3" /> Drive
+            </a>
+          ) : (
+            <button className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg bg-secondary text-muted-foreground text-[10px] font-semibold opacity-50 cursor-not-allowed" title="Sem link do Drive">
+              <HardDrive className="w-3 h-3" /> Drive
+            </button>
+          )}
+        </div>
+
         <StatusBar currentStatus={property.status} onChangeStatus={handleStatusChange} />
       </div>
     </div>
@@ -671,17 +864,21 @@ function PropertyCard({
 
 // ---- PropertyRow (enhanced) ----
 function PropertyRow({
-  property, onStatusChange, onSelect, isFavorited, onToggleFavorite,
+  property, onStatusChange, onSelect, onEdit, onShare, onDownload, isFavorited, onToggleFavorite,
 }: {
   property: Property;
   onStatusChange: (id: string, status: Property["status"]) => void;
   onSelect?: (p: Property) => void;
+  onEdit?: (p: Property) => void;
+  onShare?: (p: Property) => void;
+  onDownload?: (p: Property) => void;
   isFavorited?: boolean;
   onToggleFavorite?: (id: string) => void;
 }) {
   const [showCelebration, setShowCelebration] = useState(false);
   const [animatePulse, setAnimatePulse] = useState(false);
-  const broker = brokerInfo[property.broker] || { photo: "", whatsapp: "5511999999999" };
+  const broker = brokerInfo[property.broker] || { photo: "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=100&h=100&fit=crop&crop=face", whatsapp: "5511999999999" };
+  const whatsappMessage = encodeURIComponent(`Olá! Tenho interesse no imóvel: ${property.title} - ${formatCurrency(property.price)}`);
 
   const handleStatusChange = (newStatus: Property["status"]) => {
     if (newStatus === "Vendido" && property.status !== "Vendido") {
@@ -693,42 +890,104 @@ function PropertyRow({
   };
 
   return (
-    <div className={cn("elevated-card rounded-xl p-4 flex items-center gap-4 relative overflow-hidden transition-all duration-300 cursor-pointer", animatePulse && "animate-sold-pulse")}
-      onClick={() => onSelect?.(property)}
-    >
+    <div className={cn("elevated-card rounded-xl p-4 relative overflow-hidden transition-all duration-300", animatePulse && "animate-sold-pulse")}>
       {showCelebration && <SoldCelebration />}
-      <img src={property.images[0] || property.image} alt={property.title} className="w-20 h-20 rounded-lg object-cover flex-shrink-0" />
-      <div className="flex-1 min-w-0 space-y-2">
-        <div>
-          <h3 className="font-semibold text-card-foreground text-sm truncate">{property.title}</h3>
-          <p className="text-xs text-muted-foreground mt-0.5">{property.address}, {property.city}</p>
-          <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-            {property.bedrooms > 0 && <span>{property.bedrooms} quartos</span>}
+      <div className="flex items-start gap-4 cursor-pointer" onClick={() => onSelect?.(property)}>
+        <img src={property.images[0] || property.image} alt={property.title} className="w-24 h-24 rounded-lg object-cover flex-shrink-0" />
+
+        {/* Main info */}
+        <div className="flex-1 min-w-0 space-y-1">
+          <div className="flex items-center gap-2">
+            <h3 className="font-semibold text-card-foreground text-sm truncate">{property.title}</h3>
+            <span className={cn("px-2 py-0.5 rounded-full text-[9px] font-bold uppercase",
+              property.status === "Vendido" ? "bg-red-500/10 text-red-400" :
+              property.status === "Reservado" ? "bg-amber-500/10 text-amber-400" :
+              property.status === "Alugado" ? "bg-blue-500/10 text-blue-400" :
+              "bg-emerald-500/10 text-emerald-400"
+            )}>
+              {property.status}
+            </span>
+          </div>
+          <p className="text-xs text-muted-foreground">{property.address}, {property.city}</p>
+          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            {property.bedrooms > 0 && <span>{property.bedrooms} qts</span>}
             <span>{property.area}m²</span>
             <span>{property.type}</span>
             {property.seaView && <span className="text-blue-400 font-semibold">🌊 Mar</span>}
             {property.decorated && <span className="text-purple-400 font-semibold">🎨 Dec.</span>}
+            {property.acceptsExchange && <span className="text-emerald-400 font-semibold">🔄 Permuta</span>}
           </div>
+          <p className="text-lg font-bold text-accent">{formatCurrency(property.price)}</p>
         </div>
+
+        {/* Broker/Owner highlight column */}
+        <div className="flex-shrink-0 w-52 space-y-2 border-l border-border pl-4" onClick={(e) => e.stopPropagation()}>
+          {/* Broker */}
+          <div className="flex items-center gap-2">
+            <img src={broker.photo} alt={property.broker} className="w-8 h-8 rounded-full object-cover border-2 border-accent flex-shrink-0" />
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-foreground truncate">{property.broker}</p>
+              <a href={`https://wa.me/${broker.whatsapp}?text=${whatsappMessage}`} target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-1 text-[10px] text-emerald-500 font-semibold hover:underline"
+              >
+                <Phone className="w-2.5 h-2.5" /> WhatsApp
+              </a>
+            </div>
+          </div>
+          {/* Owner */}
+          {property.owner && (
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <User className="w-4 h-4 text-primary" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[11px] font-bold text-foreground truncate">{property.owner}</p>
+                {property.ownerPhone && (
+                  <a href={`https://wa.me/${property.ownerPhone}`} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-[10px] text-emerald-500 font-semibold hover:underline"
+                  >
+                    <MessageCircle className="w-2.5 h-2.5" /> Proprietário
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
+          {/* Key location */}
+          {property.keyLocation && (
+            <div className="flex items-center gap-1.5 bg-amber-500/10 rounded-md px-2 py-1">
+              <KeyRound className="w-3 h-3 text-amber-500 flex-shrink-0" />
+              <span className="text-[10px] font-semibold text-amber-600 truncate">{property.keyLocation}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Action buttons */}
+        <div className="flex flex-col gap-1.5 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+          <button onClick={() => onEdit?.(property)} className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors" title="Editar">
+            <Pencil className="w-3.5 h-3.5 text-primary" />
+          </button>
+          <button onClick={() => onToggleFavorite?.(property.id)} className={cn("w-8 h-8 rounded-lg flex items-center justify-center transition-colors", isFavorited ? "bg-red-500/10 text-red-500" : "bg-secondary text-muted-foreground hover:text-red-500")} title="Favoritar">
+            <Heart className={cn("w-3.5 h-3.5", isFavorited && "fill-current")} />
+          </button>
+          <button onClick={() => onShare?.(property)} className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors" title="Compartilhar">
+            <Send className="w-3.5 h-3.5 text-foreground" />
+          </button>
+          <button onClick={() => onDownload?.(property)} className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors" title="Baixar ficha">
+            <Download className="w-3.5 h-3.5 text-foreground" />
+          </button>
+          {property.driveLink ? (
+            <a href={property.driveLink} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center hover:bg-blue-500/20 transition-colors" title="Google Drive">
+              <HardDrive className="w-3.5 h-3.5 text-blue-500" />
+            </a>
+          ) : (
+            <button className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center opacity-40 cursor-not-allowed" title="Sem Drive">
+              <HardDrive className="w-3.5 h-3.5 text-muted-foreground" />
+            </button>
+          )}
+        </div>
+      </div>
+      <div className="mt-3 pt-2 border-t border-border">
         <StatusBar currentStatus={property.status} onChangeStatus={handleStatusChange} />
-      </div>
-      <div className="text-right flex-shrink-0 space-y-1">
-        <p className="text-base font-bold text-accent">{formatCurrency(property.price)}</p>
-        <div className="flex items-center gap-1.5 justify-end">
-          <img src={broker.photo} alt={property.broker} className="w-5 h-5 rounded-full object-cover border border-accent" />
-          <p className="text-xs text-muted-foreground">{property.broker}</p>
-        </div>
-      </div>
-      <div className="flex gap-1.5 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
-        <button onClick={() => onToggleFavorite?.(property.id)} className={cn("w-8 h-8 rounded-lg flex items-center justify-center transition-colors", isFavorited ? "bg-red-500/10 text-red-500" : "bg-secondary text-muted-foreground hover:text-red-500")}>
-          <Heart className={cn("w-3.5 h-3.5", isFavorited && "fill-current")} />
-        </button>
-        <button className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors">
-          <Download className="w-3.5 h-3.5 text-foreground" />
-        </button>
-        <button className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors">
-          <Send className="w-3.5 h-3.5 text-foreground" />
-        </button>
       </div>
     </div>
   );
