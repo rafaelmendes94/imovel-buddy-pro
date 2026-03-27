@@ -12,8 +12,10 @@ import {
   CheckCircle2, Clock, Home, Key, Trophy, FileCode, ChevronDown,
   Star, Fence, TreePine, Waves, Paintbrush, Filter, X, SlidersHorizontal,
   Phone, Heart, FileCheck, Eye, Repeat, CreditCard, DollarSign, Ban,
+  Share2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 // Broker info
 const brokerInfo: Record<string, { photo: string; whatsapp: string }> = {
@@ -428,6 +430,10 @@ export default function Properties() {
         allProperties={propertyList}
         brokerInfo={brokerInfo}
         onSelectSimilar={(p) => setSelectedProperty(p)}
+        onUpdateProperty={(updated) => {
+          setPropertyList((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+          setSelectedProperty(updated);
+        }}
       />
 
       {/* Term Viewer Modal */}
@@ -723,11 +729,49 @@ function PropertyRow({
         <button onClick={() => onToggleFavorite?.(property.id)} className={cn("w-8 h-8 rounded-lg flex items-center justify-center transition-colors", isFavorited ? "bg-red-500/10 text-red-500" : "bg-secondary text-muted-foreground hover:text-red-500")}>
           <Heart className={cn("w-3.5 h-3.5", isFavorited && "fill-current")} />
         </button>
-        <button className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors">
+        <button
+          className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors"
+          onClick={async () => {
+            const shareData = {
+              title: property.title,
+              text: `${property.title} - ${formatCurrency(property.price)}\n${property.address}, ${property.city}`,
+              url: window.location.href,
+            };
+            if (navigator.share) {
+              try { await navigator.share(shareData); } catch { /* cancelled */ }
+            } else {
+              await navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`);
+              toast.success("Link copiado!");
+            }
+          }}
+        >
+          <Share2 className="w-3.5 h-3.5 text-foreground" />
+        </button>
+        <button
+          className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors"
+          onClick={() => {
+            const content = `FICHA: ${property.title}\nPreço: ${formatCurrency(property.price)}\nEndereço: ${property.address}, ${property.city}\nÁrea: ${property.area}m² | Quartos: ${property.bedrooms} | Vagas: ${property.parking}\nCorretor: ${property.broker}`;
+            const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `ficha_${property.title.replace(/\s+/g, "_").toLowerCase()}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+            toast.success("Ficha baixada!");
+          }}
+        >
           <Download className="w-3.5 h-3.5 text-foreground" />
         </button>
-        <button className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors">
-          <Send className="w-3.5 h-3.5 text-foreground" />
+        <button
+          className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors"
+          title="Chaves / Drive"
+          onClick={() => {
+            toast.info("Abrindo pasta de chaves no Drive...");
+            window.open(`https://drive.google.com/drive/search?q=${encodeURIComponent(property.title + " chaves")}`, "_blank");
+          }}
+        >
+          <Key className="w-3.5 h-3.5 text-foreground" />
         </button>
       </div>
     </div>
