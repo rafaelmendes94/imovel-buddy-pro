@@ -23,27 +23,46 @@ import {
   SlidersHorizontal,
   ChevronDown,
   Fence,
+  DollarSign,
+  Clock,
+  FileCheck,
+  Eye,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const brokerInfo: Record<string, { photo: string; whatsapp: string; creci: string; bio: string }> = {
+const brokerInfo: Record<string, { photo: string; whatsapp: string; creci: string; bio: string; totalSold: number; totalSoldValue: number; avgDaysToSell: number; rating: number; totalRatings: number }> = {
   "Carlos Silva": {
     photo: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&h=400&fit=crop&crop=face",
     whatsapp: "5511999990001",
     creci: "123456-RS",
     bio: "Especialista em imóveis de alto padrão no litoral norte gaúcho. Mais de 10 anos de experiência no mercado imobiliário.",
+    totalSold: 24,
+    totalSoldValue: 8500000,
+    avgDaysToSell: 45,
+    rating: 4.7,
+    totalRatings: 18,
   },
   "Ana Rodrigues": {
     photo: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=400&fit=crop&crop=face",
     whatsapp: "5511999990002",
     creci: "234567-RS",
     bio: "Corretora dedicada com foco em lotes e terrenos. Atendimento personalizado para encontrar o melhor investimento.",
+    totalSold: 18,
+    totalSoldValue: 6200000,
+    avgDaysToSell: 38,
+    rating: 4.9,
+    totalRatings: 14,
   },
   "Marcos Oliveira": {
     photo: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face",
     whatsapp: "5511999990003",
     creci: "345678-RS",
     bio: "Consultor imobiliário com amplo conhecimento do mercado de Capão da Canoa e Xangri-lá. Foco em resultados.",
+    totalSold: 31,
+    totalSoldValue: 12100000,
+    avgDaysToSell: 32,
+    rating: 4.5,
+    totalRatings: 22,
   },
 };
 
