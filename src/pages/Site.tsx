@@ -37,6 +37,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { RoutePlanner } from "@/components/RoutePlanner";
+import { SharkAI } from "@/components/SharkAI";
 
 // Broker info map
 const brokerInfo: Record<string, { photo: string; whatsapp: string }> = {
