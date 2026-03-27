@@ -323,6 +323,8 @@ const condoProperties = [
 const available = siteProperties.filter((p) => p.status === "Disponível");
 const soldProperties = siteProperties.filter((p) => p.status === "Vendido" || p.status === "Reservado");
 const soldValue = soldProperties.reduce((sum, p) => sum + p.price, 0);
+const totalVGV = available.reduce((sum, p) => sum + p.price, 0);
+const commercial = available.filter((p) => p.type === "Comercial");
 const featured = available.slice(0, 3);
 const apartments = available.filter((p) => p.type === "Apartamento");
 const houses = available.filter((p) => p.type === "Casa");
@@ -367,8 +369,8 @@ function PropertyCard({ property, onSelect }: { property: typeof siteProperties[
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-        {/* Sold stamp */}
-        {(property.status === "Vendido") && (
+        {/* Sold stamp - only outside carousel */}
+        {(property.status === "Vendido" && !property._noStamp) && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
             <div className="bg-red-600/90 text-white text-2xl font-black uppercase tracking-[0.2em] px-8 py-3 -rotate-12 shadow-2xl border-4 border-red-400/50 rounded-sm" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.4)' }}>
               Vendido
@@ -840,45 +842,108 @@ export default function Site() {
           />
           <div className="absolute inset-0 bg-gradient-to-r from-gray-900/80 via-gray-900/60 to-transparent" />
         </div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28">
-          <div className="max-w-2xl space-y-6">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight">
-              MV <span className="text-amber-400">Broker</span> Conect
-            </h1>
-            <p className="text-lg text-gray-300 leading-relaxed">
-              Conectando corretores a corretores e imóveis a clientes. Apartamentos, casas, condomínios e lotes nas melhores localizações.
-            </p>
-            <div className="flex items-center bg-white rounded-2xl p-2 shadow-xl max-w-lg">
-              <Search className="w-5 h-5 text-gray-400 ml-3 flex-shrink-0" />
-              <input
-                type="text"
-                placeholder="Buscar por nome, endereço ou cidade..."
-                value={searchTerm}
-                onChange={(e) => { setSearchTerm(e.target.value); setActiveCategory("todos"); }}
-                className="flex-1 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none bg-transparent"
-              />
-              {searchTerm && (
-                <button onClick={() => setSearchTerm("")} className="p-1.5 rounded-lg hover:bg-gray-100 mr-1">
-                  <X className="w-4 h-4 text-gray-400" />
-                </button>
-              )}
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
+          <div className="space-y-8">
+            {/* Title */}
+            <div className="max-w-2xl space-y-4">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight">
+                MV <span className="text-amber-400">Broker</span> Conect
+              </h1>
+              <p className="text-lg text-gray-300 leading-relaxed">
+                Conectando corretores a corretores e imóveis a clientes.
+              </p>
             </div>
 
-            {/* Quick action buttons */}
-            <div className="flex flex-wrap items-center gap-3">
+            {/* Dashboard Cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+              <button
+                onClick={() => setActiveCategory("todos")}
+                className="group bg-white/10 hover:bg-amber-500/90 backdrop-blur-md rounded-2xl p-4 border border-white/20 hover:border-amber-400 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-amber-500/20 text-left"
+              >
+                <div className="w-10 h-10 rounded-xl bg-amber-400/20 group-hover:bg-white/20 flex items-center justify-center mb-3 transition-colors">
+                  <Star className="w-5 h-5 text-amber-400 group-hover:text-white transition-colors" />
+                </div>
+                <p className="text-2xl font-black text-white">{available.length}</p>
+                <p className="text-[11px] font-semibold text-gray-300 group-hover:text-amber-100 uppercase tracking-wider">Total Imóveis</p>
+              </button>
+
+              <button
+                onClick={() => setActiveCategory("apartamentos")}
+                className="group bg-white/10 hover:bg-blue-500/90 backdrop-blur-md rounded-2xl p-4 border border-white/20 hover:border-blue-400 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-blue-500/20 text-left"
+              >
+                <div className="w-10 h-10 rounded-xl bg-blue-400/20 group-hover:bg-white/20 flex items-center justify-center mb-3 transition-colors">
+                  <Building2 className="w-5 h-5 text-blue-400 group-hover:text-white transition-colors" />
+                </div>
+                <p className="text-2xl font-black text-white">{apartments.length}</p>
+                <p className="text-[11px] font-semibold text-gray-300 group-hover:text-blue-100 uppercase tracking-wider">Apartamentos</p>
+              </button>
+
+              <button
+                onClick={() => setActiveCategory("casas")}
+                className="group bg-white/10 hover:bg-emerald-500/90 backdrop-blur-md rounded-2xl p-4 border border-white/20 hover:border-emerald-400 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-emerald-500/20 text-left"
+              >
+                <div className="w-10 h-10 rounded-xl bg-emerald-400/20 group-hover:bg-white/20 flex items-center justify-center mb-3 transition-colors">
+                  <Home className="w-5 h-5 text-emerald-400 group-hover:text-white transition-colors" />
+                </div>
+                <p className="text-2xl font-black text-white">{houses.length}</p>
+                <p className="text-[11px] font-semibold text-gray-300 group-hover:text-emerald-100 uppercase tracking-wider">Casas</p>
+              </button>
+
+              <button
+                onClick={() => setActiveCategory("lotes-cond")}
+                className="group bg-white/10 hover:bg-green-500/90 backdrop-blur-md rounded-2xl p-4 border border-white/20 hover:border-green-400 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-green-500/20 text-left"
+              >
+                <div className="w-10 h-10 rounded-xl bg-green-400/20 group-hover:bg-white/20 flex items-center justify-center mb-3 transition-colors">
+                  <TreePine className="w-5 h-5 text-green-400 group-hover:text-white transition-colors" />
+                </div>
+                <p className="text-2xl font-black text-white">{lots.length}</p>
+                <p className="text-[11px] font-semibold text-gray-300 group-hover:text-green-100 uppercase tracking-wider">Lotes</p>
+              </button>
+
+              <button
+                onClick={() => setActiveCategory("vista-mar")}
+                className="group bg-white/10 hover:bg-cyan-500/90 backdrop-blur-md rounded-2xl p-4 border border-white/20 hover:border-cyan-400 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-cyan-500/20 text-left"
+              >
+                <div className="w-10 h-10 rounded-xl bg-cyan-400/20 group-hover:bg-white/20 flex items-center justify-center mb-3 transition-colors">
+                  <Waves className="w-5 h-5 text-cyan-400 group-hover:text-white transition-colors" />
+                </div>
+                <p className="text-2xl font-black text-white">{seaViewProperties.length}</p>
+                <p className="text-[11px] font-semibold text-gray-300 group-hover:text-cyan-100 uppercase tracking-wider">Vista Mar</p>
+              </button>
+
+              <div className="bg-gradient-to-br from-amber-500/30 to-amber-600/30 backdrop-blur-md rounded-2xl p-4 border border-amber-400/40">
+                <div className="w-10 h-10 rounded-xl bg-amber-400/30 flex items-center justify-center mb-3">
+                  <DollarSign className="w-5 h-5 text-amber-300" />
+                </div>
+                <p className="text-lg font-black text-amber-300 leading-tight">{formatCurrency(totalVGV)}</p>
+                <p className="text-[11px] font-semibold text-amber-200/80 uppercase tracking-wider">VGV em Carteira</p>
+              </div>
+            </div>
+
+            {/* Search + Filter */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 max-w-2xl">
+              <div className="flex items-center bg-white rounded-2xl p-2 shadow-xl flex-1">
+                <Search className="w-5 h-5 text-gray-400 ml-3 flex-shrink-0" />
+                <input
+                  type="text"
+                  placeholder="Buscar por nome, endereço ou cidade..."
+                  value={searchTerm}
+                  onChange={(e) => { setSearchTerm(e.target.value); setActiveCategory("todos"); }}
+                  className="flex-1 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none bg-transparent"
+                />
+                {searchTerm && (
+                  <button onClick={() => setSearchTerm("")} className="p-1.5 rounded-lg hover:bg-gray-100 mr-1">
+                    <X className="w-4 h-4 text-gray-400" />
+                  </button>
+                )}
+              </div>
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/20 text-white text-sm font-bold hover:bg-white/30 transition-colors backdrop-blur-sm border border-white/30"
+                className="flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-white/15 hover:bg-white/25 text-white text-sm font-bold transition-all backdrop-blur-sm border border-white/30 hover:scale-105"
               >
-                <SlidersHorizontal className="w-4 h-4" /> Filtros Avançados
+                <SlidersHorizontal className="w-4 h-4" /> Filtros
                 <ChevronDown className={cn("w-4 h-4 transition-transform", showFilters && "rotate-180")} />
               </button>
-            </div>
-
-            <div className="flex items-center gap-6 text-sm text-gray-300">
-              <span className="flex items-center gap-1.5"><Building2 className="w-4 h-4 text-amber-400" /> {apartments.length} Apartamentos</span>
-              <span className="flex items-center gap-1.5"><Home className="w-4 h-4 text-amber-400" /> {houses.length} Casas</span>
-              <span className="flex items-center gap-1.5"><TreePine className="w-4 h-4 text-amber-400" /> {lots.length} Lotes</span>
             </div>
           </div>
         </div>
