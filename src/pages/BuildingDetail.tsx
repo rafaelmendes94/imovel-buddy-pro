@@ -325,6 +325,23 @@ export default function BuildingDetail() {
             </div>
           ))}
         </div>
+        {/* Location Map */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-accent" /> Localização
+            </h3>
+            <a
+              href={`https://www.google.com/maps?q=${building.lat},${building.lng}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-info/10 text-info text-xs font-semibold hover:bg-info/20 transition-colors border border-info/20"
+            >
+              <ExternalLink className="w-3 h-3" /> Abrir no Google Maps
+            </a>
+          </div>
+          <MiniMap lat={building.lat} lng={building.lng} name={building.name} height="200px" />
+        </div>
 
         <Tabs defaultValue="unidades" className="space-y-4">
           <TabsList className="bg-secondary">
