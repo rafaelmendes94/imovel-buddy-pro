@@ -798,7 +798,7 @@ export default function Site() {
             <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-500 to-amber-400 flex items-center justify-center">
               <Home className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-extrabold text-gray-900">Imob<span className="text-amber-500">CRM</span></span>
+            <span className="text-xl font-extrabold text-gray-900">MV <span className="text-amber-500">Broker</span> <span className="text-gray-500 text-sm font-bold">Conect</span></span>
           </div>
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
             {categories.slice(1).map((cat) => (
@@ -843,10 +843,10 @@ export default function Site() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28">
           <div className="max-w-2xl space-y-6">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight">
-              Encontre o imóvel dos seus <span className="text-amber-400">sonhos</span>
+              MV <span className="text-amber-400">Broker</span> Conect
             </h1>
             <p className="text-lg text-gray-300 leading-relaxed">
-              Apartamentos, casas, condomínios e lotes nas melhores localizações. Seu novo lar está aqui.
+              Conectando corretores a corretores e imóveis a clientes. Apartamentos, casas, condomínios e lotes nas melhores localizações.
             </p>
             <div className="flex items-center bg-white rounded-2xl p-2 shadow-xl max-w-lg">
               <Search className="w-5 h-5 text-gray-400 ml-3 flex-shrink-0" />
@@ -1213,10 +1213,10 @@ export default function Site() {
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-amber-400 flex items-center justify-center">
                   <Home className="w-4 h-4 text-white" />
                 </div>
-                <span className="text-lg font-extrabold text-white">Imob<span className="text-amber-400">CRM</span></span>
+                <span className="text-lg font-extrabold text-white">MV <span className="text-amber-400">Broker</span> <span className="text-gray-400 text-xs font-bold">Conect</span></span>
               </div>
               <p className="text-sm leading-relaxed">
-                Sua imobiliária de confiança. Encontre apartamentos, casas, condomínios e lotes nas melhores localizações.
+                Conectando corretores a corretores e imóveis a clientes. Sua plataforma de confiança no litoral.
               </p>
             </div>
             <div>
