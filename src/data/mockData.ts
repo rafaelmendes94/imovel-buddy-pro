@@ -57,6 +57,10 @@ export const properties: Property[] = [
     createdAt: "2024-01-15",
     lat: -29.7456,
     lng: -50.1028,
+    decorated: true,
+    seaView: true,
+    acceptsExchange: true,
+    paymentConditions: "Entrada + 48x",
   },
   {
     id: "2",
@@ -80,6 +84,10 @@ export const properties: Property[] = [
     createdAt: "2024-02-10",
     lat: -29.7480,
     lng: -50.1065,
+    decorated: true,
+    seaView: true,
+    acceptsExchange: false,
+    paymentConditions: "Financiamento bancário",
   },
   {
     id: "3",
@@ -103,6 +111,10 @@ export const properties: Property[] = [
     createdAt: "2024-03-05",
     lat: -29.8050,
     lng: -50.0520,
+    decorated: true,
+    seaView: false,
+    acceptsExchange: true,
+    paymentConditions: "Entrada 30% + financiamento",
   },
   {
     id: "4",
@@ -125,6 +137,10 @@ export const properties: Property[] = [
     createdAt: "2024-01-20",
     lat: -29.7520,
     lng: -50.1100,
+    decorated: false,
+    seaView: false,
+    acceptsExchange: false,
+    paymentConditions: "À vista",
   },
   {
     id: "5",
@@ -147,6 +163,10 @@ export const properties: Property[] = [
     createdAt: "2024-02-28",
     lat: -29.8100,
     lng: -50.0450,
+    decorated: false,
+    seaView: false,
+    acceptsExchange: true,
+    paymentConditions: "À vista ou 24x direto",
   },
   {
     id: "6",
@@ -170,6 +190,10 @@ export const properties: Property[] = [
     createdAt: "2024-03-12",
     lat: -29.7900,
     lng: -50.0650,
+    decorated: false,
+    seaView: true,
+    acceptsExchange: false,
+    paymentConditions: "Financiamento bancário",
   },
 ];
 export const brokers: Broker[] = [
