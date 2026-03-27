@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import {
   Building,
@@ -90,6 +91,7 @@ export default function Buildings() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
+  const navigate = useNavigate();
 
   const filtered = buildings.filter(
     (b) =>
@@ -224,7 +226,7 @@ export default function Buildings() {
         {/* Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {filtered.map((building) => (
-            <div key={building.id} className="elevated-card rounded-xl overflow-hidden group">
+            <div key={building.id} className="elevated-card rounded-xl overflow-hidden group cursor-pointer" onClick={() => navigate(`/edificios/${building.id}`)}>
               <div className="relative h-44 overflow-hidden">
                 <img
                   src={building.image || "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&h=300&fit=crop"}
@@ -235,10 +237,10 @@ export default function Buildings() {
                   {building.status}
                 </span>
                 <div className="absolute top-3 right-3 flex gap-1.5">
-                  <button onClick={() => handleEdit(building)} className="w-7 h-7 rounded-md bg-card/90 backdrop-blur-sm flex items-center justify-center hover:bg-card transition-colors">
+                  <button onClick={(e) => { e.stopPropagation(); handleEdit(building); }} className="w-7 h-7 rounded-md bg-card/90 backdrop-blur-sm flex items-center justify-center hover:bg-card transition-colors">
                     <Edit className="w-3.5 h-3.5 text-foreground" />
                   </button>
-                  <button onClick={() => handleDelete(building.id)} className="w-7 h-7 rounded-md bg-card/90 backdrop-blur-sm flex items-center justify-center hover:bg-destructive/90 transition-colors">
+                  <button onClick={(e) => { e.stopPropagation(); handleDelete(building.id); }} className="w-7 h-7 rounded-md bg-card/90 backdrop-blur-sm flex items-center justify-center hover:bg-destructive/90 transition-colors">
                     <Trash2 className="w-3.5 h-3.5 text-foreground" />
                   </button>
                 </div>

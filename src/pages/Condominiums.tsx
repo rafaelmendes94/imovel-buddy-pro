@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import {
   Fence,
@@ -109,6 +110,7 @@ export default function Condominiums() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
+  const navigate = useNavigate();
 
   const filtered = condos.filter(
     (c) =>
@@ -232,13 +234,13 @@ export default function Condominiums() {
         {/* Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {filtered.map((condo) => (
-            <div key={condo.id} className="elevated-card rounded-xl overflow-hidden group">
+            <div key={condo.id} className="elevated-card rounded-xl overflow-hidden group cursor-pointer" onClick={() => navigate(`/condominios/${condo.id}`)}>
               <div className="relative h-44 overflow-hidden">
                 <img src={condo.image || "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&h=300&fit=crop"} alt={condo.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 <span className={cn("absolute top-3 left-3 px-2.5 py-1 rounded-md text-[11px] font-semibold border", typeColors[condo.type])}>{condo.type}</span>
                 <div className="absolute top-3 right-3 flex gap-1.5">
-                  <button onClick={() => handleEdit(condo)} className="w-7 h-7 rounded-md bg-card/90 backdrop-blur-sm flex items-center justify-center hover:bg-card transition-colors"><Edit className="w-3.5 h-3.5 text-foreground" /></button>
-                  <button onClick={() => handleDelete(condo.id)} className="w-7 h-7 rounded-md bg-card/90 backdrop-blur-sm flex items-center justify-center hover:bg-destructive/90 transition-colors"><Trash2 className="w-3.5 h-3.5 text-foreground" /></button>
+                  <button onClick={(e) => { e.stopPropagation(); handleEdit(condo); }} className="w-7 h-7 rounded-md bg-card/90 backdrop-blur-sm flex items-center justify-center hover:bg-card transition-colors"><Edit className="w-3.5 h-3.5 text-foreground" /></button>
+                  <button onClick={(e) => { e.stopPropagation(); handleDelete(condo.id); }} className="w-7 h-7 rounded-md bg-card/90 backdrop-blur-sm flex items-center justify-center hover:bg-destructive/90 transition-colors"><Trash2 className="w-3.5 h-3.5 text-foreground" /></button>
                 </div>
               </div>
               <div className="p-4 space-y-3">
