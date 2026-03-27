@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { properties, formatCurrency, type Property } from "@/data/mockData";
 import { PropertyDetailModal } from "@/components/PropertyDetailModal";
+import { DollarSign, TrendingUp } from "lucide-react";
 import {
   Search,
   MapPin,
@@ -240,6 +241,8 @@ const condoProperties = [
 ];
 
 const available = siteProperties.filter((p) => p.status === "Disponível");
+const soldProperties = siteProperties.filter((p) => p.status === "Vendido" || p.status === "Reservado");
+const soldValue = soldProperties.reduce((sum, p) => sum + p.price, 0);
 const featured = available.slice(0, 3);
 const apartments = available.filter((p) => p.type === "Apartamento");
 const houses = available.filter((p) => p.type === "Casa");
