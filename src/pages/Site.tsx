@@ -29,6 +29,9 @@ import {
   ChevronDown,
   DollarSign,
   TrendingUp,
+  Trophy,
+  Award,
+  Medal,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
