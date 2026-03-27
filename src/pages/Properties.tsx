@@ -23,8 +23,76 @@ import {
   Home,
   Key,
   Trophy,
+  FileCode,
+  ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+type XmlPortal = "ZAP Imóveis" | "VivaReal" | "OLX" | "Imovelweb" | "Chaves na Mão" | "Personalizado";
+
+const xmlPortals: { name: XmlPortal; description: string }[] = [
+  { name: "ZAP Imóveis", description: "Formato padrão ZAP" },
+  { name: "VivaReal", description: "Formato VivaReal/Grupo ZAP" },
+  { name: "OLX", description: "Formato OLX Pro" },
+  { name: "Imovelweb", description: "Formato Imovelweb" },
+  { name: "Chaves na Mão", description: "Formato Chaves na Mão" },
+  { name: "Personalizado", description: "XML genérico completo" },
+];
+
+function generateXml(properties: Property[], portal: XmlPortal): string {
+  const escapeXml = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+  const items = properties
+    .map(
+      (p) => `    <Imovel>
+      <CodigoImovel>${escapeXml(p.id)}</CodigoImovel>
+      <TipoImovel>${escapeXml(p.type)}</TipoImovel>
+      <SubTipoImovel>${escapeXml(p.type)}</SubTipoImovel>
+      <TituloImovel>${escapeXml(p.title)}</TituloImovel>
+      <Endereco>${escapeXml(p.address)}</Endereco>
+      <Cidade>${escapeXml(p.city)}</Cidade>
+      <Estado>SP</Estado>
+      <CEP>00000-000</CEP>
+      <PrecoVenda>${p.price}</PrecoVenda>
+      <AreaUtil>${p.area}</AreaUtil>
+      <QtdDormitorios>${p.bedrooms}</QtdDormitorios>
+      <QtdBanheiros>${p.bathrooms}</QtdBanheiros>
+      <QtdVagas>${p.parking}</QtdVagas>
+      <StatusImovel>${escapeXml(p.status)}</StatusImovel>
+      <Corretor>${escapeXml(p.broker)}</Corretor>
+      <Latitude>${p.lat}</Latitude>
+      <Longitude>${p.lng}</Longitude>
+      <DataCriacao>${p.createdAt}</DataCriacao>
+      <Fotos>
+${p.images.map((img) => `        <Foto>${escapeXml(img)}</Foto>`).join("\n")}
+      </Fotos>
+    </Imovel>`
+    )
+    .join("\n");
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<!-- Portal: ${portal} -->
+<Imoveis xmlns="http://www.vivareal.com/schemas" portal="${portal}">
+  <Header>
+    <Publicador>MV Broker</Publicador>
+    <DataExportacao>${new Date().toISOString()}</DataExportacao>
+    <TotalImoveis>${properties.length}</TotalImoveis>
+  </Header>
+  <ListaImoveis>
+${items}
+  </ListaImoveis>
+</Imoveis>`;
+}
+
+function downloadXml(xml: string, portal: string) {
+  const blob = new Blob([xml], { type: "application/xml" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `imoveis_${portal.toLowerCase().replace(/\s+/g, "_")}_${new Date().toISOString().slice(0, 10)}.xml`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 const statusConfig: Record<Property["status"], { color: string; bg: string; border: string; icon: typeof Home }> = {
   Disponível: { color: "text-success", bg: "bg-success/10", border: "border-success/30", icon: Home },
