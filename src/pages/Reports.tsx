@@ -110,15 +110,24 @@ const MONTH_MAP: Record<string, number> = {
   "Jul": 6, "Ago": 7, "Set": 8, "Out": 9, "Nov": 10, "Dez": 11,
 };
 
+function isToday(dateStr: string) {
+  const d = new Date(dateStr);
+  const now = new Date("2026-03-27");
+  return d.toDateString() === now.toDateString();
+}
+
+type TimePeriod = "Todos" | "Dia" | "Semana" | "Mês" | "Ano";
+
 export default function Reports() {
   const [filterCity, setFilterCity] = useState<string>("Todas");
   const [filterType, setFilterType] = useState<string>("Todos");
   const [filterSegment, setFilterSegment] = useState<string>("Todos");
   const [filterSeaView, setFilterSeaView] = useState<string>("Todos");
+  const [filterPeriod, setFilterPeriod] = useState<TimePeriod>("Todos");
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [showDetailedFilters, setShowDetailedFilters] = useState(false);
 
-  const activeFilterCount = [filterCity !== "Todas", filterType !== "Todos", filterSegment !== "Todos", filterSeaView !== "Todos"].filter(Boolean).length;
+  const activeFilterCount = [filterCity !== "Todas", filterType !== "Todos", filterSegment !== "Todos", filterSeaView !== "Todos", filterPeriod !== "Todos"].filter(Boolean).length;
 
   const clearAllFilters = () => {
     setFilterCity("Todas");
