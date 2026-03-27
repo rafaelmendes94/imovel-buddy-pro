@@ -202,14 +202,15 @@ function SectionHeader({ title, subtitle, icon: Icon }: { title: string; subtitl
   );
 }
 
-function PropertyCard({ property, whatsapp, brokerName }: { property: typeof allSiteProperties[0]; whatsapp: string; brokerName: string }) {
+function PropertyCard({ property, whatsapp, brokerName, onSelect }: { property: typeof allSiteProperties[0]; whatsapp: string; brokerName: string; onSelect?: (p: typeof allSiteProperties[0]) => void }) {
   const whatsappMessage = encodeURIComponent(
     `Olá ${brokerName}! Tenho interesse no imóvel: ${property.title} - ${formatCurrency(property.price)}`
   );
+  const unitParts = [property.unitNumber, property.boxNumber, property.quadra, property.lote].filter(Boolean);
 
   return (
     <div className="group rounded-2xl overflow-hidden bg-white shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100">
-      <div className="relative h-52 overflow-hidden">
+      <div className="relative h-52 overflow-hidden cursor-pointer" onClick={() => onSelect?.(property)}>
         <img
           src={property.image}
           alt={property.title}
@@ -238,35 +239,29 @@ function PropertyCard({ property, whatsapp, brokerName }: { property: typeof all
         </div>
       </div>
       <div className="p-4 space-y-3">
-        <h3 className="font-bold text-gray-900 text-base leading-tight">{property.title}</h3>
-        {property.empreendimento && (
-          <Link
-            to={`/empreendimento/${property.empreendimento.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`}
-            className="text-[11px] font-semibold text-amber-700 bg-amber-50 px-2 py-1 rounded-md inline-block hover:bg-amber-100 transition-colors cursor-pointer"
-          >
-            <Building2 className="w-3 h-3 inline mr-1" />{property.empreendimento}
-          </Link>
+        <h3 className="font-bold text-gray-900 text-base leading-tight cursor-pointer hover:text-amber-700 transition-colors" onClick={() => onSelect?.(property)}>{property.title}</h3>
+        {(property.empreendimento || unitParts.length > 0) && (
+          <div className="flex flex-wrap items-center gap-1.5">
+            {property.empreendimento && (
+              <Link
+                to={`/empreendimento/${property.empreendimento.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`}
+                className="text-[11px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md hover:bg-amber-100 transition-colors"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {property.empreendimento}
+              </Link>
+            )}
+            {unitParts.map((part) => (
+              <span key={part} className="text-[11px] font-semibold text-gray-600 bg-gray-100 px-2 py-0.5 rounded-md">
+                {part}
+              </span>
+            ))}
+          </div>
         )}
         <div className="flex items-center gap-1 text-gray-500 text-xs">
           <MapPin className="w-3.5 h-3.5" />
           <span>{property.address}, {property.city}</span>
         </div>
-        {(property.unitNumber || property.boxNumber || property.quadra || property.lote) && (
-          <div className="flex flex-wrap items-center gap-2 text-[11px] text-gray-600">
-            {property.unitNumber && (
-              <span className="px-2 py-0.5 rounded-md bg-gray-100 font-semibold">{property.unitNumber}</span>
-            )}
-            {property.boxNumber && (
-              <span className="px-2 py-0.5 rounded-md bg-gray-100 font-semibold">{property.boxNumber}</span>
-            )}
-            {property.quadra && (
-              <span className="px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 font-semibold">{property.quadra}</span>
-            )}
-            {property.lote && (
-              <span className="px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 font-semibold">{property.lote}</span>
-            )}
-          </div>
-        )}
         {(property.bedrooms > 0 || property.area > 0) && (
           <div className="flex items-center gap-4 pt-2 border-t border-gray-100 text-xs text-gray-600">
             <span className="flex items-center gap-1"><Ruler className="w-3.5 h-3.5" />{property.area}m²</span>
