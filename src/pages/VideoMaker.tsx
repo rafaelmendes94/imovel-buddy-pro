@@ -21,6 +21,39 @@ import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
+// Material types & client types
+const materialTypes = [
+  { value: "vr", label: "VR" },
+  { value: "vc", label: "VC" },
+  { value: "vr360", label: "VR 360" },
+  { value: "vc360", label: "VC 360" },
+  { value: "vcdn", label: "VCDN" },
+] as const;
+type MaterialType = typeof materialTypes[number]["value"];
+
+const clientTypes = [
+  { value: "assinante", label: "Assinante" },
+  { value: "construtor", label: "Construtor" },
+  { value: "particular", label: "Particular" },
+  { value: "mv_broker", label: "MV Broker" },
+] as const;
+type ClientType = typeof clientTypes[number]["value"];
+
+const materialTypeColors: Record<MaterialType, string> = {
+  vr: "bg-blue-500/15 text-blue-400 border-blue-500/30",
+  vc: "bg-purple-500/15 text-purple-400 border-purple-500/30",
+  vr360: "bg-cyan-500/15 text-cyan-400 border-cyan-500/30",
+  vc360: "bg-pink-500/15 text-pink-400 border-pink-500/30",
+  vcdn: "bg-amber-500/15 text-amber-400 border-amber-500/30",
+};
+
+const clientTypeColors: Record<ClientType, string> = {
+  assinante: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+  construtor: "bg-orange-500/15 text-orange-400 border-orange-500/30",
+  particular: "bg-sky-500/15 text-sky-400 border-sky-500/30",
+  mv_broker: "bg-violet-500/15 text-violet-400 border-violet-500/30",
+};
+
 // Types
 interface VideoJob {
   id: string;
@@ -28,6 +61,8 @@ interface VideoJob {
   client: string;
   address: string;
   value: number;
+  materialType: MaterialType;
+  clientType: ClientType;
   status: "gravar" | "gravado" | "editando" | "entregue" | "enviado";
   dueDate: string;
   notes: string;
@@ -38,6 +73,8 @@ interface FinanceEntry {
   id: string;
   property: string;
   client: string;
+  materialType: MaterialType;
+  clientType: ClientType;
   clientValue: number;
   editorCost: number;
   status: "pendente" | "pago" | "atrasado";
