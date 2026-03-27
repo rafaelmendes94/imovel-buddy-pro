@@ -24,6 +24,7 @@ import {
 import {
   DollarSign,
   TrendingUp,
+  TrendingDown,
   Target,
   Calendar,
   Download,
@@ -36,6 +37,9 @@ import {
   BarChart3,
   CalendarDays,
   CalendarRange,
+  ArrowUp,
+  ArrowDown,
+  Minus,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
