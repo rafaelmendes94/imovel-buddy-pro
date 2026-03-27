@@ -12,8 +12,10 @@ import {
   CheckCircle2, Clock, Home, Key, Trophy, FileCode, ChevronDown,
   Star, Fence, TreePine, Waves, Paintbrush, Filter, X, SlidersHorizontal,
   Phone, Heart, FileCheck, Eye, Repeat, CreditCard, DollarSign, Ban,
+  Share2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 // Broker info
 const brokerInfo: Record<string, { photo: string; whatsapp: string }> = {
