@@ -5,6 +5,10 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Dashboard from "./pages/Dashboard";
 import Properties from "./pages/Properties";
+import Buildings from "./pages/Buildings";
+import Condominiums from "./pages/Condominiums";
+import Maps from "./pages/Maps";
+import CityPhotos from "./pages/CityPhotos";
 import Brokers from "./pages/Brokers";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
@@ -21,6 +25,10 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/imoveis" element={<Properties />} />
+          <Route path="/edificios" element={<Buildings />} />
+          <Route path="/condominios" element={<Condominiums />} />
+          <Route path="/mapas" element={<Maps />} />
+          <Route path="/fotos-cidade" element={<CityPhotos />} />
           <Route path="/corretores" element={<Brokers />} />
           <Route path="/relatorios" element={<Reports />} />
           <Route path="/configuracoes" element={<Settings />} />
