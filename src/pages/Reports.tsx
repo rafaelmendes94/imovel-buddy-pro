@@ -509,21 +509,26 @@ export default function Reports() {
 
         {/* Bottom Rankings Row */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {/* By City */}
+          {/* Empreendimentos */}
           <div className="elevated-card rounded-xl p-5">
             <h3 className="text-sm font-semibold text-card-foreground mb-3 flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-accent" />
-              VGV por Cidade
+              <Trophy className="w-4 h-4 text-accent" />
+              Top Empreendimentos
             </h3>
             <div className="space-y-2">
-              {rankByCity.map((item, idx) => (
+              {rankByEmpreendimento.slice(0, 6).map((item, idx) => (
                 <div key={item.name} className="flex items-center justify-between py-1.5 border-b border-border/50 last:border-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground w-4">#{idx + 1}</span>
-                    <span className="text-sm font-medium text-card-foreground">{item.name}</span>
+                    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                      idx === 0 ? "bg-accent/20 text-accent" : "bg-muted text-muted-foreground"
+                    }`}>{idx + 1}</span>
+                    <div>
+                      <p className="text-xs font-medium text-card-foreground">{item.name}</p>
+                      <p className="text-[10px] text-muted-foreground">{item.city}</p>
+                    </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-bold text-accent">{formatCurrency(item.vgv)}</p>
+                    <p className="text-xs font-bold text-accent">{formatCurrency(item.vgv)}</p>
                     <p className="text-[10px] text-muted-foreground">{item.count} vendas</p>
                   </div>
                 </div>
@@ -531,27 +536,40 @@ export default function Reports() {
             </div>
           </div>
 
-          {/* By Type */}
+          {/* Corretores */}
           <div className="elevated-card rounded-xl p-5">
             <h3 className="text-sm font-semibold text-card-foreground mb-3 flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-accent" />
-              VGV por Tipo
+              <Trophy className="w-4 h-4 text-accent" />
+              Top Corretores
             </h3>
-            <div className="space-y-2">
-              {rankByType.map((item, idx) => (
-                <div key={item.name} className="flex items-center justify-between py-1.5 border-b border-border/50 last:border-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground w-4">#{idx + 1}</span>
-                    <span className="text-sm font-medium text-card-foreground">{item.name}</span>
-                    <Badge variant="outline" className="text-[10px] px-1.5 py-0">{item.count}</Badge>
+            <div className="space-y-2.5">
+              {rankByBroker.map((item, idx) => {
+                const maxVgv = rankByBroker[0]?.vgv || 1;
+                const pct = (item.vgv / maxVgv) * 100;
+                return (
+                  <div key={item.name} className="space-y-1">
+                    <div className="flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2">
+                        <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                          idx === 0 ? "bg-accent/20 text-accent" : "bg-muted text-muted-foreground"
+                        }`}>{idx + 1}</span>
+                        <span className="font-medium text-card-foreground">{item.name}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">{item.count} vendas</span>
+                        <span className="font-bold text-accent">{formatCurrency(item.vgv)}</span>
+                      </div>
+                    </div>
+                    <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                      <div className="h-full gradient-gold rounded-full transition-all duration-700" style={{ width: `${pct}%` }} />
+                    </div>
                   </div>
-                  <p className="text-sm font-bold text-accent">{formatCurrency(item.vgv)}</p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
-          {/* By Segment */}
+          {/* Segmento */}
           <div className="elevated-card rounded-xl p-5">
             <h3 className="text-sm font-semibold text-card-foreground mb-3 flex items-center gap-2">
               <Star className="w-4 h-4 text-accent" />
@@ -561,7 +579,9 @@ export default function Reports() {
               {rankBySegment.map((item, idx) => (
                 <div key={item.name} className="flex items-center justify-between py-1.5 border-b border-border/50 last:border-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground w-4">#{idx + 1}</span>
+                    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                      idx === 0 ? "bg-accent/20 text-accent" : "bg-muted text-muted-foreground"
+                    }`}>{idx + 1}</span>
                     <span className="text-sm font-medium text-card-foreground">{item.name}</span>
                     <Badge variant="outline" className="text-[10px] px-1.5 py-0">{item.count}</Badge>
                   </div>
