@@ -18,6 +18,12 @@ import {
   ArrowUp,
   Filter,
   X,
+  Waves,
+  Paintbrush,
+  Repeat,
+  CreditCard,
+  SlidersHorizontal,
+  ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
