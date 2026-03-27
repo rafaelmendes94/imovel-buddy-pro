@@ -268,6 +268,24 @@ function PropertyCard({ property }: { property: typeof siteProperties[0] }) {
         <span className="absolute top-3 right-3 px-3 py-1 rounded-full text-[11px] font-semibold bg-white/90 text-gray-800 backdrop-blur-sm">
           {property.type}
         </span>
+        {/* Feature badges */}
+        <div className="absolute bottom-12 left-3 flex gap-1.5">
+          {property.seaView && (
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/90 text-white backdrop-blur-sm flex items-center gap-1">
+              <Waves className="w-3 h-3" /> Vista Mar
+            </span>
+          )}
+          {property.decorated && (
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/90 text-white backdrop-blur-sm flex items-center gap-1">
+              <Paintbrush className="w-3 h-3" /> Decorado
+            </span>
+          )}
+          {property.acceptsExchange && (
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-500/90 text-white backdrop-blur-sm flex items-center gap-1">
+              <Repeat className="w-3 h-3" /> Permuta
+            </span>
+          )}
+        </div>
         <div className="absolute bottom-3 left-3 right-3">
           <p className="text-xl font-bold text-white drop-shadow-lg">{formatCurrency(property.price)}</p>
         </div>
