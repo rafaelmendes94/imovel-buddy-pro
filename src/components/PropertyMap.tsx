@@ -1,70 +1,71 @@
-import { useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+import { useEffect, useRef } from "react";
 import { Property, formatCurrency } from "@/data/mockData";
 import { MapPin, BedDouble, Ruler } from "lucide-react";
-
-// Fix default marker icons
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
-  iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
-  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
-});
 
 interface PropertyMapProps {
   properties: Property[];
 }
 
 export function PropertyMap({ properties }: PropertyMapProps) {
-  const center: [number, number] = properties.length > 0
-    ? [properties[0].lat, properties[0].lng]
-    : [-23.55, -46.63];
+  const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (!mapRef.current || mapInstanceRef.current) return;
+
+    // Dynamically load Leaflet CSS and JS
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+    document.head.appendChild(link);
+
+    const script = document.createElement("script");
+    script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+    script.onload = () => {
+      const L = (window as any).L;
+      if (!L || !mapRef.current) return;
+
+      const center: [number, number] =
+        properties.length > 0
+          ? [properties[0].lat, properties[0].lng]
+          : [-23.55, -46.63];
+
+      const map = L.map(mapRef.current).setView(center, 11);
+      mapInstanceRef.current = map;
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      }).addTo(map);
+
+      properties.forEach((property) => {
+        const marker = L.marker([property.lat, property.lng]).addTo(map);
+        marker.bindPopup(`
+          <div style="width:220px;font-family:system-ui,sans-serif;">
+            <img src="${property.image}" alt="${property.title}" style="width:100%;height:100px;object-fit:cover;border-radius:6px;margin-bottom:8px;" />
+            <h3 style="font-size:13px;font-weight:600;margin:0 0 4px 0;">${property.title}</h3>
+            <p style="font-size:11px;color:#666;margin:0 0 4px 0;">📍 ${property.address}</p>
+            <p style="font-size:14px;font-weight:700;color:#d97706;margin:0 0 4px 0;">${formatCurrency(property.price)}</p>
+            <p style="font-size:11px;color:#888;margin:0;">
+              ${property.bedrooms > 0 ? `🛏 ${property.bedrooms}` : ""} 
+              📐 ${property.area}m²
+            </p>
+          </div>
+        `);
+      });
+    };
+    document.head.appendChild(script);
+
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+    };
+  }, [properties]);
 
   return (
     <div className="elevated-card rounded-xl overflow-hidden" style={{ height: "600px" }}>
-      <MapContainer
-        center={center}
-        zoom={11}
-        style={{ height: "100%", width: "100%" }}
-        scrollWheelZoom={true}
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        {properties.map((property) => (
-          <Marker key={property.id} position={[property.lat, property.lng]}>
-            <Popup>
-              <div className="w-56">
-                <img
-                  src={property.image}
-                  alt={property.title}
-                  className="w-full h-28 object-cover rounded-md mb-2"
-                />
-                <h3 className="font-semibold text-sm mb-1">{property.title}</h3>
-                <p className="text-xs text-gray-500 flex items-center gap-1 mb-1">
-                  <MapPin className="w-3 h-3" /> {property.address}
-                </p>
-                <p className="text-sm font-bold text-amber-600 mb-1">
-                  {formatCurrency(property.price)}
-                </p>
-                <div className="flex gap-3 text-xs text-gray-500">
-                  {property.bedrooms > 0 && (
-                    <span className="flex items-center gap-1">
-                      <BedDouble className="w-3 h-3" /> {property.bedrooms}
-                    </span>
-                  )}
-                  <span className="flex items-center gap-1">
-                    <Ruler className="w-3 h-3" /> {property.area}m²
-                  </span>
-                </div>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
-      </MapContainer>
+      <div ref={mapRef} style={{ height: "100%", width: "100%" }} />
     </div>
   );
 }
