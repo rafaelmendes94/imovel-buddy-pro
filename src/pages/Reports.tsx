@@ -110,21 +110,31 @@ const MONTH_MAP: Record<string, number> = {
   "Jul": 6, "Ago": 7, "Set": 8, "Out": 9, "Nov": 10, "Dez": 11,
 };
 
+function isToday(dateStr: string) {
+  const d = new Date(dateStr);
+  const now = new Date("2026-03-27");
+  return d.toDateString() === now.toDateString();
+}
+
+type TimePeriod = "Todos" | "Dia" | "Semana" | "Mês" | "Ano";
+
 export default function Reports() {
   const [filterCity, setFilterCity] = useState<string>("Todas");
   const [filterType, setFilterType] = useState<string>("Todos");
   const [filterSegment, setFilterSegment] = useState<string>("Todos");
   const [filterSeaView, setFilterSeaView] = useState<string>("Todos");
+  const [filterPeriod, setFilterPeriod] = useState<TimePeriod>("Todos");
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [showDetailedFilters, setShowDetailedFilters] = useState(false);
 
-  const activeFilterCount = [filterCity !== "Todas", filterType !== "Todos", filterSegment !== "Todos", filterSeaView !== "Todos"].filter(Boolean).length;
+  const activeFilterCount = [filterCity !== "Todas", filterType !== "Todos", filterSegment !== "Todos", filterSeaView !== "Todos", filterPeriod !== "Todos"].filter(Boolean).length;
 
   const clearAllFilters = () => {
     setFilterCity("Todas");
     setFilterType("Todos");
     setFilterSegment("Todos");
     setFilterSeaView("Todos");
+    setFilterPeriod("Todos");
   };
 
   const filtered = useMemo(() => {
@@ -134,9 +144,13 @@ export default function Reports() {
       if (filterSegment !== "Todos" && s.segment !== filterSegment) return false;
       if (filterSeaView === "Sim" && !s.seaView) return false;
       if (filterSeaView === "Não" && s.seaView) return false;
+      if (filterPeriod === "Dia" && !isToday(s.date)) return false;
+      if (filterPeriod === "Semana" && !isThisWeek(s.date)) return false;
+      if (filterPeriod === "Mês" && !isThisMonth(s.date)) return false;
+      if (filterPeriod === "Ano" && !isThisYear(s.date)) return false;
       return true;
     });
-  }, [filterCity, filterType, filterSegment, filterSeaView]);
+  }, [filterCity, filterType, filterSegment, filterSeaView, filterPeriod]);
 
   // VGV calculations
   const vgvYear = filtered.filter(s => isThisYear(s.date)).reduce((sum, s) => sum + s.price, 0);
@@ -306,6 +320,22 @@ export default function Reports() {
                   active={filterType === t}
                   onClick={() => setFilterType(filterType === t ? "Todos" : t)}
                   onRemove={filterType === t ? () => setFilterType("Todos") : undefined}
+                />
+              ))}
+              {/* Separator */}
+              <div className="w-px h-5 bg-border mx-1" />
+              {/* Quick time period chips */}
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-card-foreground">
+                <Calendar className="w-3.5 h-3.5" />
+                Período
+              </div>
+              {(["Dia", "Semana", "Mês", "Ano"] as TimePeriod[]).map(p => (
+                <FilterChip
+                  key={p}
+                  label={p}
+                  active={filterPeriod === p}
+                  onClick={() => setFilterPeriod(filterPeriod === p ? "Todos" : p)}
+                  onRemove={filterPeriod === p ? () => setFilterPeriod("Todos") : undefined}
                 />
               ))}
               {activeFilterCount > 0 && (
