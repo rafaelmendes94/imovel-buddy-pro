@@ -21,6 +21,7 @@ import {
   Video,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CadastroPanel } from "./CadastroPanel";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
@@ -87,6 +88,10 @@ export function AppSidebar() {
             </Link>
           );
         })}
+        {/* Cadastro Panel */}
+        <div className="px-2 pt-2 border-t border-sidebar-border">
+          <CadastroPanel collapsed={collapsed} />
+        </div>
       </nav>
 
       {/* Collapse toggle */}
