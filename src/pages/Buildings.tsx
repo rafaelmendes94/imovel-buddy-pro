@@ -94,6 +94,8 @@ const emptyForm: Omit<BuildingData, "id"> = {
   yearBuilt: "",
   status: "Lançamento",
   image: "",
+  lat: -23.55,
+  lng: -46.63,
 };
 
 export default function Buildings() {

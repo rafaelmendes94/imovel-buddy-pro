@@ -110,6 +110,8 @@ const emptyForm = {
   amenities: [] as string[],
   type: "Vertical" as Condominium["type"],
   image: "",
+  lat: -23.55,
+  lng: -46.63,
 };
 
 const allAmenities = ["Piscina", "Academia", "Segurança 24h", "Playground", "Portaria", "Salão de Festas", "Quadra", "Churrasqueira", "Área Verde"];
