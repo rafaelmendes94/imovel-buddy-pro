@@ -842,6 +842,105 @@ export default function Financeiro() {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Overdue Details Dialog */}
+        <Dialog open={showOverdueDialog} onOpenChange={setShowOverdueDialog}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-red-400">
+                <AlertTriangle className="w-5 h-5" /> Pagamentos em Atraso — {formatCurrency(overdueTotal)}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 mt-4">
+              {subscribersWithOverdue.map(sub => {
+                const subOverdue = overduePayments.filter(p => p.subscriber_id === sub.id);
+                const subTotal = subOverdue.reduce((s, p) => s + Number(p.amount), 0);
+                return (
+                  <div key={sub.id} className="border border-border rounded-lg p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-red-500/10 flex items-center justify-center text-xs font-bold text-red-400">
+                          {sub.name.split(" ").map(n => n[0]).slice(0, 2).join("")}
+                        </div>
+                        <div>
+                          <p className="font-medium text-foreground">{sub.name}</p>
+                          <p className="text-xs text-muted-foreground">{sub.email || "Sem email"} • {sub.phone || "Sem telefone"}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-red-400">{formatCurrency(subTotal)}</span>
+                        {sub.phone ? (
+                          <Button
+                            size="sm"
+                            className="h-8 gap-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+                            onClick={() => openWhatsApp(sub.phone!, buildOverdueMessage(sub))}
+                          >
+                            <MessageCircle className="w-4 h-4" /> Cobrar via WhatsApp
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8 gap-1 text-xs"
+                            onClick={() => {
+                              setEditingWhatsApp(sub.id);
+                              setWhatsAppInput("");
+                            }}
+                          >
+                            <MessageCircle className="w-3.5 h-3.5" /> Cadastrar WhatsApp
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                    {editingWhatsApp === sub.id && (
+                      <div className="flex items-center gap-2">
+                        <Input
+                          value={whatsAppInput}
+                          onChange={e => setWhatsAppInput(e.target.value)}
+                          placeholder="(00) 00000-0000"
+                          className="h-8 text-sm max-w-[200px]"
+                        />
+                        <Button size="sm" className="h-8" onClick={() => handleSaveWhatsApp(sub.id)}>Salvar</Button>
+                      </div>
+                    )}
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="text-xs">Referência</TableHead>
+                          <TableHead className="text-xs">Vencimento</TableHead>
+                          <TableHead className="text-xs">Valor</TableHead>
+                          <TableHead className="text-xs text-right">Ação</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {subOverdue.map(p => (
+                          <TableRow key={p.id}>
+                            <TableCell className="text-sm">{p.reference_month}</TableCell>
+                            <TableCell className="text-sm">{format(parseISO(p.due_date), "dd/MM/yyyy")}</TableCell>
+                            <TableCell className="text-sm font-medium">{formatCurrency(Number(p.amount))}</TableCell>
+                            <TableCell className="text-right">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 text-xs text-emerald-500 border-emerald-500/30 hover:bg-emerald-500/10"
+                                onClick={() => handleTogglePayment(p)}
+                              >
+                                <CheckCircle2 className="w-3 h-3 mr-1" /> Confirmar Pgto
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                );
+              })}
+              {subscribersWithOverdue.length === 0 && (
+                <p className="text-center text-muted-foreground py-8">Nenhum pagamento em atraso 🎉</p>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </AppLayout>
   );
