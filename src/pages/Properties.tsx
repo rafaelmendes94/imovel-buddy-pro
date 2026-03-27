@@ -6,12 +6,18 @@ import { PropertyDetailModal } from "@/components/PropertyDetailModal";
 import { RoutePlanner } from "@/components/RoutePlanner";
 import { SharkAI } from "@/components/SharkAI";
 import { properties as initialProperties, formatCurrency, Property } from "@/data/mockData";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "@/hooks/use-toast";
 import {
   Building2, Search, Plus, MapPin, BedDouble, Bath, Car, Ruler,
   Download, Send, LayoutGrid, List, Map, ChevronLeft, ChevronRight,
   CheckCircle2, Clock, Home, Key, Trophy, FileCode, ChevronDown,
   Star, Fence, TreePine, Waves, Paintbrush, Filter, X, SlidersHorizontal,
   Phone, Heart, FileCheck, Eye, Repeat, CreditCard, DollarSign, Ban,
+  Pencil, HardDrive, User, KeyRound, ExternalLink, Copy, MessageCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
