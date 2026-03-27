@@ -34,6 +34,7 @@ import {
   Medal,
   FileCheck,
   Eye,
+  Heart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { RoutePlanner } from "@/components/RoutePlanner";
