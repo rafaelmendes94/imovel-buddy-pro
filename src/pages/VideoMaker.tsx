@@ -363,7 +363,7 @@ export default function VideoMaker() {
           {/* ==================== KANBAN ==================== */}
           <TabsContent value="kanban" className="space-y-4">
             <div className="flex justify-end">
-              <Dialog open={jobDialogOpen} onOpenChange={(o) => { setJobDialogOpen(o); if (!o) { setEditingJob(null); setNewJob({ property: "", client: "", address: "", value: "", dueDate: "", notes: "", status: "gravar" }); } }}>
+              <Dialog open={jobDialogOpen} onOpenChange={(o) => { setJobDialogOpen(o); if (!o) { setEditingJob(null); setNewJob({ property: "", client: "", address: "", value: "", dueDate: "", notes: "", status: "gravar", materialType: "vr", clientType: "assinante" }); } }}>
                 <DialogTrigger asChild><Button size="sm" className="gap-1.5"><Plus className="w-4 h-4" /> Novo Trabalho</Button></DialogTrigger>
                 <DialogContent className="max-w-md">
                   <DialogHeader><DialogTitle>{editingJob ? "Editar Trabalho" : "Novo Trabalho"}</DialogTitle></DialogHeader>
