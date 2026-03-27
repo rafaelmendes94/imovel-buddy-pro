@@ -636,6 +636,65 @@ export default function Reports() {
             </table>
           </div>
         </div>
+
+        {/* Month Sales Dialog */}
+        <Dialog open={!!selectedMonth} onOpenChange={() => setSelectedMonth(null)}>
+          <DialogContent className="max-w-3xl max-h-[80vh] overflow-auto">
+            <DialogHeader>
+              <DialogTitle>Vendas de {selectedMonth}</DialogTitle>
+            </DialogHeader>
+            {(() => {
+              const monthNum = selectedMonth ? MONTH_MAP[selectedMonth] : -1;
+              const monthSales = filtered.filter(s => {
+                const d = new Date(s.date);
+                return d.getMonth() === monthNum;
+              });
+              const totalVgv = monthSales.reduce((sum, s) => sum + s.price, 0);
+              return (
+                <div className="space-y-4">
+                  <div className="flex gap-4">
+                    <div className="p-3 rounded-lg bg-primary/10">
+                      <p className="text-xs text-muted-foreground">Total de Vendas</p>
+                      <p className="text-lg font-bold text-foreground">{monthSales.length}</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-emerald-500/10">
+                      <p className="text-xs text-muted-foreground">VGV do Mês</p>
+                      <p className="text-lg font-bold text-emerald-500">{formatCurrency(totalVgv)}</p>
+                    </div>
+                  </div>
+                  {monthSales.length === 0 ? (
+                    <p className="text-sm text-muted-foreground py-8 text-center">Nenhuma venda registrada neste mês</p>
+                  ) : (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Imóvel</TableHead>
+                          <TableHead>Cidade</TableHead>
+                          <TableHead>Tipo</TableHead>
+                          <TableHead>Segmento</TableHead>
+                          <TableHead>Corretor</TableHead>
+                          <TableHead className="text-right">Valor</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {monthSales.map(s => (
+                          <TableRow key={s.id}>
+                            <TableCell className="font-medium text-foreground">{s.propertyTitle}</TableCell>
+                            <TableCell className="text-muted-foreground">{s.city}</TableCell>
+                            <TableCell><Badge variant="outline" className="text-xs">{s.type}</Badge></TableCell>
+                            <TableCell><Badge className="text-xs" style={{ background: SEGMENT_COLORS[s.segment] + "33", color: SEGMENT_COLORS[s.segment], border: "none" }}>{s.segment}</Badge></TableCell>
+                            <TableCell className="text-muted-foreground">{s.broker}</TableCell>
+                            <TableCell className="text-right font-bold text-foreground">{formatCurrency(s.price)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  )}
+                </div>
+              );
+            })()}
+          </DialogContent>
+        </Dialog>
       </div>
     </AppLayout>
   );
