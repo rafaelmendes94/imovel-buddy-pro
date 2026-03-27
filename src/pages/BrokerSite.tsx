@@ -240,9 +240,12 @@ function PropertyCard({ property, whatsapp, brokerName }: { property: typeof all
       <div className="p-4 space-y-3">
         <h3 className="font-bold text-gray-900 text-base leading-tight">{property.title}</h3>
         {property.empreendimento && (
-          <p className="text-[11px] font-semibold text-amber-700 bg-amber-50 px-2 py-1 rounded-md inline-block">
+          <Link
+            to={`/empreendimento/${property.empreendimento.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`}
+            className="text-[11px] font-semibold text-amber-700 bg-amber-50 px-2 py-1 rounded-md inline-block hover:bg-amber-100 transition-colors cursor-pointer"
+          >
             <Building2 className="w-3 h-3 inline mr-1" />{property.empreendimento}
-          </p>
+          </Link>
         )}
         <div className="flex items-center gap-1 text-gray-500 text-xs">
           <MapPin className="w-3.5 h-3.5" />
