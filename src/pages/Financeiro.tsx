@@ -69,6 +69,9 @@ export default function Financeiro() {
   const [newSub, setNewSub] = useState({ name: "", email: "", phone: "", creci: "", plan: "monthly", notes: "" });
   const [newBroker, setNewBroker] = useState({ name: "", email: "", phone: "", creci: "" });
   const [expandedSub, setExpandedSub] = useState<string | null>(null);
+  const [showOverdueDialog, setShowOverdueDialog] = useState(false);
+  const [editingWhatsApp, setEditingWhatsApp] = useState<string | null>(null);
+  const [whatsAppInput, setWhatsAppInput] = useState("");
 
   const fetchData = async () => {
     setLoading(true);
