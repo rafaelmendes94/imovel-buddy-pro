@@ -1,5 +1,7 @@
 import { useState, useMemo } from "react";
 import { AppLayout } from "@/components/AppLayout";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { MetricCard } from "@/components/MetricCard";
 import {
   salesRecords,
@@ -96,11 +98,17 @@ function FilterChip({ label, active, onClick }: { label: string; active: boolean
   );
 }
 
+const MONTH_MAP: Record<string, number> = {
+  "Jan": 0, "Fev": 1, "Mar": 2, "Abr": 3, "Mai": 4, "Jun": 5,
+  "Jul": 6, "Ago": 7, "Set": 8, "Out": 9, "Nov": 10, "Dez": 11,
+};
+
 export default function Reports() {
   const [filterCity, setFilterCity] = useState<string>("Todas");
   const [filterType, setFilterType] = useState<string>("Todos");
   const [filterSegment, setFilterSegment] = useState<string>("Todos");
   const [filterSeaView, setFilterSeaView] = useState<string>("Todos");
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     return salesRecords.filter(s => {
