@@ -367,18 +367,26 @@ function PropertyCard({ property, onSelect }: { property: typeof siteProperties[
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+        {/* Sold stamp */}
+        {(property.status === "Vendido") && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+            <div className="bg-red-600/90 text-white text-2xl font-black uppercase tracking-[0.2em] px-8 py-3 -rotate-12 shadow-2xl border-4 border-red-400/50 rounded-sm" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.4)' }}>
+              Vendido
+            </div>
+          </div>
+        )}
         {/* Arrow navigation */}
         {imgs.length > 1 && (
           <>
             <button
               onClick={(e) => { e.stopPropagation(); setImgIndex((prev) => (prev > 0 ? prev - 1 : imgs.length - 1)); }}
-              className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/80 hover:bg-white flex items-center justify-center shadow opacity-0 group-hover:opacity-100 transition-opacity"
+              className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/80 hover:bg-white flex items-center justify-center shadow opacity-0 group-hover:opacity-100 transition-opacity z-20"
             >
               <ChevronLeft className="w-4 h-4 text-gray-800" />
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); setImgIndex((prev) => (prev < imgs.length - 1 ? prev + 1 : 0)); }}
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/80 hover:bg-white flex items-center justify-center shadow opacity-0 group-hover:opacity-100 transition-opacity"
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/80 hover:bg-white flex items-center justify-center shadow opacity-0 group-hover:opacity-100 transition-opacity z-20"
             >
               <ChevronRight className="w-4 h-4 text-gray-800" />
             </button>
@@ -727,6 +735,7 @@ export default function Site() {
   const [filterCondition, setFilterCondition] = useState("");
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [carouselIndex, setCarouselIndex] = useState(0);
+  const [priceSort, setPriceSort] = useState<"" | "asc" | "desc">("");
 
   // Auto-rotate sold carousel (scroll 1 card at a time, 4 visible)
   const maxIndex = Math.max(0, soldProperties.length - 4);
@@ -772,6 +781,11 @@ export default function Site() {
     );
     return matchSearch && matchCity && matchBedrooms && matchPriceMin && matchPriceMax && matchType && matchCondition;
   });
+
+  const sortByPrice = <T extends { price: number }>(arr: T[]): T[] => {
+    if (!priceSort) return arr;
+    return [...arr].sort((a, b) => priceSort === "asc" ? a.price - b.price : b.price - a.price);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans" onScroll={handleScroll}>
@@ -1008,6 +1022,31 @@ export default function Site() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
 
+        {/* Quick Sort Filter */}
+        <div className="flex items-center justify-end gap-2">
+          <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Ordenar por preço:</span>
+          <div className="flex rounded-lg border border-gray-200 overflow-hidden">
+            <button
+              onClick={() => setPriceSort(priceSort === "asc" ? "" : "asc")}
+              className={cn(
+                "px-3 py-1.5 text-xs font-bold transition-colors",
+                priceSort === "asc" ? "bg-amber-500 text-white" : "bg-white text-gray-600 hover:bg-gray-50"
+              )}
+            >
+              ↑ Menor
+            </button>
+            <button
+              onClick={() => setPriceSort(priceSort === "desc" ? "" : "desc")}
+              className={cn(
+                "px-3 py-1.5 text-xs font-bold transition-colors border-l border-gray-200",
+                priceSort === "desc" ? "bg-amber-500 text-white" : "bg-white text-gray-600 hover:bg-gray-50"
+              )}
+            >
+              ↓ Maior
+            </button>
+          </div>
+        </div>
+
         {/* Search / Filter results */}
         {(searchTerm || hasActiveFilters) && (
           <section>
@@ -1017,7 +1056,7 @@ export default function Site() {
               icon={Search}
             />
             {filteredAll.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {filteredAll.map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} />)}
               </div>
             ) : (
@@ -1068,8 +1107,8 @@ export default function Site() {
         {!searchTerm && !hasActiveFilters && (activeCategory === "todos" || activeCategory === "destaque") && (
           <section>
             <SectionHeader title="Imóveis em Destaque" subtitle="Seleção especial dos melhores imóveis" icon={Star} />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {featured.map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} />)}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {sortByPrice(featured).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} />)}
             </div>
           </section>
         )}
@@ -1078,8 +1117,8 @@ export default function Site() {
         {!searchTerm && !hasActiveFilters && (activeCategory === "todos" || activeCategory === "apartamentos") && apartments.length > 0 && (
           <section>
             <SectionHeader title="Apartamentos" subtitle={`${apartments.length} apartamentos disponíveis`} icon={Building2} />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {apartments.map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} />)}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {sortByPrice(apartments).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} />)}
             </div>
           </section>
         )}
@@ -1088,18 +1127,18 @@ export default function Site() {
         {!searchTerm && !hasActiveFilters && (activeCategory === "todos" || activeCategory === "condominios") && (
           <section>
             <SectionHeader title="Condomínios" subtitle={`${condoProperties.length} condomínios com unidades disponíveis`} icon={Fence} />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {condoProperties.map((c) => <CondoCard key={c.id} condo={c} />)}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {condoProperties.slice(0, 4).map((c) => <CondoCard key={c.id} condo={c} />)}
             </div>
           </section>
         )}
 
-        {/* Casas Bairro */}
+        {/* Casas */}
         {!searchTerm && !hasActiveFilters && (activeCategory === "todos" || activeCategory === "casas") && houses.length > 0 && (
           <section>
             <SectionHeader title="Casas" subtitle={`${houses.length} casas disponíveis`} icon={Home} />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {houses.map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} />)}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {sortByPrice(houses).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} />)}
             </div>
           </section>
         )}
@@ -1108,8 +1147,8 @@ export default function Site() {
         {!searchTerm && !hasActiveFilters && (activeCategory === "todos" || activeCategory === "decorados") && decorated.length > 0 && (
           <section>
             <SectionHeader title="Decorados" subtitle={`${decorated.length} imóveis com decoração inclusa`} icon={Paintbrush} />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {decorated.map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} />)}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {sortByPrice(decorated).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} />)}
             </div>
           </section>
         )}
@@ -1118,8 +1157,8 @@ export default function Site() {
         {!searchTerm && !hasActiveFilters && (activeCategory === "todos" || activeCategory === "vista-mar") && seaViewProperties.length > 0 && (
           <section>
             <SectionHeader title="Vista para o Mar" subtitle={`${seaViewProperties.length} imóveis com vista mar`} icon={Waves} />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {seaViewProperties.map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} />)}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {sortByPrice(seaViewProperties).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} />)}
             </div>
           </section>
         )}
@@ -1129,8 +1168,8 @@ export default function Site() {
         {!searchTerm && !hasActiveFilters && (activeCategory === "todos" || activeCategory === "lotes-cond") && condoLots.length > 0 && (
           <section>
             <SectionHeader title="Lotes em Condomínio" subtitle={`${condoLots.length} lotes em condomínios fechados`} icon={TreePine} />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {condoLots.map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} />)}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {sortByPrice(condoLots).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} />)}
             </div>
           </section>
         )}
@@ -1139,10 +1178,22 @@ export default function Site() {
         {!searchTerm && !hasActiveFilters && (activeCategory === "todos" || activeCategory === "lotes-bairro") && neighborhoodLots.length > 0 && (
           <section>
             <SectionHeader title="Lotes em Bairro" subtitle={`${neighborhoodLots.length} lotes em bairros abertos`} icon={MapPin} />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {neighborhoodLots.map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} />)}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {sortByPrice(neighborhoodLots).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} />)}
             </div>
           </section>
+        )}
+
+        {/* Ver Todos os Imóveis */}
+        {!searchTerm && !hasActiveFilters && activeCategory === "todos" && (
+          <div className="flex justify-center">
+            <button
+              onClick={() => { setActiveCategory("todos"); setSearchTerm(""); setPriceSort(""); }}
+              className="px-8 py-4 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-400 text-white text-base font-extrabold hover:from-amber-600 hover:to-amber-500 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
+            >
+              <Search className="w-5 h-5" /> Ver Todos os Imóveis ({available.length})
+            </button>
+          </div>
         )}
         {/* Mapa Interativo */}
         {!searchTerm && !hasActiveFilters && (activeCategory === "todos") && (
