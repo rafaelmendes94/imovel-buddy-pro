@@ -27,6 +27,7 @@ export interface Property {
   quadra?: string;
   lote?: string;
   exclusivityTerm?: string; // URL to PDF or image of the exclusivity term
+  description?: string;
 }
 
 export interface Broker {
