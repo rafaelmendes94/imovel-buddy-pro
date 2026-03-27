@@ -19,9 +19,9 @@ import {
   FileSignature,
   Clapperboard,
   GripVertical,
+  Landmark,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { CadastroPanel } from "./CadastroPanel";
 
 interface NavItem {
   icon: React.ComponentType<{ className?: string }>;
@@ -43,6 +43,7 @@ const defaultNavItems: NavItem[] = [
   { icon: FileSignature, label: "Contratos", path: "/contratos" },
   { icon: Clapperboard, label: "Material Extra", path: "/videomaker" },
   { icon: Users, label: "Corretores", path: "/corretores" },
+  { icon: Landmark, label: "Imobiliárias", path: "/imobiliarias" },
   { icon: Settings, label: "Configurações", path: "/configuracoes" },
 ];
 
@@ -165,11 +166,6 @@ export function AppSidebar() {
             </div>
           );
         })}
-
-        {/* Cadastro Panel */}
-        <div className={cn("pt-2 border-t border-sidebar-border mt-2", collapsed ? "px-0" : "px-1")}>
-          <CadastroPanel collapsed={collapsed} />
-        </div>
       </nav>
 
       {/* Collapse toggle */}
