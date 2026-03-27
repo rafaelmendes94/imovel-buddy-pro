@@ -546,7 +546,7 @@ function SoldCelebration() {
 
 // ---- PropertyCard (enhanced) ----
 function PropertyCard({
-  property, onStatusChange, onSelect, onViewTerm, isFavorited, onToggleFavorite,
+  property, onStatusChange, onSelect, onViewTerm, isFavorited, onToggleFavorite, onFilterByTitle, onFilterByCondition,
 }: {
   property: Property;
   onStatusChange: (id: string, status: Property["status"]) => void;
@@ -554,6 +554,8 @@ function PropertyCard({
   onViewTerm?: (url: string) => void;
   isFavorited?: boolean;
   onToggleFavorite?: (id: string) => void;
+  onFilterByTitle?: (title: string) => void;
+  onFilterByCondition?: (cond: string) => void;
 }) {
   const [showCelebration, setShowCelebration] = useState(false);
   const [animatePulse, setAnimatePulse] = useState(false);
