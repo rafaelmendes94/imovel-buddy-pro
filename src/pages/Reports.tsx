@@ -439,7 +439,7 @@ export default function Reports() {
                   {revenueBarData.map((entry, i) => (
                     <Cell
                       key={i}
-                      fill={entry.trend === "alta" ? "hsl(var(--chart-2))" : entry.trend === "baixa" ? "hsl(var(--chart-1))" : "hsl(var(--accent))"}
+                      fill={entry.trend === "alta" ? "hsl(142, 71%, 45%)" : entry.trend === "baixa" ? "hsl(0, 72%, 51%)" : "hsl(var(--muted-foreground))"}
                     />
                   ))}
                 </Bar>
