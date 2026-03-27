@@ -17,6 +17,7 @@ import {
   ClipboardCheck,
   Wallet,
   Table2,
+  FileSignature,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -31,6 +32,7 @@ const navItems = [
   { icon: ClipboardCheck, label: "Avaliações", path: "/avaliacoes" },
   { icon: Wallet, label: "Financeiro", path: "/financeiro" },
   { icon: Table2, label: "Tabelas", path: "/tabelas" },
+  { icon: FileSignature, label: "Contratos", path: "/contratos" },
   { icon: Users, label: "Corretores", path: "/corretores" },
   { icon: Settings, label: "Configurações", path: "/configuracoes" },
 ];

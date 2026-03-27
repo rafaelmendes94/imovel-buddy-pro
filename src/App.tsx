@@ -24,6 +24,7 @@ import RankingPage from "./pages/RankingPage";
 import Avaliacoes from "./pages/Avaliacoes";
 import Financeiro from "./pages/Financeiro";
 import Tabelas from "./pages/Tabelas";
+import Contratos from "./pages/Contratos";
 
 const queryClient = new QueryClient();
 
@@ -54,6 +55,7 @@ const App = () => (
           <Route path="/avaliacoes" element={<Avaliacoes />} />
           <Route path="/financeiro" element={<Financeiro />} />
           <Route path="/tabelas" element={<Tabelas />} />
+          <Route path="/contratos" element={<Contratos />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
