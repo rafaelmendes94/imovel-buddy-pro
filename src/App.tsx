@@ -26,6 +26,7 @@ import Financeiro from "./pages/Financeiro";
 import Tabelas from "./pages/Tabelas";
 import Contratos from "./pages/Contratos";
 import VideoMaker from "./pages/VideoMaker";
+import Imobiliarias from "./pages/Imobiliarias";
 
 const queryClient = new QueryClient();
 
@@ -58,6 +59,7 @@ const App = () => (
           <Route path="/tabelas" element={<Tabelas />} />
           <Route path="/contratos" element={<Contratos />} />
           <Route path="/videomaker" element={<VideoMaker />} />
+          <Route path="/imobiliarias" element={<Imobiliarias />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
