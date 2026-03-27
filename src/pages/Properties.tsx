@@ -163,6 +163,34 @@ export default function Properties() {
     setSearch("");
   };
 
+  const handleSaveEdit = (updated: Property) => {
+    setPropertyList((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+    setEditingProperty(null);
+    toast({ title: "Imóvel atualizado!" });
+  };
+
+  const handleShareProperty = (property: Property) => {
+    const text = `🏠 *${property.title}*\n📍 ${property.address}, ${property.city}\n💰 ${formatCurrency(property.price)}\n📐 ${property.area}m²${property.bedrooms > 0 ? ` | ${property.bedrooms} quartos` : ""}${property.parking > 0 ? ` | ${property.parking} vagas` : ""}\n👤 Corretor: ${property.broker}`;
+    if (navigator.share) {
+      navigator.share({ title: property.title, text });
+    } else {
+      navigator.clipboard.writeText(text);
+      toast({ title: "Copiado para a área de transferência!" });
+    }
+  };
+
+  const handleDownloadCard = (property: Property) => {
+    const text = `FICHA DO IMÓVEL\n${"=".repeat(40)}\n${property.title}\n${property.address}, ${property.city}\nPreço: ${formatCurrency(property.price)}\nÁrea: ${property.area}m²\nQuartos: ${property.bedrooms} | Banheiros: ${property.bathrooms} | Vagas: ${property.parking}\nTipo: ${property.type} | Status: ${property.status}\nCorretor: ${property.broker}\n${property.owner ? `Proprietário: ${property.owner}` : ""}\n${property.ownerPhone ? `Tel. Proprietário: ${property.ownerPhone}` : ""}\n${property.keyLocation ? `Chaves: ${property.keyLocation}` : ""}\n${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}\n${property.paymentConditions ? `Condições: ${property.paymentConditions.join(", ")}` : ""}`;
+    const blob = new Blob([text], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `imovel_${property.id}_${property.title.replace(/\s+/g, "_")}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast({ title: "Ficha baixada!" });
+  };
+
   // Cities for filter
   const cities = useMemo(() => [...new Set(propertyList.map(p => p.city))].sort(), [propertyList]);
 
