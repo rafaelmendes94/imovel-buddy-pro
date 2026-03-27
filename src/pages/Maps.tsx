@@ -22,14 +22,14 @@ interface MapLocation {
 }
 
 const initialLocations: MapLocation[] = [
-  { id: "1", name: "Escritório Central", description: "Sede da imobiliária", category: "Ponto de Interesse", lat: -23.5505, lng: -46.6333 },
-  { id: "2", name: "Shopping Faria Lima", description: "Centro comercial próximo", category: "Ponto de Interesse", lat: -23.5868, lng: -46.6826 },
-  { id: "b1", name: "Edifício Aurora", description: "Av. Paulista, 1500 — São Paulo", category: "Edifício", lat: -23.5629, lng: -46.6544 },
-  { id: "b2", name: "Torre Horizonte", description: "Rua Augusta, 2200 — São Paulo", category: "Edifício", lat: -23.5558, lng: -46.6621 },
-  { id: "b3", name: "Residencial Parque Verde", description: "Al. Santos, 800 — São Paulo", category: "Edifício", lat: -23.5672, lng: -46.6483 },
-  { id: "c1", name: "Alphaville Residencial", description: "Al. Araguaia, 1500 — Barueri", category: "Condomínio", lat: -23.5013, lng: -46.8753 },
-  { id: "c2", name: "Condomínio Parque das Flores", description: "Rua das Orquídeas, 200 — São Paulo", category: "Condomínio", lat: -23.5505, lng: -46.6333 },
-  { id: "c3", name: "Vila Verde Condomínio", description: "Estrada Municipal, 3000 — Cotia", category: "Condomínio", lat: -23.6043, lng: -46.9190 },
+  { id: "1", name: "Escritório Central", description: "Sede da imobiliária — Capão da Canoa", category: "Ponto de Interesse", lat: -29.7456, lng: -50.1028 },
+  { id: "2", name: "Shopping Capão", description: "Centro comercial", category: "Ponto de Interesse", lat: -29.7500, lng: -50.1080 },
+  { id: "b1", name: "Edifício Aurora", description: "Av. Beira Mar, 1500 — Capão da Canoa", category: "Edifício", lat: -29.7460, lng: -50.1000 },
+  { id: "b2", name: "Torre Horizonte", description: "Rua Sepé, 800 — Capão da Canoa", category: "Edifício", lat: -29.7490, lng: -50.1060 },
+  { id: "b3", name: "Residencial Parque Verde", description: "Av. Paraguassú, 400 — Capão da Canoa", category: "Edifício", lat: -29.7520, lng: -50.1100 },
+  { id: "c1", name: "Condomínio Praia Dourada", description: "Rua das Gaivotas, 200 — Capão da Canoa", category: "Condomínio", lat: -29.7550, lng: -50.0950 },
+  { id: "c2", name: "Residencial Atlântida Sul", description: "Av. Atlântida, 600 — Xangri-lá", category: "Condomínio", lat: -29.7850, lng: -50.0700 },
+  { id: "c3", name: "Village das Dunas", description: "Rua dos Coqueiros, 300 — Xangri-lá", category: "Condomínio", lat: -29.8050, lng: -50.0520 },
 ];
 
 const categoryColors: Record<string, string> = {
@@ -43,8 +43,8 @@ const emptyForm = {
   name: "",
   description: "",
   category: "Ponto de Interesse" as MapLocation["category"],
-  lat: -23.55,
-  lng: -46.63,
+  lat: -29.75,
+  lng: -50.10,
 };
 
 export default function Maps() {
