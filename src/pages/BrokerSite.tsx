@@ -28,10 +28,13 @@ import {
   FileCheck,
   Eye,
   ShieldCheck,
+  MessageSquare,
+  Send,
+  ThumbsUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const brokerInfo: Record<string, { photo: string; whatsapp: string; creci: string; bio: string; totalSold: number; totalSoldValue: number; avgDaysToSell: number; rating: number; totalRatings: number }> = {
+const brokerInfo: Record<string, { photo: string; whatsapp: string; creci: string; bio: string; totalSold: number; totalSoldValue: number; avgDaysToSell: number; rating: number; totalRatings: number; comments: { author: string; avatar: string; rating: number; text: string; date: string }[] }> = {
   "Carlos Silva": {
     photo: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&h=400&fit=crop&crop=face",
     whatsapp: "5511999990001",
@@ -42,6 +45,11 @@ const brokerInfo: Record<string, { photo: string; whatsapp: string; creci: strin
     avgDaysToSell: 45,
     rating: 4.7,
     totalRatings: 18,
+    comments: [
+      { author: "Ricardo Mendes", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face", rating: 5, text: "Excelente corretor! Me ajudou a encontrar o imóvel perfeito. Muito profissional e atencioso.", date: "2024-03-12" },
+      { author: "Juliana Costa", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face", rating: 5, text: "Vendeu meu apartamento em tempo recorde! Super recomendo.", date: "2024-02-28" },
+      { author: "Fernando Lopes", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face", rating: 4, text: "Bom atendimento e conhecimento do mercado local.", date: "2024-01-15" },
+    ],
   },
   "Ana Rodrigues": {
     photo: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=400&fit=crop&crop=face",
@@ -53,6 +61,10 @@ const brokerInfo: Record<string, { photo: string; whatsapp: string; creci: strin
     avgDaysToSell: 38,
     rating: 4.9,
     totalRatings: 14,
+    comments: [
+      { author: "Carla Souza", avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face", rating: 5, text: "Ana é incrível! Muito dedicada e encontrou exatamente o que eu procurava.", date: "2024-03-05" },
+      { author: "Paulo Henrique", avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face", rating: 5, text: "Profissional exemplar, fechamos negócio muito rápido.", date: "2024-02-10" },
+    ],
   },
   "Marcos Oliveira": {
     photo: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face",
@@ -64,6 +76,9 @@ const brokerInfo: Record<string, { photo: string; whatsapp: string; creci: strin
     avgDaysToSell: 32,
     rating: 4.5,
     totalRatings: 22,
+    comments: [
+      { author: "Tatiane Reis", avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop&crop=face", rating: 5, text: "Marcos é muito experiente, conhece cada canto da região!", date: "2024-03-18" },
+    ],
   },
 };
 
