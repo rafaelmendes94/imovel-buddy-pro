@@ -987,6 +987,83 @@ export default function Site() {
           </section>
         )}
 
+        {/* Últimas Vendas - Carrossel */}
+        {!searchTerm && !hasActiveFilters && activeCategory === "todos" && soldProperties.length > 0 && (
+          <section>
+            <SectionHeader
+              title={`Últimas Vendas — VGV ${formatCurrency(soldValue)}`}
+              subtitle={`${soldProperties.length} imóveis vendidos`}
+              icon={TrendingUp}
+            />
+            <div className="relative rounded-2xl overflow-hidden shadow-xl bg-white border border-gray-100">
+              <div className="relative h-[420px] overflow-hidden">
+                <div
+                  className="flex h-full transition-transform duration-700 ease-in-out"
+                  style={{ transform: `translateX(-${carouselIndex * 100}%)` }}
+                >
+                  {soldProperties.map((p) => {
+                    const broker = brokerInfo[p.broker] || { photo: "", whatsapp: "" };
+                    const unitParts = [p.unitNumber, p.boxNumber, p.quadra, p.lote].filter(Boolean);
+                    return (
+                      <div key={p.id} className="min-w-full h-full relative flex-shrink-0">
+                        <img src={p.image} alt={p.title} className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                        <div className="absolute top-4 left-4">
+                          <span className="px-3 py-1.5 rounded-full text-xs font-bold bg-red-500 text-white uppercase tracking-wide">
+                            Vendido
+                          </span>
+                        </div>
+                        <div className="absolute bottom-0 left-0 right-0 p-6 space-y-3">
+                          <h3 className="text-2xl font-extrabold text-white drop-shadow-lg">{p.title}</h3>
+                          <div className="flex flex-wrap items-center gap-2">
+                            {p.empreendimento && (
+                              <span className="text-xs font-bold text-amber-300 bg-amber-900/50 px-2.5 py-1 rounded-lg backdrop-blur-sm">
+                                {p.empreendimento}
+                              </span>
+                            )}
+                            {unitParts.map((part) => (
+                              <span key={part} className="text-xs font-semibold text-white/90 bg-white/20 px-2 py-0.5 rounded-md backdrop-blur-sm">
+                                {part}
+                              </span>
+                            ))}
+                          </div>
+                          <div className="flex items-center gap-6">
+                            <p className="text-3xl font-extrabold text-amber-400 drop-shadow-lg">{formatCurrency(p.price)}</p>
+                            <div className="flex items-center gap-4 text-sm text-white/80">
+                              {p.area > 0 && <span className="flex items-center gap-1"><Ruler className="w-4 h-4" />{p.area}m²</span>}
+                              {p.bedrooms > 0 && <span className="flex items-center gap-1"><BedDouble className="w-4 h-4" />{p.bedrooms} qts</span>}
+                              {p.parking > 0 && <span className="flex items-center gap-1"><Car className="w-4 h-4" />{p.parking} vg</span>}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            {broker.photo && (
+                              <img src={broker.photo} alt={p.broker} className="w-8 h-8 rounded-full object-cover border-2 border-amber-400" />
+                            )}
+                            <span className="text-sm font-semibold text-white/90">{p.broker}</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                {/* Dots */}
+                <div className="absolute bottom-4 right-6 flex items-center gap-2">
+                  {soldProperties.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setCarouselIndex(i)}
+                      className={cn(
+                        "w-2.5 h-2.5 rounded-full transition-all",
+                        i === carouselIndex ? "bg-amber-400 w-6" : "bg-white/50 hover:bg-white/80"
+                      )}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* Destaques */}
         {!searchTerm && !hasActiveFilters && (activeCategory === "todos" || activeCategory === "destaque") && (
           <section>
