@@ -13,6 +13,8 @@ export interface Property {
   broker: string;
   image: string;
   createdAt: string;
+  lat: number;
+  lng: number;
 }
 
 export interface Broker {
@@ -43,6 +45,8 @@ export const properties: Property[] = [
     broker: "Carlos Silva",
     image: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=300&fit=crop",
     createdAt: "2024-01-15",
+    lat: -23.5629,
+    lng: -46.6685,
   },
   {
     id: "2",
@@ -59,6 +63,8 @@ export const properties: Property[] = [
     broker: "Ana Rodrigues",
     image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=400&h=300&fit=crop",
     createdAt: "2024-02-10",
+    lat: -23.5868,
+    lng: -46.6826,
   },
   {
     id: "3",
@@ -75,6 +81,8 @@ export const properties: Property[] = [
     broker: "Carlos Silva",
     image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&h=300&fit=crop",
     createdAt: "2024-03-05",
+    lat: -23.4977,
+    lng: -46.8490,
   },
   {
     id: "4",
@@ -91,6 +99,8 @@ export const properties: Property[] = [
     broker: "Marcos Oliveira",
     image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop",
     createdAt: "2024-01-20",
+    lat: -23.5475,
+    lng: -46.6361,
   },
   {
     id: "5",
@@ -107,6 +117,8 @@ export const properties: Property[] = [
     broker: "Ana Rodrigues",
     image: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&h=300&fit=crop",
     createdAt: "2024-02-28",
+    lat: -23.6036,
+    lng: -46.8780,
   },
   {
     id: "6",
@@ -123,6 +135,8 @@ export const properties: Property[] = [
     broker: "Marcos Oliveira",
     image: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400&h=300&fit=crop",
     createdAt: "2024-03-12",
+    lat: -23.5667,
+    lng: -46.6915,
   },
 ];
 
