@@ -36,6 +36,7 @@ import {
   Eye,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { RoutePlanner } from "@/components/RoutePlanner";
 
 // Broker info map
 const brokerInfo: Record<string, { photo: string; whatsapp: string }> = {
