@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+import sharkIcon from "@/assets/shark-icon.png";
 
 interface SharkAIProps {
   properties: Property[];
