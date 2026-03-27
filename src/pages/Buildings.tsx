@@ -12,6 +12,7 @@ import {
   Edit,
   Trash2,
   Camera,
+  Home,
 } from "lucide-react";
 import { InfraMediaModal } from "@/components/InfraMediaModal";
 import { cn } from "@/lib/utils";
