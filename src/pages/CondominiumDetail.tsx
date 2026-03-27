@@ -70,6 +70,7 @@ interface CondoInfo {
   amenities: string[];
   infrastructure: string[];
   infraPhotos: InfraPhoto[];
+  implantationMedia: { type: "image" | "pdf"; url: string; label: string }[];
   videoUrl: string;
   downloadUrl: string;
   units: Unit[];
