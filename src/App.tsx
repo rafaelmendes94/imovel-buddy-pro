@@ -25,6 +25,7 @@ import Avaliacoes from "./pages/Avaliacoes";
 import Financeiro from "./pages/Financeiro";
 import Tabelas from "./pages/Tabelas";
 import Contratos from "./pages/Contratos";
+import VideoMaker from "./pages/VideoMaker";
 
 const queryClient = new QueryClient();
 
