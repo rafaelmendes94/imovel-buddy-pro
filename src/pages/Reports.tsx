@@ -3,6 +3,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { MetricCard } from "@/components/MetricCard";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   salesRecords,
   salesData,
@@ -42,21 +43,24 @@ import {
   ArrowUp,
   ArrowDown,
   Minus,
+  ChevronDown,
+  SlidersHorizontal,
+  X,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 const SEGMENT_COLORS: Record<string, string> = {
-  "Luxo": "hsl(var(--chart-1))",
-  "Alto Padrão": "hsl(var(--chart-2))",
-  "Médio Padrão": "hsl(var(--chart-3))",
-  "Econômico": "hsl(var(--chart-5))",
+  "Luxo": "hsl(142, 71%, 45%)",
+  "Alto Padrão": "hsl(142, 50%, 55%)",
+  "Médio Padrão": "hsl(38, 92%, 50%)",
+  "Econômico": "hsl(0, 72%, 51%)",
 };
 
 const TYPE_COLORS: Record<string, string> = {
-  "Apartamento": "hsl(var(--chart-1))",
-  "Casa": "hsl(var(--chart-2))",
-  "Comercial": "hsl(var(--chart-3))",
-  "Terreno": "hsl(var(--chart-5))",
+  "Apartamento": "hsl(142, 71%, 45%)",
+  "Casa": "hsl(142, 50%, 60%)",
+  "Comercial": "hsl(38, 92%, 50%)",
+  "Terreno": "hsl(0, 60%, 55%)",
 };
 
 const ALL_CITIES = [...new Set(salesRecords.map(s => s.city))].sort();
@@ -83,17 +87,20 @@ function isThisYear(dateStr: string) {
   return d.getFullYear() === 2026;
 }
 
-function FilterChip({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+function FilterChip({ label, active, onClick, onRemove }: { label: string; active: boolean; onClick: () => void; onRemove?: () => void }) {
   return (
     <button
       onClick={onClick}
-      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all inline-flex items-center gap-1 ${
         active
           ? "bg-accent text-accent-foreground shadow-sm"
           : "bg-muted text-muted-foreground hover:bg-muted/80"
       }`}
     >
       {label}
+      {active && onRemove && (
+        <X className="w-3 h-3 ml-0.5" onClick={(e) => { e.stopPropagation(); onRemove(); }} />
+      )}
     </button>
   );
 }
