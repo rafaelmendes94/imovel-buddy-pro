@@ -23,6 +23,7 @@ import PartnerDetail from "./pages/PartnerDetail";
 import RankingPage from "./pages/RankingPage";
 import Avaliacoes from "./pages/Avaliacoes";
 import Financeiro from "./pages/Financeiro";
+import Tabelas from "./pages/Tabelas";
 
 const queryClient = new QueryClient();
 
