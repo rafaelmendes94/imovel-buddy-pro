@@ -651,9 +651,41 @@ export default function Financeiro() {
                                 <Mail className="w-3 h-3" /> {sub.email}
                               </div>
                             )}
-                            {sub.phone && (
+                            {sub.phone ? (
                               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                                 <Phone className="w-3 h-3" /> {sub.phone}
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-5 w-5 p-0 ml-1"
+                                  onClick={(e) => { e.stopPropagation(); openWhatsApp(sub.phone!); }}
+                                >
+                                  <MessageCircle className="w-3.5 h-3.5 text-emerald-500" />
+                                </Button>
+                              </div>
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="text-xs h-6 gap-1 text-muted-foreground"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingWhatsApp(sub.id);
+                                  setWhatsAppInput(sub.phone || "");
+                                }}
+                              >
+                                <MessageCircle className="w-3 h-3" /> Cadastrar WhatsApp
+                              </Button>
+                            )}
+                            {editingWhatsApp === sub.id && (
+                              <div className="flex items-center gap-1 mt-1" onClick={e => e.stopPropagation()}>
+                                <Input
+                                  value={whatsAppInput}
+                                  onChange={e => setWhatsAppInput(e.target.value)}
+                                  placeholder="(00) 00000-0000"
+                                  className="h-6 text-xs w-32"
+                                />
+                                <Button size="sm" className="h-6 text-xs px-2" onClick={() => handleSaveWhatsApp(sub.id)}>Salvar</Button>
                               </div>
                             )}
                           </div>
