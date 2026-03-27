@@ -232,6 +232,14 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
             )}
           </div>
 
+          {/* Descrição */}
+          {property.description && (
+            <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+              <p className="text-xs font-bold text-gray-800 uppercase tracking-wider mb-2">Descrição</p>
+              <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">{property.description}</p>
+            </div>
+          )}
+
           {/* Features tags */}
           <div className="flex flex-wrap gap-2">
             {property.type && (
