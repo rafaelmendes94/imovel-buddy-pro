@@ -1,1 +1,4 @@
 project_id = "mgnawkfmfbwzpjiilhcf"
+
+[functions.shark-ai]
+verify_jwt = false
