@@ -27,6 +27,8 @@ import {
   CreditCard,
   SlidersHorizontal,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -349,36 +351,66 @@ const categories: { key: Category; label: string; icon: typeof Home }[] = [
 ];
 
 function PropertyCard({ property, onSelect }: { property: typeof siteProperties[0]; onSelect?: (p: typeof siteProperties[0]) => void }) {
+  const [imgIndex, setImgIndex] = useState(0);
   const broker = brokerInfo[property.broker] || { photo: "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=100&h=100&fit=crop&crop=face", whatsapp: "5511999999999" };
   const whatsappMessage = encodeURIComponent(`Olá! Tenho interesse no imóvel: ${property.title} - ${formatCurrency(property.price)}`);
   const unitParts = [property.unitNumber, property.boxNumber, property.quadra, property.lote].filter(Boolean);
+  const imgs = property.images && property.images.length > 0 ? property.images : [property.image];
+  const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${property.address}, ${property.city}`)}`;
 
   return (
     <div className="group rounded-2xl overflow-hidden bg-white shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100">
       <div className="relative h-52 overflow-hidden cursor-pointer" onClick={() => onSelect?.(property)}>
         <img
-          src={property.image}
+          src={imgs[imgIndex]}
           alt={property.title}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-        <span className="absolute top-3 left-3 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-500 text-white uppercase tracking-wide">
+        {/* Arrow navigation */}
+        {imgs.length > 1 && (
+          <>
+            <button
+              onClick={(e) => { e.stopPropagation(); setImgIndex((prev) => (prev > 0 ? prev - 1 : imgs.length - 1)); }}
+              className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/80 hover:bg-white flex items-center justify-center shadow opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <ChevronLeft className="w-4 h-4 text-gray-800" />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); setImgIndex((prev) => (prev < imgs.length - 1 ? prev + 1 : 0)); }}
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/80 hover:bg-white flex items-center justify-center shadow opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <ChevronRight className="w-4 h-4 text-gray-800" />
+            </button>
+            <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex gap-1">
+              {imgs.map((_, i) => (
+                <span key={i} className={cn("w-1.5 h-1.5 rounded-full transition-all", i === imgIndex ? "bg-white w-3" : "bg-white/50")} />
+              ))}
+            </div>
+          </>
+        )}
+        <span className={cn(
+          "absolute top-3 left-3 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide",
+          property.status === "Vendido" ? "bg-red-500 text-white" :
+          property.status === "Reservado" ? "bg-amber-500 text-white" :
+          "bg-emerald-500 text-white"
+        )}>
           {property.status}
         </span>
-        <div className="absolute bottom-12 left-3 flex gap-1.5">
-          {property.seaView && (
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/90 text-white backdrop-blur-sm flex items-center gap-1">
-              <Waves className="w-3 h-3" /> Vista Mar
-            </span>
-          )}
-          {property.decorated && (
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/90 text-white backdrop-blur-sm flex items-center gap-1">
-              <Paintbrush className="w-3 h-3" /> Decorado
-            </span>
-          )}
-        </div>
-        <div className="absolute bottom-3 left-3 right-3">
+        <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
           <p className="text-xl font-bold text-white drop-shadow-lg">{formatCurrency(property.price)}</p>
+          <div className="flex gap-1.5">
+            {property.seaView && (
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/90 text-white backdrop-blur-sm flex items-center gap-1">
+                <Waves className="w-3 h-3" /> Mar
+              </span>
+            )}
+            {property.decorated && (
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/90 text-white backdrop-blur-sm flex items-center gap-1">
+                <Paintbrush className="w-3 h-3" /> Dec.
+              </span>
+            )}
+          </div>
         </div>
       </div>
       <div className="p-4 space-y-3">
