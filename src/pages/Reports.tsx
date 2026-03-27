@@ -322,6 +322,22 @@ export default function Reports() {
                   onRemove={filterType === t ? () => setFilterType("Todos") : undefined}
                 />
               ))}
+              {/* Separator */}
+              <div className="w-px h-5 bg-border mx-1" />
+              {/* Quick time period chips */}
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-card-foreground">
+                <Calendar className="w-3.5 h-3.5" />
+                Período
+              </div>
+              {(["Dia", "Semana", "Mês", "Ano"] as TimePeriod[]).map(p => (
+                <FilterChip
+                  key={p}
+                  label={p}
+                  active={filterPeriod === p}
+                  onClick={() => setFilterPeriod(filterPeriod === p ? "Todos" : p)}
+                  onRemove={filterPeriod === p ? () => setFilterPeriod("Todos") : undefined}
+                />
+              ))}
               {activeFilterCount > 0 && (
                 <button onClick={clearAllFilters} className="px-2 py-1 rounded-full text-[10px] font-medium text-destructive hover:bg-destructive/10 transition-colors flex items-center gap-1">
                   <X className="w-3 h-3" /> Limpar ({activeFilterCount})
