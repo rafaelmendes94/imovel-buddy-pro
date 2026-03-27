@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 import { properties, formatCurrency } from "@/data/mockData";
 import {
   Search,
@@ -312,17 +313,20 @@ function PropertyCard({ property }: { property: typeof siteProperties[0] }) {
         )}
 
         <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-          <div className="flex items-center gap-2">
+          <Link
+            to={`/corretor/${property.broker.toLowerCase().replace(/\s+/g, "-")}`}
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          >
             <img
               src={broker.photo}
               alt={property.broker}
               className="w-8 h-8 rounded-full object-cover border-2 border-amber-400"
             />
             <div>
-              <p className="text-xs font-semibold text-gray-800 leading-tight">{property.broker}</p>
+              <p className="text-xs font-semibold text-amber-700 leading-tight hover:underline">{property.broker}</p>
               <p className="text-[10px] text-gray-400">Corretor(a)</p>
             </div>
-          </div>
+          </Link>
           <a
             href={`https://wa.me/${broker.whatsapp}?text=${whatsappMessage}`}
             target="_blank"
