@@ -21,6 +21,22 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+// Broker info map
+const brokerInfo: Record<string, { photo: string; whatsapp: string }> = {
+  "Carlos Silva": {
+    photo: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&h=100&fit=crop&crop=face",
+    whatsapp: "5511999990001",
+  },
+  "Ana Rodrigues": {
+    photo: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&h=100&fit=crop&crop=face",
+    whatsapp: "5511999990002",
+  },
+  "Marcos Oliveira": {
+    photo: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
+    whatsapp: "5511999990003",
+  },
+};
+
 // Extended mock data for the public site
 const siteProperties = [
   ...properties,
