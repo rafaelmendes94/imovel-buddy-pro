@@ -1,3 +1,4 @@
+import React from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
