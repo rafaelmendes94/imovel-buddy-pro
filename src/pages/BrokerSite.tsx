@@ -386,7 +386,7 @@ export default function BrokerSite() {
         <SectionHeader title={title} subtitle={subtitle} icon={icon} />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {items.map((p) => (
-            <PropertyCard key={p.id} property={p} whatsapp={info.whatsapp} brokerName={brokerName} />
+            <PropertyCard key={p.id} property={p} whatsapp={info.whatsapp} brokerName={brokerName} onSelect={setSelectedProperty} />
           ))}
         </div>
       </section>
@@ -654,7 +654,7 @@ export default function BrokerSite() {
             {baseFiltered.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {baseFiltered.map((p) => (
-                  <PropertyCard key={p.id} property={p} whatsapp={info.whatsapp} brokerName={brokerName} />
+                  <PropertyCard key={p.id} property={p} whatsapp={info.whatsapp} brokerName={brokerName} onSelect={setSelectedProperty} />
                 ))}
               </div>
             ) : (
@@ -675,7 +675,7 @@ export default function BrokerSite() {
                     <SectionHeader title="Capão da Canoa" subtitle={`${byCityCapao.length} imóveis em Capão da Canoa`} icon={MapPin} />
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                       {byCityCapao.map((p) => (
-                        <PropertyCard key={p.id} property={p} whatsapp={info.whatsapp} brokerName={brokerName} />
+                        <PropertyCard key={p.id} property={p} whatsapp={info.whatsapp} brokerName={brokerName} onSelect={setSelectedProperty} />
                       ))}
                     </div>
                   </section>
@@ -687,7 +687,7 @@ export default function BrokerSite() {
                     <SectionHeader title="Xangri-lá" subtitle={`${byCityXangrila.length} imóveis em Xangri-lá`} icon={MapPin} />
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                       {byCityXangrila.map((p) => (
-                        <PropertyCard key={p.id} property={p} whatsapp={info.whatsapp} brokerName={brokerName} />
+                        <PropertyCard key={p.id} property={p} whatsapp={info.whatsapp} brokerName={brokerName} onSelect={setSelectedProperty} />
                       ))}
                     </div>
                   </section>
