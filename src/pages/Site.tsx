@@ -352,7 +352,7 @@ const categories: { key: Category; label: string; icon: typeof Home }[] = [
   { key: "lotes-bairro", label: "Lotes Bairro", icon: MapPin },
 ];
 
-function PropertyCard({ property, onSelect }: { property: typeof siteProperties[0]; onSelect?: (p: typeof siteProperties[0]) => void }) {
+function PropertyCard({ property, onSelect, hideStamp }: { property: typeof siteProperties[0]; onSelect?: (p: typeof siteProperties[0]) => void; hideStamp?: boolean }) {
   const [imgIndex, setImgIndex] = useState(0);
   const broker = brokerInfo[property.broker] || { photo: "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=100&h=100&fit=crop&crop=face", whatsapp: "5511999999999" };
   const whatsappMessage = encodeURIComponent(`Olá! Tenho interesse no imóvel: ${property.title} - ${formatCurrency(property.price)}`);
@@ -370,7 +370,7 @@ function PropertyCard({ property, onSelect }: { property: typeof siteProperties[
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
         {/* Sold stamp - only outside carousel */}
-        {(property.status === "Vendido" && !property._noStamp) && (
+        {(property.status === "Vendido" && !hideStamp) && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
             <div className="bg-red-600/90 text-white text-2xl font-black uppercase tracking-[0.2em] px-8 py-3 -rotate-12 shadow-2xl border-4 border-red-400/50 rounded-sm" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.4)' }}>
               Vendido
