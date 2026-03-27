@@ -324,7 +324,7 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
 
       const map = L.map(mapRef.current, {
         zoomControl: false,
-      }).setView([-23.5505, -46.6333], 11);
+      }).setView([-29.77, -50.08], 12);
       mapInstanceRef.current = map;
 
       // Zoom control on the right
