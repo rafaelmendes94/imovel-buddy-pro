@@ -377,6 +377,7 @@ export default function Reports() {
                   contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "12px" }}
                   formatter={(value: number, name: string) => {
                     if (name === "receita") return [formatCurrency(value), "Receita"];
+                    if (name === "vendas") return [value, "Unidades Vendidas"];
                     return [value, name];
                   }}
                 />
@@ -395,6 +396,7 @@ export default function Reports() {
             <div className="flex justify-around mt-3 px-2">
               {revenueBarData.map((d, i) => (
                 <div key={i} className="flex flex-col items-center gap-0.5">
+                  <span className="text-[10px] font-semibold text-accent">{d.vendas} un.</span>
                   {d.trend === "alta" ? (
                     <ArrowUp className="w-3.5 h-3.5 text-emerald-500" />
                   ) : d.trend === "baixa" ? (
