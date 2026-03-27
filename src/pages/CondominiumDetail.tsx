@@ -562,6 +562,11 @@ export default function CondominiumDetail() {
         {lightboxIdx !== null && (
           <PhotoLightbox photos={condo.infraPhotos} startIdx={lightboxIdx} onClose={() => setLightboxIdx(null)} />
         )}
+        {implantationLightbox !== null && (() => {
+          const imgMedia = condo.implantationMedia.filter(m => m.type === "image");
+          const photos = imgMedia.map(m => ({ url: m.url, label: m.label }));
+          return <PhotoLightbox photos={photos} startIdx={implantationLightbox} onClose={() => setImplantationLightbox(null)} />;
+        })()}
 
         {/* Unit Detail Modal */}
         {selectedUnit && (
