@@ -194,6 +194,32 @@ export default function Reports() {
       .sort((a, b) => b.vgv - a.vgv);
   }, [filtered]);
 
+  // Ranking by owner
+  const rankByOwner = useMemo(() => {
+    const map: Record<string, { count: number; vgv: number }> = {};
+    filtered.forEach(s => {
+      if (!map[s.owner]) map[s.owner] = { count: 0, vgv: 0 };
+      map[s.owner].count++;
+      map[s.owner].vgv += s.price;
+    });
+    return Object.entries(map)
+      .map(([name, data]) => ({ name, ...data }))
+      .sort((a, b) => b.vgv - a.vgv);
+  }, [filtered]);
+
+  // Ranking by neighborhood
+  const rankByNeighborhood = useMemo(() => {
+    const map: Record<string, { count: number; vgv: number }> = {};
+    filtered.forEach(s => {
+      if (!map[s.neighborhood]) map[s.neighborhood] = { count: 0, vgv: 0 };
+      map[s.neighborhood].count++;
+      map[s.neighborhood].vgv += s.price;
+    });
+    return Object.entries(map)
+      .map(([name, data]) => ({ name, ...data }))
+      .sort((a, b) => b.vgv - a.vgv);
+  }, [filtered]);
+
   // Bar chart data with month-over-month change indicators
   const revenueBarData = salesData.map((d, i) => {
     const prev = i > 0 ? salesData[i - 1].receita : d.receita;
