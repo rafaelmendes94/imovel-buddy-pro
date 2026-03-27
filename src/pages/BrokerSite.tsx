@@ -93,6 +93,7 @@ const allSiteProperties = [
     empreendimento: "Ed. Navegantes",
     unitNumber: "Ap 501",
     boxNumber: "Box 15",
+    exclusivityTerm: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&h=1100&fit=crop",
   },
   {
     id: "site-2",
