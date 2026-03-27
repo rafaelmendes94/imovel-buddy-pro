@@ -159,15 +159,15 @@ export function SharkAI({ properties, onSelectProperty }: SharkAIProps) {
                 </svg>
               </div>
               <div className="flex items-center gap-3 z-10">
-                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-2xl">
-                  🦈
+                <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center overflow-hidden border border-cyan-300/30">
+                  <img src={sharkIcon} alt="Shark" className="w-9 h-9 object-contain" />
                 </div>
                 <div>
                   <h3 className="text-white font-extrabold text-lg leading-tight">
-                    Shark AI
+                    SHARK AI
                   </h3>
                   <p className="text-cyan-200 text-[11px] font-medium">
-                    Busca inteligente de imóveis
+                    Imóveis & Mercado Imobiliário
                   </p>
                 </div>
               </div>
