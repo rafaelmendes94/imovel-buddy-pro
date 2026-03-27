@@ -560,6 +560,12 @@ export default function Site() {
   const [activeCategory, setActiveCategory] = useState<Category>("todos");
   const [searchTerm, setSearchTerm] = useState("");
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [filterCity, setFilterCity] = useState("");
+  const [filterBedrooms, setFilterBedrooms] = useState("");
+  const [filterPriceMin, setFilterPriceMin] = useState("");
+  const [filterPriceMax, setFilterPriceMax] = useState("");
+  const [filterType, setFilterType] = useState("");
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     setShowScrollTop(e.currentTarget.scrollTop > 400);
@@ -569,12 +575,29 @@ export default function Site() {
     document.getElementById("site-top")?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const filteredAll = available.filter(
-    (p) =>
+  const clearFilters = () => {
+    setFilterCity("");
+    setFilterBedrooms("");
+    setFilterPriceMin("");
+    setFilterPriceMax("");
+    setFilterType("");
+    setSearchTerm("");
+  };
+
+  const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterType;
+
+  const filteredAll = available.filter((p) => {
+    const matchSearch = !searchTerm ||
       p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.city.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+      p.city.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchCity = !filterCity || p.city === filterCity;
+    const matchBedrooms = !filterBedrooms || p.bedrooms >= parseInt(filterBedrooms);
+    const matchPriceMin = !filterPriceMin || p.price >= parseInt(filterPriceMin);
+    const matchPriceMax = !filterPriceMax || p.price <= parseInt(filterPriceMax);
+    const matchType = !filterType || p.type === filterType;
+    return matchSearch && matchCity && matchBedrooms && matchPriceMin && matchPriceMax && matchType;
+  });
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans" onScroll={handleScroll}>
