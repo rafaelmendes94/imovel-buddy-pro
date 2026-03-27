@@ -17,9 +17,11 @@ interface PropertyDetailModalProps {
   brokerInfo?: Record<string, { photo: string; whatsapp: string }>;
   onSelectSimilar?: (p: Property) => void;
   onUpdateProperty?: (updated: Property) => void;
+  onFilterByTitle?: (title: string) => void;
+  onFilterByCondition?: (cond: string) => void;
 }
 
-export function PropertyDetailModal({ property, onClose, allProperties, brokerInfo, onSelectSimilar, onUpdateProperty }: PropertyDetailModalProps) {
+export function PropertyDetailModal({ property, onClose, allProperties, brokerInfo, onSelectSimilar, onUpdateProperty, onFilterByTitle, onFilterByCondition }: PropertyDetailModalProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showVideo, setShowVideo] = useState(false);
   const [editingField, setEditingField] = useState<string | null>(null);
