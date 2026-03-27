@@ -372,6 +372,10 @@ export default function VideoMaker() {
                     <div><Label>Cliente *</Label><Input value={newJob.client} onChange={e => setNewJob(p => ({ ...p, client: e.target.value }))} placeholder="Ex: Construtora Alpha" /></div>
                     <div><Label>Endereço</Label><Input value={newJob.address} onChange={e => setNewJob(p => ({ ...p, address: e.target.value }))} /></div>
                     <div className="grid grid-cols-2 gap-3">
+                      <div><Label>Tipo de Material</Label><Select value={newJob.materialType} onValueChange={v => setNewJob(p => ({ ...p, materialType: v as MaterialType }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{materialTypes.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent></Select></div>
+                      <div><Label>Tipo de Cliente</Label><Select value={newJob.clientType} onValueChange={v => setNewJob(p => ({ ...p, clientType: v as ClientType }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{clientTypes.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent></Select></div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
                       <div><Label>Valor (R$)</Label><Input type="number" value={newJob.value} onChange={e => setNewJob(p => ({ ...p, value: e.target.value }))} /></div>
                       <div><Label>Prazo</Label><Input type="date" value={newJob.dueDate} onChange={e => setNewJob(p => ({ ...p, dueDate: e.target.value }))} /></div>
                     </div>
