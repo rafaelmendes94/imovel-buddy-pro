@@ -32,6 +32,8 @@ import {
   Trophy,
   Award,
   Medal,
+  FileCheck,
+  Eye,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -79,6 +81,7 @@ const siteProperties = [
     empreendimento: "Ed. Navegantes",
     unitNumber: "Ap 501",
     boxNumber: "Box 15",
+    exclusivityTerm: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&h=1100&fit=crop",
   },
   {
     id: "site-2",
@@ -131,6 +134,7 @@ const siteProperties = [
     empreendimento: "Cond. Praia das Dunas",
     quadra: "Q-02",
     lote: "L-11",
+    exclusivityTerm: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&h=1100&fit=crop",
   },
   {
     id: "site-4",
@@ -183,6 +187,7 @@ const siteProperties = [
     empreendimento: "Cond. Arroio Teixeira",
     quadra: "Q-03",
     lote: "L-09",
+    exclusivityTerm: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&h=1100&fit=crop",
   },
   {
     id: "site-6",
@@ -355,7 +360,7 @@ const categories: { key: Category; label: string; icon: typeof Home }[] = [
   { key: "lotes-bairro", label: "Lotes Bairro", icon: MapPin },
 ];
 
-function PropertyCard({ property, onSelect, hideStamp }: { property: typeof siteProperties[0]; onSelect?: (p: typeof siteProperties[0]) => void; hideStamp?: boolean }) {
+function PropertyCard({ property, onSelect, hideStamp, onViewTerm }: { property: typeof siteProperties[0]; onSelect?: (p: typeof siteProperties[0]) => void; hideStamp?: boolean; onViewTerm?: (url: string) => void }) {
   const [imgIndex, setImgIndex] = useState(0);
   const broker = brokerInfo[property.broker] || { photo: "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=100&h=100&fit=crop&crop=face", whatsapp: "5511999999999" };
   const whatsappMessage = encodeURIComponent(`Olá! Tenho interesse no imóvel: ${property.title} - ${formatCurrency(property.price)}`);
@@ -410,6 +415,15 @@ function PropertyCard({ property, onSelect, hideStamp }: { property: typeof site
         )}>
           {property.status}
         </span>
+        {property.exclusivityTerm && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onViewTerm?.(property.exclusivityTerm!); }}
+            className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/90 text-white backdrop-blur-sm hover:bg-amber-600 transition-colors z-20 shadow-md"
+            title="Ver termo de exclusividade"
+          >
+            <FileCheck className="w-3 h-3" /> Ex.Assinada
+          </button>
+        )}
         <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
           <p className="text-xl font-bold text-white drop-shadow-lg">{formatCurrency(property.price)}</p>
           <div className="flex gap-1.5">
@@ -742,6 +756,7 @@ export default function Site() {
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [priceSort, setPriceSort] = useState<"" | "asc" | "desc">("");
   const [showFullRanking, setShowFullRanking] = useState(false);
+  const [viewingTerm, setViewingTerm] = useState<string | null>(null);
 
   // Auto-rotate sold carousel (scroll 1 card at a time, 4 visible)
   const maxIndex = Math.max(0, soldProperties.length - 4);
@@ -1104,7 +1119,7 @@ export default function Site() {
             />
             {filteredAll.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {filteredAll.map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} />)}
+                {filteredAll.map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} />)}
               </div>
             ) : (
               <p className="text-center py-12 text-gray-400">Nenhum imóvel encontrado com os filtros selecionados.</p>
@@ -1127,7 +1142,7 @@ export default function Site() {
               >
                 {soldProperties.map((p) => (
                   <div key={p.id} className="min-w-[calc(25%-18px)] flex-shrink-0">
-                    <PropertyCard property={{ ...p, status: "Vendido" as const }} onSelect={setSelectedProperty} hideStamp />
+                    <PropertyCard property={{ ...p, status: "Vendido" as const }} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} hideStamp />
                   </div>
                 ))}
               </div>
@@ -1280,7 +1295,7 @@ export default function Site() {
           <section>
             <SectionHeader title="Imóveis em Destaque" subtitle="Seleção especial dos melhores imóveis" icon={Star} />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {sortByPrice(featured).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} />)}
+              {sortByPrice(featured).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} />)}
             </div>
           </section>
         )}
@@ -1290,7 +1305,7 @@ export default function Site() {
           <section>
             <SectionHeader title="Apartamentos" subtitle={`${apartments.length} apartamentos disponíveis`} icon={Building2} />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {sortByPrice(apartments).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} />)}
+              {sortByPrice(apartments).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} />)}
             </div>
           </section>
         )}
@@ -1310,7 +1325,7 @@ export default function Site() {
           <section>
             <SectionHeader title="Casas" subtitle={`${houses.length} casas disponíveis`} icon={Home} />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {sortByPrice(houses).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} />)}
+              {sortByPrice(houses).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} />)}
             </div>
           </section>
         )}
@@ -1320,7 +1335,7 @@ export default function Site() {
           <section>
             <SectionHeader title="Decorados" subtitle={`${decorated.length} imóveis com decoração inclusa`} icon={Paintbrush} />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {sortByPrice(decorated).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} />)}
+              {sortByPrice(decorated).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} />)}
             </div>
           </section>
         )}
@@ -1330,7 +1345,7 @@ export default function Site() {
           <section>
             <SectionHeader title="Vista para o Mar" subtitle={`${seaViewProperties.length} imóveis com vista mar`} icon={Waves} />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {sortByPrice(seaViewProperties).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} />)}
+              {sortByPrice(seaViewProperties).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} />)}
             </div>
           </section>
         )}
@@ -1341,7 +1356,7 @@ export default function Site() {
           <section>
             <SectionHeader title="Lotes em Condomínio" subtitle={`${condoLots.length} lotes em condomínios fechados`} icon={TreePine} />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {sortByPrice(condoLots).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} />)}
+              {sortByPrice(condoLots).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} />)}
             </div>
           </section>
         )}
@@ -1351,7 +1366,7 @@ export default function Site() {
           <section>
             <SectionHeader title="Lotes em Bairro" subtitle={`${neighborhoodLots.length} lotes em bairros abertos`} icon={MapPin} />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {sortByPrice(neighborhoodLots).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} />)}
+              {sortByPrice(neighborhoodLots).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} />)}
             </div>
           </section>
         )}
@@ -1439,6 +1454,40 @@ export default function Site() {
         brokerInfo={brokerInfo}
         onSelectSimilar={(p) => setSelectedProperty(p)}
       />
+
+      {/* Term Viewer Modal */}
+      {viewingTerm && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setViewingTerm(null)}>
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-4 border-b border-gray-100">
+              <div className="flex items-center gap-2">
+                <FileCheck className="w-5 h-5 text-amber-500" />
+                <h3 className="text-base font-bold text-gray-900">Termo de Exclusividade</h3>
+              </div>
+              <div className="flex items-center gap-2">
+                <a
+                  href={viewingTerm}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
+                >
+                  <Eye className="w-3.5 h-3.5" /> Abrir original
+                </a>
+                <button onClick={() => setViewingTerm(null)} className="p-1 rounded-lg hover:bg-gray-100">
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+            </div>
+            <div className="overflow-auto max-h-[calc(90vh-60px)] p-4 bg-gray-50 flex items-center justify-center">
+              {viewingTerm.toLowerCase().endsWith(".pdf") ? (
+                <iframe src={viewingTerm} className="w-full h-[75vh] rounded-lg border border-gray-200" title="Termo de Exclusividade" />
+              ) : (
+                <img src={viewingTerm} alt="Termo de Exclusividade" className="max-w-full max-h-[75vh] object-contain rounded-lg shadow-md" />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
