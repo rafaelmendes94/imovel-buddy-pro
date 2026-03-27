@@ -570,6 +570,8 @@ export default function Site() {
   const [filterPriceMin, setFilterPriceMin] = useState("");
   const [filterPriceMax, setFilterPriceMax] = useState("");
   const [filterType, setFilterType] = useState("");
+  const [filterPermuta, setFilterPermuta] = useState(false);
+  const [filterPagamento, setFilterPagamento] = useState(false);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     setShowScrollTop(e.currentTarget.scrollTop > 400);
