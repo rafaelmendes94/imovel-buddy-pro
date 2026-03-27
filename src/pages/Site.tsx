@@ -224,12 +224,16 @@ const featured = available.slice(0, 3);
 const apartments = available.filter((p) => p.type === "Apartamento");
 const houses = available.filter((p) => p.type === "Casa");
 const lots = available.filter((p) => p.type === "Terreno");
+const decorated = available.filter((p) => p.decorated);
+const seaViewProperties = available.filter((p) => p.seaView);
+const exchangeProperties = available.filter((p) => p.acceptsExchange);
+const withPaymentConditions = available.filter((p) => p.paymentConditions);
 
 // Separate lots into condo lots vs neighborhood lots
 const condoLots = lots.filter((l) => l.title.toLowerCase().includes("condomínio") || l.title.toLowerCase().includes("reserva"));
 const neighborhoodLots = lots.filter((l) => !l.title.toLowerCase().includes("condomínio") && !l.title.toLowerCase().includes("reserva"));
 
-type Category = "todos" | "destaque" | "apartamentos" | "condominios" | "casas" | "lotes-cond" | "lotes-bairro";
+type Category = "todos" | "destaque" | "apartamentos" | "condominios" | "casas" | "lotes-cond" | "lotes-bairro" | "decorados" | "vista-mar" | "permuta" | "pagamento";
 
 const categories: { key: Category; label: string; icon: typeof Home }[] = [
   { key: "todos", label: "Todos", icon: Search },
@@ -237,8 +241,12 @@ const categories: { key: Category; label: string; icon: typeof Home }[] = [
   { key: "apartamentos", label: "Apartamentos", icon: Building2 },
   { key: "condominios", label: "Condomínios", icon: Fence },
   { key: "casas", label: "Casas", icon: Home },
+  { key: "decorados", label: "Decorados", icon: Paintbrush },
+  { key: "vista-mar", label: "Vista Mar", icon: Waves },
   { key: "lotes-cond", label: "Lotes Condomínio", icon: TreePine },
   { key: "lotes-bairro", label: "Lotes Bairro", icon: MapPin },
+  { key: "permuta", label: "Permuta", icon: Repeat },
+  { key: "pagamento", label: "Condições", icon: CreditCard },
 ];
 
 function PropertyCard({ property }: { property: typeof siteProperties[0] }) {
