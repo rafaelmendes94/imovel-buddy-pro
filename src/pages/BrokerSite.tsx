@@ -503,7 +503,15 @@ export default function BrokerSite() {
                   <MapPin className="w-5 h-5 text-amber-400" />
                   <div>
                     <p className="text-white font-extrabold text-lg leading-none">{formatCurrency(totalValue)}</p>
-                    <p className="text-gray-400 text-[10px] uppercase tracking-wider">Valor em carteira</p>
+                    <p className="text-gray-400 text-[10px] uppercase tracking-wider">VGV em carteira</p>
+                  </div>
+                </div>
+                {/* Total Sales - next to VGV carteira */}
+                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-2.5 border border-white/20">
+                  <DollarSign className="w-5 h-5 text-emerald-400" />
+                  <div>
+                    <p className="text-white font-extrabold text-lg leading-none">{formatCurrency(info.totalSoldValue)}</p>
+                    <p className="text-gray-400 text-[10px] uppercase tracking-wider">VGV vendido ({info.totalSold})</p>
                   </div>
                 </div>
                 {/* Star Rating */}
@@ -527,14 +535,6 @@ export default function BrokerSite() {
                     <p className="text-gray-400 text-[10px] uppercase tracking-wider">{info.totalRatings} avaliações</p>
                   </div>
                 </button>
-                {/* Total Sales */}
-                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-2.5 border border-white/20">
-                  <DollarSign className="w-5 h-5 text-emerald-400" />
-                  <div>
-                    <p className="text-white font-extrabold text-lg leading-none">{formatCurrency(info.totalSoldValue)}</p>
-                    <p className="text-gray-400 text-[10px] uppercase tracking-wider">{info.totalSold} vendas</p>
-                  </div>
-                </div>
                 {/* Avg Days */}
                 <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-2.5 border border-white/20">
                   <Clock className="w-5 h-5 text-blue-400" />
