@@ -1175,12 +1175,16 @@ export default function Site() {
                   { name: "Design & Interiores", logo: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=200&h=100&fit=crop" },
                   { name: "Solar Energia", logo: "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=200&h=100&fit=crop" },
                 ]).map((partner, i) => (
-                  <div key={`${partner.name}-${i}`} className="flex-shrink-0 w-40 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+                  <Link
+                    key={`${partner.name}-${i}`}
+                    to={`/parceiro/${partner.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`}
+                    className="flex-shrink-0 w-40 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden hover:border-amber-300"
+                  >
                     <div className="h-20 overflow-hidden">
                       <img src={partner.logo} alt={partner.name} className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity" />
                     </div>
                     <p className="text-[11px] font-bold text-gray-700 text-center py-2 px-1 truncate">{partner.name}</p>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>
