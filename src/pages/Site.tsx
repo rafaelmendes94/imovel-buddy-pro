@@ -811,31 +811,25 @@ export default function Site() {
                   <option value="2000000">R$ 2 milhões</option>
                 </select>
               </div>
-              <div className="flex items-end">
-                <button
-                  onClick={() => { setFilterPermuta(!filterPermuta); setActiveCategory("todos"); }}
-                  className={cn(
-                    "w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-bold transition-colors",
-                    filterPermuta
-                      ? "bg-orange-500 text-white"
-                      : "bg-gray-100 text-gray-600 hover:bg-orange-50 hover:text-orange-600 border border-gray-200"
-                  )}
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">Condições</label>
+                <select
+                  value={filterCondition}
+                  onChange={(e) => setFilterCondition(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-400"
                 >
-                  <Repeat className="w-3.5 h-3.5" /> Permuta
-                </button>
-              </div>
-              <div className="flex items-end">
-                <button
-                  onClick={() => { setFilterPagamento(!filterPagamento); setActiveCategory("todos"); }}
-                  className={cn(
-                    "w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-bold transition-colors",
-                    filterPagamento
-                      ? "bg-emerald-500 text-white"
-                      : "bg-gray-100 text-gray-600 hover:bg-emerald-50 hover:text-emerald-600 border border-gray-200"
-                  )}
-                >
-                  <CreditCard className="w-3.5 h-3.5" /> Pagamento
-                </button>
+                  <option value="">Todas</option>
+                  <option value="12x">12x</option>
+                  <option value="24x">24x</option>
+                  <option value="36x">36x</option>
+                  <option value="48x">48x</option>
+                  <option value="60x">60x</option>
+                  <option value="72x">72x</option>
+                  <option value="84x">84x</option>
+                  <option value="100x">100x</option>
+                  <option value="Permuta">Permuta</option>
+                  <option value="Carro">Carro</option>
+                </select>
               </div>
               <div className="flex items-end gap-2">
                 <button
