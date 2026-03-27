@@ -21,16 +21,15 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
+  { icon: FileText, label: "Relatórios", path: "/relatorios" },
   { icon: Globe, label: "Site", path: "/site" },
   { icon: Building2, label: "Imóveis", path: "/imoveis" },
   { icon: Building, label: "Edifícios", path: "/edificios" },
   { icon: Fence, label: "Condomínios", path: "/condominios" },
-  { icon: MapPinned, label: "Mapas", path: "/mapas" },
   { icon: Camera, label: "Fotos da Cidade", path: "/fotos-cidade" },
-  { icon: Users, label: "Corretores", path: "/corretores" },
   { icon: ClipboardCheck, label: "Avaliações", path: "/avaliacoes" },
   { icon: Wallet, label: "Financeiro", path: "/financeiro" },
-  { icon: FileText, label: "Relatórios", path: "/relatorios" },
+  { icon: Users, label: "Corretores", path: "/corretores" },
   { icon: Settings, label: "Configurações", path: "/configuracoes" },
 ];
 
