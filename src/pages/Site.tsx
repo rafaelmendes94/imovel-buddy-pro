@@ -855,7 +855,7 @@ export default function Site() {
         )}
 
         {/* Apartamentos */}
-        {!searchTerm && (activeCategory === "todos" || activeCategory === "apartamentos") && apartments.length > 0 && (
+        {!searchTerm && !hasActiveFilters && (activeCategory === "todos" || activeCategory === "apartamentos") && apartments.length > 0 && (
           <section>
             <SectionHeader title="Apartamentos" subtitle={`${apartments.length} apartamentos disponíveis`} icon={Building2} />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -865,7 +865,7 @@ export default function Site() {
         )}
 
         {/* Condomínios */}
-        {!searchTerm && (activeCategory === "todos" || activeCategory === "condominios") && (
+        {!searchTerm && !hasActiveFilters && (activeCategory === "todos" || activeCategory === "condominios") && (
           <section>
             <SectionHeader title="Condomínios" subtitle={`${condoProperties.length} condomínios com unidades disponíveis`} icon={Fence} />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -875,7 +875,7 @@ export default function Site() {
         )}
 
         {/* Casas Bairro */}
-        {!searchTerm && (activeCategory === "todos" || activeCategory === "casas") && houses.length > 0 && (
+        {!searchTerm && !hasActiveFilters && (activeCategory === "todos" || activeCategory === "casas") && houses.length > 0 && (
           <section>
             <SectionHeader title="Casas" subtitle={`${houses.length} casas disponíveis`} icon={Home} />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -885,7 +885,7 @@ export default function Site() {
         )}
 
         {/* Decorados */}
-        {!searchTerm && (activeCategory === "todos" || activeCategory === "decorados") && decorated.length > 0 && (
+        {!searchTerm && !hasActiveFilters && (activeCategory === "todos" || activeCategory === "decorados") && decorated.length > 0 && (
           <section>
             <SectionHeader title="Decorados" subtitle={`${decorated.length} imóveis com decoração inclusa`} icon={Paintbrush} />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -895,7 +895,7 @@ export default function Site() {
         )}
 
         {/* Vista para o Mar */}
-        {!searchTerm && (activeCategory === "todos" || activeCategory === "vista-mar") && seaViewProperties.length > 0 && (
+        {!searchTerm && !hasActiveFilters && (activeCategory === "todos" || activeCategory === "vista-mar") && seaViewProperties.length > 0 && (
           <section>
             <SectionHeader title="Vista para o Mar" subtitle={`${seaViewProperties.length} imóveis com vista mar`} icon={Waves} />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -905,7 +905,7 @@ export default function Site() {
         )}
 
         {/* Permuta */}
-        {!searchTerm && activeCategory === "permuta" && exchangeProperties.length > 0 && (
+        {!searchTerm && !hasActiveFilters && activeCategory === "permuta" && exchangeProperties.length > 0 && (
           <section>
             <SectionHeader title="Aceita Permuta" subtitle={`${exchangeProperties.length} imóveis que aceitam permuta`} icon={Repeat} />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -915,7 +915,7 @@ export default function Site() {
         )}
 
         {/* Condições de Pagamento */}
-        {!searchTerm && activeCategory === "pagamento" && withPaymentConditions.length > 0 && (
+        {!searchTerm && !hasActiveFilters && activeCategory === "pagamento" && withPaymentConditions.length > 0 && (
           <section>
             <SectionHeader title="Condições de Pagamento" subtitle={`${withPaymentConditions.length} imóveis com condições especiais`} icon={CreditCard} />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -925,7 +925,7 @@ export default function Site() {
         )}
 
         {/* Lotes Condomínio */}
-        {!searchTerm && (activeCategory === "todos" || activeCategory === "lotes-cond") && condoLots.length > 0 && (
+        {!searchTerm && !hasActiveFilters && (activeCategory === "todos" || activeCategory === "lotes-cond") && condoLots.length > 0 && (
           <section>
             <SectionHeader title="Lotes em Condomínio" subtitle={`${condoLots.length} lotes em condomínios fechados`} icon={TreePine} />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -935,7 +935,7 @@ export default function Site() {
         )}
 
         {/* Lotes Bairro */}
-        {!searchTerm && (activeCategory === "todos" || activeCategory === "lotes-bairro") && neighborhoodLots.length > 0 && (
+        {!searchTerm && !hasActiveFilters && (activeCategory === "todos" || activeCategory === "lotes-bairro") && neighborhoodLots.length > 0 && (
           <section>
             <SectionHeader title="Lotes em Bairro" subtitle={`${neighborhoodLots.length} lotes em bairros abertos`} icon={MapPin} />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -944,7 +944,7 @@ export default function Site() {
           </section>
         )}
         {/* Mapa Interativo */}
-        {!searchTerm && (activeCategory === "todos") && (
+        {!searchTerm && !hasActiveFilters && (activeCategory === "todos") && (
           <section>
             <SectionHeader title="Localização dos Imóveis" subtitle="Veja todos os imóveis no mapa" icon={MapPin} />
             <SiteMap properties={available} />
