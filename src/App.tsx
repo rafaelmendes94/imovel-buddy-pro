@@ -19,6 +19,7 @@ import Site from "./pages/Site";
 import BrokerSite from "./pages/BrokerSite";
 import EmpreendimentoDetail from "./pages/EmpreendimentoDetail";
 import AllProperties from "./pages/AllProperties";
+import PartnerDetail from "./pages/PartnerDetail";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +45,7 @@ const App = () => (
           <Route path="/corretor/:slug" element={<BrokerSite />} />
           <Route path="/empreendimento/:slug" element={<EmpreendimentoDetail />} />
           <Route path="/todos-imoveis" element={<AllProperties />} />
+          <Route path="/parceiro/:slug" element={<PartnerDetail />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
