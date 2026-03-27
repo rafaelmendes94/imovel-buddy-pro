@@ -1229,18 +1229,16 @@ export default function Site() {
                   );
                 })}
               </div>
-              {ranking.length > 3 && (
-                <div className="flex justify-center mt-4">
-                  <button
-                    onClick={() => setShowFullRanking(!showFullRanking)}
-                    className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gray-900 text-white text-sm font-bold hover:bg-gray-800 transition-colors shadow-md hover:shadow-lg"
-                  >
-                    <Trophy className="w-4 h-4 text-amber-400" />
-                    {showFullRanking ? "Ver menos" : "Ver Ranking Completo"}
-                    <ChevronDown className={cn("w-4 h-4 transition-transform", showFullRanking && "rotate-180")} />
-                  </button>
-                </div>
-              )}
+              <div className="flex justify-center mt-4">
+                <Link
+                  to="/ranking"
+                  className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gray-900 text-white text-sm font-bold hover:bg-gray-800 transition-colors shadow-md hover:shadow-lg"
+                >
+                  <Trophy className="w-4 h-4 text-amber-400" />
+                  Ver Ranking Completo
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
+              </div>
             </section>
           );
         })()}
