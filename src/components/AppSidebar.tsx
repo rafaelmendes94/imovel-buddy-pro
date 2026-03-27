@@ -18,6 +18,7 @@ import {
   Wallet,
   Table2,
   FileSignature,
+  Video,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -33,6 +34,7 @@ const navItems = [
   { icon: Wallet, label: "Financeiro", path: "/financeiro" },
   { icon: Table2, label: "Tabelas", path: "/tabelas" },
   { icon: FileSignature, label: "Contratos", path: "/contratos" },
+  { icon: Video, label: "Video Maker", path: "/videomaker" },
   { icon: Users, label: "Corretores", path: "/corretores" },
   { icon: Settings, label: "Configurações", path: "/configuracoes" },
 ];
