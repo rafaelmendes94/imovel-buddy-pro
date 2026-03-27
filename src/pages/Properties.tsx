@@ -745,6 +745,22 @@ function PropertyRow({
             onClick={(e) => { e.stopPropagation(); onFilterByTitle?.(property.title); }}
             title="Ver títulos semelhantes"
           >{property.title}</h3>
+          {(property.empreendimento || property.unitNumber || property.boxNumber || property.quadra || property.lote) && (
+            <div className="flex flex-wrap items-center gap-1 mt-0.5" onClick={(e) => e.stopPropagation()}>
+              {property.empreendimento && (
+                <Link
+                  to={`/empreendimento/${property.empreendimento.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`}
+                  className="text-[10px] font-semibold text-accent bg-accent/10 px-1.5 py-0.5 rounded hover:bg-accent/20 transition-colors"
+                  title="Abrir empreendimento"
+                >
+                  {property.empreendimento}
+                </Link>
+              )}
+              {[property.unitNumber, property.boxNumber, property.quadra, property.lote].filter(Boolean).map((part) => (
+                <span key={part} className="text-[10px] font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">{part}</span>
+              ))}
+            </div>
+          )}
           <button
             className="text-xs text-muted-foreground mt-0.5 hover:text-primary transition-colors flex items-center gap-1"
             onClick={(e) => {
@@ -762,7 +778,19 @@ function PropertyRow({
             <span>{property.type}</span>
             {property.seaView && <span className="text-blue-400 font-semibold">🌊 Mar</span>}
             {property.decorated && <span className="text-purple-400 font-semibold">🎨 Dec.</span>}
+            {property.acceptsExchange && <span className="text-emerald-400 font-semibold">🔄 Permuta</span>}
           </div>
+          {property.paymentConditions && property.paymentConditions.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-1" onClick={(e) => e.stopPropagation()}>
+              {property.paymentConditions.map((cond) => (
+                <button key={cond}
+                  className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors cursor-pointer"
+                  onClick={() => onFilterByCondition?.(cond)}
+                  title={`Ver imóveis com condição "${cond}"`}
+                >{cond}</button>
+              ))}
+            </div>
+          )}
         </div>
         <StatusBar currentStatus={property.status} onChangeStatus={handleStatusChange} />
       </div>
