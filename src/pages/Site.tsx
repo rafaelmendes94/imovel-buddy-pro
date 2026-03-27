@@ -602,8 +602,7 @@ export default function Site() {
   const [filterPriceMin, setFilterPriceMin] = useState("");
   const [filterPriceMax, setFilterPriceMax] = useState("");
   const [filterType, setFilterType] = useState("");
-  const [filterPermuta, setFilterPermuta] = useState(false);
-  const [filterPagamento, setFilterPagamento] = useState(false);
+  const [filterCondition, setFilterCondition] = useState("");
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     setShowScrollTop(e.currentTarget.scrollTop > 400);
@@ -619,12 +618,11 @@ export default function Site() {
     setFilterPriceMin("");
     setFilterPriceMax("");
     setFilterType("");
-    setFilterPermuta(false);
-    setFilterPagamento(false);
+    setFilterCondition("");
     setSearchTerm("");
   };
 
-  const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterType || filterPermuta || filterPagamento;
+  const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterType || filterCondition;
 
   const filteredAll = available.filter((p) => {
     const matchSearch = !searchTerm ||
@@ -636,9 +634,10 @@ export default function Site() {
     const matchPriceMin = !filterPriceMin || p.price >= parseInt(filterPriceMin);
     const matchPriceMax = !filterPriceMax || p.price <= parseInt(filterPriceMax);
     const matchType = !filterType || p.type === filterType;
-    const matchPermuta = !filterPermuta || p.acceptsExchange;
-    const matchPagamento = !filterPagamento || !!p.paymentConditions;
-    return matchSearch && matchCity && matchBedrooms && matchPriceMin && matchPriceMax && matchType && matchPermuta && matchPagamento;
+    const matchCondition = !filterCondition || (
+      Array.isArray(p.paymentConditions) && p.paymentConditions.some(c => c.toLowerCase().includes(filterCondition.toLowerCase()))
+    );
+    return matchSearch && matchCity && matchBedrooms && matchPriceMin && matchPriceMax && matchType && matchCondition;
   });
 
   return (
