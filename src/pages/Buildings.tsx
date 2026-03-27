@@ -13,6 +13,7 @@ import {
   Trash2,
   Camera,
   Home,
+  Map,
 } from "lucide-react";
 import { InfraMediaModal } from "@/components/InfraMediaModal";
 import { cn } from "@/lib/utils";
