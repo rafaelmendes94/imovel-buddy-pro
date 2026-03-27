@@ -388,6 +388,8 @@ export default function Properties() {
                 onViewTerm={setViewingTerm}
                 isFavorited={favoriteIds.includes(property.id)}
                 onToggleFavorite={toggleFavorite}
+                onFilterByTitle={(title) => { setSearch(title.split(" ").slice(0, 2).join(" ")); setActiveCategory("todos"); }}
+                onFilterByCondition={(cond) => { setFilterCondition(cond); setShowFilters(true); setActiveCategory("todos"); }}
               />
             ))}
           </div>
@@ -401,6 +403,8 @@ export default function Properties() {
                 onSelect={setSelectedProperty}
                 isFavorited={favoriteIds.includes(property.id)}
                 onToggleFavorite={toggleFavorite}
+                onFilterByTitle={(title) => { setSearch(title.split(" ").slice(0, 2).join(" ")); setActiveCategory("todos"); }}
+                onFilterByCondition={(cond) => { setFilterCondition(cond); setShowFilters(true); setActiveCategory("todos"); }}
               />
             ))}
           </div>
