@@ -108,6 +108,23 @@ export default function Properties() {
   const [filterType, setFilterType] = useState<string>("Todos");
   const [view, setView] = useState<"grid" | "list" | "map">("grid");
   const [propertyList, setPropertyList] = useState<Property[]>(initialProperties);
+  const [showXmlMenu, setShowXmlMenu] = useState(false);
+  const xmlMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (xmlMenuRef.current && !xmlMenuRef.current.contains(e.target as Node)) setShowXmlMenu(false);
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleExportXml = (portal: XmlPortal) => {
+    const available = propertyList.filter((p) => p.status === "Disponível");
+    const xml = generateXml(available.length > 0 ? available : propertyList, portal);
+    downloadXml(xml, portal);
+    setShowXmlMenu(false);
+  };
 
   const handleStatusChange = (propertyId: string, newStatus: Property["status"]) => {
     setPropertyList((prev) =>
