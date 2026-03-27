@@ -55,6 +55,47 @@ export type Database = {
           },
         ]
       }
+      subscriber_brokers: {
+        Row: {
+          created_at: string
+          creci: string | null
+          email: string | null
+          id: string
+          name: string
+          phone: string | null
+          status: string
+          subscriber_id: string
+        }
+        Insert: {
+          created_at?: string
+          creci?: string | null
+          email?: string | null
+          id?: string
+          name: string
+          phone?: string | null
+          status?: string
+          subscriber_id: string
+        }
+        Update: {
+          created_at?: string
+          creci?: string | null
+          email?: string | null
+          id?: string
+          name?: string
+          phone?: string | null
+          status?: string
+          subscriber_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriber_brokers_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: false
+            referencedRelation: "subscribers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscribers: {
         Row: {
           created_at: string
