@@ -112,23 +112,23 @@ const eventTypeConfig: Record<AgendaEvent["type"], { label: string; color: strin
 
 // Initial mock data
 const initialJobs: VideoJob[] = [
-  { id: "1", property: "Cobertura Duplex - Ed. Marina", client: "Construtora Alpha", address: "Av. Beira Mar, 1200", value: 1500, status: "gravar", dueDate: "2026-04-02", notes: "Drone + interna", createdAt: "2026-03-25" },
-  { id: "2", property: "Apto 3Q - Cond. Jardins", client: "Imobiliária Beta", address: "Rua das Flores, 300", value: 800, status: "gravado", dueDate: "2026-03-30", notes: "Já gravado, aguardando edição", createdAt: "2026-03-20" },
-  { id: "3", property: "Sala Comercial - Tower One", client: "JB Imóveis", address: "Av. Central, 500", value: 600, status: "editando", dueDate: "2026-03-28", notes: "Edição com tour virtual", createdAt: "2026-03-18" },
-  { id: "4", property: "Casa 4Q - Cond. Alphaville", client: "RE/MAX", address: "Alameda dos Ipês, 45", value: 2000, status: "entregue", dueDate: "2026-03-26", notes: "Entregue via Google Drive", createdAt: "2026-03-10" },
-  { id: "5", property: "Loft Studio - Ed. Art Déco", client: "Exclusiva Imóveis", address: "Rua Augusta, 890", value: 500, status: "enviado", dueDate: "2026-03-22", notes: "", createdAt: "2026-03-05" },
+  { id: "1", property: "Cobertura Duplex - Ed. Marina", client: "Construtora Alpha", address: "Av. Beira Mar, 1200", value: 1500, materialType: "vr", clientType: "construtor", status: "gravar", dueDate: "2026-04-02", notes: "Drone + interna", createdAt: "2026-03-25" },
+  { id: "2", property: "Apto 3Q - Cond. Jardins", client: "Imobiliária Beta", address: "Rua das Flores, 300", value: 800, materialType: "vc", clientType: "assinante", status: "gravado", dueDate: "2026-03-30", notes: "Já gravado, aguardando edição", createdAt: "2026-03-20" },
+  { id: "3", property: "Sala Comercial - Tower One", client: "JB Imóveis", address: "Av. Central, 500", value: 600, materialType: "vr360", clientType: "mv_broker", status: "editando", dueDate: "2026-03-28", notes: "Edição com tour virtual", createdAt: "2026-03-18" },
+  { id: "4", property: "Casa 4Q - Cond. Alphaville", client: "RE/MAX", address: "Alameda dos Ipês, 45", value: 2000, materialType: "vc360", clientType: "particular", status: "entregue", dueDate: "2026-03-26", notes: "Entregue via Google Drive", createdAt: "2026-03-10" },
+  { id: "5", property: "Loft Studio - Ed. Art Déco", client: "Exclusiva Imóveis", address: "Rua Augusta, 890", value: 500, materialType: "vcdn", clientType: "assinante", status: "enviado", dueDate: "2026-03-22", notes: "", createdAt: "2026-03-05" },
 ];
 
 const initialFinance: FinanceEntry[] = [
-  { id: "1", property: "Cobertura Duplex - Ed. Marina", client: "Construtora Alpha", clientValue: 1500, editorCost: 400, status: "pendente", dueDate: "2026-04-05" },
-  { id: "2", property: "Apto 3Q - Cond. Jardins", client: "Imobiliária Beta", clientValue: 800, editorCost: 250, status: "pendente", dueDate: "2026-04-01" },
-  { id: "3", property: "Sala Comercial - Tower One", client: "JB Imóveis", clientValue: 600, editorCost: 200, status: "pago", dueDate: "2026-03-28", paidAt: "2026-03-27" },
-  { id: "4", property: "Casa 4Q - Cond. Alphaville", client: "RE/MAX", clientValue: 2000, editorCost: 600, status: "pago", dueDate: "2026-03-20", paidAt: "2026-03-19" },
-  { id: "5", property: "Loft Studio - Ed. Art Déco", client: "Exclusiva Imóveis", clientValue: 500, editorCost: 150, status: "pago", dueDate: "2026-03-15", paidAt: "2026-03-14" },
-  { id: "6", property: "Penthouse Ed. Atlântico", client: "Premium Imóveis", clientValue: 2500, editorCost: 700, status: "pago", dueDate: "2026-02-20", paidAt: "2026-02-19" },
-  { id: "7", property: "Casa Praia - Cond. Royal", client: "Royal Imóveis", clientValue: 1800, editorCost: 500, status: "pago", dueDate: "2026-02-10", paidAt: "2026-02-09" },
-  { id: "8", property: "Apt 2Q - Ed. Solar", client: "Solar Imóveis", clientValue: 700, editorCost: 200, status: "pago", dueDate: "2026-01-25", paidAt: "2026-01-24" },
-  { id: "9", property: "Sala Comercial Centro", client: "JB Imóveis", clientValue: 550, editorCost: 180, status: "pago", dueDate: "2026-01-15", paidAt: "2026-01-14" },
+  { id: "1", property: "Cobertura Duplex - Ed. Marina", client: "Construtora Alpha", materialType: "vr", clientType: "construtor", clientValue: 1500, editorCost: 400, status: "pendente", dueDate: "2026-04-05" },
+  { id: "2", property: "Apto 3Q - Cond. Jardins", client: "Imobiliária Beta", materialType: "vc", clientType: "assinante", clientValue: 800, editorCost: 250, status: "pendente", dueDate: "2026-04-01" },
+  { id: "3", property: "Sala Comercial - Tower One", client: "JB Imóveis", materialType: "vr360", clientType: "mv_broker", clientValue: 600, editorCost: 200, status: "pago", dueDate: "2026-03-28", paidAt: "2026-03-27" },
+  { id: "4", property: "Casa 4Q - Cond. Alphaville", client: "RE/MAX", materialType: "vc360", clientType: "particular", clientValue: 2000, editorCost: 600, status: "pago", dueDate: "2026-03-20", paidAt: "2026-03-19" },
+  { id: "5", property: "Loft Studio - Ed. Art Déco", client: "Exclusiva Imóveis", materialType: "vcdn", clientType: "assinante", clientValue: 500, editorCost: 150, status: "pago", dueDate: "2026-03-15", paidAt: "2026-03-14" },
+  { id: "6", property: "Penthouse Ed. Atlântico", client: "Premium Imóveis", materialType: "vr", clientType: "construtor", clientValue: 2500, editorCost: 700, status: "pago", dueDate: "2026-02-20", paidAt: "2026-02-19" },
+  { id: "7", property: "Casa Praia - Cond. Royal", client: "Royal Imóveis", materialType: "vc", clientType: "particular", clientValue: 1800, editorCost: 500, status: "pago", dueDate: "2026-02-10", paidAt: "2026-02-09" },
+  { id: "8", property: "Apt 2Q - Ed. Solar", client: "Solar Imóveis", materialType: "vr360", clientType: "assinante", clientValue: 700, editorCost: 200, status: "pago", dueDate: "2026-01-25", paidAt: "2026-01-24" },
+  { id: "9", property: "Sala Comercial Centro", client: "JB Imóveis", materialType: "vcdn", clientType: "mv_broker", clientValue: 550, editorCost: 180, status: "pago", dueDate: "2026-01-15", paidAt: "2026-01-14" },
 ];
 
 const initialEvents: AgendaEvent[] = [
@@ -161,9 +161,9 @@ export default function VideoMaker() {
   const [selectedAgendaDate, setSelectedAgendaDate] = useState<Date | null>(new Date());
 
   // Forms
-  const [newJob, setNewJob] = useState({ property: "", client: "", address: "", value: "", dueDate: "", notes: "", status: "gravar" as VideoJob["status"] });
+  const [newJob, setNewJob] = useState({ property: "", client: "", address: "", value: "", dueDate: "", notes: "", status: "gravar" as VideoJob["status"], materialType: "vr" as MaterialType, clientType: "assinante" as ClientType });
   const [newEvent, setNewEvent] = useState({ title: "", date: "", time: "", endTime: "", type: "gravacao" as AgendaEvent["type"], notes: "", location: "" });
-  const [newFinance, setNewFinance] = useState({ property: "", client: "", clientValue: "", editorCost: "", dueDate: "", status: "pendente" as FinanceEntry["status"] });
+  const [newFinance, setNewFinance] = useState({ property: "", client: "", clientValue: "", editorCost: "", dueDate: "", status: "pendente" as FinanceEntry["status"], materialType: "vr" as MaterialType, clientType: "assinante" as ClientType });
 
   // ====== FINANCIAL METRICS ======
   const paidEntries = finance.filter(f => f.status === "pago");
