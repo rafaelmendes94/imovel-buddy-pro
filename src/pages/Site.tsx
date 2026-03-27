@@ -845,7 +845,7 @@ export default function Site() {
         )}
 
         {/* Destaques */}
-        {!searchTerm && (activeCategory === "todos" || activeCategory === "destaque") && (
+        {!searchTerm && !hasActiveFilters && (activeCategory === "todos" || activeCategory === "destaque") && (
           <section>
             <SectionHeader title="Imóveis em Destaque" subtitle="Seleção especial dos melhores imóveis" icon={Star} />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
