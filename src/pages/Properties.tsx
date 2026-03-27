@@ -501,7 +501,111 @@ export default function Properties() {
           </div>
         </div>
       )}
+
+      {/* Edit Property Dialog */}
+      <Dialog open={!!editingProperty} onOpenChange={() => setEditingProperty(null)}>
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Pencil className="w-4 h-4" /> Editar Imóvel</DialogTitle>
+          </DialogHeader>
+          {editingProperty && (
+            <EditPropertyForm property={editingProperty} onSave={handleSaveEdit} onCancel={() => setEditingProperty(null)} />
+          )}
+        </DialogContent>
+      </Dialog>
     </AppLayout>
+  );
+}
+
+// ---- Edit Form ----
+function EditPropertyForm({ property, onSave, onCancel }: { property: Property; onSave: (p: Property) => void; onCancel: () => void }) {
+  const [form, setForm] = useState({ ...property });
+  const up = (key: string, value: any) => setForm((prev) => ({ ...prev, [key]: value }));
+
+  return (
+    <div className="space-y-3 mt-2">
+      <div className="grid grid-cols-2 gap-3">
+        <div className="col-span-2">
+          <label className="text-xs font-medium text-muted-foreground">Título</label>
+          <Input value={form.title} onChange={(e) => up("title", e.target.value)} />
+        </div>
+        <div>
+          <label className="text-xs font-medium text-muted-foreground">Preço (R$)</label>
+          <Input type="number" value={form.price} onChange={(e) => up("price", Number(e.target.value))} />
+        </div>
+        <div>
+          <label className="text-xs font-medium text-muted-foreground">Área (m²)</label>
+          <Input type="number" value={form.area} onChange={(e) => up("area", Number(e.target.value))} />
+        </div>
+        <div>
+          <label className="text-xs font-medium text-muted-foreground">Quartos</label>
+          <Input type="number" value={form.bedrooms} onChange={(e) => up("bedrooms", Number(e.target.value))} />
+        </div>
+        <div>
+          <label className="text-xs font-medium text-muted-foreground">Banheiros</label>
+          <Input type="number" value={form.bathrooms} onChange={(e) => up("bathrooms", Number(e.target.value))} />
+        </div>
+        <div>
+          <label className="text-xs font-medium text-muted-foreground">Vagas</label>
+          <Input type="number" value={form.parking} onChange={(e) => up("parking", Number(e.target.value))} />
+        </div>
+        <div>
+          <label className="text-xs font-medium text-muted-foreground">Cidade</label>
+          <Input value={form.city} onChange={(e) => up("city", e.target.value)} />
+        </div>
+        <div className="col-span-2">
+          <label className="text-xs font-medium text-muted-foreground">Endereço</label>
+          <Input value={form.address} onChange={(e) => up("address", e.target.value)} />
+        </div>
+        <div>
+          <label className="text-xs font-medium text-muted-foreground">Empreendimento</label>
+          <Input value={form.empreendimento || ""} onChange={(e) => up("empreendimento", e.target.value)} />
+        </div>
+        <div>
+          <label className="text-xs font-medium text-muted-foreground">Corretor</label>
+          <Input value={form.broker} onChange={(e) => up("broker", e.target.value)} />
+        </div>
+      </div>
+      <div className="border-t border-border pt-3 space-y-3">
+        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Proprietário & Chaves</p>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-xs font-medium text-muted-foreground">Proprietário</label>
+            <Input value={form.owner || ""} onChange={(e) => up("owner", e.target.value)} placeholder="Nome do proprietário" />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground">Telefone Proprietário</label>
+            <Input value={form.ownerPhone || ""} onChange={(e) => up("ownerPhone", e.target.value)} placeholder="5551999..." />
+          </div>
+          <div className="col-span-2">
+            <label className="text-xs font-medium text-muted-foreground">Onde ficam as chaves</label>
+            <Input value={form.keyLocation || ""} onChange={(e) => up("keyLocation", e.target.value)} placeholder="Ex: Portaria, imobiliária, etc." />
+          </div>
+          <div className="col-span-2">
+            <label className="text-xs font-medium text-muted-foreground">Link Google Drive</label>
+            <Input value={form.driveLink || ""} onChange={(e) => up("driveLink", e.target.value)} placeholder="https://drive.google.com/..." />
+          </div>
+        </div>
+      </div>
+      <div className="border-t border-border pt-3 space-y-3">
+        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Características</p>
+        <div className="flex flex-wrap gap-3">
+          <label className="flex items-center gap-2 text-xs text-foreground">
+            <input type="checkbox" checked={form.decorated || false} onChange={(e) => up("decorated", e.target.checked)} className="rounded" /> Decorado
+          </label>
+          <label className="flex items-center gap-2 text-xs text-foreground">
+            <input type="checkbox" checked={form.seaView || false} onChange={(e) => up("seaView", e.target.checked)} className="rounded" /> Vista Mar
+          </label>
+          <label className="flex items-center gap-2 text-xs text-foreground">
+            <input type="checkbox" checked={form.acceptsExchange || false} onChange={(e) => up("acceptsExchange", e.target.checked)} className="rounded" /> Aceita Permuta
+          </label>
+        </div>
+      </div>
+      <div className="flex gap-2 pt-2">
+        <Button onClick={() => onSave(form)} className="flex-1">Salvar Alterações</Button>
+        <Button variant="outline" onClick={onCancel}>Cancelar</Button>
+      </div>
+    </div>
   );
 }
 
