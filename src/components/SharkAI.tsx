@@ -34,7 +34,7 @@ export function SharkAI({ properties, onSelectProperty }: SharkAIProps) {
       id: "welcome",
       role: "assistant",
       content:
-        "🦈 Olá! Eu sou o **Shark**, seu tubarão inteligente de busca imobiliária! 🌊\n\nMe diga o que procura e eu vou mergulhar nos imóveis para encontrar o ideal pra você!\n\nExemplos:\n• *\"Quero um 2 quartos com vista mar até 800 mil\"*\n• *\"Preciso de casa em Xangri-lá que aceite permuta\"*\n• *\"Apartamento decorado com 24x de parcela\"*",
+        "🦈 Fala, parceiro! Eu sou o **SHARK**, o tubarão mais agressivo do mercado imobiliário! 🌊\n\nEu mergulho fundo pra encontrar o imóvel ideal e também sei TUDO sobre o mercado:\n\n• *\"Quero 2 quartos, vista mar, até 800 mil\"*\n• *\"Qual o INCC acumulado do ano?\"*\n• *\"Como funciona financiamento com IPCA?\"*\n• *\"Casa em Xangri-lá que aceite permuta\"*\n• *\"Quanto pago de ITBI em um imóvel de 500 mil?\"*",
     },
   ]);
   const [isLoading, setIsLoading] = useState(false);
@@ -125,14 +125,14 @@ export function SharkAI({ properties, onSelectProperty }: SharkAIProps) {
             initial={{ scale: 0, rotate: -180 }}
             animate={{ scale: 1, rotate: 0 }}
             exit={{ scale: 0, rotate: 180 }}
-            whileHover={{ scale: 1.1 }}
+            whileHover={{ scale: 1.15 }}
             whileTap={{ scale: 0.9 }}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-24 left-6 z-50 w-16 h-16 rounded-full bg-gradient-to-br from-cyan-500 to-blue-700 text-white shadow-2xl flex items-center justify-center hover:shadow-cyan-500/40 transition-shadow"
+            className="fixed bottom-24 left-6 z-50 w-16 h-16 rounded-full bg-gradient-to-br from-slate-900 to-blue-900 shadow-2xl flex items-center justify-center hover:shadow-cyan-500/50 transition-shadow overflow-hidden border-2 border-cyan-400/50"
           >
-            <span className="text-3xl">🦈</span>
+            <img src={sharkIcon} alt="Shark AI" className="w-14 h-14 object-contain" />
             {/* Pulse ring */}
-            <span className="absolute inset-0 rounded-full bg-cyan-400/30 animate-ping" />
+            <span className="absolute inset-0 rounded-full bg-cyan-400/20 animate-ping" />
           </motion.button>
         )}
       </AnimatePresence>
