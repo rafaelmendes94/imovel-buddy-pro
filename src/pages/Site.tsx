@@ -826,16 +826,20 @@ export default function Site() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
 
-        {/* Search results */}
-        {searchTerm && (
+        {/* Search / Filter results */}
+        {(searchTerm || hasActiveFilters) && (
           <section>
-            <SectionHeader title={`Resultados para "${searchTerm}"`} subtitle={`${filteredAll.length} imóveis encontrados`} icon={Search} />
+            <SectionHeader
+              title={searchTerm ? `Resultados para "${searchTerm}"` : "Resultados dos Filtros"}
+              subtitle={`${filteredAll.length} imóveis encontrados`}
+              icon={Search}
+            />
             {filteredAll.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredAll.map((p) => <PropertyCard key={p.id} property={p} />)}
               </div>
             ) : (
-              <p className="text-center py-12 text-gray-400">Nenhum imóvel encontrado para esta busca.</p>
+              <p className="text-center py-12 text-gray-400">Nenhum imóvel encontrado com os filtros selecionados.</p>
             )}
           </section>
         )}
