@@ -175,6 +175,7 @@ const siteProperties = [
     empreendimento: "Cond. Arroio Teixeira",
     quadra: "Q-03",
     lote: "L-09",
+  },
   {
     id: "site-6",
     title: "Apartamento Alto Padrão Atlântida",
