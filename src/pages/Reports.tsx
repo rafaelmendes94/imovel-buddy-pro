@@ -116,7 +116,10 @@ function isToday(dateStr: string) {
   return d.toDateString() === now.toDateString();
 }
 
-type TimePeriod = "Todos" | "Dia" | "Semana" | "Mês" | "Ano";
+type TimePeriod = "Todos" | "Dia" | "Semana" | "Mês" | "Ano" | "Customizado";
+
+const ALL_MONTHS = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+const ALL_YEARS = [...new Set(salesRecords.map(s => new Date(s.date).getFullYear()))].sort((a, b) => b - a);
 
 export default function Reports() {
   const [filterCity, setFilterCity] = useState<string>("Todas");
@@ -124,10 +127,12 @@ export default function Reports() {
   const [filterSegment, setFilterSegment] = useState<string>("Todos");
   const [filterSeaView, setFilterSeaView] = useState<string>("Todos");
   const [filterPeriod, setFilterPeriod] = useState<TimePeriod>("Todos");
+  const [filterMonth, setFilterMonth] = useState<number | null>(null); // 0-11
+  const [filterYear, setFilterYear] = useState<number | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [showDetailedFilters, setShowDetailedFilters] = useState(false);
 
-  const activeFilterCount = [filterCity !== "Todas", filterType !== "Todos", filterSegment !== "Todos", filterSeaView !== "Todos", filterPeriod !== "Todos"].filter(Boolean).length;
+  const activeFilterCount = [filterCity !== "Todas", filterType !== "Todos", filterSegment !== "Todos", filterSeaView !== "Todos", filterPeriod !== "Todos" && filterPeriod !== "Customizado", filterMonth !== null, filterYear !== null].filter(Boolean).length;
 
   const clearAllFilters = () => {
     setFilterCity("Todas");
@@ -135,6 +140,8 @@ export default function Reports() {
     setFilterSegment("Todos");
     setFilterSeaView("Todos");
     setFilterPeriod("Todos");
+    setFilterMonth(null);
+    setFilterYear(null);
   };
 
   const filtered = useMemo(() => {
@@ -148,9 +155,13 @@ export default function Reports() {
       if (filterPeriod === "Semana" && !isThisWeek(s.date)) return false;
       if (filterPeriod === "Mês" && !isThisMonth(s.date)) return false;
       if (filterPeriod === "Ano" && !isThisYear(s.date)) return false;
+      // Custom month/year filters
+      const d = new Date(s.date);
+      if (filterMonth !== null && d.getMonth() !== filterMonth) return false;
+      if (filterYear !== null && d.getFullYear() !== filterYear) return false;
       return true;
     });
-  }, [filterCity, filterType, filterSegment, filterSeaView, filterPeriod]);
+  }, [filterCity, filterType, filterSegment, filterSeaView, filterPeriod, filterMonth, filterYear]);
 
   // VGV calculations
   const vgvYear = filtered.filter(s => isThisYear(s.date)).reduce((sum, s) => sum + s.price, 0);
