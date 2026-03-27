@@ -104,6 +104,7 @@ export default function Properties() {
               )}
             >
               <List className="w-4 h-4" />
+            </button>
             <button
               onClick={() => setView("map")}
               className={cn(
