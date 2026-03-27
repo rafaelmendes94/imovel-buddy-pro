@@ -16,6 +16,7 @@ import {
   Globe,
   ClipboardCheck,
   Wallet,
+  Table2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
