@@ -268,11 +268,10 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
     toast.success("Ficha do imóvel baixada!");
   };
 
-  // -- Download from Drive (keys) --
-  const handleDriveDownload = () => {
-    toast.info("Abrindo pasta de chaves no Drive...", { description: "Conecte sua conta do Google Drive para acessar os documentos do imóvel." });
-    // Simulate opening drive folder for keys
-    window.open(`https://drive.google.com/drive/search?q=${encodeURIComponent(property.title + " chaves")}`, "_blank");
+  // -- Download material completo --
+  const handleMaterialDownload = () => {
+    toast.info("Preparando material completo...", { description: "Fotos, plantas, documentos e fichas do imóvel." });
+    window.open(`https://drive.google.com/drive/search?q=${encodeURIComponent(property.title + " material")}`, "_blank");
   };
 
   // -- Editable field component --
