@@ -12,7 +12,7 @@ import {
   CheckCircle2, Clock, Home, Key, Trophy, FileCode, ChevronDown,
   Star, Fence, TreePine, Waves, Paintbrush, Filter, X, SlidersHorizontal,
   Phone, Heart, FileCheck, Eye, Repeat, CreditCard, DollarSign, Ban,
-  Share2,
+  Share2, CalendarCheck, CalendarClock, AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
