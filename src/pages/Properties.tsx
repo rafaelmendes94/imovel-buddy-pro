@@ -329,21 +329,21 @@ export default function Properties() {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                <Trophy className="w-3.5 h-3.5 text-emerald-600" />
-                <div>
-                  <p className="text-[8px] font-bold uppercase text-emerald-600 leading-none">VGV Vendidos</p>
-                  <p className="text-sm font-black text-foreground leading-tight">
-                    {formatCurrency(salesRecords.reduce((sum, s) => sum + s.price, 0))}
-                  </p>
-                </div>
-              </div>
               <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20">
                 <DollarSign className="w-3.5 h-3.5 text-blue-600" />
                 <div>
                   <p className="text-[8px] font-bold uppercase text-blue-600 leading-none">Comissão Estimada</p>
                   <p className="text-sm font-black text-foreground leading-tight">
                     {formatCurrency(propertyList.filter(p => p.status === "Disponível" || p.status === "Reservado").reduce((sum, p) => sum + (p.price * (p.commission || 0) / 100), 0))}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                <Trophy className="w-3.5 h-3.5 text-emerald-600" />
+                <div>
+                  <p className="text-[8px] font-bold uppercase text-emerald-600 leading-none">VGV Vendidos</p>
+                  <p className="text-sm font-black text-foreground leading-tight">
+                    {formatCurrency(salesRecords.reduce((sum, s) => sum + s.price, 0))}
                   </p>
                 </div>
               </div>
