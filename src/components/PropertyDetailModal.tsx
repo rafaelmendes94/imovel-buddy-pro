@@ -276,11 +276,6 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
           </div>
           {/* Action buttons in header */}
           <div className="flex items-center gap-1.5 flex-shrink-0">
-            {hasChanges && (
-              <button onClick={handleConfirmUpdate} className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-500 text-white text-xs font-bold hover:bg-emerald-600 transition-colors animate-in fade-in">
-                <Check className="w-3.5 h-3.5" /> Atualizar
-              </button>
-            )}
             <button onClick={handleShare} className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-amber-600" title="Compartilhar">
               <Share2 className="w-4.5 h-4.5" />
             </button>
@@ -871,6 +866,16 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
           </div>
         )}
       </div>
+
+        {/* Floating Update Button */}
+        {hasChanges && (
+          <button
+            onClick={handleConfirmUpdate}
+            className="sticky bottom-4 mx-auto flex items-center gap-2 px-6 py-3 rounded-full bg-emerald-500 text-white text-sm font-bold shadow-2xl hover:bg-emerald-600 transition-all animate-in fade-in slide-in-from-bottom-4 duration-300 z-10"
+          >
+            <Check className="w-4 h-4" /> Atualizar Imóvel
+          </button>
+        )}
     </div>
   );
 }
