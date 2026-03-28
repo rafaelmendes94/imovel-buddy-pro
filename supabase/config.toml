@@ -5,3 +5,9 @@ verify_jwt = false
 
 [functions.property-valuation]
 verify_jwt = false
+
+[functions.mercado-pago-checkout]
+verify_jwt = false
+
+[functions.mercado-pago-webhook]
+verify_jwt = false
