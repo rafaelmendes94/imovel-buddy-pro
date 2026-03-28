@@ -118,6 +118,7 @@ export default function Properties() {
     try { return JSON.parse(localStorage.getItem("mv-favorites") || "[]"); } catch { return []; }
   });
   const [filterFreshness, setFilterFreshness] = useState<"all" | "30" | "60" | "90">("all");
+  const [showInactive, setShowInactive] = useState(false);
 
   const xmlMenuRef = useRef<HTMLDivElement>(null);
 
@@ -188,6 +189,11 @@ export default function Properties() {
         if (filterFreshness === "90" && days <= 90) return false;
       }
 
+      // Default: only show Disponível and Reservado unless showInactive or vendidos category
+      if (activeCategory !== "vendidos" && !showInactive) {
+        if (p.status !== "Disponível" && p.status !== "Reservado") return false;
+      }
+
       // Category
       if (activeCategory === "apartamentos" && p.type !== "Apartamento") return false;
       if (activeCategory === "casas" && p.type !== "Casa") return false;
@@ -215,7 +221,7 @@ export default function Properties() {
 
       return true;
     });
-  }, [propertyList, activeCategory, search, filterCity, filterBedrooms, filterPriceMin, filterPriceMax, filterCondition, filterFreshness, filterEmpreendimento, filterType, filterOwner]);
+  }, [propertyList, activeCategory, search, filterCity, filterBedrooms, filterPriceMin, filterPriceMax, filterCondition, filterFreshness, filterEmpreendimento, filterType, filterOwner, showInactive]);
 
   const favoritedProperties = propertyList.filter((p) => favoriteIds.includes(p.id));
 
@@ -481,6 +487,19 @@ export default function Properties() {
                   </select>
                 </div>
                 <div className="flex items-end gap-2">
+                  <div>
+                    <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Incluir inativos</label>
+                    <button
+                      onClick={() => setShowInactive(!showInactive)}
+                      className={`w-full px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                        showInactive
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-input bg-background text-muted-foreground hover:bg-muted"
+                      }`}
+                    >
+                      {showInactive ? "✓ Vendidos/Alugados" : "Apenas ativos"}
+                    </button>
+                  </div>
                   {hasActiveFilters && (
                     <button onClick={clearFilters} className="flex items-center gap-1 px-4 py-2 rounded-lg bg-muted text-muted-foreground text-sm font-medium hover:bg-destructive/10 hover:text-destructive transition-colors">
                       <X className="w-3.5 h-3.5" /> Limpar
