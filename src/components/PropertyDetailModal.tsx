@@ -867,18 +867,18 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
         )}
       </div>
 
-        {/* Floating Action Buttons */}
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center justify-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300">
+        {/* Action Buttons */}
+        <div className="flex items-center justify-center gap-3 pt-6 pb-4">
           <button
             onClick={onClose}
-            className="flex items-center gap-2 px-5 py-3 rounded-full bg-muted text-muted-foreground text-sm font-bold shadow-2xl hover:bg-muted/80 transition-all border border-border"
+            className="flex items-center gap-2 px-5 py-3 rounded-full bg-muted text-muted-foreground text-sm font-bold shadow-lg hover:bg-muted/80 transition-all border border-border"
           >
             <ChevronLeft className="w-4 h-4" /> Voltar
           </button>
           {hasChanges && (
             <button
               onClick={handleConfirmUpdate}
-              className="flex items-center gap-2 px-6 py-3 rounded-full bg-emerald-500 text-white text-sm font-bold shadow-2xl hover:bg-emerald-600 transition-all"
+              className="flex items-center gap-2 px-6 py-3 rounded-full bg-emerald-500 text-white text-sm font-bold shadow-lg hover:bg-emerald-600 transition-all"
             >
               <Check className="w-4 h-4" /> Atualizar Imóvel
             </button>
