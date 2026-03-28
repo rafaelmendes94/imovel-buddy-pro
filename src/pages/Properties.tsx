@@ -730,6 +730,7 @@ export default function Properties() {
                 onDealLabelChange={handleDealLabelChange}
                 onNavigateToValuation={handleNavigateToValuation}
                 onNavigateToContract={handleNavigateToContract}
+                onQuickUpdate={handleQuickUpdate}
               />
             ))}
           </div>
