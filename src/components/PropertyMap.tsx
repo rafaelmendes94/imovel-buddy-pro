@@ -219,7 +219,7 @@ export function PropertyMap({ properties }: PropertyMapProps) {
   };
 
   return (
-    <div className="rounded-xl overflow-hidden relative border border-border shadow-sm" style={{ height: "600px" }}>
+    <div className="rounded-xl overflow-hidden relative border border-border shadow-sm h-[400px] sm:h-[600px]">
       {/* Controls */}
       <div className="absolute top-4 right-4 z-[1000] flex flex-col gap-2">
         <button

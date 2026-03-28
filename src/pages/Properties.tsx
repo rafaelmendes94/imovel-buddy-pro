@@ -292,53 +292,55 @@ export default function Properties() {
 
   return (
     <AppLayout>
-      <div className="p-6 lg:p-8 space-y-6">
+      <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Imóveis</h1>
-            <div className="flex items-center gap-4 mt-1">
-              <p className="text-sm text-muted-foreground">
-                {propertyList.length} imóveis cadastrados
-              </p>
-              <span className="text-sm font-semibold text-emerald-500">VGV {formatCurrency(totalVGV)}</span>
-              <span className="text-sm font-semibold text-primary">Vendas {formatCurrency(totalSold)}</span>
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h1 className="text-xl sm:text-2xl font-bold text-foreground">Imóveis</h1>
+              <div className="flex items-center gap-2 sm:gap-4 mt-1 flex-wrap">
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  {propertyList.length} cadastrados
+                </p>
+                <span className="text-xs sm:text-sm font-semibold text-emerald-500">VGV {formatCurrency(totalVGV)}</span>
+                <span className="text-xs sm:text-sm font-semibold text-primary">Vendas {formatCurrency(totalSold)}</span>
+              </div>
+            </div>
+            <div className="flex gap-2 flex-wrap">
               <button
                 onClick={() => navigate("/relatorios")}
-                className="flex items-center gap-1 text-[11px] font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-md hover:bg-primary/20 transition-colors"
+                className="flex items-center gap-1 text-[11px] font-bold text-primary bg-primary/10 px-2.5 py-1.5 rounded-md hover:bg-primary/20 transition-colors"
               >
-                <BarChart3 className="w-3 h-3" /> Relatório de Vendas
+                <BarChart3 className="w-3 h-3" /> Relatório
+              </button>
+              <div className="relative" ref={xmlMenuRef}>
+                <button
+                  onClick={() => setShowXmlMenu(!showXmlMenu)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-card border border-input text-foreground text-xs font-medium hover:bg-muted transition-colors"
+                >
+                  <FileCode className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Exportar</span> XML <ChevronDown className="w-3 h-3" />
+                </button>
+                {showXmlMenu && (
+                  <div className="absolute right-0 top-full mt-1 w-56 bg-card border border-border rounded-lg shadow-xl z-50 py-1 animate-scale-in">
+                    <p className="px-3 py-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Selecione o portal</p>
+                    {xmlPortals.map((portal) => (
+                      <button key={portal.name} onClick={() => handleExportXml(portal.name)} className="w-full text-left px-3 py-2 hover:bg-muted transition-colors">
+                        <span className="text-sm font-medium text-foreground block">{portal.name}</span>
+                        <span className="text-[11px] text-muted-foreground">{portal.description}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg gradient-gold text-primary text-xs font-semibold hover:opacity-90 transition-opacity">
+                <Plus className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Novo</span> Imóvel
               </button>
             </div>
-          </div>
-          <div className="flex gap-2 self-start">
-            <div className="relative" ref={xmlMenuRef}>
-              <button
-                onClick={() => setShowXmlMenu(!showXmlMenu)}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-card border border-input text-foreground text-sm font-medium hover:bg-muted transition-colors"
-              >
-                <FileCode className="w-4 h-4" /> Exportar XML <ChevronDown className="w-3.5 h-3.5" />
-              </button>
-              {showXmlMenu && (
-                <div className="absolute right-0 top-full mt-1 w-56 bg-card border border-border rounded-lg shadow-xl z-50 py-1 animate-scale-in">
-                  <p className="px-3 py-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Selecione o portal</p>
-                  {xmlPortals.map((portal) => (
-                    <button key={portal.name} onClick={() => handleExportXml(portal.name)} className="w-full text-left px-3 py-2 hover:bg-muted transition-colors">
-                      <span className="text-sm font-medium text-foreground block">{portal.name}</span>
-                      <span className="text-[11px] text-muted-foreground">{portal.description}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-            <button className="flex items-center gap-2 px-4 py-2.5 rounded-lg gradient-gold text-primary text-sm font-semibold hover:opacity-90 transition-opacity">
-              <Plus className="w-4 h-4" /> Novo Imóvel
-            </button>
           </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+        <div className="grid grid-cols-4 sm:grid-cols-4 lg:grid-cols-8 gap-2 sm:gap-3">
           {[
             { label: "Total", count: propertyList.length, icon: Star, onClick: () => setActiveCategory("todos") },
             { label: "Ativos", count: propertyList.filter(p => p.status === "Disponível").length, icon: Home, onClick: () => setActiveCategory("todos") },
@@ -352,68 +354,68 @@ export default function Properties() {
             <button
               key={stat.label}
               onClick={stat.onClick}
-              className="bg-card border border-border rounded-xl p-3 hover:bg-muted/50 transition-colors text-left"
+              className="bg-card border border-border rounded-xl p-2 sm:p-3 hover:bg-muted/50 transition-colors text-left"
             >
-              <stat.icon className="w-4 h-4 text-primary mb-1" />
-              <p className="text-xl font-bold text-foreground">{stat.count}</p>
-              <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{stat.label}</p>
+              <stat.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary mb-0.5 sm:mb-1" />
+              <p className="text-base sm:text-xl font-bold text-foreground">{stat.count}</p>
+              <p className="text-[8px] sm:text-[10px] text-muted-foreground font-medium uppercase tracking-wider truncate">{stat.label}</p>
             </button>
           ))}
         </div>
 
         {/* Freshness Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 gap-2 sm:gap-3">
           <button
             onClick={() => setFilterFreshness(filterFreshness === "30" ? "all" : "30")}
             className={cn(
-              "bg-card border rounded-xl p-4 text-left transition-all hover:shadow-md group",
+              "bg-card border rounded-xl p-2 sm:p-4 text-left transition-all hover:shadow-md group",
               filterFreshness === "30" ? "border-emerald-500 ring-2 ring-emerald-500/20" : "border-border"
             )}
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-500">Atualizados (30 dias)</p>
-                <p className="text-3xl font-black text-foreground mt-1">{freshnessStats.within30}</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">imóveis em dia</p>
+                <p className="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider text-emerald-500">Atualizados (30d)</p>
+                <p className="text-xl sm:text-3xl font-black text-foreground mt-0.5 sm:mt-1">{freshnessStats.within30}</p>
+                <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5 hidden sm:block">imóveis em dia</p>
               </div>
-              <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                <CalendarCheck className="w-5 h-5 text-emerald-500" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                <CalendarCheck className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500" />
               </div>
             </div>
           </button>
           <button
             onClick={() => setFilterFreshness(filterFreshness === "60" ? "all" : "60")}
             className={cn(
-              "bg-card border rounded-xl p-4 text-left transition-all hover:shadow-md group",
+              "bg-card border rounded-xl p-2 sm:p-4 text-left transition-all hover:shadow-md group",
               filterFreshness === "60" ? "border-amber-500 ring-2 ring-amber-500/20" : "border-border"
             )}
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-amber-500">Atenção (31-60 dias)</p>
-                <p className="text-3xl font-black text-foreground mt-1">{freshnessStats.within60}</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">precisam de revisão</p>
+                <p className="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider text-amber-500">Atenção (31-60d)</p>
+                <p className="text-xl sm:text-3xl font-black text-foreground mt-0.5 sm:mt-1">{freshnessStats.within60}</p>
+                <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5 hidden sm:block">precisam de revisão</p>
               </div>
-              <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
-                <CalendarClock className="w-5 h-5 text-amber-500" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                <CalendarClock className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500" />
               </div>
             </div>
           </button>
           <button
             onClick={() => setFilterFreshness(filterFreshness === "90" ? "all" : "90")}
             className={cn(
-              "bg-card border rounded-xl p-4 text-left transition-all hover:shadow-md group",
+              "bg-card border rounded-xl p-2 sm:p-4 text-left transition-all hover:shadow-md group",
               filterFreshness === "90" ? "border-destructive ring-2 ring-destructive/20" : "border-border"
             )}
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-destructive">Desatualizados (+90 dias)</p>
-                <p className="text-3xl font-black text-foreground mt-1">{freshnessStats.over90}</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">ação urgente necessária</p>
+                <p className="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider text-destructive">Desatualizados (+90d)</p>
+                <p className="text-xl sm:text-3xl font-black text-foreground mt-0.5 sm:mt-1">{freshnessStats.over90}</p>
+                <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5 hidden sm:block">ação urgente</p>
               </div>
-              <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center">
-                <AlertTriangle className="w-5 h-5 text-destructive" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-destructive/10 flex items-center justify-center">
+                <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-destructive" />
               </div>
             </div>
           </button>
@@ -506,8 +508,8 @@ export default function Properties() {
 
           {/* Advanced Filters Panel */}
           {showFilters && (
-            <div className="bg-card border border-border rounded-xl p-4">
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 xl:grid-cols-12 gap-3">
+            <div className="bg-card border border-border rounded-xl p-3 sm:p-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 xl:grid-cols-12 gap-2 sm:gap-3">
                 <div>
                   <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Empreendimento</label>
                   <select value={filterEmpreendimento} onChange={(e) => setFilterEmpreendimento(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
@@ -606,7 +608,7 @@ export default function Properties() {
 
         {/* Content */}
         {view === "grid" ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-5">
             {filtered.map((property) => (
               <PropertyCard
                 key={property.id}
@@ -1218,7 +1220,7 @@ function PropertyRow({
     <div className={cn("elevated-card rounded-xl relative overflow-hidden transition-all duration-300", animatePulse && "animate-sold-pulse")}>
       {showCelebration && <SoldCelebration />}
 
-      <div className="flex items-stretch">
+      <div className="flex items-stretch overflow-x-auto">
 
         {/* ── COL 1: Foto com carrossel ── */}
         <div className="relative w-[200px] h-[200px] flex-shrink-0">
