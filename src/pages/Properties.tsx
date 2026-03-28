@@ -1374,7 +1374,38 @@ function PropertyRow({
             {property.privateArea && <span className="flex items-center gap-0.5 font-semibold whitespace-nowrap"><Ruler className="w-3 h-3" />{property.privateArea}m² priv.</span>}
           </div>
 
-          {/* Row 3b: Infraestrutura do edifício */}
+          {/* Row 3a: Características do apartamento */}
+          {(property.vista || property.condicao || property.posicaoPredio || property.posicaoSolar || property.seaView || property.decorated) && (
+            <div className="flex items-center gap-2 text-[10px] text-muted-foreground flex-wrap">
+              {property.vista && (
+                <span className="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-sky-500/10 text-sky-500 font-semibold whitespace-nowrap">
+                  <Eye className="w-3 h-3" /> {property.vista}
+                </span>
+              )}
+              {property.seaView && !property.vista?.toLowerCase().includes("mar") && (
+                <span className="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 font-bold whitespace-nowrap">🌊 Vista Mar</span>
+              )}
+              {property.condicao && (
+                <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500 font-semibold whitespace-nowrap">
+                  🏠 {property.condicao}
+                </span>
+              )}
+              {property.decorated && !property.condicao?.toLowerCase().includes("decorado") && (
+                <span className="px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 font-bold whitespace-nowrap">🎨 Decorado</span>
+              )}
+              {property.posicaoPredio && (
+                <span className="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-muted font-semibold whitespace-nowrap">
+                  <Building2 className="w-3 h-3" /> {property.posicaoPredio}
+                </span>
+              )}
+              {property.posicaoSolar && (
+                <span className="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-500 font-semibold whitespace-nowrap">
+                  ☀️ {property.posicaoSolar}
+                </span>
+              )}
+            </div>
+          )}
+
           {(property.infraestrutura && property.infraestrutura.length > 0) && (
             <div className="flex items-center gap-2 text-[10px] text-muted-foreground flex-wrap">
               {property.infraestrutura.map((item, i) => (
