@@ -222,10 +222,12 @@ export default function Properties() {
       if (filterEmpreendimento && p.empreendimento !== filterEmpreendimento) return false;
       if (filterType && p.type !== filterType) return false;
       if (filterOwner && p.owner !== filterOwner) return false;
+      if (filterNeighborhood && p.neighborhood !== filterNeighborhood) return false;
+      if (filterStreet && p.address !== filterStreet) return false;
 
       return true;
     });
-  }, [propertyList, activeCategory, search, filterCity, filterBedrooms, filterPriceMin, filterPriceMax, filterCondition, filterFreshness, filterEmpreendimento, filterType, filterOwner, showInactive]);
+  }, [propertyList, activeCategory, search, filterCity, filterBedrooms, filterPriceMin, filterPriceMax, filterCondition, filterFreshness, filterEmpreendimento, filterType, filterOwner, filterNeighborhood, filterStreet, showInactive]);
 
   const favoritedProperties = propertyList.filter((p) => favoriteIds.includes(p.id));
 
