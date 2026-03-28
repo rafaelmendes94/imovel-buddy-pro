@@ -56,6 +56,7 @@ export const properties: Property[] = [
     id: "1",
     title: "Apartamento Frente Mar",
     address: "Av. Beira Mar, 1200",
+    neighborhood: "Navegantes",
     city: "Capão da Canoa",
     type: "Apartamento",
     status: "Disponível",
