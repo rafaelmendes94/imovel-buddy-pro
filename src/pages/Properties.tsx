@@ -890,7 +890,7 @@ function PropertyCard({
 
       <div className="p-4 space-y-3">
         <div>
-          <h3 className="font-semibold text-card-foreground text-sm cursor-pointer hover:text-primary transition-colors"
+          <h3 className="font-semibold text-card-foreground text-sm cursor-pointer hover:text-primary transition-colors uppercase"
             onClick={() => onFilterByTitle?.(property.title)}
             title="Clique para ver títulos semelhantes"
           >{property.title}</h3>
@@ -1248,7 +1248,7 @@ function PropertyRow({
           {/* Row 1: Title + Code */}
           <div className="flex items-center gap-2 min-w-0">
             <h3
-              className="font-bold text-card-foreground text-base truncate hover:text-primary cursor-pointer transition-colors leading-tight"
+              className="font-bold text-card-foreground text-base truncate hover:text-primary cursor-pointer transition-colors leading-tight uppercase"
               onClick={() => onFilterByTitle?.(property.title)}
               title="Ver títulos semelhantes"
             >{property.title}</h3>
