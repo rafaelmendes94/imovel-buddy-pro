@@ -6,7 +6,7 @@ import {
   CreditCard, Navigation, Share2, Heart, Maximize2, Download, Key,
   Pencil, Check, HardDrive, Flame, TrendingUp, Eye, EyeOff, User,
   Sparkles, Loader2, Target, Zap, FileText, MapPinned, DollarSign,
-  Gift, Percent, FileCheck, Hash
+  Gift, Percent, FileCheck, Hash, Scan
 } from "lucide-react";
 import { formatCurrency, type Property } from "@/data/mockData";
 import { cn } from "@/lib/utils";
@@ -460,7 +460,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
           {/* Specs grid - editable */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="bg-gray-50 rounded-xl p-4 text-center border border-gray-100">
-              <Ruler className="w-5 h-5 mx-auto text-amber-500 mb-1.5" />
+              <Maximize2 className="w-5 h-5 mx-auto text-amber-500 mb-1.5" />
               <p className="text-xl font-bold text-gray-900">
                 <EditableField field="area" value={property.area} label="área" type="number" />m²
               </p>
