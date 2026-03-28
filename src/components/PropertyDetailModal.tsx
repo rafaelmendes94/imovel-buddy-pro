@@ -825,6 +825,72 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
               <Building2 className="w-4 h-4 text-amber-500" /> Características do Imóvel
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {/* Condição / Mobília */}
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Condição / Mobília</label>
+                <select
+                  value={property.condicao || ""}
+                  onChange={(e) => {
+                    if (onUpdateProperty) {
+                      const val = (e.target.value || undefined) as Property["condicao"];
+                      updateProperty({ ...property, condicao: val, decorated: val === "Decorado" || val === "Mobiliado" });
+                      toast.success("Condição atualizada!");
+                    }
+                  }}
+                  className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                >
+                  <option value="">Selecione</option>
+                  <option value="Mobiliado">🛋️ Mobiliado</option>
+                  <option value="Semi-mobiliado">🪑 Semi-mobiliado</option>
+                  <option value="Vazio">📦 Vazio</option>
+                  <option value="Decorado">🎨 Decorado</option>
+                </select>
+              </div>
+              {/* Vista */}
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Vista</label>
+                <select
+                  value={property.vista || ""}
+                  onChange={(e) => {
+                    if (onUpdateProperty) {
+                      const val = e.target.value || undefined;
+                      updateProperty({ ...property, vista: val, seaView: val === "Mar" || val === "Mar / Lago" });
+                      toast.success("Vista atualizada!");
+                    }
+                  }}
+                  className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                >
+                  <option value="">Selecione</option>
+                  <option value="Mar">🌊 Mar</option>
+                  <option value="Lago">💧 Lago</option>
+                  <option value="Mar / Lago">🌊💧 Mar / Lago</option>
+                  <option value="Cidade">🏙️ Cidade</option>
+                  <option value="Parque">🌳 Parque</option>
+                  <option value="Piscina">🏊 Piscina</option>
+                  <option value="Rua">🛣️ Rua</option>
+                  <option value="Interna">🏠 Interna</option>
+                </select>
+              </div>
+              {/* Padrão */}
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Padrão</label>
+                <select
+                  value={property.padrao || ""}
+                  onChange={(e) => {
+                    if (onUpdateProperty) {
+                      updateProperty({ ...property, padrao: (e.target.value || undefined) as Property["padrao"] });
+                      toast.success("Padrão atualizado!");
+                    }
+                  }}
+                  className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                >
+                  <option value="">Selecione</option>
+                  <option value="Econômico">Econômico</option>
+                  <option value="Médio Padrão">Médio Padrão</option>
+                  <option value="Alto Padrão">Alto Padrão</option>
+                  <option value="Luxo">Luxo</option>
+                </select>
+              </div>
               {/* Posição no Prédio */}
               <div>
                 <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Posição no Prédio</label>
@@ -847,6 +913,8 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                   <option value="Fundos/Lateral">Fundos/Lateral</option>
                 </select>
               </div>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
               {/* Posição Solar */}
               <div>
                 <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Posição Solar</label>
