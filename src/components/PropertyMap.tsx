@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 
 interface PropertyMapProps {
   properties: Property[];
+  onSelectProperty?: (property: Property) => void;
 }
 
 function formatShortPrice(price: number): string {
@@ -20,7 +21,7 @@ function getDistance(lat1: number, lng1: number, lat2: number, lng2: number): nu
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-export function PropertyMap({ properties }: PropertyMapProps) {
+export function PropertyMap({ properties, onSelectProperty }: PropertyMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
@@ -92,25 +93,46 @@ export function PropertyMap({ properties }: PropertyMapProps) {
         (marker as any)._propertyData = property;
         markersRef.current.push(marker);
 
-        marker.bindPopup(`
-          <div style="width:250px;font-family:system-ui,-apple-system,sans-serif;padding:0;">
-            <img src="${property.image}" alt="${property.title}" style="width:100%;height:120px;object-fit:cover;border-radius:8px 8px 0 0;display:block;" />
+        const popup = L.popup({ className: "clean-popup", maxWidth: 280, minWidth: 270, closeButton: true })
+          .setContent(`
+          <div style="width:270px;font-family:system-ui,-apple-system,sans-serif;padding:0;">
+            <img data-property-id="${property.id}" src="${property.image}" alt="${property.title}" style="width:100%;height:140px;object-fit:cover;border-radius:8px 8px 0 0;display:block;cursor:pointer;" title="Clique para abrir o imóvel" />
             <div style="padding:12px;">
               <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
                 <span style="font-size:10px;font-weight:700;color:#fff;background:${cfg.color};padding:2px 8px;border-radius:4px;letter-spacing:0.5px;text-transform:uppercase;">${property.type}</span>
                 <span style="font-size:10px;font-weight:500;color:#94a3b8;">${property.status}</span>
               </div>
               <h3 style="font-size:14px;font-weight:700;margin:0 0 4px 0;color:#0f172a;line-height:1.3;">${property.title}</h3>
-              <p style="font-size:11px;color:#64748b;margin:0 0 8px 0;line-height:1.4;">📍 ${property.address}${property.neighborhood ? `, ${property.neighborhood}` : ""} – ${property.city}</p>
+              <p style="font-size:11px;color:#64748b;margin:0 0 4px 0;line-height:1.4;">📍 ${property.address}${property.neighborhood ? `, ${property.neighborhood}` : ""} – ${property.city}</p>
+              ${property.empreendimento ? `<p style="font-size:10px;color:#94a3b8;margin:0 0 4px 0;">🏗 ${property.empreendimento}</p>` : ""}
+              <div style="display:flex;gap:8px;margin-bottom:8px;font-size:10px;color:#64748b;">
+                ${property.bedrooms > 0 ? `<span>🛏 ${property.bedrooms}</span>` : ""}
+                ${property.bathrooms > 0 ? `<span>🚿 ${property.bathrooms}</span>` : ""}
+                ${property.parking > 0 ? `<span>🚗 ${property.parking}</span>` : ""}
+                <span>📐 ${property.area}m²</span>
+              </div>
               <div style="display:flex;align-items:baseline;justify-content:space-between;">
                 <p style="font-size:18px;font-weight:800;color:${cfg.color};margin:0;">${formatCurrency(property.price)}</p>
-                <p style="font-size:11px;color:#94a3b8;margin:0;">
-                  ${property.bedrooms > 0 ? `${property.bedrooms}🛏` : ""} ${property.area}m²
-                </p>
+                <span data-property-id="${property.id}" style="font-size:10px;color:${cfg.color};cursor:pointer;font-weight:700;text-decoration:underline;">Ver detalhes →</span>
               </div>
             </div>
           </div>
-        `, { className: "clean-popup", maxWidth: 260, minWidth: 250, closeButton: true });
+        `);
+
+        marker.bindPopup(popup);
+
+        marker.on("popupopen", () => {
+          setTimeout(() => {
+            const container = marker.getPopup()?.getElement();
+            if (!container) return;
+            const clickableEls = container.querySelectorAll(`[data-property-id="${property.id}"]`);
+            clickableEls.forEach((el: Element) => {
+              (el as HTMLElement).addEventListener("click", () => {
+                onSelectProperty?.(property);
+              });
+            });
+          }, 10);
+        });
       });
 
       // Custom popup style
