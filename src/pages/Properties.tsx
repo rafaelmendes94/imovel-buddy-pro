@@ -961,8 +961,8 @@ function PropertyRow({
       <div className="flex items-stretch">
 
         {/* ── COL 1: Foto ── */}
-        <div className="relative w-[140px] flex-shrink-0 cursor-pointer" onClick={() => onSelect?.(property)}>
-          <div className="relative w-full h-full min-h-[105px]">
+        <div className="relative w-[180px] flex-shrink-0 cursor-pointer" onClick={() => onSelect?.(property)}>
+          <div className="relative w-full" style={{ paddingBottom: "75%" }}>
             <img src={property.images[0] || property.image} alt={property.title} className="absolute inset-0 w-full h-full object-cover" />
           </div>
           {/* Owner type badge on photo */}
