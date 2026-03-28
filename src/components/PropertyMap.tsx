@@ -58,7 +58,7 @@ export function PropertyMap({ properties }: PropertyMapProps) {
       L.control.zoom({ position: "bottomright" }).addTo(map);
 
       // Clean map style (CartoDB Positron)
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
         attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
         maxZoom: 19,
         subdomains: "abcd",
@@ -78,11 +78,11 @@ export function PropertyMap({ properties }: PropertyMapProps) {
         const icon = L.divIcon({
           className: "",
           html: `<div style="display:flex;flex-direction:column;align-items:center;transform:translate(-50%,-100%);cursor:pointer;">
-            <div style="background:${cfg.color};border-radius:8px 8px 8px 0;padding:4px 8px;box-shadow:0 2px 12px rgba(0,0,0,0.25);display:flex;align-items:center;gap:4px;white-space:nowrap;">
-              <span style="font-size:12px;line-height:1;">${cfg.emoji}</span>
-              <span style="font-size:10px;font-weight:800;color:#fff;letter-spacing:0.3px;">${shortPrice}</span>
+            <div style="background:${cfg.color};border-radius:6px 6px 6px 0;padding:2px 5px;box-shadow:0 1px 6px rgba(0,0,0,0.2);display:flex;align-items:center;gap:2px;white-space:nowrap;">
+              <span style="font-size:9px;line-height:1;">${cfg.emoji}</span>
+              <span style="font-size:8px;font-weight:800;color:#fff;letter-spacing:0.2px;">${shortPrice}</span>
             </div>
-            <div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid ${cfg.color};"></div>
+            <div style="width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid ${cfg.color};"></div>
           </div>`,
           iconSize: [0, 0],
           iconAnchor: [0, 0],
