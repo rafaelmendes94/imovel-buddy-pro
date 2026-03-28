@@ -4,11 +4,13 @@ import {
   X, MapPin, BedDouble, Bath, Car, Ruler, Phone, Waves, Paintbrush,
   Building2, ChevronLeft, ChevronRight, ExternalLink, Play, Repeat,
   CreditCard, Navigation, Share2, Heart, Maximize2, Download, Key,
-  Pencil, Check, HardDrive, Flame, TrendingUp, Eye, EyeOff, User
+  Pencil, Check, HardDrive, Flame, TrendingUp, Eye, EyeOff, User,
+  Sparkles, Loader2, Target, Zap, FileText, MapPinned
 } from "lucide-react";
 import { formatCurrency, type Property } from "@/data/mockData";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PropertyDetailModalProps {
   property: Property | null;
