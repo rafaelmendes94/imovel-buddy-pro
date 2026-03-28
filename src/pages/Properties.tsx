@@ -167,6 +167,11 @@ export default function Properties() {
     toast.success("Valor atualizado!");
   };
 
+  const handleDealLabelChange = (propertyId: string, label: Property["dealLabel"]) => {
+    setPropertyList((prev) => prev.map((p) => (p.id === propertyId ? { ...p, dealLabel: label } : p)));
+    toast.success(label ? `Classificado como "${label}"` : "Classificação removida");
+  };
+
   const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterCondition || filterEmpreendimento || filterType || filterOwner || filterNeighborhood || filterStreet || filterCode;
 
   const clearFilters = () => {
