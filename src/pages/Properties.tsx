@@ -113,6 +113,7 @@ export default function Properties() {
   const [favoriteIds, setFavoriteIds] = useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem("mv-favorites") || "[]"); } catch { return []; }
   });
+  const [filterFreshness, setFilterFreshness] = useState<"all" | "30" | "60" | "90">("all");
 
   const xmlMenuRef = useRef<HTMLDivElement>(null);
 
