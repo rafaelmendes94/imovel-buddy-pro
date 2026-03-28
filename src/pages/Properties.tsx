@@ -15,7 +15,7 @@ import {
   Phone, Heart, FileCheck, Eye, Repeat, CreditCard, DollarSign, Ban,
   Share2, CalendarCheck, CalendarClock, AlertTriangle, Pencil, Image,
   FolderDown, User, ShieldCheck, Percent, Gift, BarChart3, FileSignature,
-  TrendingUp, Wallet,
+  TrendingUp, Wallet, RefreshCw,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -1252,7 +1252,7 @@ function DealThermometer({ dealScore, manualLabel }: { dealScore: DealScore; man
 
 // ---- PropertyRow (redesigned) ----
 function PropertyRow({
-  property, onStatusChange, onSelect, isFavorited, onToggleFavorite, onFilterByTitle, onFilterByCondition, onFilterByOwner, onPriceChange, allProperties, onDealLabelChange, onNavigateToValuation, onNavigateToContract,
+  property, onStatusChange, onSelect, isFavorited, onToggleFavorite, onFilterByTitle, onFilterByCondition, onFilterByOwner, onPriceChange, allProperties, onDealLabelChange, onNavigateToValuation, onNavigateToContract, onQuickUpdate,
 }: {
   property: Property;
   onStatusChange: (id: string, status: Property["status"]) => void;
@@ -1267,6 +1267,7 @@ function PropertyRow({
   onDealLabelChange?: (id: string, label: Property["dealLabel"]) => void;
   onNavigateToValuation?: (p: Property) => void;
   onNavigateToContract?: (p: Property) => void;
+  onQuickUpdate?: (id: string) => void;
 }) {
   const dealScore = useMemo(() => analyzeDealScore(property, allProperties || []), [property, allProperties]);
   const [showCelebration, setShowCelebration] = useState(false);
@@ -1538,7 +1539,16 @@ function PropertyRow({
             </div>
             <div className="flex items-center justify-between gap-1">
               <span className="flex items-center gap-0.5"><CalendarClock className="w-3 h-3" /> Atualização</span>
-              <span className={cn("font-semibold", updateColor)}>{updatedFormatted}</span>
+              <div className="flex items-center gap-1.5">
+                <span className={cn("font-semibold", updateColor)}>{updatedFormatted}</span>
+                <button
+                  onClick={(e) => { e.stopPropagation(); onQuickUpdate?.(property.id); }}
+                  title="Atualizar data agora"
+                  className="w-5 h-5 rounded-full bg-emerald-500/15 text-emerald-500 flex items-center justify-center hover:bg-emerald-500/30 transition-colors border border-emerald-500/30"
+                >
+                  <RefreshCw className="w-3 h-3" />
+                </button>
+              </div>
             </div>
           </div>
           {/* Quick status selector */}
