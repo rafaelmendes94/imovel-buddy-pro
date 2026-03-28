@@ -782,6 +782,9 @@ function PropertyCard({
           </div>
         )}
 
+        {/* Last update indicator */}
+        <UpdateBadge updatedAt={property.updatedAt} createdAt={property.createdAt} />
+
         {/* Broker + WhatsApp */}
         <div className="flex items-center justify-between pt-2 border-t border-border">
           <div className="flex items-center gap-2">
