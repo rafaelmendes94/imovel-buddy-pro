@@ -151,6 +151,11 @@ export default function Properties() {
     setPropertyList((prev) => prev.map((p) => (p.id === propertyId ? { ...p, status: newStatus } : p)));
   };
 
+  const handlePriceChange = (propertyId: string, field: "price" | "priceInstallment", value: number) => {
+    setPropertyList((prev) => prev.map((p) => (p.id === propertyId ? { ...p, [field]: value } : p)));
+    toast.success("Valor atualizado!");
+  };
+
   const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterCondition || filterEmpreendimento || filterType || filterOwner || filterNeighborhood || filterStreet;
 
   const clearFilters = () => {
@@ -570,6 +575,7 @@ export default function Properties() {
                 onFilterByTitle={(title) => { setSearch(title.split(" ").slice(0, 2).join(" ")); setActiveCategory("todos"); }}
                 onFilterByCondition={(cond) => { setFilterCondition(cond); setShowFilters(true); setActiveCategory("todos"); }}
                 onFilterByOwner={(owner) => { setFilterOwner(owner); setShowFilters(true); setActiveCategory("todos"); }}
+                onPriceChange={handlePriceChange}
               />
             ))}
           </div>
@@ -913,9 +919,57 @@ function PropertyCard({
   );
 }
 
+// ---- Inline Price Editor ----
+function InlinePrice({ value, onChange, className }: { value: number; onChange: (v: number) => void; className?: string }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const startEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setDraft(String(value));
+    setEditing(true);
+  };
+
+  useEffect(() => {
+    if (editing && inputRef.current) inputRef.current.focus();
+  }, [editing]);
+
+  const commit = () => {
+    const parsed = parseFloat(draft.replace(/[^\d]/g, ""));
+    if (!isNaN(parsed) && parsed > 0 && parsed !== value) onChange(parsed);
+    setEditing(false);
+  };
+
+  if (editing) {
+    return (
+      <input
+        ref={inputRef}
+        type="text"
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => { if (e.key === "Enter") commit(); if (e.key === "Escape") setEditing(false); }}
+        className={cn("bg-transparent border-b border-primary outline-none text-right w-[120px]", className)}
+        onClick={(e) => e.stopPropagation()}
+      />
+    );
+  }
+
+  return (
+    <span
+      className={cn("cursor-pointer hover:opacity-70 transition-opacity", className)}
+      onClick={startEdit}
+      title="Clique para editar o valor"
+    >
+      {formatCurrency(value)}
+    </span>
+  );
+}
+
 // ---- PropertyRow (redesigned) ----
 function PropertyRow({
-  property, onStatusChange, onSelect, isFavorited, onToggleFavorite, onFilterByTitle, onFilterByCondition, onFilterByOwner,
+  property, onStatusChange, onSelect, isFavorited, onToggleFavorite, onFilterByTitle, onFilterByCondition, onFilterByOwner, onPriceChange,
 }: {
   property: Property;
   onStatusChange: (id: string, status: Property["status"]) => void;
@@ -925,6 +979,7 @@ function PropertyRow({
   onFilterByTitle?: (title: string) => void;
   onFilterByCondition?: (cond: string) => void;
   onFilterByOwner?: (owner: string) => void;
+  onPriceChange?: (id: string, field: "price" | "priceInstallment", value: number) => void;
 }) {
   const [showCelebration, setShowCelebration] = useState(false);
   const [animatePulse, setAnimatePulse] = useState(false);
@@ -1034,15 +1089,15 @@ function PropertyRow({
         </div>
 
         {/* ── COL 3: Financeiro ── */}
-        <div className="w-[200px] flex-shrink-0 border-r border-border px-3 py-2 flex flex-col justify-center gap-1">
+        <div className="w-[200px] flex-shrink-0 border-r border-border px-3 py-2 flex flex-col justify-center gap-1" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-baseline justify-between">
             <span className="text-[9px] text-muted-foreground uppercase font-semibold">À vista</span>
-            <span className="text-[15px] font-black text-accent">{formatCurrency(property.price)}</span>
+            <InlinePrice value={property.price} onChange={(v) => onPriceChange?.(property.id, "price", v)} className="text-[15px] font-black text-accent" />
           </div>
           {property.priceInstallment && (
             <div className="flex items-baseline justify-between">
               <span className="text-[9px] text-muted-foreground uppercase font-semibold">Promocional</span>
-              <span className="text-[13px] font-bold text-foreground">{formatCurrency(property.priceInstallment)}</span>
+              <InlinePrice value={property.priceInstallment} onChange={(v) => onPriceChange?.(property.id, "priceInstallment", v)} className="text-[13px] font-bold text-foreground" />
             </div>
           )}
           {/* Payment conditions */}
