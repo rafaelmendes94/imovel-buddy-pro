@@ -918,11 +918,15 @@ function PropertyRow({
     <div className={cn("elevated-card rounded-xl relative overflow-hidden transition-all duration-300", animatePulse && "animate-sold-pulse")}>
       {showCelebration && <SoldCelebration />}
 
-      <div className="flex items-stretch min-h-[110px]">
+      <div className="flex">
 
         {/* ── BLOCO 1: Foto + Empreendimento + Localização ── */}
-        <div className="flex w-[270px] flex-shrink-0 border-r border-border cursor-pointer" onClick={() => onSelect?.(property)}>
-          <img src={property.images[0] || property.image} alt={property.title} className="w-[110px] h-full object-cover flex-shrink-0" />
+        <div className="flex w-[280px] flex-shrink-0 border-r border-border cursor-pointer" onClick={() => onSelect?.(property)}>
+          <div className="w-[120px] flex-shrink-0">
+            <div className="relative w-full" style={{ paddingBottom: "75%" }}>
+              <img src={property.images[0] || property.image} alt={property.title} className="absolute inset-0 w-full h-full object-cover" />
+            </div>
+          </div>
           <div className="min-w-0 flex-1 flex flex-col justify-center px-2.5 py-1.5 gap-0.5">
             {property.empreendimento && (
               <Link
@@ -940,15 +944,15 @@ function PropertyRow({
               </div>
             )}
             <button
-              className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-primary transition-colors"
+              className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-primary transition-colors text-left"
               onClick={(e) => {
                 e.stopPropagation();
-                window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${property.address}, ${property.city}`)}`, "_blank");
+                window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${property.address}, ${property.neighborhood || ""}, ${property.city}`)}`, "_blank");
               }}
               title="Abrir no Google Maps"
             >
               <MapPin className="w-2.5 h-2.5 flex-shrink-0" />
-              <span className="truncate">{property.address}, {property.city}</span>
+              <span className="truncate">{property.address}{property.neighborhood ? `, ${property.neighborhood}` : ""} - {property.city}</span>
             </button>
             <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
               <Key className="w-2.5 h-2.5 flex-shrink-0" />

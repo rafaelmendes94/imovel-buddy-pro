@@ -2,6 +2,7 @@ export interface Property {
   id: string;
   title: string;
   address: string;
+  neighborhood?: string;
   city: string;
   type: "Apartamento" | "Casa" | "Comercial" | "Terreno";
   status: "Disponível" | "Vendido" | "Reservado" | "Alugado";
@@ -55,6 +56,7 @@ export const properties: Property[] = [
     id: "1",
     title: "Apartamento Frente Mar",
     address: "Av. Beira Mar, 1200",
+    neighborhood: "Navegantes",
     city: "Capão da Canoa",
     type: "Apartamento",
     status: "Disponível",
@@ -93,6 +95,7 @@ export const properties: Property[] = [
     id: "2",
     title: "Cobertura Duplex Vista Mar",
     address: "Rua Sepé, 500",
+    neighborhood: "Centro",
     city: "Capão da Canoa",
     type: "Apartamento",
     status: "Reservado",
@@ -131,6 +134,7 @@ export const properties: Property[] = [
     id: "3",
     title: "Casa em Condomínio Xangri-lá",
     address: "Rua das Hortênsias, 300",
+    neighborhood: "Rainha do Mar",
     city: "Xangri-lá",
     type: "Casa",
     status: "Disponível",
@@ -169,6 +173,7 @@ export const properties: Property[] = [
     id: "4",
     title: "Sala Comercial Centro Capão",
     address: "Av. Paraguassú, 800",
+    neighborhood: "Centro",
     city: "Capão da Canoa",
     type: "Comercial",
     status: "Alugado",
@@ -204,6 +209,7 @@ export const properties: Property[] = [
     id: "5",
     title: "Terreno Condomínio Xangri-lá",
     address: "Rua dos Coqueiros, 150",
+    neighborhood: "Bosque do Litoral",
     city: "Xangri-lá",
     type: "Terreno",
     status: "Disponível",
@@ -240,6 +246,7 @@ export const properties: Property[] = [
     id: "6",
     title: "Apartamento Praia de Atlântida",
     address: "Av. Central, 200",
+    neighborhood: "Atlântida",
     city: "Xangri-lá",
     type: "Apartamento",
     status: "Vendido",
