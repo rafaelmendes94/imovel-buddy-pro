@@ -1,25 +1,10 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
-  LayoutDashboard,
-  Building2,
-  Users,
-  FileText,
-  Settings,
-  ChevronLeft,
-  ChevronRight,
-  Home,
-  Building,
-  Camera,
-  Fence,
-  Globe,
-  ClipboardCheck,
-  Wallet,
-  Table2,
-  FileSignature,
-  Clapperboard,
-  GripVertical,
-  Landmark,
+  LayoutDashboard, Building2, Users, FileText, Settings,
+  ChevronLeft, ChevronRight, Home, Building, Camera, Fence,
+  Globe, ClipboardCheck, Wallet, Table2, FileSignature,
+  Clapperboard, GripVertical, Landmark,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -53,7 +38,6 @@ function loadSavedOrder(): NavItem[] {
     if (!saved) return defaultNavItems;
     const paths: string[] = JSON.parse(saved);
     const mapped = paths.map(p => defaultNavItems.find(n => n.path === p)).filter(Boolean) as NavItem[];
-    // add any new items not in saved order
     const missing = defaultNavItems.filter(n => !paths.includes(n.path));
     return [...mapped, ...missing];
   } catch {
@@ -61,7 +45,11 @@ function loadSavedOrder(): NavItem[] {
   }
 }
 
-export function AppSidebar() {
+interface AppSidebarProps {
+  onNavigate?: () => void;
+}
+
+export function AppSidebar({ onNavigate }: AppSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [navItems, setNavItems] = useState<NavItem[]>(loadSavedOrder);
   const [dragIdx, setDragIdx] = useState<number | null>(null);
@@ -150,6 +138,7 @@ export function AppSidebar() {
             >
               <Link
                 to={item.path}
+                onClick={onNavigate}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200",
                   isActive
@@ -168,8 +157,8 @@ export function AppSidebar() {
         })}
       </nav>
 
-      {/* Collapse toggle */}
-      <div className="p-2 border-t border-sidebar-border flex-shrink-0">
+      {/* Collapse toggle - hidden on mobile since sidebar is always full */}
+      <div className="p-2 border-t border-sidebar-border flex-shrink-0 hidden lg:block">
         <button
           onClick={() => setCollapsed(!collapsed)}
           className="w-full flex items-center justify-center py-2 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
