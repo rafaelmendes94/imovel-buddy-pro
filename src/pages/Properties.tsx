@@ -1186,6 +1186,15 @@ function PropertyRow({
               {ownerTypeInfo.label}
             </span>
           )}
+          {/* Favorite heart on photo */}
+          <button
+            onClick={(e) => { e.stopPropagation(); onToggleFavorite?.(property.id); }}
+            className={cn("absolute top-2 right-2 z-10 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all hover:scale-110",
+              isFavorited ? "bg-red-500 text-white" : "bg-foreground/30 text-white hover:bg-red-500"
+            )}
+          >
+            <Heart className={cn("w-4 h-4", isFavorited && "fill-current")} />
+          </button>
         </div>
 
         {/* ── COL 2: Identidade + Dados Técnicos ── */}
