@@ -80,7 +80,7 @@ export function DraggableFieldGrid({ storageKey, fields, columns = 4, editing = 
     : "grid grid-cols-2";
 
   return (
-    <div className={cn(gridClass, "gap-x-4 gap-y-3")}>
+    <div className={cn(gridClass, "gap-x-6 gap-y-4")}>
       {orderedFields.map((field, idx) => {
         const isDragging = dragIdx === idx;
         const isOver = overIdx === idx && dragIdx !== null && dragIdx !== idx;
