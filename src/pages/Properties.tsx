@@ -360,7 +360,7 @@ export default function Properties() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-4 sm:grid-cols-4 lg:grid-cols-8 gap-2 sm:gap-3">
+        <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
           {[
             { label: "Total", count: propertyList.length, icon: Star, onClick: () => setActiveCategory("todos") },
             { label: "Ativos", count: propertyList.filter(p => p.status === "Disponível").length, icon: Home, onClick: () => setActiveCategory("todos") },
@@ -368,8 +368,6 @@ export default function Properties() {
             { label: "Casas", count: propertyList.filter(p => p.type === "Casa").length, icon: Home, onClick: () => setActiveCategory("casas") },
             { label: "Terrenos", count: propertyList.filter(p => p.type === "Terreno").length, icon: TreePine, onClick: () => setActiveCategory("terrenos") },
             { label: "Decorados", count: propertyList.filter(p => p.decorated).length, icon: Paintbrush, onClick: () => setActiveCategory("decorados") },
-            { label: "Vista Mar", count: propertyList.filter(p => p.seaView).length, icon: Waves, onClick: () => setActiveCategory("vista-mar") },
-            { label: "Vendidos", count: propertyList.filter(p => p.status === "Vendido").length, icon: Trophy, onClick: () => setActiveCategory("vendidos") },
           ].map((stat) => (
             <button
               key={stat.label}
