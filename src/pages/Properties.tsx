@@ -589,6 +589,7 @@ export default function Properties() {
                 onFilterByCondition={(cond) => { setFilterCondition(cond); setShowFilters(true); setActiveCategory("todos"); }}
                 onFilterByOwner={(owner) => { setFilterOwner(owner); setShowFilters(true); setActiveCategory("todos"); }}
                 onPriceChange={handlePriceChange}
+                allProperties={propertyList}
               />
             ))}
           </div>
@@ -1128,7 +1129,9 @@ function PropertyRow({
   onFilterByCondition?: (cond: string) => void;
   onFilterByOwner?: (owner: string) => void;
   onPriceChange?: (id: string, field: "price" | "priceInstallment", value: number) => void;
+  allProperties?: Property[];
 }) {
+  const dealScore = useMemo(() => analyzeDealScore(property, allProperties || []), [property, allProperties]);
   const [showCelebration, setShowCelebration] = useState(false);
   const [animatePulse, setAnimatePulse] = useState(false);
 
@@ -1281,6 +1284,9 @@ function PropertyRow({
               )}
             </div>
           )}
+
+          {/* Deal Thermometer */}
+          <DealThermometer dealScore={dealScore} />
         </div>
 
         {/* ── COL 4: Proprietário + Chaves + Datas + Status ── */}
