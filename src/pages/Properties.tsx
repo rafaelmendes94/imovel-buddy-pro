@@ -460,24 +460,6 @@ export default function Properties() {
 
         {/* Category Tabs + Search + Filters */}
         <div className="space-y-3">
-          {/* Category pills */}
-          <div className="flex gap-1.5 overflow-x-auto pb-1">
-            {categories.map((cat) => (
-              <button
-                key={cat.key}
-                onClick={() => setActiveCategory(cat.key)}
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all",
-                  activeCategory === cat.key
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "bg-secondary text-secondary-foreground hover:bg-muted"
-                )}
-              >
-                <cat.icon className="w-3.5 h-3.5" />
-                {cat.label}
-              </button>
-            ))}
-          </div>
 
           {/* Search + filter toggle + view */}
           <div className="flex flex-col sm:flex-row gap-3">
