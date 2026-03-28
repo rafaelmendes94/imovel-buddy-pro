@@ -1065,7 +1065,7 @@ function analyzeDealScore(property: Property, allProperties: Property[]): DealSc
 }
 
 // ---- Deal Thermometer Component ----
-function DealThermometer({ dealScore, manualLabel, onLabelChange }: { dealScore: DealScore; manualLabel?: Property["dealLabel"]; onLabelChange?: (label: Property["dealLabel"]) => void }) {
+function DealThermometer({ dealScore, manualLabel }: { dealScore: DealScore; manualLabel?: Property["dealLabel"] }) {
   const effectiveLabel = manualLabel || dealScore.label;
   const { score, estimatedDays } = dealScore;
 
@@ -1089,9 +1089,6 @@ function DealThermometer({ dealScore, manualLabel, onLabelChange }: { dealScore:
     if (estimatedDays <= 90) return "📊";
     return "🕐";
   };
-
-  const dealLabels: Array<Property["dealLabel"]> = ["Oferta", "Bom Negócio", "Normal", "Acima da Média"];
-
   return (
     <div className="mt-1.5 space-y-1">
       {/* Deal label badge */}
@@ -1104,26 +1101,6 @@ function DealThermometer({ dealScore, manualLabel, onLabelChange }: { dealScore:
           R$ {Math.round(dealScore.pricePerM2).toLocaleString("pt-BR")}/m²
         </span>
       </div>
-
-      {/* Manual label buttons */}
-      {onLabelChange && (
-        <div className="flex items-center gap-1 flex-wrap">
-          {dealLabels.map((lbl) => (
-            <button
-              key={lbl}
-              onClick={() => onLabelChange(manualLabel === lbl ? null : lbl)}
-              className={cn(
-                "text-[8px] font-bold px-1.5 py-0.5 rounded border transition-all",
-                manualLabel === lbl
-                  ? getLabelStyle(lbl!) + " ring-1 ring-offset-1 ring-primary/30"
-                  : "text-muted-foreground border-border hover:bg-muted"
-              )}
-            >
-              {lbl}
-            </button>
-          ))}
-        </div>
-      )}
 
       {/* Thermometer bar */}
       <div className="flex items-center gap-1.5">
@@ -1317,7 +1294,7 @@ function PropertyRow({
           )}
 
           {/* Deal Thermometer */}
-          <DealThermometer dealScore={dealScore} manualLabel={property.dealLabel} onLabelChange={(lbl) => onDealLabelChange?.(property.id, lbl)} />
+          <DealThermometer dealScore={dealScore} manualLabel={property.dealLabel} />
         </div>
 
         {/* ── COL 4: Proprietário + Chaves + Datas + Status ── */}
