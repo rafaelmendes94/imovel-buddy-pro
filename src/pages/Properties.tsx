@@ -224,10 +224,10 @@ export default function Properties() {
       if (activeCategory === "permuta" && !p.acceptsExchange) return false;
       if (activeCategory === "vendidos" && p.status !== "Vendido") return false;
 
-      // Search
+      // Search (includes code)
       if (search) {
         const s = search.toLowerCase();
-        if (!p.title.toLowerCase().includes(s) && !p.address.toLowerCase().includes(s) && !p.city.toLowerCase().includes(s) && !p.broker.toLowerCase().includes(s)) return false;
+        if (!p.title.toLowerCase().includes(s) && !p.address.toLowerCase().includes(s) && !p.city.toLowerCase().includes(s) && !p.broker.toLowerCase().includes(s) && !(p.code || "").toLowerCase().includes(s)) return false;
       }
 
       // Advanced filters
@@ -241,10 +241,11 @@ export default function Properties() {
       if (filterOwner && p.owner !== filterOwner) return false;
       if (filterNeighborhood && p.neighborhood !== filterNeighborhood) return false;
       if (filterStreet && p.address !== filterStreet) return false;
+      if (filterCode && !(p.code || "").toLowerCase().includes(filterCode.toLowerCase())) return false;
 
       return true;
     });
-  }, [propertyList, activeCategory, search, filterCity, filterBedrooms, filterPriceMin, filterPriceMax, filterCondition, filterFreshness, filterEmpreendimento, filterType, filterOwner, filterNeighborhood, filterStreet, showInactive]);
+  }, [propertyList, activeCategory, search, filterCity, filterBedrooms, filterPriceMin, filterPriceMax, filterCondition, filterFreshness, filterEmpreendimento, filterType, filterOwner, filterNeighborhood, filterStreet, filterCode, showInactive]);
 
   const favoritedProperties = propertyList.filter((p) => favoriteIds.includes(p.id));
 
