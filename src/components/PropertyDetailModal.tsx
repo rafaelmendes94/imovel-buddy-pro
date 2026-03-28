@@ -600,10 +600,10 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
             </div>
           </div>
 
-          {/* Financeiro */}
+          {/* Valores, Pagamento e Classificação */}
           <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
             <p className="text-sm font-bold text-gray-800 uppercase tracking-wider mb-4 flex items-center gap-1.5">
-              <DollarSign className="w-4 h-4 text-amber-500" /> Financeiro
+              <DollarSign className="w-4 h-4 text-amber-500" /> Valores e Negócio
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div>
@@ -623,6 +623,35 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                 <EditableField field="bonusExpiry" value={property.bonusExpiry || ""} label="validade bônus" />
               </div>
             </div>
+
+            {/* Condições de Pagamento */}
+            <div className="mt-4">
+              <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 block flex items-center gap-1">
+                <CreditCard className="w-3 h-3" /> Condições de Pagamento
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {property.paymentConditions?.map((cond) => (
+                  <button
+                    key={cond}
+                    className="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-emerald-700 border border-emerald-200 shadow-sm hover:bg-emerald-50 transition-colors cursor-pointer"
+                    onClick={() => onFilterByCondition?.(cond)}
+                    title={`Ver imóveis com condição "${cond}"`}
+                  >
+                    {cond}
+                  </button>
+                ))}
+                {property.paymentConditionsOther && (
+                  <span className="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-gray-600 border border-gray-200">
+                    {property.paymentConditionsOther}
+                  </span>
+                )}
+                {(!property.paymentConditions || property.paymentConditions.length === 0) && (
+                  <span className="text-xs text-gray-400">Nenhuma condição cadastrada</span>
+                )}
+              </div>
+            </div>
+
+            {/* Toggles */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-4">
               <div className="flex items-center gap-3">
                 <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Aceita Permuta</label>
@@ -676,185 +705,106 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                 </button>
               </div>
             </div>
-          </div>
 
-          {/* Chaves e Exclusividade */}
-          <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
-            <p className="text-sm font-bold text-gray-800 uppercase tracking-wider mb-4 flex items-center gap-1.5">
-              <Key className="w-4 h-4 text-amber-500" /> Chaves e Exclusividade
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Localização das Chaves</label>
-                <EditableField field="keysLocation" value={property.keysLocation || ""} label="localização das chaves" />
+            {/* Classificação de Negócio */}
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 block flex items-center gap-1">
+                <Flame className="w-3 h-3 text-orange-500" /> Classificação de Negócio
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {(["Oferta", "Bom Negócio", "Normal", "Acima da Média"] as const).map((lbl) => {
+                  const isSelected = property.dealLabel === lbl;
+                  const styles: Record<string, string> = {
+                    "Oferta": "text-emerald-700 bg-emerald-50 border-emerald-300 ring-emerald-400",
+                    "Bom Negócio": "text-emerald-600 bg-emerald-50 border-emerald-200 ring-emerald-300",
+                    "Normal": "text-amber-700 bg-amber-50 border-amber-300 ring-amber-400",
+                    "Acima da Média": "text-red-600 bg-red-50 border-red-300 ring-red-400",
+                  };
+                  return (
+                    <button
+                      key={lbl}
+                      onClick={() => {
+                        const newLabel = isSelected ? null : lbl;
+                        if (onUpdateProperty) {
+                          updateProperty({ ...property, dealLabel: newLabel });
+                        }
+                        toast.success(newLabel ? `Classificado como "${newLabel}"` : "Classificação removida");
+                      }}
+                      className={cn(
+                        "px-4 py-2 rounded-lg text-sm font-bold border-2 transition-all",
+                        isSelected
+                          ? styles[lbl] + " ring-2 ring-offset-1 shadow-sm"
+                          : "text-gray-500 bg-white border-gray-200 hover:bg-gray-50"
+                      )}
+                    >
+                      {lbl === "Oferta" && "🏷️ "}{lbl === "Bom Negócio" && "🏷️ "}{lbl}
+                    </button>
+                  );
+                })}
               </div>
-              <div>
-                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Termo de Exclusividade</label>
-                <EditableField field="exclusivityTerm" value={property.exclusivityTerm || ""} label="termo de exclusividade" />
-              </div>
+              {property.dealLabel && (
+                <p className="text-[11px] text-gray-500 mt-2 flex items-center gap-1">
+                  <TrendingUp className="w-3 h-3" /> Classificação: <span className="font-bold text-gray-700">{property.dealLabel}</span>
+                </p>
+              )}
             </div>
           </div>
 
-          <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-xs font-bold text-gray-800 uppercase tracking-wider">Descrição</p>
-              <div className="flex items-center gap-1.5">
-                {editingField !== "description" && (
-                  <>
-                    <button
-                      onClick={() => setShowAIOptions(!showAIOptions)}
-                      className={cn(
-                        "text-xs flex items-center gap-1 font-semibold px-2 py-1 rounded-lg border transition-colors",
-                        showAIOptions
-                          ? "text-purple-700 bg-purple-100 border-purple-300"
-                          : "text-purple-500 bg-purple-50 border-purple-200 hover:bg-purple-100"
-                      )}
-                      disabled={!!generatingAI}
-                    >
-                      {generatingAI ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
-                      Gerar com IA
-                    </button>
-                    <button onClick={() => startEdit("description", property.description || "")} className="text-xs text-amber-500 hover:text-amber-600 flex items-center gap-1 font-semibold">
-                      <Pencil className="w-3 h-3" /> Editar
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* AI Style Options */}
-            {showAIOptions && editingField !== "description" && (
-              <div className="mb-3 grid grid-cols-2 gap-2 animate-in fade-in slide-in-from-top-2 duration-200">
-                {aiStyles.map((style) => (
-                  <button
-                    key={style.id}
-                    onClick={() => handleGenerateDescription(style.id)}
-                    disabled={!!generatingAI}
-                    className={cn(
-                      "flex items-center gap-2 px-3 py-2.5 rounded-lg border text-xs font-semibold transition-all",
-                      style.color,
-                      generatingAI === style.id && "opacity-70 cursor-wait"
-                    )}
-                  >
-                    {generatingAI === style.id ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                      <style.icon className="w-3.5 h-3.5" />
-                    )}
-                    {style.label}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {editingField === "description" ? (
-              <div className="space-y-2">
-                <textarea
-                  value={editValues.description ?? property.description ?? ""}
-                  onChange={(e) => setEditValues((prev) => ({ ...prev, description: e.target.value }))}
-                  className="w-full bg-white border border-amber-300 rounded-lg px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-400 min-h-[120px]"
-                  autoFocus
-                />
-                <div className="flex gap-1.5 flex-wrap">
-                  <button onClick={() => saveEdit("description")} className="px-3 py-1.5 rounded-lg bg-emerald-500 text-white text-xs font-bold hover:bg-emerald-600 transition-colors">Salvar</button>
-                  <button onClick={cancelEdit} className="px-3 py-1.5 rounded-lg bg-gray-200 text-gray-600 text-xs font-bold hover:bg-gray-300 transition-colors">Cancelar</button>
-                  <div className="flex-1" />
-                  {aiStyles.map((style) => (
-                    <button
-                      key={style.id}
-                      onClick={() => handleGenerateDescription(style.id)}
-                      disabled={!!generatingAI}
-                      className={cn(
-                        "flex items-center gap-1 px-2 py-1.5 rounded-lg border text-[10px] font-semibold transition-all",
-                        style.color,
-                        generatingAI === style.id && "opacity-70 cursor-wait"
-                      )}
-                      title={`Regerar: ${style.label}`}
-                    >
-                      {generatingAI === style.id ? (
-                        <Loader2 className="w-3 h-3 animate-spin" />
-                      ) : (
-                        <style.icon className="w-3 h-3" />
-                      )}
-                      <span className="hidden sm:inline">{style.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
-                {property.description || "Sem descrição. Clique em editar ou gere com IA."}
-              </p>
-            )}
-          </div>
-
-          {/* Features tags */}
-          <div className="flex flex-wrap gap-2 items-center">
-            {property.type && (
-              <span className="px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-700">
-                {property.type}
-              </span>
-            )}
-            {/* Vista - select */}
-            <select
-              value={property.vista || ""}
-              onChange={(e) => {
-                if (onUpdateProperty) {
-                  const val = e.target.value || undefined;
-                  updateProperty({ ...property, vista: val, seaView: val === "Mar" || val === "Mar / Lago" });
-                  toast.success("Vista atualizada!");
-                }
-              }}
-              className="px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-300"
-            >
-              <option value="">🔭 Vista...</option>
-              <option value="Mar">🌊 Vista Mar</option>
-              <option value="Lago">💧 Vista Lago</option>
-              <option value="Mar / Lago">🌊💧 Mar / Lago</option>
-              <option value="Cidade">🏙️ Cidade</option>
-              <option value="Parque">🌳 Parque</option>
-              <option value="Piscina">🏊 Piscina</option>
-              <option value="Rua">🛣️ Rua</option>
-              <option value="Interna">🏠 Interna</option>
-            </select>
-            {/* Condição - select */}
-            <select
-              value={property.condicao || ""}
-              onChange={(e) => {
-                if (onUpdateProperty) {
-                  const val = (e.target.value || undefined) as Property["condicao"];
-                  updateProperty({ ...property, condicao: val, decorated: val === "Decorado" || val === "Mobiliado" });
-                  toast.success("Condição atualizada!");
-                }
-              }}
-              className="px-3 py-1.5 rounded-lg text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-300"
-            >
-              <option value="">🏠 Condição...</option>
-              <option value="Mobiliado">🛋️ Mobiliado</option>
-              <option value="Semi-mobiliado">🪑 Semi-mobiliado</option>
-              <option value="Vazio">📦 Vazio</option>
-              <option value="Decorado">🎨 Decorado</option>
-            </select>
-            {property.acceptsExchange && (
-              <span className="px-3 py-1.5 rounded-lg text-xs font-bold bg-orange-50 text-orange-700 flex items-center gap-1">
-                <Repeat className="w-3 h-3" /> Aceita Permuta
-              </span>
-            )}
-          </div>
-
-          {/* Características do Imóvel - Editable selects */}
+          {/* Identificação - Proprietário */}
           <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
             <p className="text-sm font-bold text-gray-800 uppercase tracking-wider mb-4 flex items-center gap-1.5">
-              <Building2 className="w-4 h-4 text-amber-500" /> Características do Imóvel
+              <User className="w-4 h-4 text-amber-500" /> Identificação
             </p>
-
-            {/* Proprietário */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4 p-3 bg-white rounded-lg border border-gray-200">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
                 <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">
                   <User className="w-3 h-3 inline mr-1" />Proprietário
                 </label>
-                <EditableField field="owner" value={property.owner || ""} label="proprietário" />
+                <select
+                  value={property.owner || ""}
+                  onChange={(e) => {
+                    if (!onUpdateProperty) return;
+                    const selectedOwner = e.target.value;
+                    if (!selectedOwner) {
+                      updateProperty({ ...property, owner: undefined, ownerPhone: undefined, ownerType: undefined });
+                      return;
+                    }
+                    // Find existing property with this owner to pull their info
+                    const ref = allProperties.find(p => p.owner === selectedOwner && p.id !== property.id);
+                    if (ref) {
+                      updateProperty({
+                        ...property,
+                        owner: selectedOwner,
+                        ownerPhone: ref.ownerPhone || property.ownerPhone,
+                        ownerType: ref.ownerType || property.ownerType,
+                      });
+                      toast.success(`Dados do proprietário "${selectedOwner}" aplicados!`);
+                    } else {
+                      updateProperty({ ...property, owner: selectedOwner });
+                    }
+                  }}
+                  className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                >
+                  <option value="">Selecione</option>
+                  {[...new Set(allProperties.map(p => p.owner).filter(Boolean))].sort().map(owner => (
+                    <option key={owner} value={owner}>{owner}</option>
+                  ))}
+                </select>
+                <input
+                  type="text"
+                  placeholder="Ou digite um novo..."
+                  className="w-full mt-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && onUpdateProperty) {
+                      const val = (e.target as HTMLInputElement).value.trim();
+                      if (val) {
+                        updateProperty({ ...property, owner: val });
+                        toast.success(`Proprietário "${val}" definido!`);
+                        (e.target as HTMLInputElement).value = "";
+                      }
+                    }
+                  }}
+                />
               </div>
               <div>
                 <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">
@@ -882,11 +832,31 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                 </select>
               </div>
               <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">
+                  <Key className="w-3 h-3 inline mr-1" />Chaves do Imóvel
+                </label>
+                <EditableField field="keysLocation" value={property.keysLocation || ""} label="localização das chaves" />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">
+                  <FileCheck className="w-3 h-3 inline mr-1" />Termo de Exclusividade
+                </label>
+                <EditableField field="exclusivityTerm" value={property.exclusivityTerm || ""} label="termo de exclusividade" />
+              </div>
+              <div>
                 <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Corretor</label>
                 <EditableField field="broker" value={property.broker} label="corretor" />
               </div>
             </div>
+          </div>
 
+          {/* Características do Imóvel */}
+          <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
+            <p className="text-sm font-bold text-gray-800 uppercase tracking-wider mb-4 flex items-center gap-1.5">
+              <Building2 className="w-4 h-4 text-amber-500" /> Características do Imóvel
+            </p>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {/* Posição no Prédio */}
               <div>
@@ -910,7 +880,6 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                   <option value="Fundos/Lateral">Fundos/Lateral</option>
                 </select>
               </div>
-
               {/* Posição Solar */}
               <div>
                 <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Posição Solar</label>
@@ -933,9 +902,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                   <option value="Poente/Sul">Poente/Sul</option>
                 </select>
               </div>
-
             </div>
-
             {/* Infraestrutura */}
             <div className="mt-4">
               <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 block">Infraestrutura</label>
@@ -966,7 +933,6 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                   );
                 })}
               </div>
-              {/* Quantidade de elevadores */}
               {property.infraestrutura?.includes("Elevador") && (
                 <div className="flex items-center gap-2 mt-2">
                   <label className="text-[11px] font-bold text-gray-500 whitespace-nowrap">Qtd. Elevadores:</label>
@@ -985,75 +951,6 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
               )}
             </div>
           </div>
-
-          {/* Deal Label Selector */}
-          <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-            <p className="text-xs font-bold text-gray-800 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-              <Flame className="w-3.5 h-3.5 text-orange-500" /> Classificação de Negócio
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {(["Oferta", "Bom Negócio", "Normal", "Acima da Média"] as const).map((lbl) => {
-                const isSelected = property.dealLabel === lbl;
-                const styles: Record<string, string> = {
-                  "Oferta": "text-emerald-700 bg-emerald-50 border-emerald-300 ring-emerald-400",
-                  "Bom Negócio": "text-emerald-600 bg-emerald-50 border-emerald-200 ring-emerald-300",
-                  "Normal": "text-amber-700 bg-amber-50 border-amber-300 ring-amber-400",
-                  "Acima da Média": "text-red-600 bg-red-50 border-red-300 ring-red-400",
-                };
-                return (
-                  <button
-                    key={lbl}
-                    onClick={() => {
-                      const newLabel = isSelected ? null : lbl;
-                      if (onUpdateProperty) {
-                        updateProperty({ ...property, dealLabel: newLabel });
-                      }
-                      toast.success(newLabel ? `Classificado como "${newLabel}"` : "Classificação removida");
-                    }}
-                    className={cn(
-                      "px-4 py-2 rounded-lg text-sm font-bold border-2 transition-all",
-                      isSelected
-                        ? styles[lbl] + " ring-2 ring-offset-1 shadow-sm"
-                        : "text-gray-500 bg-white border-gray-200 hover:bg-gray-50"
-                    )}
-                  >
-                    {lbl === "Oferta" && "🏷️ "}{lbl === "Bom Negócio" && "🏷️ "}{lbl}
-                  </button>
-                );
-              })}
-            </div>
-            {property.dealLabel && (
-              <p className="text-[11px] text-gray-500 mt-2 flex items-center gap-1">
-                <TrendingUp className="w-3 h-3" /> Classificação manual: <span className="font-bold text-gray-700">{property.dealLabel}</span>
-              </p>
-            )}
-          </div>
-
-          {/* Payment conditions */}
-          {property.paymentConditions && property.paymentConditions.length > 0 && (
-            <div className="bg-emerald-50/50 rounded-xl p-4 border border-emerald-100">
-              <p className="text-xs font-bold text-emerald-800 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-                <CreditCard className="w-3.5 h-3.5" /> Condições de Pagamento
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {property.paymentConditions.map((cond) => (
-                  <button
-                    key={cond}
-                    className="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-emerald-700 border border-emerald-200 shadow-sm hover:bg-emerald-50 transition-colors cursor-pointer"
-                    onClick={() => onFilterByCondition?.(cond)}
-                    title={`Ver imóveis com condição "${cond}"`}
-                  >
-                    {cond}
-                  </button>
-                ))}
-                {property.paymentConditionsOther && (
-                  <span className="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-gray-600 border border-gray-200">
-                    {property.paymentConditionsOther}
-                  </span>
-                )}
-              </div>
-            </div>
-          )}
 
           {/* Video section */}
           <div className="rounded-xl overflow-hidden border border-gray-200">
