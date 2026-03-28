@@ -207,12 +207,12 @@ export default function Properties() {
     navigate(`/contratos?${params.toString()}`);
   };
 
-  const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterCondition || filterEmpreendimento || filterType || filterOwner || filterNeighborhood || filterStreet || filterCode;
+  const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterCondition || filterEmpreendimento || filterType || filterOwner || filterNeighborhood || filterStreet || filterCode || filterParking;
 
   const clearFilters = () => {
     setFilterCity(""); setFilterBedrooms(""); setFilterPriceMin(""); setFilterPriceMax(""); setFilterCondition("");
-    setFilterEmpreendimento(""); setFilterType(""); setFilterOwner(""); setFilterNeighborhood(""); setFilterStreet(""); setFilterCode(""); setSearch("");
-    setShowInactive(false);
+    setFilterEmpreendimento(""); setFilterType(""); setFilterOwner(""); setFilterNeighborhood(""); setFilterStreet(""); setFilterCode(""); setFilterParking(""); setSearch("");
+    setShowInactive(false); setSortBy("default");
   };
 
   const cities = useMemo(() => [...new Set(propertyList.map(p => p.city))].sort(), [propertyList]);
@@ -282,10 +282,26 @@ export default function Properties() {
       if (filterNeighborhood && p.neighborhood !== filterNeighborhood) return false;
       if (filterStreet && p.address !== filterStreet) return false;
       if (filterCode && !(p.code || "").toLowerCase().includes(filterCode.toLowerCase())) return false;
+      if (filterParking && p.parking < parseInt(filterParking)) return false;
 
       return true;
     });
-  }, [propertyList, activeCategory, search, filterCity, filterBedrooms, filterPriceMin, filterPriceMax, filterCondition, filterFreshness, filterEmpreendimento, filterType, filterOwner, filterNeighborhood, filterStreet, filterCode, showInactive]);
+  }, [propertyList, activeCategory, search, filterCity, filterBedrooms, filterPriceMin, filterPriceMax, filterCondition, filterFreshness, filterEmpreendimento, filterType, filterOwner, filterNeighborhood, filterStreet, filterCode, filterParking, showInactive]);
+
+  const sorted = useMemo(() => {
+    if (sortBy === "default") return filtered;
+    return [...filtered].sort((a, b) => {
+      switch (sortBy) {
+        case "price-desc": return b.price - a.price;
+        case "price-asc": return a.price - b.price;
+        case "name-asc": return (a.empreendimento || a.title).localeCompare(b.empreendimento || b.title);
+        case "name-desc": return (b.empreendimento || b.title).localeCompare(a.empreendimento || a.title);
+        case "updated": return new Date(b.updatedAt || b.createdAt).getTime() - new Date(a.updatedAt || a.createdAt).getTime();
+        case "created": return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        default: return 0;
+      }
+    });
+  }, [filtered, sortBy]);
 
   const favoritedProperties = propertyList.filter((p) => favoriteIds.includes(p.id));
 
