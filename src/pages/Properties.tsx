@@ -93,7 +93,7 @@ const statusConfig: Record<Property["status"], { color: string; bg: string; bord
 
 type Category = "todos" | "apartamentos" | "casas" | "terrenos" | "lotes" | "lotes-cond" | "condominios" | "decorados" | "vista-mar" | "permuta" | "vendidos";
 
-const categories: { key: Category; label: string; icon: typeof Home }[] = [
+const defaultCategories: { key: Category; label: string; icon: typeof Home }[] = [
   { key: "todos", label: "Todos", icon: Search },
   { key: "apartamentos", label: "Apartamentos", icon: Building2 },
   { key: "casas", label: "Casas", icon: Home },
@@ -104,6 +104,16 @@ const categories: { key: Category; label: string; icon: typeof Home }[] = [
   { key: "decorados", label: "Decorados", icon: Paintbrush },
   { key: "vista-mar", label: "Vista Mar", icon: Waves },
 ];
+
+const getSavedCategoryOrder = (): typeof defaultCategories => {
+  try {
+    const saved = JSON.parse(localStorage.getItem("mv-category-order") || "[]") as Category[];
+    if (saved.length === defaultCategories.length) {
+      return saved.map(key => defaultCategories.find(c => c.key === key)!).filter(Boolean);
+    }
+  } catch {}
+  return defaultCategories;
+};
 
 // Auto-generate codes for properties that don't have one
 const propertiesWithCodes = initialProperties.map((p, i) => ({
