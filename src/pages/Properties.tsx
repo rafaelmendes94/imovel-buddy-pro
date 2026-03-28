@@ -340,7 +340,7 @@ export default function Properties() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+        <div className="grid grid-cols-4 sm:grid-cols-4 lg:grid-cols-8 gap-2 sm:gap-3">
           {[
             { label: "Total", count: propertyList.length, icon: Star, onClick: () => setActiveCategory("todos") },
             { label: "Ativos", count: propertyList.filter(p => p.status === "Disponível").length, icon: Home, onClick: () => setActiveCategory("todos") },
