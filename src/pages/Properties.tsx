@@ -320,6 +320,7 @@ export default function Properties() {
                 {propertyList.length} cadastrados
               </p>
             </div>
+            <div className="flex gap-2 flex-wrap">
               <div className="relative" ref={xmlMenuRef}>
                 <button
                   onClick={() => setShowXmlMenu(!showXmlMenu)}
@@ -339,6 +340,12 @@ export default function Properties() {
                   </div>
                 )}
               </div>
+              <button
+                onClick={() => navigate("/relatorios")}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-card border border-input text-foreground text-xs font-medium hover:bg-muted transition-colors"
+              >
+                <BarChart3 className="w-3.5 h-3.5" /> Relatórios
+              </button>
               <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg gradient-gold text-primary text-xs font-semibold hover:opacity-90 transition-opacity">
                 <Plus className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Novo</span> Imóvel
               </button>
