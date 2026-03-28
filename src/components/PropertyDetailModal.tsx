@@ -359,8 +359,8 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
             <button onClick={handleDownload} className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-blue-600" title="Baixar ficha">
               <Download className="w-4.5 h-4.5" />
             </button>
-            <button onClick={handleDriveDownload} className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-purple-600" title="Baixar do Drive (Chaves)">
-              <Key className="w-4.5 h-4.5" />
+            <button onClick={handleMaterialDownload} className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-purple-600" title="Material Completo">
+              <Download className="w-4.5 h-4.5" />
             </button>
             <button onClick={handleClose} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
               <X className="w-5 h-5 text-gray-500" />
@@ -448,8 +448,8 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
           <button onClick={handleDownload} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
             <Download className="w-4 h-4 text-blue-500" /> Baixar Ficha
           </button>
-          <button onClick={handleDriveDownload} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
-            <Key className="w-4 h-4 text-purple-500" /> Chaves / Drive
+          <button onClick={handleMaterialDownload} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
+            <Download className="w-4 h-4 text-purple-500" /> Material Completo
           </button>
         </div>
 
