@@ -897,6 +897,7 @@ function PropertyRow({
             </div>
           )}
         </div>
+        <UpdateBadge updatedAt={property.updatedAt} createdAt={property.createdAt} compact />
         <StatusBar currentStatus={property.status} onChangeStatus={handleStatusChange} />
       </div>
       <div className="text-right flex-shrink-0 space-y-1">
