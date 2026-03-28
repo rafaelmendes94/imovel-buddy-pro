@@ -48,6 +48,7 @@ export interface Property {
   bonusExpiry?: string;
   dealLabel?: "Oferta" | "Bom Negócio" | "Normal" | "Acima da Média" | null;
   views?: number;
+  padrao?: "Econômico" | "Médio Padrão" | "Alto Padrão" | "Luxo";
 }
 
 export interface Broker {
