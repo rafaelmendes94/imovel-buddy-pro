@@ -8,7 +8,6 @@ import {
 } from "lucide-react";
 import { formatCurrency, type Property } from "@/data/mockData";
 import { cn } from "@/lib/utils";
-import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 interface PropertyDetailModalProps {
