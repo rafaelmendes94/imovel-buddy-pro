@@ -13,8 +13,10 @@ import {
   Star, Fence, TreePine, Waves, Paintbrush, Filter, X, SlidersHorizontal,
   Phone, Heart, FileCheck, Eye, Repeat, CreditCard, DollarSign, Ban,
   Share2, CalendarCheck, CalendarClock, AlertTriangle, Pencil, Image,
-  FolderDown, User, ShieldCheck, Percent, Gift,
+  FolderDown, User, ShieldCheck, Percent, Gift, BarChart3, FileSignature,
+  TrendingUp,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -108,6 +110,7 @@ const propertiesWithCodes = initialProperties.map((p, i) => ({
 }));
 
 export default function Properties() {
+  const navigate = useNavigate();
   const [propertyList, setPropertyList] = useState<Property[]>(propertiesWithCodes);
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<Category>("todos");
@@ -170,6 +173,29 @@ export default function Properties() {
   const handleDealLabelChange = (propertyId: string, label: Property["dealLabel"]) => {
     setPropertyList((prev) => prev.map((p) => (p.id === propertyId ? { ...p, dealLabel: label } : p)));
     toast.success(label ? `Classificado como "${label}"` : "Classificação removida");
+  };
+
+  const handleNavigateToValuation = (property: Property) => {
+    const params = new URLSearchParams({
+      tipo: property.type,
+      cidade: property.city,
+      bairro: property.neighborhood || "",
+      area: String(property.area),
+      quartos: String(property.bedrooms),
+      endereco: property.address,
+      titulo: property.title,
+    });
+    navigate(`/avaliacoes?${params.toString()}`);
+  };
+
+  const handleNavigateToContract = (property: Property) => {
+    const params = new URLSearchParams({
+      imovel: property.title,
+      endereco: `${property.address}, ${property.city}`,
+      valor: String(property.price),
+      proprietario: property.owner || "",
+    });
+    navigate(`/contratos?${params.toString()}`);
   };
 
   const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterCondition || filterEmpreendimento || filterType || filterOwner || filterNeighborhood || filterStreet || filterCode;
@@ -596,6 +622,8 @@ export default function Properties() {
                 onPriceChange={handlePriceChange}
                 allProperties={propertyList}
                 onDealLabelChange={handleDealLabelChange}
+                onNavigateToValuation={handleNavigateToValuation}
+                onNavigateToContract={handleNavigateToContract}
               />
             ))}
           </div>
@@ -1125,7 +1153,7 @@ function DealThermometer({ dealScore, manualLabel }: { dealScore: DealScore; man
 
 // ---- PropertyRow (redesigned) ----
 function PropertyRow({
-  property, onStatusChange, onSelect, isFavorited, onToggleFavorite, onFilterByTitle, onFilterByCondition, onFilterByOwner, onPriceChange, allProperties, onDealLabelChange,
+  property, onStatusChange, onSelect, isFavorited, onToggleFavorite, onFilterByTitle, onFilterByCondition, onFilterByOwner, onPriceChange, allProperties, onDealLabelChange, onNavigateToValuation, onNavigateToContract,
 }: {
   property: Property;
   onStatusChange: (id: string, status: Property["status"]) => void;
@@ -1138,6 +1166,8 @@ function PropertyRow({
   onPriceChange?: (id: string, field: "price" | "priceInstallment", value: number) => void;
   allProperties?: Property[];
   onDealLabelChange?: (id: string, label: Property["dealLabel"]) => void;
+  onNavigateToValuation?: (p: Property) => void;
+  onNavigateToContract?: (p: Property) => void;
 }) {
   const dealScore = useMemo(() => analyzeDealScore(property, allProperties || []), [property, allProperties]);
   const [showCelebration, setShowCelebration] = useState(false);
@@ -1182,6 +1212,15 @@ function PropertyRow({
               {ownerTypeInfo.label}
             </span>
           )}
+          {/* Favorite heart on photo */}
+          <button
+            onClick={(e) => { e.stopPropagation(); onToggleFavorite?.(property.id); }}
+            className={cn("absolute top-2 right-2 z-10 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all hover:scale-110",
+              isFavorited ? "bg-red-500 text-white" : "bg-foreground/30 text-white hover:bg-red-500"
+            )}
+          >
+            <Heart className={cn("w-4 h-4", isFavorited && "fill-current")} />
+          </button>
         </div>
 
         {/* ── COL 2: Identidade + Dados Técnicos ── */}
@@ -1293,8 +1332,41 @@ function PropertyRow({
             </div>
           )}
 
+          {/* Contract shortcut */}
+          <button
+            onClick={() => onNavigateToContract?.(property)}
+            className="flex items-center gap-1 mt-1 px-2 py-1 rounded-md bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-colors text-[9px] font-bold uppercase tracking-wide"
+            title="Gerar contrato com dados do imóvel"
+          >
+            <FileSignature className="w-3 h-3" /> Gerar Contrato
+          </button>
+        </div>
+
+        {/* ── COL 3.5: Analytics ── */}
+        <div className="w-[160px] flex-shrink-0 border-r border-border px-3 py-2 flex flex-col justify-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-center gap-1 mb-0.5">
+            <BarChart3 className="w-3 h-3 text-primary" />
+            <span className="text-[9px] font-black text-primary uppercase tracking-wider">Analytics</span>
+          </div>
+
           {/* Deal Thermometer */}
           <DealThermometer dealScore={dealScore} manualLabel={property.dealLabel} />
+
+          {/* View counter */}
+          <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted/50">
+            <Eye className="w-3 h-3 text-muted-foreground" />
+            <span className="text-[10px] font-bold text-foreground">{property.views ?? Math.floor(Math.random() * 200 + 10)}</span>
+            <span className="text-[8px] text-muted-foreground">views</span>
+          </div>
+
+          {/* Valuation link */}
+          <button
+            onClick={() => onNavigateToValuation?.(property)}
+            className="flex items-center gap-1 px-2 py-1.5 rounded-md bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-[9px] font-bold uppercase tracking-wide"
+            title="Avaliar imóvel com IA"
+          >
+            <TrendingUp className="w-3 h-3" /> Avaliar com IA
+          </button>
         </div>
 
         {/* ── COL 4: Proprietário + Chaves + Datas + Status ── */}
@@ -1379,11 +1451,6 @@ function PropertyRow({
             }}
             className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors" title="Compartilhar"
           ><Share2 className="w-3.5 h-3.5 text-foreground" /></button>
-          <button
-            onClick={() => onToggleFavorite?.(property.id)}
-            className={cn("w-8 h-8 rounded-lg flex items-center justify-center transition-colors", isFavorited ? "bg-red-500/10 text-red-500" : "bg-secondary text-muted-foreground hover:text-red-500")}
-            title="Favoritar"
-          ><Heart className={cn("w-3.5 h-3.5", isFavorited && "fill-current")} /></button>
         </div>
       </div>
     </div>
