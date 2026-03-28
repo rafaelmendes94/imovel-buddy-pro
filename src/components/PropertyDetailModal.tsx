@@ -35,6 +35,47 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
   const [hasChanges, setHasChanges] = useState(false);
   const [editingBlock, setEditingBlock] = useState<string | null>(null);
 
+  // Block ordering with drag support
+  const defaultBlockOrder = ["identificacao", "valor", "proprietario", "caracteristicas"];
+  const [blockOrder, setBlockOrder] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem("modal-block-order");
+      if (saved) {
+        const parsed: string[] = JSON.parse(saved);
+        const missing = defaultBlockOrder.filter(b => !parsed.includes(b));
+        return [...parsed.filter(b => defaultBlockOrder.includes(b)), ...missing];
+      }
+    } catch {}
+    return defaultBlockOrder;
+  });
+  const [dragBlockIdx, setDragBlockIdx] = useState<number | null>(null);
+  const [overBlockIdx, setOverBlockIdx] = useState<number | null>(null);
+
+  const handleBlockDragStart = (e: React.DragEvent, idx: number) => {
+    setDragBlockIdx(idx);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", String(idx));
+  };
+  const handleBlockDragOver = (e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setOverBlockIdx(idx);
+  };
+  const handleBlockDrop = (e: React.DragEvent, dropIdx: number) => {
+    e.preventDefault();
+    if (dragBlockIdx === null || dragBlockIdx === dropIdx) { setDragBlockIdx(null); setOverBlockIdx(null); return; }
+    setBlockOrder(prev => {
+      const items = [...prev];
+      const [moved] = items.splice(dragBlockIdx, 1);
+      items.splice(dropIdx, 0, moved);
+      localStorage.setItem("modal-block-order", JSON.stringify(items));
+      return items;
+    });
+    setDragBlockIdx(null);
+    setOverBlockIdx(null);
+  };
+  const handleBlockDragEnd = () => { setDragBlockIdx(null); setOverBlockIdx(null); };
+
   if (!property) return null;
 
   const images = property.images && property.images.length > 0 ? property.images : [property.image];
