@@ -676,7 +676,7 @@ export default function Properties() {
           </div>
         ) : view === "list" ? (
           <div className="space-y-3">
-            {filtered.map((property) => (
+            {sorted.map((property) => (
               <PropertyRow
                 key={property.id}
                 property={property}
@@ -1471,11 +1471,12 @@ function PropertyRow({
         </div>
 
         {/* ── COL 4: Proprietário + Chaves + Datas + Status ── */}
-        <div className="w-[190px] flex-shrink-0 border-r border-border px-3 py-2 flex flex-col justify-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+        <div className="w-[190px] flex-shrink-0 border-r border-border px-3 py-2 flex flex-col justify-center gap-1" onClick={(e) => e.stopPropagation()}>
+          {/* Owner */}
           {property.owner ? (
-            <>
+            <div className="border-b border-border pb-1.5 mb-0.5">
               <button
-                className="text-[13px] font-bold text-foreground hover:text-primary transition-colors truncate text-left leading-tight"
+                className="text-[13px] font-bold text-foreground hover:text-primary transition-colors text-left leading-tight w-full"
                 onClick={() => onFilterByOwner?.(property.owner!)}
                 title={`Ver todos imóveis de ${property.owner}`}
               >{property.owner}</button>
@@ -1484,19 +1485,19 @@ function PropertyRow({
                   href={`https://wa.me/${property.ownerPhone}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-[11px] text-emerald-500 hover:text-emerald-400 transition-colors"
+                  className="flex items-center gap-1 text-[11px] text-emerald-500 hover:text-emerald-400 transition-colors mt-0.5"
                 >
                   <Phone className="w-3 h-3" /> {property.ownerPhone.replace(/^55/, "").replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3")}
                 </a>
               )}
-            </>
+            </div>
           ) : (
-            <span className="text-[11px] text-muted-foreground italic">Sem proprietário</span>
+            <span className="text-[11px] text-muted-foreground italic border-b border-border pb-1.5 mb-0.5">Sem proprietário</span>
           )}
           {/* Keys */}
-          <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+          <div className="flex items-center gap-1 text-[11px] text-muted-foreground border-b border-border pb-1.5 mb-0.5">
             <Key className="w-3.5 h-3.5 flex-shrink-0 text-amber-400" />
-            <span className="truncate font-bold text-foreground">{property.keysLocation || "Não informado"}</span>
+            <span className="font-bold text-foreground leading-tight">{property.keysLocation || "Não informado"}</span>
           </div>
           {/* Dates */}
           <div className="space-y-0.5 text-[10px] text-muted-foreground">
