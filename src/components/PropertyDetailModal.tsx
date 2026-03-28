@@ -556,16 +556,17 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
             );
 
             if (blockId === "identificacao") {
-              const isCondominio = property.type === "Condomínio" || property.type === "Terreno" || property.type === "Lote" || property.type === "Casa";
+              const isEditing = editingBlock === "identificacao";
               const isEdificio = property.type === "Apartamento" || property.type === "Comercial";
 
               const idFields: FieldConfig[] = [
-                { id: "tipo", label: "Tipo", render: () => editingBlock === "identificacao" ? (
+                // Row 1: Tipo + Empreendimento + Endereço + Bairro + Cidade
+                { id: "tipo", label: "Tipo", render: () => isEditing ? (
                   <select value={property.type} onChange={(e) => { if (onUpdateProperty) { updateProperty({ ...property, type: e.target.value as Property["type"] }); toast.success("Tipo atualizado!"); } }} className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
                     {(["Apartamento", "Casa", "Comercial", "Terreno", "Lote", "Condomínio"] as const).map(t => (<option key={t} value={t}>{t}</option>))}
                   </select>
                 ) : <span className="text-sm font-medium text-foreground">{property.type}</span> },
-                { id: "empreendimento", label: "Empreendimento", render: () => editingBlock === "identificacao" ? (
+                { id: "empreendimento", label: "Empreendimento", colSpan: 2, render: () => isEditing ? (
                   <div className="w-full space-y-1.5">
                     <select value={property.empreendimento || ""} onChange={(e) => { if (!onUpdateProperty) return; const selected = e.target.value; if (!selected) { updateProperty({ ...property, empreendimento: undefined }); toast.success("Empreendimento removido"); return; } const ref = allProperties.find(p => p.empreendimento === selected && p.id !== property.id); if (ref) { updateProperty({ ...property, empreendimento: selected, address: ref.address || property.address, city: ref.city || property.city, neighborhood: ref.neighborhood || property.neighborhood, infraestrutura: ref.infraestrutura || property.infraestrutura, posicaoPredio: property.posicaoPredio || ref.posicaoPredio, posicaoSolar: property.posicaoSolar || ref.posicaoSolar }); toast.success(`Dados do empreendimento "${selected}" aplicados!`); } else { updateProperty({ ...property, empreendimento: selected }); toast.success("Empreendimento atualizado!"); } }} className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
                       <option value="">Selecione</option>
@@ -574,18 +575,20 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                     <input type="text" placeholder="Ou digite um novo..." className="w-full px-3 py-1.5 rounded-lg border border-input text-xs bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring" onKeyDown={(e) => { if (e.key === "Enter" && onUpdateProperty) { const val = (e.target as HTMLInputElement).value.trim(); if (val) { updateProperty({ ...property, empreendimento: val }); toast.success(`Empreendimento "${val}" definido!`); (e.target as HTMLInputElement).value = ""; } } }} />
                   </div>
                 ) : <span className="text-sm font-medium text-foreground">{property.empreendimento || "—"}</span> },
-                { id: "endereco", label: "Endereço", colSpan: 2, render: () => editingBlock === "identificacao" ? <EditableField field="address" value={property.address || ""} label="endereço" /> : <span className="text-sm font-medium text-foreground">{property.address || "—"}</span> },
-                { id: "bairro", label: "Bairro", render: () => editingBlock === "identificacao" ? <EditableField field="neighborhood" value={property.neighborhood || ""} label="bairro" /> : <span className="text-sm font-medium text-foreground">{property.neighborhood || "—"}</span> },
-                { id: "cidade", label: "Cidade", render: () => editingBlock === "identificacao" ? <EditableField field="city" value={property.city || ""} label="cidade" /> : <span className="text-sm font-medium text-foreground">{property.city || "—"}</span> },
+                // Row 2: Endereço (2col) + Bairro + Cidade
+                { id: "endereco", label: "Endereço", colSpan: 2, render: () => isEditing ? <EditableField field="address" value={property.address || ""} label="endereço" /> : <span className="text-sm font-medium text-foreground">{property.address || "—"}</span> },
+                { id: "bairro", label: "Bairro", render: () => isEditing ? <EditableField field="neighborhood" value={property.neighborhood || ""} label="bairro" /> : <span className="text-sm font-medium text-foreground">{property.neighborhood || "—"}</span> },
+                { id: "cidade", label: "Cidade", render: () => isEditing ? <EditableField field="city" value={property.city || ""} label="cidade" /> : <span className="text-sm font-medium text-foreground">{property.city || "—"}</span> },
+                // Row 3: Apt/Box ou Quadra/Lote + Áreas
                 ...(isEdificio ? [
-                  { id: "unidade", label: "Apt / Unidade", render: () => editingBlock === "identificacao" ? <EditableField field="unitNumber" value={property.unitNumber || ""} label="unidade" /> : <span className="text-sm font-medium text-foreground">{property.unitNumber || "—"}</span> },
-                  { id: "box", label: "Box / Vaga", render: () => editingBlock === "identificacao" ? <EditableField field="boxNumber" value={property.boxNumber || ""} label="box" /> : <span className="text-sm font-medium text-foreground">{property.boxNumber || "—"}</span> },
+                  { id: "unidade", label: "Apt / Unidade", render: () => isEditing ? <EditableField field="unitNumber" value={property.unitNumber || ""} label="unidade" /> : <span className="text-sm font-medium text-foreground">{property.unitNumber || "—"}</span> },
+                  { id: "box", label: "Box / Vaga", render: () => isEditing ? <EditableField field="boxNumber" value={property.boxNumber || ""} label="box" /> : <span className="text-sm font-medium text-foreground">{property.boxNumber || "—"}</span> },
                 ] : [
-                  { id: "quadra", label: "Quadra", render: () => editingBlock === "identificacao" ? <EditableField field="quadra" value={property.quadra || ""} label="quadra" /> : <span className="text-sm font-medium text-foreground">{property.quadra || "—"}</span> },
-                  { id: "lote", label: "Lote", render: () => editingBlock === "identificacao" ? <EditableField field="lote" value={property.lote || ""} label="lote" /> : <span className="text-sm font-medium text-foreground">{property.lote || "—"}</span> },
+                  { id: "quadra", label: "Quadra", render: () => isEditing ? <EditableField field="quadra" value={property.quadra || ""} label="quadra" /> : <span className="text-sm font-medium text-foreground">{property.quadra || "—"}</span> },
+                  { id: "lote", label: "Lote", render: () => isEditing ? <EditableField field="lote" value={property.lote || ""} label="lote" /> : <span className="text-sm font-medium text-foreground">{property.lote || "—"}</span> },
                 ]),
-                { id: "areaTotal", label: "Área Total", render: () => editingBlock === "identificacao" ? <span className="flex items-center gap-1"><EditableField field="area" value={property.area || 0} label="área total" type="number" /><span className="text-[10px] text-muted-foreground">m²</span></span> : <span className="text-sm font-medium text-foreground">{property.area ? `${property.area}m²` : "—"}</span> },
-                { id: "areaPriv", label: "Área Privativa", render: () => editingBlock === "identificacao" ? <span className="flex items-center gap-1"><EditableField field="privateArea" value={property.privateArea || 0} label="área privativa" type="number" /><span className="text-[10px] text-muted-foreground">m²</span></span> : <span className="text-sm font-medium text-foreground">{property.privateArea ? `${property.privateArea}m²` : "—"}</span> },
+                { id: "areaTotal", label: "Área Total", render: () => isEditing ? <span className="flex items-center gap-1"><EditableField field="area" value={property.area || 0} label="área total" type="number" /><span className="text-[10px] text-muted-foreground">m²</span></span> : <span className="text-sm font-medium text-foreground">{property.area ? `${property.area} m²` : "—"}</span> },
+                { id: "areaPriv", label: "Área Privativa", render: () => isEditing ? <span className="flex items-center gap-1"><EditableField field="privateArea" value={property.privateArea || 0} label="área privativa" type="number" /><span className="text-[10px] text-muted-foreground">m²</span></span> : <span className="text-sm font-medium text-foreground">{property.privateArea ? `${property.privateArea} m²` : "—"}</span> },
               ];
 
               return blockWrapper("identificacao",
@@ -595,11 +598,11 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                       <span className="cursor-grab active:cursor-grabbing mr-1 text-muted-foreground/50 hover:text-muted-foreground">⠿</span>
                       <Hash className="w-4 h-4 text-amber-500" /> Identificação
                     </p>
-                    <button onClick={() => setEditingBlock(editingBlock === "identificacao" ? null : "identificacao")} className={cn("p-1.5 rounded-lg transition-colors", editingBlock === "identificacao" ? "bg-amber-100 text-amber-600" : "hover:bg-muted text-muted-foreground")}>
+                    <button onClick={() => setEditingBlock(isEditing ? null : "identificacao")} className={cn("p-1.5 rounded-lg transition-colors", isEditing ? "bg-amber-100 text-amber-600" : "hover:bg-muted text-muted-foreground")}>
                       <Pencil className="w-3.5 h-3.5" />
                     </button>
                   </div>
-                  <DraggableFieldGrid storageKey="fields-identificacao" fields={idFields} editing={editingBlock === "identificacao"} />
+                  <DraggableFieldGrid storageKey="fields-identificacao" fields={idFields} columns={4} editing={isEditing} />
                 </div>
               );
             }
