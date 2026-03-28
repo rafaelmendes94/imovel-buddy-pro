@@ -11,6 +11,8 @@ export interface Property {
   bathrooms: number;
   parking: number;
   broker: string;
+  owner?: string;
+  ownerPhone?: string;
   image: string;
   images: string[];
   createdAt: string;
@@ -58,6 +60,8 @@ export const properties: Property[] = [
     bathrooms: 2,
     parking: 2,
     broker: "Carlos Silva",
+    owner: "Roberto Mendes",
+    ownerPhone: "5551998761234",
     image: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=300&fit=crop",
     images: [
       "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=300&fit=crop",
@@ -90,6 +94,8 @@ export const properties: Property[] = [
     bathrooms: 4,
     parking: 3,
     broker: "Ana Rodrigues",
+    owner: "Grupo Marina Empreendimentos",
+    ownerPhone: "5551991234567",
     image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=400&h=300&fit=crop",
     images: [
       "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=400&h=300&fit=crop",
@@ -122,6 +128,8 @@ export const properties: Property[] = [
     bathrooms: 5,
     parking: 3,
     broker: "Carlos Silva",
+    owner: "Construtora Royal",
+    ownerPhone: "5551997654321",
     image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&h=300&fit=crop",
     images: [
       "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&h=300&fit=crop",
@@ -154,6 +162,8 @@ export const properties: Property[] = [
     bathrooms: 2,
     parking: 1,
     broker: "Marcos Oliveira",
+    owner: "Investimentos Capão Ltda",
+    ownerPhone: "5551993456789",
     image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop",
     images: [
       "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop",
@@ -184,6 +194,8 @@ export const properties: Property[] = [
     bathrooms: 0,
     parking: 0,
     broker: "Ana Rodrigues",
+    owner: "Paulo Ferreira",
+    ownerPhone: "5551996543210",
     image: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&h=300&fit=crop",
     images: [
       "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&h=300&fit=crop",
@@ -214,6 +226,8 @@ export const properties: Property[] = [
     bathrooms: 1,
     parking: 1,
     broker: "Marcos Oliveira",
+    owner: "Roberto Mendes",
+    ownerPhone: "5551998761234",
     image: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400&h=300&fit=crop",
     images: [
       "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400&h=300&fit=crop",
