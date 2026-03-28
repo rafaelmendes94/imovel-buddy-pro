@@ -588,6 +588,21 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                           <EditableField field="neighborhood" value={property.neighborhood || ""} label="bairro" />
                         </div>
                         <div>
+                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Cidade</label>
+                          <EditableField field="city" value={property.city || ""} label="cidade" />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
+                        <div className="col-span-2">
+                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Endereço Completo</label>
+                          <EditableField field="address" value={property.address || ""} label="endereço" />
+                        </div>
+                        <div>
+                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Área Total</label>
+                          <EditableField field="area" value={property.area || 0} label="área total" type="number" />
+                          <span className="text-[10px] text-gray-400">m²</span>
+                        </div>
+                        <div>
                           <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Área Privativa</label>
                           <EditableField field="privateArea" value={property.privateArea || 0} label="área privativa" type="number" />
                           <span className="text-[10px] text-gray-400">m²</span>
@@ -617,6 +632,9 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                       <div><span className="text-[10px] text-gray-400 block">Tipo</span><span className="text-sm font-medium text-gray-800">{property.type}</span></div>
                       <div><span className="text-[10px] text-gray-400 block">Empreendimento</span><span className="text-sm font-medium text-gray-800">{property.empreendimento || "—"}</span></div>
                       <div><span className="text-[10px] text-gray-400 block">Bairro</span><span className="text-sm font-medium text-gray-800">{property.neighborhood || "—"}</span></div>
+                      <div><span className="text-[10px] text-gray-400 block">Cidade</span><span className="text-sm font-medium text-gray-800">{property.city || "—"}</span></div>
+                      <div className="col-span-2"><span className="text-[10px] text-gray-400 block">Endereço</span><span className="text-sm font-medium text-gray-800">{property.address || "—"}</span></div>
+                      <div><span className="text-[10px] text-gray-400 block">Área Total</span><span className="text-sm font-medium text-gray-800">{property.area ? `${property.area}m²` : "—"}</span></div>
                       <div><span className="text-[10px] text-gray-400 block">Área Privativa</span><span className="text-sm font-medium text-gray-800">{property.privateArea ? `${property.privateArea}m²` : "—"}</span></div>
                       <div><span className="text-[10px] text-gray-400 block">Unidade</span><span className="text-sm font-medium text-gray-800">{property.unitNumber || "—"}</span></div>
                       <div><span className="text-[10px] text-gray-400 block">Box</span><span className="text-sm font-medium text-gray-800">{property.boxNumber || "—"}</span></div>
