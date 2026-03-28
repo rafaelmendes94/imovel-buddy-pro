@@ -441,6 +441,49 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
             )}
           </div>
 
+          {/* Deal Label Selector */}
+          <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+            <p className="text-xs font-bold text-gray-800 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+              <Flame className="w-3.5 h-3.5 text-orange-500" /> Classificação de Negócio
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {(["Oferta", "Bom Negócio", "Normal", "Acima da Média"] as const).map((lbl) => {
+                const isSelected = property.dealLabel === lbl;
+                const styles: Record<string, string> = {
+                  "Oferta": "text-emerald-700 bg-emerald-50 border-emerald-300 ring-emerald-400",
+                  "Bom Negócio": "text-emerald-600 bg-emerald-50 border-emerald-200 ring-emerald-300",
+                  "Normal": "text-amber-700 bg-amber-50 border-amber-300 ring-amber-400",
+                  "Acima da Média": "text-red-600 bg-red-50 border-red-300 ring-red-400",
+                };
+                return (
+                  <button
+                    key={lbl}
+                    onClick={() => {
+                      const newLabel = isSelected ? null : lbl;
+                      if (onUpdateProperty) {
+                        onUpdateProperty({ ...property, dealLabel: newLabel });
+                      }
+                      toast.success(newLabel ? `Classificado como "${newLabel}"` : "Classificação removida");
+                    }}
+                    className={cn(
+                      "px-4 py-2 rounded-lg text-sm font-bold border-2 transition-all",
+                      isSelected
+                        ? styles[lbl] + " ring-2 ring-offset-1 shadow-sm"
+                        : "text-gray-500 bg-white border-gray-200 hover:bg-gray-50"
+                    )}
+                  >
+                    {lbl === "Oferta" && "🏷️ "}{lbl === "Bom Negócio" && "🏷️ "}{lbl}
+                  </button>
+                );
+              })}
+            </div>
+            {property.dealLabel && (
+              <p className="text-[11px] text-gray-500 mt-2 flex items-center gap-1">
+                <TrendingUp className="w-3 h-3" /> Classificação manual: <span className="font-bold text-gray-700">{property.dealLabel}</span>
+              </p>
+            )}
+          </div>
+
           {/* Payment conditions */}
           {property.paymentConditions && property.paymentConditions.length > 0 && (
             <div className="bg-emerald-50/50 rounded-xl p-4 border border-emerald-100">
