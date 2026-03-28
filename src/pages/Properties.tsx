@@ -128,7 +128,7 @@ export default function Properties() {
   const [filterStreet, setFilterStreet] = useState("");
   const [filterCode, setFilterCode] = useState("");
   const [filterParking, setFilterParking] = useState("");
-  const [sortBy, setSortBy] = useState<"default" | "price-asc" | "price-desc" | "name-asc" | "name-desc" | "updated" | "created">("default");
+  const [sortBy, setSortBy] = useState<"default" | "price-asc" | "price-desc" | "name-asc" | "name-desc" | "updated" | "created" | "permuta" | "vendidos">("default");
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [viewingTerm, setViewingTerm] = useState<string | null>(null);
   const [favoriteIds, setFavoriteIds] = useState<string[]>(() => {
@@ -632,6 +632,8 @@ export default function Properties() {
             { key: "name-desc", label: "Z → A Edifício" },
             { key: "updated", label: "Últ. Atualizados" },
             { key: "created", label: "Últ. Incluídos" },
+            { key: "permuta", label: "Permuta" },
+            { key: "vendidos", label: "Vendidos" },
           ] as { key: typeof sortBy; label: string }[]).map((s) => (
             <button
               key={s.key}
