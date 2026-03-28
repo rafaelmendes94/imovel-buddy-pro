@@ -144,6 +144,7 @@ export default function Avaliacoes() {
     <AppLayout>
       <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
         {/* Header */}
+        <BackButton />
         <div>
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
             <ClipboardCheck className="w-6 h-6 text-accent" />
