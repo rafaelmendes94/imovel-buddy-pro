@@ -866,6 +866,16 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
           </div>
         )}
       </div>
+
+        {/* Floating Update Button */}
+        {hasChanges && (
+          <button
+            onClick={handleConfirmUpdate}
+            className="sticky bottom-4 mx-auto flex items-center gap-2 px-6 py-3 rounded-full bg-emerald-500 text-white text-sm font-bold shadow-2xl hover:bg-emerald-600 transition-all animate-in fade-in slide-in-from-bottom-4 duration-300 z-10"
+          >
+            <Check className="w-4 h-4" /> Atualizar Imóvel
+          </button>
+        )}
     </div>
   );
 }
