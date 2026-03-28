@@ -522,22 +522,52 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
           </div>
 
           {/* Features tags */}
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 items-center">
             {property.type && (
               <span className="px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-700">
                 {property.type}
               </span>
             )}
-            {property.seaView && (
-              <span className="px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-50 text-blue-700 flex items-center gap-1">
-                <Waves className="w-3 h-3" /> Vista para o Mar
-              </span>
-            )}
-            {property.decorated && (
-              <span className="px-3 py-1.5 rounded-lg text-xs font-bold bg-purple-50 text-purple-700 flex items-center gap-1">
-                <Paintbrush className="w-3 h-3" /> Decorado / Mobiliado
-              </span>
-            )}
+            {/* Vista - select */}
+            <select
+              value={property.vista || ""}
+              onChange={(e) => {
+                if (onUpdateProperty) {
+                  const val = e.target.value || undefined;
+                  onUpdateProperty({ ...property, vista: val, seaView: val === "Mar" || val === "Mar / Lago" });
+                  toast.success("Vista atualizada!");
+                }
+              }}
+              className="px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-300"
+            >
+              <option value="">🔭 Vista...</option>
+              <option value="Mar">🌊 Vista Mar</option>
+              <option value="Lago">💧 Vista Lago</option>
+              <option value="Mar / Lago">🌊💧 Mar / Lago</option>
+              <option value="Cidade">🏙️ Cidade</option>
+              <option value="Parque">🌳 Parque</option>
+              <option value="Piscina">🏊 Piscina</option>
+              <option value="Rua">🛣️ Rua</option>
+              <option value="Interna">🏠 Interna</option>
+            </select>
+            {/* Condição - select */}
+            <select
+              value={property.condicao || ""}
+              onChange={(e) => {
+                if (onUpdateProperty) {
+                  const val = (e.target.value || undefined) as Property["condicao"];
+                  onUpdateProperty({ ...property, condicao: val, decorated: val === "Decorado" || val === "Mobiliado" });
+                  toast.success("Condição atualizada!");
+                }
+              }}
+              className="px-3 py-1.5 rounded-lg text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-300"
+            >
+              <option value="">🏠 Condição...</option>
+              <option value="Mobiliado">🛋️ Mobiliado</option>
+              <option value="Semi-mobiliado">🪑 Semi-mobiliado</option>
+              <option value="Vazio">📦 Vazio</option>
+              <option value="Decorado">🎨 Decorado</option>
+            </select>
             {property.acceptsExchange && (
               <span className="px-3 py-1.5 rounded-lg text-xs font-bold bg-orange-50 text-orange-700 flex items-center gap-1">
                 <Repeat className="w-3 h-3" /> Aceita Permuta
