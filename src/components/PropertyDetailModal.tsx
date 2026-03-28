@@ -658,25 +658,59 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
               <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 block flex items-center gap-1">
                 <CreditCard className="w-3 h-3" /> Condições de Pagamento
               </label>
-              <div className="flex flex-wrap gap-2">
-                {property.paymentConditions?.map((cond) => (
-                  <button
-                    key={cond}
-                    className="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-emerald-700 border border-emerald-200 shadow-sm hover:bg-emerald-50 transition-colors cursor-pointer"
-                    onClick={() => onFilterByCondition?.(cond)}
-                    title={`Ver imóveis com condição "${cond}"`}
-                  >
-                    {cond}
-                  </button>
-                ))}
-                {property.paymentConditionsOther && (
-                  <span className="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-gray-600 border border-gray-200">
-                    {property.paymentConditionsOther}
-                  </span>
-                )}
-                {(!property.paymentConditions || property.paymentConditions.length === 0) && (
-                  <span className="text-xs text-gray-400">Nenhuma condição cadastrada</span>
-                )}
+              {/* Prazos */}
+              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Parcelamento Direto</p>
+              <div className="flex flex-wrap gap-1.5 mb-3">
+                {["12x", "24x", "36x", "48x", "60x", "72x", "84x", "100x", "120x"].map((cond) => {
+                  const isActive = property.paymentConditions?.includes(cond);
+                  return (
+                    <button
+                      key={cond}
+                      onClick={() => {
+                        if (!onUpdateProperty) return;
+                        const current = property.paymentConditions || [];
+                        const updated = isActive ? current.filter(c => c !== cond) : [...current, cond];
+                        updateProperty({ ...property, paymentConditions: updated });
+                        toast.success(isActive ? `"${cond}" removido` : `"${cond}" adicionado`);
+                      }}
+                      className={cn(
+                        "px-3 py-1.5 rounded-lg text-xs font-bold border transition-all",
+                        isActive
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-300"
+                          : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50"
+                      )}
+                    >
+                      {cond}
+                    </button>
+                  );
+                })}
+              </div>
+              {/* Outras condições */}
+              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Outras Condições</p>
+              <div className="flex flex-wrap gap-1.5">
+                {["Financiamento Bancário", "Dação de Imóvel", "Dação de Automóvel", "Permuta", "Plano Safra", "À Vista", "FGTS"].map((cond) => {
+                  const isActive = property.paymentConditions?.includes(cond);
+                  return (
+                    <button
+                      key={cond}
+                      onClick={() => {
+                        if (!onUpdateProperty) return;
+                        const current = property.paymentConditions || [];
+                        const updated = isActive ? current.filter(c => c !== cond) : [...current, cond];
+                        updateProperty({ ...property, paymentConditions: updated });
+                        toast.success(isActive ? `"${cond}" removido` : `"${cond}" adicionado`);
+                      }}
+                      className={cn(
+                        "px-3 py-1.5 rounded-lg text-xs font-bold border transition-all",
+                        isActive
+                          ? "bg-blue-50 text-blue-700 border-blue-300"
+                          : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50"
+                      )}
+                    >
+                      {cond}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
