@@ -513,6 +513,7 @@ export default function Properties() {
                 onToggleFavorite={toggleFavorite}
                 onFilterByTitle={(title) => { setSearch(title.split(" ").slice(0, 2).join(" ")); setActiveCategory("todos"); }}
                 onFilterByCondition={(cond) => { setFilterCondition(cond); setShowFilters(true); setActiveCategory("todos"); }}
+                onFilterByOwner={(owner) => { setFilterOwner(owner); setShowFilters(true); setActiveCategory("todos"); }}
               />
             ))}
           </div>
@@ -528,6 +529,7 @@ export default function Properties() {
                 onToggleFavorite={toggleFavorite}
                 onFilterByTitle={(title) => { setSearch(title.split(" ").slice(0, 2).join(" ")); setActiveCategory("todos"); }}
                 onFilterByCondition={(cond) => { setFilterCondition(cond); setShowFilters(true); setActiveCategory("todos"); }}
+                onFilterByOwner={(owner) => { setFilterOwner(owner); setShowFilters(true); setActiveCategory("todos"); }}
               />
             ))}
           </div>
