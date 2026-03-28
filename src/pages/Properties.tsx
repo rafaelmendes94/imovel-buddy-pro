@@ -15,7 +15,7 @@ import {
   Phone, Heart, FileCheck, Eye, Repeat, CreditCard, DollarSign, Ban,
   Share2, CalendarCheck, CalendarClock, AlertTriangle, Pencil, Image,
   FolderDown, User, ShieldCheck, Percent, Gift, BarChart3, FileSignature,
-  TrendingUp,
+  TrendingUp, Wallet,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
