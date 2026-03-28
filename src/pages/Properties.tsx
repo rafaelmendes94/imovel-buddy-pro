@@ -429,7 +429,28 @@ export default function Properties() {
           {/* Advanced Filters Panel */}
           {showFilters && (
             <div className="bg-card border border-border rounded-xl p-4">
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-8 gap-3">
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Empreendimento</label>
+                  <select value={filterEmpreendimento} onChange={(e) => setFilterEmpreendimento(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+                    <option value="">Todos</option>
+                    {empreendimentos.map(e => <option key={e} value={e}>{e}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Tipo</label>
+                  <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+                    <option value="">Todos</option>
+                    {types.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Proprietário</label>
+                  <select value={filterOwner} onChange={(e) => setFilterOwner(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+                    <option value="">Todos</option>
+                    {owners.map(o => <option key={o} value={o}>{o}</option>)}
+                  </select>
+                </div>
                 <div>
                   <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Cidade</label>
                   <select value={filterCity} onChange={(e) => setFilterCity(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
@@ -458,15 +479,7 @@ export default function Properties() {
                     <option value="500000">R$ 500 mil</option><option value="800000">R$ 800 mil</option><option value="1000000">R$ 1 milhão</option><option value="1500000">R$ 1,5 milhão</option><option value="2000000">R$ 2 milhões</option>
                   </select>
                 </div>
-                <div>
-                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Condições</label>
-                  <select value={filterCondition} onChange={(e) => setFilterCondition(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
-                    <option value="">Todas</option>
-                    <option value="12x">12x</option><option value="24x">24x</option><option value="36x">36x</option><option value="48x">48x</option>
-                    <option value="60x">60x</option><option value="72x">72x</option><option value="84x">84x</option><option value="Permuta">Permuta</option><option value="Carro">Carro</option>
-                  </select>
-                </div>
-                <div className="flex items-end">
+                <div className="flex items-end gap-2">
                   {hasActiveFilters && (
                     <button onClick={clearFilters} className="flex items-center gap-1 px-4 py-2 rounded-lg bg-muted text-muted-foreground text-sm font-medium hover:bg-destructive/10 hover:text-destructive transition-colors">
                       <X className="w-3.5 h-3.5" /> Limpar
@@ -474,6 +487,7 @@ export default function Properties() {
                   )}
                 </div>
               </div>
+            </div>
             </div>
           )}
         </div>
