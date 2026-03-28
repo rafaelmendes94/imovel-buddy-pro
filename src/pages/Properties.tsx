@@ -1224,15 +1224,15 @@ function PropertyRow({
         </div>
 
         {/* ── COL 2: Identidade + Dados Técnicos ── */}
-        <div className="flex-1 min-w-0 border-r border-border px-4 py-3 flex flex-col justify-center gap-1.5">
-          {/* Title + Type + Code */}
-          <div className="flex items-center gap-2">
+        <div className="flex-1 min-w-0 border-r border-border px-4 py-2 flex flex-col justify-center gap-1">
+          {/* Row 1: Title + Type + Code */}
+          <div className="flex items-center gap-2 min-w-0">
             <h3
               className="font-bold text-card-foreground text-base truncate hover:text-primary cursor-pointer transition-colors leading-tight"
               onClick={() => onFilterByTitle?.(property.title)}
               title="Ver títulos semelhantes"
             >{property.title}</h3>
-            <span className="text-[12px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded flex items-center gap-1 flex-shrink-0">
+            <span className="text-[12px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded flex items-center gap-1 flex-shrink-0 whitespace-nowrap">
               {property.type === "Apartamento" ? <Building2 className="w-3 h-3" /> : property.type === "Casa" ? <Home className="w-3 h-3" /> : property.type === "Terreno" ? <TreePine className="w-3 h-3" /> : <Building2 className="w-3 h-3" />}
               {property.type}
             </span>
@@ -1241,50 +1241,50 @@ function PropertyRow({
             )}
           </div>
 
-          {/* Empreendimento + Unit info row */}
-          <div className="flex items-center gap-2 flex-wrap">
-            {property.empreendimento && (
-              <Link
-                to={`/empreendimento/${property.empreendimento.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`}
-                className="font-black text-foreground uppercase text-[13px] tracking-wide px-3 py-1 rounded-md border border-border bg-background hover:bg-muted transition-colors shadow-sm"
-                onClick={(e) => e.stopPropagation()}
-              >{property.empreendimento}</Link>
-            )}
-            {unitParts.map((part) => (
-              <span key={part} className="font-black text-foreground uppercase text-[12px] tracking-wide px-2.5 py-0.5 rounded-md border border-border bg-background shadow-sm">{part}</span>
-            ))}
+          {/* Row 2: Empreendimento + Units */}
+          {(property.empreendimento || unitParts.length > 0) && (
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {property.empreendimento && (
+                <Link
+                  to={`/empreendimento/${property.empreendimento.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`}
+                  className="font-black text-foreground uppercase text-[13px] tracking-wide px-3 py-0.5 rounded-md border border-border bg-background hover:bg-muted transition-colors shadow-sm"
+                  onClick={(e) => e.stopPropagation()}
+                >{property.empreendimento}</Link>
+              )}
+              {unitParts.map((part) => (
+                <span key={part} className="font-black text-foreground uppercase text-[12px] tracking-wide px-2.5 py-0.5 rounded-md border border-border bg-background shadow-sm">{part}</span>
+              ))}
+            </div>
+          )}
+
+          {/* Row 3: Specs */}
+          <div className="flex items-center gap-3 text-[12px] text-muted-foreground">
+            {property.bedrooms > 0 && <span className="flex items-center gap-1 whitespace-nowrap"><BedDouble className="w-3.5 h-3.5" />{property.bedrooms} dorm.</span>}
+            {property.bathrooms > 0 && <span className="flex items-center gap-1 whitespace-nowrap"><Bath className="w-3.5 h-3.5" />{property.bathrooms} ban.</span>}
+            {property.parking > 0 && <span className="flex items-center gap-1 whitespace-nowrap"><Car className="w-3.5 h-3.5" />{property.parking} vaga(s)</span>}
+            <span className="flex items-center gap-1 font-semibold whitespace-nowrap"><Ruler className="w-3.5 h-3.5" />{property.area}m²</span>
+            {property.privateArea && <span className="flex items-center gap-1 font-semibold whitespace-nowrap"><Ruler className="w-3.5 h-3.5" />{property.privateArea}m² priv.</span>}
           </div>
 
-          {/* Specs row */}
-          <div className="flex items-center gap-4 text-[12px] text-muted-foreground">
-            {property.bedrooms > 0 && <span className="flex items-center gap-1"><BedDouble className="w-3.5 h-3.5" />{property.bedrooms} dorm.</span>}
-            {property.bathrooms > 0 && <span className="flex items-center gap-1"><Bath className="w-3.5 h-3.5" />{property.bathrooms} ban.</span>}
-            {property.parking > 0 && <span className="flex items-center gap-1"><Car className="w-3.5 h-3.5" />{property.parking} vaga(s)</span>}
-            <span className="flex items-center gap-1 font-semibold"><Ruler className="w-3.5 h-3.5" />{property.area}m² total</span>
-            {property.privateArea && <span className="flex items-center gap-1 font-semibold"><Ruler className="w-3.5 h-3.5" />{property.privateArea}m² priv.</span>}
+          {/* Row 4: Tags */}
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {property.seaView && <span className="text-[10px] px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 font-bold whitespace-nowrap">🌊 Vista Mar</span>}
+            {property.decorated && <span className="text-[10px] px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 font-bold whitespace-nowrap">🎨 Decorado</span>}
+            {property.acceptsExchange && <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold whitespace-nowrap">🔄 Permuta</span>}
+            {property.exclusivityTerm && <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 font-bold whitespace-nowrap">📄 Exclusivo</span>}
           </div>
 
-          {/* Tags row */}
-          <div className="flex items-center gap-2 flex-wrap">
-            {property.seaView && <span className="text-[10px] px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 font-bold">🌊 Vista Mar</span>}
-            {property.decorated && <span className="text-[10px] px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 font-bold">🎨 Decorado</span>}
-            {property.acceptsExchange && <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold">🔄 Permuta</span>}
-            {property.exclusivityTerm && <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 font-bold">📄 Exclusivo</span>}
-          </div>
-
-          {/* Location row */}
-          <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-            <button
-              className="flex items-center gap-1 hover:text-primary transition-colors"
-              onClick={(e) => {
-                e.stopPropagation();
-                window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${property.address}, ${property.neighborhood || ""}, ${property.city}`)}`, "_blank");
-              }}
-            >
-              <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
-              <span className="truncate">{property.city}{property.neighborhood ? ` • ${property.neighborhood}` : ""} • {property.address}</span>
-            </button>
-          </div>
+          {/* Row 5: Location */}
+          <button
+            className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-primary transition-colors text-left"
+            onClick={(e) => {
+              e.stopPropagation();
+              window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${property.address}, ${property.neighborhood || ""}, ${property.city}`)}`, "_blank");
+            }}
+          >
+            <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+            <span className="truncate">{property.city}{property.neighborhood ? ` • ${property.neighborhood}` : ""} • {property.address}</span>
+          </button>
         </div>
 
         {/* ── COL 3: Financeiro ── */}
