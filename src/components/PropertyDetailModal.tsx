@@ -5,7 +5,8 @@ import {
   Building2, ChevronLeft, ChevronRight, ExternalLink, Play, Repeat,
   CreditCard, Navigation, Share2, Heart, Maximize2, Download, Key,
   Pencil, Check, HardDrive, Flame, TrendingUp, Eye, EyeOff, User,
-  Sparkles, Loader2, Target, Zap, FileText, MapPinned
+  Sparkles, Loader2, Target, Zap, FileText, MapPinned, DollarSign,
+  Gift, Percent, FileCheck, Hash
 } from "lucide-react";
 import { formatCurrency, type Property } from "@/data/mockData";
 import { cn } from "@/lib/utils";
@@ -69,10 +70,14 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
       const updated = { ...property };
       switch (field) {
         case "title": updated.title = val; break;
+        case "code": updated.code = val; break;
         case "price": updated.price = Number(val) || property.price; break;
+        case "priceInstallment": updated.priceInstallment = Number(val) || 0; break;
         case "address": updated.address = val; break;
         case "city": updated.city = val; break;
+        case "neighborhood": updated.neighborhood = val; break;
         case "area": updated.area = Number(val) || property.area; break;
+        case "privateArea": updated.privateArea = Number(val) || 0; break;
         case "bedrooms": updated.bedrooms = Number(val) || 0; break;
         case "bathrooms": updated.bathrooms = Number(val) || 0; break;
         case "parking": updated.parking = Number(val) || 0; break;
@@ -82,6 +87,19 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
         case "vista": updated.vista = val; break;
         case "condicao": updated.condicao = val as Property["condicao"]; break;
         case "infraestrutura": updated.infraestrutura = val.split(",").map(s => s.trim()).filter(Boolean); break;
+        case "empreendimento": updated.empreendimento = val || undefined; break;
+        case "unitNumber": updated.unitNumber = val || undefined; break;
+        case "boxNumber": updated.boxNumber = val || undefined; break;
+        case "quadra": updated.quadra = val || undefined; break;
+        case "lote": updated.lote = val || undefined; break;
+        case "keysLocation": updated.keysLocation = val || undefined; break;
+        case "exclusivityTerm": updated.exclusivityTerm = val || undefined; break;
+        case "owner": updated.owner = val || undefined; break;
+        case "ownerPhone": updated.ownerPhone = val || undefined; break;
+        case "broker": updated.broker = val; break;
+        case "commission": updated.commission = Number(val) || undefined; break;
+        case "bonus": updated.bonus = Number(val) || undefined; break;
+        case "bonusExpiry": updated.bonusExpiry = val || undefined; break;
       }
       updateProperty(updated);
       toast.success("Informação atualizada!");
@@ -264,15 +282,32 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                 <EditableField field="title" value={property.title} label="título" />
               </span>
             </h2>
-            <span className={cn(
-              "px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide flex-shrink-0",
-              property.status === "Disponível" ? "bg-emerald-500 text-white" :
-              property.status === "Vendido" ? "bg-red-500 text-white" :
-              property.status === "Reservado" ? "bg-amber-500 text-white" :
-              "bg-blue-500 text-white"
-            )}>
-              {property.status}
-            </span>
+            {property.code && (
+              <span className="text-[11px] font-black text-gray-500 bg-gray-100 px-2 py-0.5 rounded flex-shrink-0">
+                <EditableField field="code" value={property.code} label="código" />
+              </span>
+            )}
+            <select
+              value={property.status}
+              onChange={(e) => {
+                if (onUpdateProperty) {
+                  updateProperty({ ...property, status: e.target.value as Property["status"] });
+                  toast.success("Status atualizado!");
+                }
+              }}
+              className={cn(
+                "px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide flex-shrink-0 cursor-pointer border-0 focus:outline-none focus:ring-2 focus:ring-amber-400",
+                property.status === "Disponível" ? "bg-emerald-500 text-white" :
+                property.status === "Vendido" ? "bg-red-500 text-white" :
+                property.status === "Reservado" ? "bg-amber-500 text-white" :
+                property.status === "Alugado" ? "bg-blue-500 text-white" :
+                "bg-gray-500 text-white"
+              )}
+            >
+              {(["Disponível", "Vendido", "Reservado", "Alugado", "Suspenso"] as const).map(s => (
+                <option key={s} value={s} className="text-gray-900 bg-white">{s}</option>
+              ))}
+            </select>
           </div>
           {/* Action buttons in header */}
           <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -454,7 +489,158 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
             </div>
           </div>
 
-          {/* Descrição - editable + AI */}
+          {/* Identificação e Localização */}
+          <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
+            <p className="text-sm font-bold text-gray-800 uppercase tracking-wider mb-4 flex items-center gap-1.5">
+              <Hash className="w-4 h-4 text-amber-500" /> Identificação
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Tipo</label>
+                <select
+                  value={property.type}
+                  onChange={(e) => {
+                    if (onUpdateProperty) {
+                      updateProperty({ ...property, type: e.target.value as Property["type"] });
+                      toast.success("Tipo atualizado!");
+                    }
+                  }}
+                  className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                >
+                  {(["Apartamento", "Casa", "Comercial", "Terreno", "Lote", "Condomínio"] as const).map(t => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Empreendimento</label>
+                <EditableField field="empreendimento" value={property.empreendimento || ""} label="empreendimento" />
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Bairro</label>
+                <EditableField field="neighborhood" value={property.neighborhood || ""} label="bairro" />
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Área Privativa</label>
+                <EditableField field="privateArea" value={property.privateArea || 0} label="área privativa" type="number" />
+                <span className="text-[10px] text-gray-400">m²</span>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Unidade/Apt</label>
+                <EditableField field="unitNumber" value={property.unitNumber || ""} label="unidade" />
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Box</label>
+                <EditableField field="boxNumber" value={property.boxNumber || ""} label="box" />
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Quadra</label>
+                <EditableField field="quadra" value={property.quadra || ""} label="quadra" />
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Lote</label>
+                <EditableField field="lote" value={property.lote || ""} label="lote" />
+              </div>
+            </div>
+          </div>
+
+          {/* Financeiro */}
+          <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
+            <p className="text-sm font-bold text-gray-800 uppercase tracking-wider mb-4 flex items-center gap-1.5">
+              <DollarSign className="w-4 h-4 text-amber-500" /> Financeiro
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Valor Promocional</label>
+                <EditableField field="priceInstallment" value={property.priceInstallment || 0} label="valor promocional" type="number" />
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Comissão (%)</label>
+                <EditableField field="commission" value={property.commission || 0} label="comissão" type="number" />
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Bônus (R$)</label>
+                <EditableField field="bonus" value={property.bonus || 0} label="bônus" type="number" />
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Validade Bônus</label>
+                <EditableField field="bonusExpiry" value={property.bonusExpiry || ""} label="validade bônus" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-4">
+              <div className="flex items-center gap-3">
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Aceita Permuta</label>
+                <button
+                  onClick={() => {
+                    if (onUpdateProperty) {
+                      updateProperty({ ...property, acceptsExchange: !property.acceptsExchange });
+                      toast.success(property.acceptsExchange ? "Permuta desativada" : "Permuta ativada");
+                    }
+                  }}
+                  className={cn(
+                    "w-10 h-6 rounded-full transition-colors relative",
+                    property.acceptsExchange ? "bg-emerald-500" : "bg-gray-300"
+                  )}
+                >
+                  <span className={cn("absolute w-4 h-4 rounded-full bg-white top-1 transition-all shadow-sm", property.acceptsExchange ? "left-5" : "left-1")} />
+                </button>
+              </div>
+              <div className="flex items-center gap-3">
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Vista Mar</label>
+                <button
+                  onClick={() => {
+                    if (onUpdateProperty) {
+                      updateProperty({ ...property, seaView: !property.seaView });
+                      toast.success(property.seaView ? "Vista mar desativada" : "Vista mar ativada");
+                    }
+                  }}
+                  className={cn(
+                    "w-10 h-6 rounded-full transition-colors relative",
+                    property.seaView ? "bg-blue-500" : "bg-gray-300"
+                  )}
+                >
+                  <span className={cn("absolute w-4 h-4 rounded-full bg-white top-1 transition-all shadow-sm", property.seaView ? "left-5" : "left-1")} />
+                </button>
+              </div>
+              <div className="flex items-center gap-3">
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Decorado</label>
+                <button
+                  onClick={() => {
+                    if (onUpdateProperty) {
+                      updateProperty({ ...property, decorated: !property.decorated });
+                      toast.success(property.decorated ? "Decorado desativado" : "Decorado ativado");
+                    }
+                  }}
+                  className={cn(
+                    "w-10 h-6 rounded-full transition-colors relative",
+                    property.decorated ? "bg-purple-500" : "bg-gray-300"
+                  )}
+                >
+                  <span className={cn("absolute w-4 h-4 rounded-full bg-white top-1 transition-all shadow-sm", property.decorated ? "left-5" : "left-1")} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Chaves e Exclusividade */}
+          <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
+            <p className="text-sm font-bold text-gray-800 uppercase tracking-wider mb-4 flex items-center gap-1.5">
+              <Key className="w-4 h-4 text-amber-500" /> Chaves e Exclusividade
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Localização das Chaves</label>
+                <EditableField field="keysLocation" value={property.keysLocation || ""} label="localização das chaves" />
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Termo de Exclusividade</label>
+                <EditableField field="exclusivityTerm" value={property.exclusivityTerm || ""} label="termo de exclusividade" />
+              </div>
+            </div>
+          </div>
+
           <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs font-bold text-gray-800 uppercase tracking-wider">Descrição</p>
@@ -609,35 +795,41 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
             </p>
 
             {/* Proprietário */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 p-3 bg-white rounded-lg border border-gray-200">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4 p-3 bg-white rounded-lg border border-gray-200">
               <div>
                 <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">
                   <User className="w-3 h-3 inline mr-1" />Proprietário
                 </label>
-                <p className="text-sm font-bold text-gray-900">{property.owner || "Não informado"}</p>
+                <EditableField field="owner" value={property.owner || ""} label="proprietário" />
               </div>
               <div>
                 <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">
-                  <Phone className="w-3 h-3 inline mr-1" />Telefone do Proprietário
+                  <Phone className="w-3 h-3 inline mr-1" />Telefone
                 </label>
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-bold text-gray-900">
-                    {property.ownerPhone
-                      ? showOwnerPhone
-                        ? property.ownerPhone.replace(/(\d{2})(\d{2})(\d{5})(\d{4})/, "+$1 ($2) $3-$4")
-                        : "••••••••••••"
-                      : "Não informado"}
-                  </p>
-                  {property.ownerPhone && (
-                    <button
-                      onClick={() => setShowOwnerPhone(!showOwnerPhone)}
-                      className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-700"
-                      title={showOwnerPhone ? "Ocultar número" : "Mostrar número"}
-                    >
-                      {showOwnerPhone ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  )}
-                </div>
+                <EditableField field="ownerPhone" value={property.ownerPhone || ""} label="telefone" />
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Tipo Proprietário</label>
+                <select
+                  value={property.ownerType || ""}
+                  onChange={(e) => {
+                    if (onUpdateProperty) {
+                      updateProperty({ ...property, ownerType: (e.target.value || undefined) as Property["ownerType"] });
+                      toast.success("Tipo atualizado!");
+                    }
+                  }}
+                  className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                >
+                  <option value="">Selecione</option>
+                  <option value="Particular">Particular</option>
+                  <option value="Construtora">Construtora</option>
+                  <option value="Investidor">Investidor</option>
+                  <option value="Adm Comercial">Adm Comercial</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Corretor</label>
+                <EditableField field="broker" value={property.broker} label="corretor" />
               </div>
             </div>
 
