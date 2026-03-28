@@ -33,6 +33,9 @@ export interface Property {
   description?: string;
   updatedAt?: string;
   ownerType?: "Construtora" | "Investidor" | "Particular" | "Adm Comercial";
+  priceInstallment?: number;
+  commission?: number;
+  bonus?: number;
 }
 
 export interface Broker {
@@ -82,6 +85,9 @@ export const properties: Property[] = [
     boxNumber: "Box 12",
     keysLocation: "Na imobiliária Alpha Imóveis",
     ownerType: "Particular",
+    priceInstallment: 1050000,
+    commission: 5,
+    bonus: 2000,
   },
   {
     id: "2",
@@ -117,6 +123,9 @@ export const properties: Property[] = [
     boxNumber: "Box 01, 02, 03",
     keysLocation: "Com o proprietário",
     ownerType: "Construtora",
+    priceInstallment: 2100000,
+    commission: 6,
+    bonus: 5000,
   },
   {
     id: "3",
@@ -152,6 +161,9 @@ export const properties: Property[] = [
     lote: "L-18",
     keysLocation: "Na portaria do condomínio",
     ownerType: "Construtora",
+    priceInstallment: 1400000,
+    commission: 5,
+    bonus: 3000,
   },
   {
     id: "4",
@@ -185,6 +197,8 @@ export const properties: Property[] = [
     unitNumber: "Sala 205",
     keysLocation: "Na administradora do prédio",
     ownerType: "Investidor",
+    priceInstallment: 500000,
+    commission: 4,
   },
   {
     id: "5",
@@ -218,6 +232,9 @@ export const properties: Property[] = [
     quadra: "Q-12",
     lote: "L-07",
     ownerType: "Particular",
+    priceInstallment: 420000,
+    commission: 5,
+    bonus: 1500,
   },
   {
     id: "6",
