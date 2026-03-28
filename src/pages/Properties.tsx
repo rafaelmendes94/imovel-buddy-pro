@@ -999,6 +999,21 @@ function PropertyCard({
       <div className="relative cursor-pointer" onClick={() => onSelect?.(property)}>
         <ImageCarousel images={property.images} alt={property.title} />
 
+        {/* Owner type badge */}
+        {property.ownerType && (() => {
+          const ownerColors: Record<string, string> = {
+            Construtora: "bg-blue-500/90 text-white",
+            Investidor: "bg-amber-500/90 text-white",
+            Particular: "bg-emerald-500/90 text-white",
+            "Adm Comercial": "bg-purple-500/90 text-white",
+          };
+          return (
+            <span className={cn("absolute top-3 left-3 z-20 px-2 py-0.5 rounded-full text-[10px] font-bold backdrop-blur-sm shadow-md", ownerColors[property.ownerType] || "bg-muted text-foreground")}>
+              {property.ownerType}
+            </span>
+          );
+        })()}
+
         {/* Exclusivity badge */}
         {property.exclusivityTerm && (
           <button onClick={(e) => { e.stopPropagation(); onViewTerm?.(property.exclusivityTerm!); }}
