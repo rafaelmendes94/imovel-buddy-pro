@@ -17,7 +17,7 @@ import {
   FolderDown, User, ShieldCheck, Percent, Gift, BarChart3, FileSignature,
   TrendingUp, Wallet, RefreshCw, ArrowUp, ArrowDown, Banknote, Copy, Maximize2, Scan,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
