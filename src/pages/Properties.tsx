@@ -208,10 +208,13 @@ export default function Properties() {
       if (filterPriceMin && p.price < parseInt(filterPriceMin)) return false;
       if (filterPriceMax && p.price > parseInt(filterPriceMax)) return false;
       if (filterCondition && !(p.paymentConditions?.some(c => c.toLowerCase().includes(filterCondition.toLowerCase())))) return false;
+      if (filterEmpreendimento && p.empreendimento !== filterEmpreendimento) return false;
+      if (filterType && p.type !== filterType) return false;
+      if (filterOwner && p.owner !== filterOwner) return false;
 
       return true;
     });
-  }, [propertyList, activeCategory, search, filterCity, filterBedrooms, filterPriceMin, filterPriceMax, filterCondition, filterFreshness]);
+  }, [propertyList, activeCategory, search, filterCity, filterBedrooms, filterPriceMin, filterPriceMax, filterCondition, filterFreshness, filterEmpreendimento, filterType, filterOwner]);
 
   const favoritedProperties = propertyList.filter((p) => favoriteIds.includes(p.id));
 
