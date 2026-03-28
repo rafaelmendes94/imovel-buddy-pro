@@ -567,7 +567,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
               onChange={(e) => {
                 if (onUpdateProperty) {
                   const val = e.target.value || undefined;
-                  onUpdateProperty({ ...property, vista: val, seaView: val === "Mar" || val === "Mar / Lago" });
+                  updateProperty({ ...property, vista: val, seaView: val === "Mar" || val === "Mar / Lago" });
                   toast.success("Vista atualizada!");
                 }
               }}
@@ -589,7 +589,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
               onChange={(e) => {
                 if (onUpdateProperty) {
                   const val = (e.target.value || undefined) as Property["condicao"];
-                  onUpdateProperty({ ...property, condicao: val, decorated: val === "Decorado" || val === "Mobiliado" });
+                  updateProperty({ ...property, condicao: val, decorated: val === "Decorado" || val === "Mobiliado" });
                   toast.success("Condição atualizada!");
                 }
               }}
@@ -655,7 +655,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                   value={property.posicaoPredio || ""}
                   onChange={(e) => {
                     if (onUpdateProperty) {
-                      onUpdateProperty({ ...property, posicaoPredio: e.target.value || undefined });
+                      updateProperty({ ...property, posicaoPredio: e.target.value || undefined });
                       toast.success("Posição atualizada!");
                     }
                   }}
@@ -678,7 +678,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                   value={property.posicaoSolar || ""}
                   onChange={(e) => {
                     if (onUpdateProperty) {
-                      onUpdateProperty({ ...property, posicaoSolar: e.target.value || undefined });
+                      updateProperty({ ...property, posicaoSolar: e.target.value || undefined });
                       toast.success("Posição solar atualizada!");
                     }
                   }}
@@ -701,7 +701,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                   value={property.vista || ""}
                   onChange={(e) => {
                     if (onUpdateProperty) {
-                      onUpdateProperty({ ...property, vista: e.target.value || undefined });
+                      updateProperty({ ...property, vista: e.target.value || undefined });
                       toast.success("Vista atualizada!");
                     }
                   }}
@@ -726,7 +726,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                   value={property.condicao || ""}
                   onChange={(e) => {
                     if (onUpdateProperty) {
-                      onUpdateProperty({ ...property, condicao: (e.target.value || undefined) as Property["condicao"] });
+                      updateProperty({ ...property, condicao: (e.target.value || undefined) as Property["condicao"] });
                       toast.success("Condição atualizada!");
                     }
                   }}
@@ -756,7 +756,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                         const updated = isActive
                           ? current.filter(i => i !== item)
                           : [...current, item];
-                        onUpdateProperty({ ...property, infraestrutura: updated });
+                        updateProperty({ ...property, infraestrutura: updated });
                         toast.success(isActive ? `"${item}" removido` : `"${item}" adicionado`);
                       }}
                       className={cn(
@@ -782,7 +782,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                     value={property.elevadores || 1}
                     onChange={(e) => {
                       if (!onUpdateProperty) return;
-                      onUpdateProperty({ ...property, elevadores: parseInt(e.target.value) || 1 });
+                      updateProperty({ ...property, elevadores: parseInt(e.target.value) || 1 });
                     }}
                     className="w-16 px-2 py-1 rounded border border-input text-xs bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                   />
@@ -811,7 +811,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                     onClick={() => {
                       const newLabel = isSelected ? null : lbl;
                       if (onUpdateProperty) {
-                        onUpdateProperty({ ...property, dealLabel: newLabel });
+                        updateProperty({ ...property, dealLabel: newLabel });
                       }
                       toast.success(newLabel ? `Classificado como "${newLabel}"` : "Classificação removida");
                     }}
