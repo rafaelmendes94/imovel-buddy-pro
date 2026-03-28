@@ -287,6 +287,8 @@ export default function Properties() {
   }, [propertyList, activeCategory, search, filterCity, filterBedrooms, filterPriceMin, filterPriceMax, filterCondition, filterFreshness, filterEmpreendimento, filterType, filterOwner, filterNeighborhood, filterStreet, filterCode, filterParking, showInactive]);
 
   const sorted = useMemo(() => {
+    if (sortBy === "permuta") return filtered.filter(p => p.acceptsExchange);
+    if (sortBy === "vendidos") return filtered.filter(p => p.status === "Vendido");
     if (sortBy === "default") return filtered;
     return [...filtered].sort((a, b) => {
       switch (sortBy) {
