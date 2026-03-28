@@ -589,6 +589,7 @@ export default function Properties() {
                 onFilterByCondition={(cond) => { setFilterCondition(cond); setShowFilters(true); setActiveCategory("todos"); }}
                 onFilterByOwner={(owner) => { setFilterOwner(owner); setShowFilters(true); setActiveCategory("todos"); }}
                 onPriceChange={handlePriceChange}
+                allProperties={propertyList}
               />
             ))}
           </div>
@@ -1000,9 +1001,124 @@ function InlinePrice({ value, onChange, className }: { value: number; onChange: 
   );
 }
 
+// ---- Deal Score Analysis ----
+interface DealScore {
+  score: number; // 0-100
+  label: "Oferta" | "Bom Negócio" | "Normal" | "Acima da Média";
+  estimatedDays: number;
+  pricePerM2: number;
+  avgPricePerM2: number;
+}
+
+function analyzeDealScore(property: Property, allProperties: Property[]): DealScore {
+  // Find similar properties: same type, same city or nearby, similar bedrooms (±1)
+  const similar = allProperties.filter(p =>
+    p.id !== property.id &&
+    p.type === property.type &&
+    (p.city === property.city || (p.neighborhood && p.neighborhood === property.neighborhood)) &&
+    Math.abs(p.bedrooms - property.bedrooms) <= 1 &&
+    p.status !== "Vendido" && p.status !== "Suspenso"
+  );
+
+  const pricePerM2 = property.area > 0 ? property.price / property.area : 0;
+
+  if (similar.length === 0) {
+    return { score: 50, label: "Normal", estimatedDays: 90, pricePerM2, avgPricePerM2: pricePerM2 };
+  }
+
+  const avgPricePerM2 = similar.reduce((sum, p) => sum + (p.area > 0 ? p.price / p.area : 0), 0) / similar.length;
+  const avgPrice = similar.reduce((sum, p) => sum + p.price, 0) / similar.length;
+
+  // Score: how much cheaper vs average (higher = better deal)
+  const priceDiffPercent = avgPrice > 0 ? ((avgPrice - property.price) / avgPrice) * 100 : 0;
+  const m2DiffPercent = avgPricePerM2 > 0 ? ((avgPricePerM2 - pricePerM2) / avgPricePerM2) * 100 : 0;
+
+  // Combined score weighted: 60% price comparison, 40% m2 comparison
+  let rawScore = (priceDiffPercent * 0.6 + m2DiffPercent * 0.4);
+
+  // Bonus for extras
+  if (property.seaView) rawScore += 5;
+  if (property.decorated) rawScore += 3;
+  if (property.acceptsExchange) rawScore += 2;
+  if (property.bonus && property.bonus > 0) rawScore += 3;
+
+  // Normalize to 0-100
+  const score = Math.max(0, Math.min(100, 50 + rawScore * 2));
+
+  // Label
+  let label: DealScore["label"];
+  if (score >= 80) label = "Oferta";
+  else if (score >= 60) label = "Bom Negócio";
+  else if (score >= 40) label = "Normal";
+  else label = "Acima da Média";
+
+  // Estimated days to sell (higher score = faster)
+  const estimatedDays = Math.max(7, Math.round(180 - score * 1.5));
+
+  return { score, label, estimatedDays, pricePerM2, avgPricePerM2 };
+}
+
+// ---- Deal Thermometer Component ----
+function DealThermometer({ dealScore }: { dealScore: DealScore }) {
+  const { score, label, estimatedDays } = dealScore;
+
+  const getThermometerColor = () => {
+    if (score >= 80) return "bg-emerald-500";
+    if (score >= 60) return "bg-emerald-400";
+    if (score >= 40) return "bg-amber-400";
+    return "bg-red-400";
+  };
+
+  const getLabelStyle = () => {
+    if (score >= 80) return "text-emerald-500 bg-emerald-500/10 border-emerald-500/30";
+    if (score >= 60) return "text-emerald-400 bg-emerald-500/10 border-emerald-500/20";
+    if (score >= 40) return "text-amber-400 bg-amber-500/10 border-amber-500/20";
+    return "text-red-400 bg-red-500/10 border-red-500/20";
+  };
+
+  const getTimeIcon = () => {
+    if (estimatedDays <= 30) return "🔥";
+    if (estimatedDays <= 60) return "⚡";
+    if (estimatedDays <= 90) return "📊";
+    return "🕐";
+  };
+
+  return (
+    <div className="mt-1.5 space-y-1">
+      {/* Deal label badge */}
+      <div className="flex items-center gap-1.5">
+        <span className={cn("text-[9px] font-black uppercase tracking-wide px-1.5 py-0.5 rounded border", getLabelStyle())}>
+          {score >= 60 ? "🏷️ " : ""}{label}
+        </span>
+        <span className="text-[8px] text-muted-foreground font-semibold">
+          R$ {Math.round(dealScore.pricePerM2).toLocaleString("pt-BR")}/m²
+        </span>
+      </div>
+
+      {/* Thermometer bar */}
+      <div className="flex items-center gap-1.5">
+        <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+          <div
+            className={cn("h-full rounded-full transition-all duration-500", getThermometerColor())}
+            style={{ width: `${score}%` }}
+          />
+        </div>
+        <span className="text-[8px] font-black text-muted-foreground">{Math.round(score)}%</span>
+      </div>
+
+      {/* Estimated sale time */}
+      <div className="flex items-center gap-1">
+        <span className="text-[8px] text-muted-foreground">
+          {getTimeIcon()} Prev. venda: <span className="font-bold text-foreground">{estimatedDays <= 30 ? `~${estimatedDays} dias` : estimatedDays <= 60 ? "~1-2 meses" : estimatedDays <= 90 ? "~2-3 meses" : `~${Math.round(estimatedDays / 30)} meses`}</span>
+        </span>
+      </div>
+    </div>
+  );
+}
+
 // ---- PropertyRow (redesigned) ----
 function PropertyRow({
-  property, onStatusChange, onSelect, isFavorited, onToggleFavorite, onFilterByTitle, onFilterByCondition, onFilterByOwner, onPriceChange,
+  property, onStatusChange, onSelect, isFavorited, onToggleFavorite, onFilterByTitle, onFilterByCondition, onFilterByOwner, onPriceChange, allProperties,
 }: {
   property: Property;
   onStatusChange: (id: string, status: Property["status"]) => void;
@@ -1013,7 +1129,9 @@ function PropertyRow({
   onFilterByCondition?: (cond: string) => void;
   onFilterByOwner?: (owner: string) => void;
   onPriceChange?: (id: string, field: "price" | "priceInstallment", value: number) => void;
+  allProperties?: Property[];
 }) {
+  const dealScore = useMemo(() => analyzeDealScore(property, allProperties || []), [property, allProperties]);
   const [showCelebration, setShowCelebration] = useState(false);
   const [animatePulse, setAnimatePulse] = useState(false);
 
@@ -1166,6 +1284,9 @@ function PropertyRow({
               )}
             </div>
           )}
+
+          {/* Deal Thermometer */}
+          <DealThermometer dealScore={dealScore} />
         </div>
 
         {/* ── COL 4: Proprietário + Chaves + Datas + Status ── */}
