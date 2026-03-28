@@ -623,6 +623,43 @@ function StatusBar({ currentStatus, onChangeStatus }: { currentStatus: Property[
   );
 }
 
+// ---- Update Badge ----
+function UpdateBadge({ updatedAt, createdAt, compact }: { updatedAt?: string; createdAt: string; compact?: boolean }) {
+  const date = updatedAt || createdAt;
+  const updated = new Date(date);
+  const now = new Date();
+  const days = Math.floor((now.getTime() - updated.getTime()) / (1000 * 60 * 60 * 24));
+  const formatted = updated.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
+
+  const color = days <= 30
+    ? "text-emerald-500 bg-emerald-500/10"
+    : days <= 60
+    ? "text-amber-500 bg-amber-500/10"
+    : "text-destructive bg-destructive/10";
+
+  const label = days <= 30 ? "Atualizado" : days <= 60 ? "Revisar" : "Desatualizado";
+  const Icon = days <= 30 ? CalendarCheck : days <= 60 ? CalendarClock : AlertTriangle;
+
+  if (compact) {
+    return (
+      <div className={cn("inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold", color)}>
+        <Icon className="w-3 h-3" />
+        {formatted} • {days}d
+      </div>
+    );
+  }
+
+  return (
+    <div className={cn("flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[11px] font-semibold", color)}>
+      <div className="flex items-center gap-1.5">
+        <Icon className="w-3.5 h-3.5" />
+        <span>{label} • {formatted}</span>
+      </div>
+      <span className="text-[10px] opacity-70">{days} dias</span>
+    </div>
+  );
+}
+
 // ---- Sold Celebration ----
 function SoldCelebration() {
   const particles = Array.from({ length: 30 }, (_, i) => ({
