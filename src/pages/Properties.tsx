@@ -323,7 +323,7 @@ export default function Properties() {
               <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
                 <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
                 <div>
-                  <p className="text-[8px] font-bold uppercase text-emerald-600 leading-none">VGV Ativo</p>
+                  <p className="text-[8px] font-bold uppercase text-emerald-600 leading-none">VGV Ativo <span className="text-muted-foreground font-medium">({propertyList.filter(p => p.status === "Disponível" || p.status === "Reservado").length})</span></p>
                   <p className="text-sm font-black text-foreground leading-tight">
                     {formatCurrency(propertyList.filter(p => p.status === "Disponível" || p.status === "Reservado").reduce((sum, p) => sum + p.price, 0))}
                   </p>
@@ -332,7 +332,7 @@ export default function Properties() {
               <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20">
                 <DollarSign className="w-3.5 h-3.5 text-blue-600" />
                 <div>
-                  <p className="text-[8px] font-bold uppercase text-blue-600 leading-none">Comissão Estimada</p>
+                  <p className="text-[8px] font-bold uppercase text-blue-600 leading-none">Comissão Estimada <span className="text-muted-foreground font-medium">({propertyList.filter(p => p.status === "Disponível" || p.status === "Reservado").length})</span></p>
                   <p className="text-sm font-black text-foreground leading-tight">
                     {formatCurrency(propertyList.filter(p => p.status === "Disponível" || p.status === "Reservado").reduce((sum, p) => sum + (p.price * (p.commission || 0) / 100), 0))}
                   </p>
@@ -341,7 +341,7 @@ export default function Properties() {
               <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20">
                 <Trophy className="w-3.5 h-3.5 text-red-600" />
                 <div>
-                  <p className="text-[8px] font-bold uppercase text-red-600 leading-none">VGV Vendidos</p>
+                  <p className="text-[8px] font-bold uppercase text-red-600 leading-none">VGV Vendidos <span className="text-muted-foreground font-medium">({propertyList.filter(p => p.status === "Vendido").length})</span></p>
                   <p className="text-sm font-black text-foreground leading-tight">
                     {formatCurrency(propertyList.filter(p => p.status === "Vendido").reduce((sum, p) => sum + p.price, 0))}
                   </p>
@@ -350,7 +350,7 @@ export default function Properties() {
               <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
                 <Wallet className="w-3.5 h-3.5 text-amber-600" />
                 <div>
-                  <p className="text-[8px] font-bold uppercase text-amber-600 leading-none">Comissões Pagas</p>
+                  <p className="text-[8px] font-bold uppercase text-amber-600 leading-none">Comissões Pagas <span className="text-muted-foreground font-medium">({propertyList.filter(p => p.status === "Vendido").length})</span></p>
                   <p className="text-sm font-black text-foreground leading-tight">
                     {formatCurrency(propertyList.filter(p => p.status === "Vendido").reduce((sum, p) => sum + (p.price * (p.commission || 0) / 100), 0))}
                   </p>
