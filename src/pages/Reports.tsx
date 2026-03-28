@@ -210,6 +210,15 @@ export default function Reports() {
 
         {activeTab === "relatorio" ? (
           <>
+            {/* ─── VGV METRICS ─── */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+              <MetricCard title="VGV Ano (2026)" value={formatCurrency(vgvYear)} change={`${totalSales} vendas`} changeType="positive" icon={CalendarRange} />
+              <MetricCard title="VGV Mês (Mar)" value={formatCurrency(vgvMonth)} change={`${filtered.filter(s => isThisMonth(s.date)).length} vendas`} changeType="positive" icon={CalendarDays} />
+              <MetricCard title="VGV Semana" value={formatCurrency(vgvWeek)} change={`${filtered.filter(s => isThisWeek(s.date)).length} vendas`} changeType="positive" icon={Calendar} />
+              <MetricCard title="Ticket Médio" value={formatCurrency(avgTicket)} change="+5.2%" changeType="positive" icon={TrendingUp} />
+              <MetricCard title="Total de Vendas" value={String(totalSales)} change="no período" changeType="neutral" icon={Target} />
+            </div>
+
             {/* ─── FILTERS ─── */}
             <div className="elevated-card rounded-xl p-3">
               <div className="flex items-center gap-3 flex-wrap">
@@ -243,15 +252,6 @@ export default function Reports() {
                   <SelectFilter label="Vista Mar" icon={Home} value={filterSeaView} onChange={setFilterSeaView} options={[{ value: "Todos", label: "Todos" }, { value: "Sim", label: "Com vista" }, { value: "Não", label: "Sem vista" }]} />
                 </div>
               )}
-            </div>
-
-            {/* ─── VGV METRICS ─── */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-              <MetricCard title="VGV Ano (2026)" value={formatCurrency(vgvYear)} change={`${totalSales} vendas`} changeType="positive" icon={CalendarRange} />
-              <MetricCard title="VGV Mês (Mar)" value={formatCurrency(vgvMonth)} change={`${filtered.filter(s => isThisMonth(s.date)).length} vendas`} changeType="positive" icon={CalendarDays} />
-              <MetricCard title="VGV Semana" value={formatCurrency(vgvWeek)} change={`${filtered.filter(s => isThisWeek(s.date)).length} vendas`} changeType="positive" icon={Calendar} />
-              <MetricCard title="Ticket Médio" value={formatCurrency(avgTicket)} change="+5.2%" changeType="positive" icon={TrendingUp} />
-              <MetricCard title="Total de Vendas" value={String(totalSales)} change="no período" changeType="neutral" icon={Target} />
             </div>
 
             {/* ─── MONTH/YEAR PICKER ─── */}
