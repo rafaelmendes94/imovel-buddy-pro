@@ -213,6 +213,13 @@ export default function Properties() {
     setShowInactive(false); setSortBy("default");
   };
 
+  const handleQuickUpdate = (id: string) => {
+    setPropertyList((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, updatedAt: new Date().toISOString() } : p))
+    );
+    toast.success("Data de atualização renovada!");
+  };
+
   const cities = useMemo(() => [...new Set(propertyList.map(p => p.city))].sort(), [propertyList]);
   const empreendimentos = useMemo(() => [...new Set(propertyList.map(p => p.empreendimento).filter(Boolean))].sort() as string[], [propertyList]);
   const owners = useMemo(() => [...new Set(propertyList.map(p => p.owner).filter(Boolean))].sort() as string[], [propertyList]);
