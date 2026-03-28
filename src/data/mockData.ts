@@ -1,5 +1,6 @@
 export interface Property {
   id: string;
+  code: string;
   title: string;
   address: string;
   neighborhood?: string;
@@ -54,6 +55,7 @@ export interface Broker {
 export const properties: Property[] = [
   {
     id: "1",
+    code: "MV01",
     title: "Apartamento Frente Mar",
     address: "Av. Beira Mar, 1200",
     neighborhood: "Navegantes",
