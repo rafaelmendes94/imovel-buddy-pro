@@ -765,6 +765,7 @@ export default function Properties() {
                 onNavigateToValuation={handleNavigateToValuation}
                 onNavigateToContract={handleNavigateToContract}
                 onQuickUpdate={handleQuickUpdate}
+                onDuplicate={handleDuplicate}
               />
             ))}
           </div>
