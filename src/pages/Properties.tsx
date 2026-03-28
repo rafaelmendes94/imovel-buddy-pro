@@ -1489,6 +1489,14 @@ function PropertyRow({
             <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
             <span className="truncate">{property.city}{property.neighborhood ? ` • ${property.neighborhood}` : ""} • {property.address}</span>
           </button>
+
+          {/* Ver dados completos */}
+          <button
+            onClick={() => onSelect?.(property)}
+            className="mt-1 py-1.5 px-3 rounded-lg bg-primary/10 text-primary text-[11px] font-bold hover:bg-primary/20 transition-colors flex items-center justify-center gap-1.5 w-fit"
+          >
+            <Eye className="w-3.5 h-3.5" /> Ver dados completos
+          </button>
         </div>
 
         {/* ── COL 3: Financeiro ── */}
