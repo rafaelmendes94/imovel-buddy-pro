@@ -129,6 +129,8 @@ export default function Properties() {
   const [filterNeighborhood, setFilterNeighborhood] = useState("");
   const [filterStreet, setFilterStreet] = useState("");
   const [filterCode, setFilterCode] = useState("");
+  const [filterParking, setFilterParking] = useState("");
+  const [sortBy, setSortBy] = useState<"default" | "price-asc" | "price-desc" | "name-asc" | "name-desc" | "updated" | "created">("default");
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [viewingTerm, setViewingTerm] = useState<string | null>(null);
   const [favoriteIds, setFavoriteIds] = useState<string[]>(() => {
