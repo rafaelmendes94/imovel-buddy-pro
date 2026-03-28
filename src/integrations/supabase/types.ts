@@ -134,6 +134,7 @@ export type Database = {
           can_view_relatorios: boolean
           created_at: string
           id: string
+          permissions: Json
           user_id: string
         }
         Insert: {
@@ -145,6 +146,7 @@ export type Database = {
           can_view_relatorios?: boolean
           created_at?: string
           id?: string
+          permissions?: Json
           user_id: string
         }
         Update: {
@@ -156,6 +158,7 @@ export type Database = {
           can_view_relatorios?: boolean
           created_at?: string
           id?: string
+          permissions?: Json
           user_id?: string
         }
         Relationships: []
