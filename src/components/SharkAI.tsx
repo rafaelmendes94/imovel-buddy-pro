@@ -13,6 +13,7 @@ import {
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import sharkIcon from "@/assets/shark-icon.png";
+import sharkFriendlyIcon from "@/assets/shark-friendly.png";
 
 interface SharkAIProps {
   properties: Property[];
