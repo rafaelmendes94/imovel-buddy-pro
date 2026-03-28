@@ -600,10 +600,10 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
             </div>
           </div>
 
-          {/* Valores, Pagamento e Classificação */}
+          {/* Valor e Condições de Pagamento */}
           <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
             <p className="text-sm font-bold text-gray-800 uppercase tracking-wider mb-4 flex items-center gap-1.5">
-              <DollarSign className="w-4 h-4 text-amber-500" /> Valores e Negócio
+              <DollarSign className="w-4 h-4 text-amber-500" /> Valor e Condições de Pagamento
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div>
