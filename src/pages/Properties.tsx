@@ -15,7 +15,7 @@ import {
   Phone, Heart, FileCheck, Eye, Repeat, CreditCard, DollarSign, Ban,
   Share2, CalendarCheck, CalendarClock, AlertTriangle, Pencil, Image,
   FolderDown, User, ShieldCheck, Percent, Gift, BarChart3, FileSignature,
-  TrendingUp, Wallet, RefreshCw, ArrowUp, ArrowDown,
+  TrendingUp, Wallet, RefreshCw, ArrowUp, ArrowDown, Banknote,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -1456,7 +1456,7 @@ function PropertyRow({
         <div className="w-[220px] flex-shrink-0 border-r border-border px-3 py-2 flex flex-col justify-start gap-0.5" onClick={(e) => e.stopPropagation()}>
           {/* Main price */}
           <div className="flex items-center gap-1.5 mb-0.5">
-            <DollarSign className="w-3.5 h-3.5 text-primary" />
+            <Banknote className="w-3.5 h-3.5 text-primary" />
             <span className="text-[11px] font-black text-primary uppercase tracking-wider">Valor do Imóvel</span>
           </div>
           <div className="flex items-center gap-1">
