@@ -1089,9 +1089,18 @@ function DealThermometer({ dealScore, manualLabel }: { dealScore: DealScore; man
     if (estimatedDays <= 90) return "📊";
     return "🕐";
   };
-
-
-
+  return (
+    <div className="mt-1.5 space-y-1">
+      {/* Deal label badge */}
+      <div className="flex items-center gap-1.5">
+        <span className={cn("text-[9px] font-black uppercase tracking-wide px-1.5 py-0.5 rounded border", getLabelStyle(effectiveLabel))}>
+          {effectiveLabel === "Oferta" || effectiveLabel === "Bom Negócio" ? "🏷️ " : ""}{effectiveLabel}
+        </span>
+        {manualLabel && <span className="text-[7px] text-muted-foreground italic">manual</span>}
+        <span className="text-[8px] text-muted-foreground font-semibold">
+          R$ {Math.round(dealScore.pricePerM2).toLocaleString("pt-BR")}/m²
+        </span>
+      </div>
 
       {/* Thermometer bar */}
       <div className="flex items-center gap-1.5">
