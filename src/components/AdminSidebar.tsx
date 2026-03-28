@@ -10,33 +10,36 @@ import { useAuth } from "@/hooks/useAuth";
 import { Separator } from "@/components/ui/separator";
 
 const adminItems = [
-  { icon: LayoutDashboard, label: "Dashboard Admin", path: "/admin/dashboard" },
-  { icon: UserCog, label: "Funcionários", path: "/admin/funcionarios" },
-  { icon: Users, label: "Clientes", path: "/admin/clientes" },
-  { icon: CreditCard, label: "Planos", path: "/admin/planos" },
+  { icon: LayoutDashboard, label: "Dashboard Admin", path: "/admin/dashboard", moduleKey: "dashboard_admin" },
+  { icon: UserCog, label: "Funcionários", path: "/admin/funcionarios", moduleKey: "funcionarios" },
+  { icon: Users, label: "Clientes", path: "/admin/clientes", moduleKey: "clientes" },
+  { icon: CreditCard, label: "Planos", path: "/admin/planos", moduleKey: "planos" },
 ];
 
 const operationalItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
-  { icon: FileText, label: "Relatórios", path: "/relatorios" },
-  { icon: Globe, label: "Site", path: "/site-editor" },
-  { icon: Building2, label: "Imóveis", path: "/imoveis" },
-  { icon: Building, label: "Edifícios", path: "/edificios" },
-  { icon: Fence, label: "Condomínios", path: "/condominios" },
-  { icon: Camera, label: "Fotos da Cidade", path: "/fotos-cidade" },
-  { icon: ClipboardCheck, label: "Avaliações", path: "/avaliacoes" },
-  { icon: Wallet, label: "Financeiro", path: "/financeiro" },
-  { icon: Table2, label: "Tabelas", path: "/tabelas" },
-  { icon: FileSignature, label: "Contratos", path: "/contratos" },
-  { icon: Clapperboard, label: "Material Extra", path: "/videomaker" },
-  { icon: Users, label: "Corretores", path: "/corretores" },
-  { icon: Landmark, label: "Imobiliárias", path: "/imobiliarias" },
-  { icon: Settings, label: "Configurações", path: "/configuracoes" },
+  { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard", moduleKey: "dashboard" },
+  { icon: FileText, label: "Relatórios", path: "/relatorios", moduleKey: "relatorios" },
+  { icon: Globe, label: "Site", path: "/site-editor", moduleKey: "site_editor" },
+  { icon: Building2, label: "Imóveis", path: "/imoveis", moduleKey: "imoveis" },
+  { icon: Building, label: "Edifícios", path: "/edificios", moduleKey: "edificios" },
+  { icon: Fence, label: "Condomínios", path: "/condominios", moduleKey: "condominios" },
+  { icon: Camera, label: "Fotos da Cidade", path: "/fotos-cidade", moduleKey: "fotos_cidade" },
+  { icon: ClipboardCheck, label: "Avaliações", path: "/avaliacoes", moduleKey: "avaliacoes" },
+  { icon: Wallet, label: "Financeiro", path: "/financeiro", moduleKey: "financeiro" },
+  { icon: Table2, label: "Tabelas", path: "/tabelas", moduleKey: "tabelas" },
+  { icon: FileSignature, label: "Contratos", path: "/contratos", moduleKey: "contratos" },
+  { icon: Clapperboard, label: "Material Extra", path: "/videomaker", moduleKey: "material_extra" },
+  { icon: Users, label: "Corretores", path: "/corretores", moduleKey: "corretores" },
+  { icon: Landmark, label: "Imobiliárias", path: "/imobiliarias", moduleKey: "imobiliarias" },
+  { icon: Settings, label: "Configurações", path: "/configuracoes", moduleKey: "configuracoes" },
 ];
 
 export function AdminSidebar() {
   const location = useLocation();
-  const { signOut, profile } = useAuth();
+  const { signOut, profile, isSuperAdmin, hasModuleAccess } = useAuth();
+
+  const visibleAdmin = isSuperAdmin ? adminItems : adminItems.filter(i => hasModuleAccess(i.moduleKey));
+  const visibleOps = isSuperAdmin ? operationalItems : operationalItems.filter(i => hasModuleAccess(i.moduleKey));
 
   const renderItem = (item: typeof adminItems[0]) => {
     const isActive = location.pathname === item.path;
@@ -70,21 +73,29 @@ export function AdminSidebar() {
       </div>
 
       <nav className="flex-1 py-2 px-2 space-y-0.5 overflow-y-auto scrollbar-thin">
-        {/* Admin section */}
-        <p className="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/50">
-          Administração
-        </p>
-        {adminItems.map(renderItem)}
+        {visibleAdmin.length > 0 && (
+          <>
+            <p className="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/50">
+              Administração
+            </p>
+            {visibleAdmin.map(renderItem)}
+          </>
+        )}
 
-        <div className="px-3 py-2">
-          <Separator className="bg-sidebar-border" />
-        </div>
+        {visibleAdmin.length > 0 && visibleOps.length > 0 && (
+          <div className="px-3 py-2">
+            <Separator className="bg-sidebar-border" />
+          </div>
+        )}
 
-        {/* Operational section */}
-        <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/50">
-          Operacional
-        </p>
-        {operationalItems.map(renderItem)}
+        {visibleOps.length > 0 && (
+          <>
+            <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/50">
+              Operacional
+            </p>
+            {visibleOps.map(renderItem)}
+          </>
+        )}
       </nav>
 
       <div className="p-2 border-t border-sidebar-border flex-shrink-0">

@@ -4,6 +4,9 @@ import type { User, Session } from "@supabase/supabase-js";
 
 type AppRole = "super_admin" | "admin_staff" | "broker";
 
+type ActionPerms = { view: boolean; create: boolean; edit: boolean; delete: boolean };
+type StaffPermissions = Record<string, ActionPerms>;
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
@@ -18,11 +21,13 @@ interface AuthContextType {
     current_period_end: string | null;
     plan?: { name: string; modules: string[]; max_properties: number; max_brokers: number };
   } | null;
+  staffPermissions: StaffPermissions | null;
   signOut: () => Promise<void>;
   isSuperAdmin: boolean;
   isAdminStaff: boolean;
   isBroker: boolean;
   isBlocked: boolean;
+  hasModuleAccess: (moduleKey: string, action?: keyof ActionPerms) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -34,12 +39,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [profile, setProfile] = useState<AuthContextType["profile"]>(null);
   const [subscription, setSubscription] = useState<AuthContextType["subscription"]>(null);
+  const [staffPermissions, setStaffPermissions] = useState<StaffPermissions | null>(null);
 
   const fetchUserData = async (userId: string) => {
-    const [rolesRes, profileRes, subRes] = await Promise.all([
+    const [rolesRes, profileRes, subRes, staffRes] = await Promise.all([
       supabase.from("user_roles").select("role").eq("user_id", userId),
       supabase.from("profiles").select("*").eq("user_id", userId).single(),
       supabase.from("subscriptions").select("*, plans(name, modules, max_properties, max_brokers)").eq("user_id", userId).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+      supabase.from("staff_permissions").select("*").eq("user_id", userId).maybeSingle(),
     ]);
 
     if (rolesRes.data) {
@@ -60,6 +67,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } : undefined,
       });
     }
+    if (staffRes.data) {
+      setStaffPermissions((staffRes.data as any).permissions || null);
+    }
   };
 
   useEffect(() => {
@@ -74,6 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setRoles([]);
           setProfile(null);
           setSubscription(null);
+          setStaffPermissions(null);
         }
         setLoading(false);
       }
@@ -100,8 +111,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const isBroker = roles.includes("broker");
   const isBlocked = subscription?.status === "blocked";
 
+  const hasModuleAccess = (moduleKey: string, action: keyof ActionPerms = "view"): boolean => {
+    if (isSuperAdmin) return true;
+    if (!isAdminStaff || !staffPermissions) return false;
+    const mod = staffPermissions[moduleKey];
+    return mod ? mod[action] : false;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, session, loading, roles, profile, subscription, signOut, isSuperAdmin, isAdminStaff, isBroker, isBlocked }}>
+    <AuthContext.Provider value={{ user, session, loading, roles, profile, subscription, staffPermissions, signOut, isSuperAdmin, isAdminStaff, isBroker, isBlocked, hasModuleAccess }}>
       {children}
     </AuthContext.Provider>
   );
