@@ -1,4 +1,5 @@
 import { AppLayout } from "@/components/AppLayout";
+import { BackButton } from "@/components/BackButton";
 import { Building2, CreditCard, Bell, Shield } from "lucide-react";
 
 export default function Settings() {

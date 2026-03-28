@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { AppLayout } from "@/components/AppLayout";
+import { BackButton } from "@/components/BackButton";
 import { PropertyMap } from "@/components/PropertyMap";
 import { properties, formatCurrency } from "@/data/mockData";
 import {

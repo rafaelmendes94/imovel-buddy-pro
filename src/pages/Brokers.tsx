@@ -1,4 +1,5 @@
 import { AppLayout } from "@/components/AppLayout";
+import { BackButton } from "@/components/BackButton";
 import { brokers, formatCurrency } from "@/data/mockData";
 import { Plus, Mail, Phone, Award, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
