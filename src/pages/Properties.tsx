@@ -1047,7 +1047,7 @@ function PropertyRow({
             {property.empreendimento && (
               <Link
                 to={`/empreendimento/${property.empreendimento.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`}
-                className="font-bold text-accent hover:underline truncate"
+                className="font-black text-accent hover:underline truncate uppercase text-[11px] tracking-wide"
                 onClick={(e) => e.stopPropagation()}
               >{property.empreendimento}</Link>
             )}
