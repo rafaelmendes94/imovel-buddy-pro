@@ -91,7 +91,7 @@ const statusConfig: Record<Property["status"], { color: string; bg: string; bord
   Suspenso: { color: "text-gray-400", bg: "bg-gray-500/10", border: "border-gray-500/30", icon: Ban },
 };
 
-type Category = "todos" | "apartamentos" | "casas" | "terrenos" | "lotes" | "lotes-cond" | "condominios" | "decorados" | "vista-mar" | "permuta" | "vendidos";
+type Category = "todos" | "apartamentos" | "casas" | "terrenos" | "lotes" | "condominios" | "decorados" | "vista-mar" | "permuta" | "vendidos";
 
 const defaultCategories: { key: Category; label: string; icon: typeof Home }[] = [
   { key: "todos", label: "Todos", icon: Search },
@@ -99,7 +99,7 @@ const defaultCategories: { key: Category; label: string; icon: typeof Home }[] =
   { key: "casas", label: "Casas", icon: Home },
   { key: "terrenos", label: "Terrenos", icon: TreePine },
   { key: "lotes", label: "Lotes", icon: Fence },
-  { key: "lotes-cond", label: "Lote Cond.", icon: Fence },
+  
   { key: "condominios", label: "Condomínios", icon: Building2 },
   { key: "decorados", label: "Decorados", icon: Paintbrush },
   { key: "vista-mar", label: "Vista Mar", icon: Waves },
