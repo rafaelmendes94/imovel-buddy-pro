@@ -33,7 +33,11 @@ const templates: Template[] = [
       { key: "Nome do Comprador", label: "Comprador (Nome completo)", placeholder: "Maria Santos" },
       { key: "CPF do Comprador", label: "CPF do Comprador", placeholder: "000.000.000-00" },
       { key: "Endereço do Comprador", label: "Endereço do Comprador", placeholder: "Rua..." },
+      { key: "Empreendimento", label: "Empreendimento", placeholder: "Ed. Atlântico" },
       { key: "Descrição do Imóvel", label: "Descrição do Imóvel", placeholder: "Apartamento 302, Ed. Atlântico..." },
+      { key: "Unidade", label: "Unidade (Apto / Quadra / Lote)", placeholder: "Apto 302 / Quadra 5 / Lote 12" },
+      { key: "Dormitórios", label: "Dormitórios", placeholder: "3 dormitórios (1 suíte)" },
+      { key: "Vagas de Garagem", label: "Nº de Vagas e Identificação", placeholder: "2 vagas (V-15 e V-16)" },
       { key: "Endereço do Imóvel", label: "Endereço do Imóvel", placeholder: "Av. Beira Mar, 1200" },
       { key: "Matrícula do Imóvel", label: "Matrícula no Registro de Imóveis", placeholder: "Matrícula nº 12345" },
       { key: "Valor da Venda", label: "Valor da Venda (R$)", placeholder: "950.000,00" },
@@ -153,9 +157,13 @@ export default function Contratos() {
     const endereco = searchParams.get("endereco");
     const valor = searchParams.get("valor");
     const proprietario = searchParams.get("proprietario");
+    const empreendimento = searchParams.get("empreendimento");
+    const unidade = searchParams.get("unidade");
+    const dormitorios = searchParams.get("dormitorios");
+    const vagas = searchParams.get("vagas");
+    const cidade = searchParams.get("cidade");
 
     if (imovel || endereco || valor || proprietario) {
-      // Auto-select "Compra e Venda" template
       const compraVenda = templates.find(t => t.id === "compra-venda");
       if (compraVenda) {
         setSelectedTemplate(compraVenda);
@@ -164,6 +172,11 @@ export default function Contratos() {
         if (endereco) prefill["Endereço do Imóvel"] = endereco;
         if (valor) prefill["Valor da Venda"] = Number(valor).toLocaleString("pt-BR", { minimumFractionDigits: 2 });
         if (proprietario) prefill["Nome do Vendedor"] = proprietario;
+        if (empreendimento) prefill["Empreendimento"] = empreendimento;
+        if (unidade) prefill["Unidade"] = unidade;
+        if (dormitorios) prefill["Dormitórios"] = dormitorios;
+        if (vagas) prefill["Vagas de Garagem"] = vagas;
+        if (cidade) prefill["Cidade"] = cidade;
         setFieldValues(prefill);
       }
     }

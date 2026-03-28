@@ -189,11 +189,17 @@ export default function Properties() {
   };
 
   const handleNavigateToContract = (property: Property) => {
+    const unitParts = [property.unitNumber, property.boxNumber, property.quadra, property.lote].filter(Boolean);
     const params = new URLSearchParams({
       imovel: property.title,
       endereco: `${property.address}, ${property.city}`,
       valor: String(property.price),
       proprietario: property.owner || "",
+      empreendimento: property.empreendimento || "",
+      unidade: unitParts.join(" / ") || "",
+      dormitorios: property.bedrooms > 0 ? `${property.bedrooms} dormitório(s)` : "",
+      vagas: property.parking > 0 ? `${property.parking} vaga(s)` : "",
+      cidade: property.city || "",
     });
     navigate(`/contratos?${params.toString()}`);
   };
