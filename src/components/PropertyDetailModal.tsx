@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import {
   X, MapPin, BedDouble, Bath, Car, Ruler, Phone, Waves, Paintbrush,
   Building2, ChevronLeft, ChevronRight, ExternalLink, Play, Repeat,
   CreditCard, Navigation, Share2, Heart, Maximize2, Download, Key,
-  Pencil, Check, HardDrive
+  Pencil, Check, HardDrive, Flame, TrendingUp
 } from "lucide-react";
 import { formatCurrency, type Property } from "@/data/mockData";
+import { cn } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
