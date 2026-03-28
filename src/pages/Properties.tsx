@@ -893,7 +893,7 @@ function PropertyCard({
   );
 }
 
-// ---- PropertyRow (5 blocks) ----
+// ---- PropertyRow (redesigned) ----
 function PropertyRow({
   property, onStatusChange, onSelect, isFavorited, onToggleFavorite, onFilterByTitle, onFilterByCondition, onFilterByOwner,
 }: {
@@ -924,106 +924,121 @@ function PropertyRow({
   const daysSinceUpdate = Math.floor((new Date().getTime() - new Date(updatedDate).getTime()) / (1000 * 60 * 60 * 24));
   const updateColor = daysSinceUpdate <= 30 ? "text-emerald-500" : daysSinceUpdate <= 60 ? "text-amber-500" : "text-destructive";
 
-  const ownerTypeConfig: Record<string, { icon: typeof User; color: string }> = {
-    Construtora: { icon: Building2, color: "text-blue-400 bg-blue-500/10" },
-    Investidor: { icon: DollarSign, color: "text-amber-400 bg-amber-500/10" },
-    Particular: { icon: User, color: "text-emerald-400 bg-emerald-500/10" },
-    "Adm Comercial": { icon: ShieldCheck, color: "text-purple-400 bg-purple-500/10" },
+  const ownerTypeConfig: Record<string, { icon: typeof User; color: string; label: string }> = {
+    Construtora: { icon: Building2, color: "text-blue-400 bg-blue-500/10", label: "Construtora" },
+    Investidor: { icon: DollarSign, color: "text-amber-400 bg-amber-500/10", label: "Investidor" },
+    Particular: { icon: User, color: "text-emerald-400 bg-emerald-500/10", label: "Particular" },
+    "Adm Comercial": { icon: ShieldCheck, color: "text-purple-400 bg-purple-500/10", label: "Adm Comercial" },
   };
 
   const ownerTypeInfo = property.ownerType ? ownerTypeConfig[property.ownerType] : null;
+  const unitParts = [property.unitNumber, property.boxNumber, property.quadra, property.lote].filter(Boolean);
 
   return (
     <div className={cn("elevated-card rounded-xl relative overflow-hidden transition-all duration-300", animatePulse && "animate-sold-pulse")}>
       {showCelebration && <SoldCelebration />}
 
-      <div className="flex">
+      <div className="flex items-stretch">
 
-        {/* ── BLOCO 1: Foto + Empreendimento + Localização ── */}
-        <div className="flex w-[280px] flex-shrink-0 border-r border-border cursor-pointer" onClick={() => onSelect?.(property)}>
-          <div className="w-[120px] flex-shrink-0">
-            <div className="relative w-full" style={{ paddingBottom: "75%" }}>
-              <img src={property.images[0] || property.image} alt={property.title} className="absolute inset-0 w-full h-full object-cover" />
-            </div>
+        {/* ── COL 1: Foto ── */}
+        <div className="relative w-[140px] flex-shrink-0 cursor-pointer" onClick={() => onSelect?.(property)}>
+          <div className="relative w-full h-full min-h-[105px]">
+            <img src={property.images[0] || property.image} alt={property.title} className="absolute inset-0 w-full h-full object-cover" />
           </div>
-          <div className="min-w-0 flex-1 flex flex-col justify-center px-2.5 py-1.5 gap-0.5">
+          {/* Owner type badge on photo */}
+          {ownerTypeInfo && (
+            <span className={cn("absolute top-2 left-2 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wide shadow-sm", ownerTypeInfo.color)}>
+              {ownerTypeInfo.label}
+            </span>
+          )}
+          {/* Status badge */}
+          <span className={cn("absolute bottom-2 left-2 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide shadow-sm",
+            property.status === "Vendido" ? "bg-red-500 text-white" :
+            property.status === "Reservado" ? "bg-amber-500 text-white" :
+            property.status === "Alugado" ? "bg-blue-500 text-white" :
+            "bg-emerald-500 text-white"
+          )}>{property.status}</span>
+        </div>
+
+        {/* ── COL 2: Identidade + Dados Técnicos ── */}
+        <div className="flex-1 min-w-0 border-r border-border px-3 py-2 flex flex-col justify-center gap-1">
+          {/* Title */}
+          <h3
+            className="font-bold text-card-foreground text-sm truncate hover:text-primary cursor-pointer transition-colors leading-tight"
+            onClick={() => onFilterByTitle?.(property.title)}
+            title="Ver títulos semelhantes"
+          >{property.title}</h3>
+
+          {/* Empreendimento + Unit info row */}
+          <div className="flex items-center gap-2 flex-wrap text-[10px]">
             {property.empreendimento && (
               <Link
                 to={`/empreendimento/${property.empreendimento.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`}
-                className="text-[11px] font-bold text-accent hover:underline truncate block"
+                className="font-bold text-accent hover:underline truncate"
                 onClick={(e) => e.stopPropagation()}
-                title="Abrir página do empreendimento"
               >{property.empreendimento}</Link>
             )}
-            {[property.unitNumber, property.boxNumber, property.quadra, property.lote].filter(Boolean).length > 0 && (
-              <div className="flex flex-wrap gap-1">
-                {[property.unitNumber, property.boxNumber, property.quadra, property.lote].filter(Boolean).map((part) => (
-                  <span key={part} className="text-[9px] text-muted-foreground bg-muted px-1 rounded">{part}</span>
-                ))}
-              </div>
-            )}
+            {unitParts.map((part) => (
+              <span key={part} className="text-muted-foreground bg-muted px-1.5 py-0.5 rounded font-medium">{part}</span>
+            ))}
+            <span className="font-semibold text-primary">{property.type}</span>
+          </div>
+
+          {/* Specs row */}
+          <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+            {property.bedrooms > 0 && <span className="flex items-center gap-0.5"><BedDouble className="w-3 h-3" />{property.bedrooms} dorm.</span>}
+            {property.bathrooms > 0 && <span className="flex items-center gap-0.5"><Bath className="w-3 h-3" />{property.bathrooms} ban.</span>}
+            {property.parking > 0 && <span className="flex items-center gap-0.5"><Car className="w-3 h-3" />{property.parking} vaga(s)</span>}
+            <span className="flex items-center gap-0.5"><Ruler className="w-3 h-3" />{property.area}m²</span>
+          </div>
+
+          {/* Tags row */}
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {property.seaView && <span className="text-[8px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 font-bold">🌊 Vista Mar</span>}
+            {property.decorated && <span className="text-[8px] px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 font-bold">🎨 Decorado</span>}
+            {property.acceptsExchange && <span className="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold">🔄 Permuta</span>}
+            {property.exclusivityTerm && <span className="text-[8px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 font-bold">📄 Exclusivo</span>}
+          </div>
+
+          {/* Location row */}
+          <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
             <button
-              className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-primary transition-colors text-left"
+              className="flex items-center gap-1 hover:text-primary transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${property.address}, ${property.neighborhood || ""}, ${property.city}`)}`, "_blank");
               }}
-              title="Abrir no Google Maps"
             >
-              <MapPin className="w-2.5 h-2.5 flex-shrink-0" />
-              <span className="truncate">{property.address}{property.neighborhood ? `, ${property.neighborhood}` : ""} - {property.city}</span>
+              <MapPin className="w-3 h-3 flex-shrink-0" />
+              <span className="truncate">{property.city}{property.neighborhood ? ` • ${property.neighborhood}` : ""} • {property.address}</span>
             </button>
-            <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-              <Key className="w-2.5 h-2.5 flex-shrink-0" />
-              <span className="truncate">{property.keysLocation || "Não informado"}</span>
-            </div>
           </div>
         </div>
 
-        {/* ── BLOCO 2: Título + Status + Tipo + Dados ── */}
-        <div className="px-3 border-r border-border flex flex-col justify-center w-[180px] flex-shrink-0 py-1.5 gap-0.5">
-          <h3
-            className="font-semibold text-card-foreground text-[12px] truncate hover:text-primary cursor-pointer transition-colors"
-            onClick={() => onFilterByTitle?.(property.title)}
-            title="Ver títulos semelhantes"
-          >{property.title}</h3>
-          <div className="flex items-center gap-1.5">
-            <span className={cn("px-1.5 py-0 rounded text-[8px] font-bold uppercase tracking-wide",
-              property.status === "Vendido" ? "bg-red-500/10 text-red-400" :
-              property.status === "Reservado" ? "bg-amber-500/10 text-amber-400" :
-              property.status === "Alugado" ? "bg-blue-500/10 text-blue-400" :
-              "bg-emerald-500/10 text-emerald-400"
-            )}>{property.status}</span>
-            <span className="text-[10px] font-medium text-primary">{property.type}</span>
+        {/* ── COL 3: Financeiro ── */}
+        <div className="w-[200px] flex-shrink-0 border-r border-border px-3 py-2 flex flex-col justify-center gap-1">
+          <div className="flex items-baseline justify-between">
+            <span className="text-[9px] text-muted-foreground uppercase font-semibold">À vista</span>
+            <span className="text-[15px] font-black text-accent">{formatCurrency(property.price)}</span>
           </div>
-          <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-            {property.bedrooms > 0 && <span className="flex items-center gap-0.5"><BedDouble className="w-2.5 h-2.5" />{property.bedrooms}</span>}
-            {property.bathrooms > 0 && <span className="flex items-center gap-0.5"><Bath className="w-2.5 h-2.5" />{property.bathrooms}</span>}
-            {property.parking > 0 && <span className="flex items-center gap-0.5"><Car className="w-2.5 h-2.5" />{property.parking}</span>}
-            <span className="flex items-center gap-0.5"><Ruler className="w-2.5 h-2.5" />{property.area}m²</span>
-          </div>
-          <div className="flex gap-1">
-            {property.seaView && <span className="text-[8px] px-1 rounded bg-blue-500/10 text-blue-400 font-bold">🌊 Mar</span>}
-            {property.decorated && <span className="text-[8px] px-1 rounded bg-purple-500/10 text-purple-400 font-bold">🎨 Dec.</span>}
-            {property.acceptsExchange && <span className="text-[8px] px-1 rounded bg-emerald-500/10 text-emerald-400 font-bold">🔄 Permuta</span>}
-          </div>
-        </div>
-
-        {/* ── BLOCO 3: Valores + Comissão + Bônus + Condições + Datas ── */}
-        <div className="px-3 border-r border-border flex flex-col justify-center w-[185px] flex-shrink-0 py-1.5 gap-0.5">
-          <div className="space-y-0.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[9px] text-muted-foreground">À vista</span>
-              <span className="text-[13px] font-bold text-accent">{formatCurrency(property.price)}</span>
+          {property.priceInstallment && (
+            <div className="flex items-baseline justify-between">
+              <span className="text-[9px] text-muted-foreground uppercase font-semibold">Promocional</span>
+              <span className="text-[13px] font-bold text-foreground">{formatCurrency(property.priceInstallment)}</span>
             </div>
-            {property.priceInstallment && (
-              <div className="flex items-center justify-between">
-                <span className="text-[9px] text-muted-foreground">A prazo</span>
-                <span className="text-[12px] font-semibold text-foreground">{formatCurrency(property.priceInstallment)}</span>
-              </div>
-            )}
-          </div>
-          <div className="flex items-center gap-2 mt-0.5">
+          )}
+          {/* Payment conditions */}
+          {property.paymentConditions && property.paymentConditions.length > 0 && (
+            <div className="flex flex-wrap gap-0.5" onClick={(e) => e.stopPropagation()}>
+              {property.paymentConditions.map((cond) => (
+                <button key={cond}
+                  className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors cursor-pointer"
+                  onClick={() => onFilterByCondition?.(cond)}
+                >{cond}</button>
+              ))}
+            </div>
+          )}
+          <div className="flex items-center gap-2">
             {property.commission != null && (
               <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold bg-primary/10 text-primary">
                 <Percent className="w-2.5 h-2.5" /> {property.commission}%
@@ -1035,34 +1050,14 @@ function PropertyRow({
               </span>
             )}
           </div>
-          {property.paymentConditions && property.paymentConditions.length > 0 && (
-            <div className="flex flex-wrap gap-0.5 mt-0.5" onClick={(e) => e.stopPropagation()}>
-              {property.paymentConditions.map((cond) => (
-                <button key={cond}
-                  className="px-1 py-0 rounded text-[9px] font-bold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors cursor-pointer"
-                  onClick={() => onFilterByCondition?.(cond)}
-                >{cond}</button>
-              ))}
-            </div>
-          )}
-          <div className="mt-0.5 text-[9px] text-muted-foreground space-y-0.5">
-            <div className="flex items-center justify-between">
-              <span className="flex items-center gap-0.5"><CalendarCheck className="w-2.5 h-2.5" />Incl.</span>
-              <span className="font-medium text-foreground">{createdFormatted}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="flex items-center gap-0.5"><CalendarClock className="w-2.5 h-2.5" />Atu.</span>
-              <span className={cn("font-semibold", updateColor)}>{updatedFormatted}</span>
-            </div>
-          </div>
         </div>
 
-        {/* ── BLOCO 4: Proprietário ── */}
-        <div className="px-3 border-r border-border flex flex-col justify-center w-[170px] flex-shrink-0 py-1.5 gap-0.5" onClick={(e) => e.stopPropagation()}>
+        {/* ── COL 4: Proprietário + Chaves + Datas ── */}
+        <div className="w-[170px] flex-shrink-0 border-r border-border px-3 py-2 flex flex-col justify-center gap-1" onClick={(e) => e.stopPropagation()}>
           {property.owner ? (
             <>
               <button
-                className="text-[11px] font-semibold text-foreground hover:text-primary transition-colors truncate block text-left"
+                className="text-[11px] font-bold text-foreground hover:text-primary transition-colors truncate text-left leading-tight"
                 onClick={() => onFilterByOwner?.(property.owner!)}
                 title={`Ver todos imóveis de ${property.owner}`}
               >{property.owner}</button>
@@ -1076,36 +1071,34 @@ function PropertyRow({
                   <Phone className="w-2.5 h-2.5" /> {property.ownerPhone.replace(/^55/, "").replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3")}
                 </a>
               )}
-              {ownerTypeInfo && (
-                <span className={cn("inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold w-fit", ownerTypeInfo.color)}>
-                  <ownerTypeInfo.icon className="w-2.5 h-2.5" /> {property.ownerType}
-                </span>
-              )}
             </>
           ) : (
-            <span className="text-[10px] text-muted-foreground">Sem proprietário</span>
+            <span className="text-[10px] text-muted-foreground italic">Sem proprietário</span>
           )}
-          {property.exclusivityTerm && (
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-500/10 text-amber-400 w-fit">
-              <FileCheck className="w-2.5 h-2.5" /> Exclusividade
-            </span>
-          )}
+          {/* Keys */}
+          <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+            <Key className="w-3 h-3 flex-shrink-0 text-amber-400" />
+            <span className="truncate">{property.keysLocation || "Não informado"}</span>
+          </div>
+          {/* Dates */}
+          <div className="space-y-0.5 text-[9px] text-muted-foreground mt-0.5">
+            <div className="flex items-center justify-between gap-1">
+              <span className="flex items-center gap-0.5"><CalendarCheck className="w-2.5 h-2.5" /> Inclusão</span>
+              <span className="font-medium text-foreground">{createdFormatted}</span>
+            </div>
+            <div className="flex items-center justify-between gap-1">
+              <span className="flex items-center gap-0.5"><CalendarClock className="w-2.5 h-2.5" /> Atualiz.</span>
+              <span className={cn("font-semibold", updateColor)}>{updatedFormatted}</span>
+            </div>
+          </div>
         </div>
 
-        {/* ── BLOCO 5: Ações ── */}
-        <div className="px-2 flex flex-col items-center justify-center gap-1 py-1.5" onClick={(e) => e.stopPropagation()}>
+        {/* ── COL 5: Ações (ícones) ── */}
+        <div className="w-[52px] flex-shrink-0 flex flex-col items-center justify-center gap-1.5 py-2" onClick={(e) => e.stopPropagation()}>
           <button
             onClick={() => onSelect?.(property)}
-            className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors" title="Editar dados"
-          ><Pencil className="w-3 h-3 text-primary" /></button>
-          <button
-            onClick={async () => {
-              const shareData = { title: property.title, text: `${property.title} - ${formatCurrency(property.price)}\n${property.address}, ${property.city}`, url: window.location.href };
-              if (navigator.share) { try { await navigator.share(shareData); } catch { /* cancelled */ } }
-              else { await navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`); toast.success("Link copiado!"); }
-            }}
-            className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors" title="Compartilhar"
-          ><Share2 className="w-3 h-3 text-foreground" /></button>
+            className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors" title="Editar"
+          ><Pencil className="w-3.5 h-3.5 text-primary" /></button>
           <button
             onClick={() => {
               property.images.forEach((img, i) => {
@@ -1113,17 +1106,25 @@ function PropertyRow({
               });
               toast.success(`${property.images.length} foto(s) baixando...`);
             }}
-            className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors" title="Baixar fotos"
-          ><Image className="w-3 h-3 text-foreground" /></button>
+            className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors" title="Fotos"
+          ><Image className="w-3.5 h-3.5 text-foreground" /></button>
           <button
-            onClick={() => { toast.info("Abrindo Drive..."); window.open(`https://drive.google.com/drive/search?q=${encodeURIComponent(property.title)}`, "_blank"); }}
-            className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors" title="Drive completo"
-          ><FolderDown className="w-3 h-3 text-foreground" /></button>
+            onClick={() => { toast.info("Gerando PDF..."); }}
+            className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors" title="PDF"
+          ><Download className="w-3.5 h-3.5 text-foreground" /></button>
+          <button
+            onClick={async () => {
+              const shareData = { title: property.title, text: `${property.title} - ${formatCurrency(property.price)}\n${property.address}, ${property.city}`, url: window.location.href };
+              if (navigator.share) { try { await navigator.share(shareData); } catch { /* cancelled */ } }
+              else { await navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`); toast.success("Link copiado!"); }
+            }}
+            className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors" title="Compartilhar"
+          ><Share2 className="w-3.5 h-3.5 text-foreground" /></button>
           <button
             onClick={() => onToggleFavorite?.(property.id)}
-            className={cn("w-7 h-7 rounded-lg flex items-center justify-center transition-colors", isFavorited ? "bg-red-500/10 text-red-500" : "bg-secondary text-muted-foreground hover:text-red-500")}
+            className={cn("w-8 h-8 rounded-lg flex items-center justify-center transition-colors", isFavorited ? "bg-red-500/10 text-red-500" : "bg-secondary text-muted-foreground hover:text-red-500")}
             title="Favoritar"
-          ><Heart className={cn("w-3 h-3", isFavorited && "fill-current")} /></button>
+          ><Heart className={cn("w-3.5 h-3.5", isFavorited && "fill-current")} /></button>
         </div>
       </div>
     </div>
