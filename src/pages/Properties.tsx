@@ -969,7 +969,7 @@ function PropertyCard({
                   onClick={(e) => e.stopPropagation()}
                   title="Abrir página do empreendimento"
                 >
-                  {property.empreendimento}
+                  {cleanEmpreendimentoName(property.empreendimento)}
                 </Link>
               )}
               {unitParts.map((part) => (
@@ -1334,7 +1334,7 @@ function PropertyRow({
                   to={`/empreendimento/${property.empreendimento.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`}
                   className="font-black text-foreground uppercase text-[13px] tracking-wide px-3 py-0.5 rounded-md border border-border bg-background hover:bg-muted transition-colors shadow-sm"
                   onClick={(e) => e.stopPropagation()}
-                >{property.empreendimento}</Link>
+                >{cleanEmpreendimentoName(property.empreendimento)}</Link>
               )}
               {unitParts.map((part) => (
                 <span key={part} className="font-black text-foreground uppercase text-[12px] tracking-wide px-2.5 py-0.5 rounded-md border border-border bg-background shadow-sm">{part}</span>
