@@ -2,6 +2,7 @@ export interface Property {
   id: string;
   title: string;
   address: string;
+  neighborhood?: string;
   city: string;
   type: "Apartamento" | "Casa" | "Comercial" | "Terreno";
   status: "Disponível" | "Vendido" | "Reservado" | "Alugado";
