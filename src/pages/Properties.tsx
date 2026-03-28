@@ -151,6 +151,11 @@ export default function Properties() {
     setPropertyList((prev) => prev.map((p) => (p.id === propertyId ? { ...p, status: newStatus } : p)));
   };
 
+  const handlePriceChange = (propertyId: string, field: "price" | "priceInstallment", value: number) => {
+    setPropertyList((prev) => prev.map((p) => (p.id === propertyId ? { ...p, [field]: value } : p)));
+    toast.success("Valor atualizado!");
+  };
+
   const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterCondition || filterEmpreendimento || filterType || filterOwner || filterNeighborhood || filterStreet;
 
   const clearFilters = () => {
@@ -570,6 +575,7 @@ export default function Properties() {
                 onFilterByTitle={(title) => { setSearch(title.split(" ").slice(0, 2).join(" ")); setActiveCategory("todos"); }}
                 onFilterByCondition={(cond) => { setFilterCondition(cond); setShowFilters(true); setActiveCategory("todos"); }}
                 onFilterByOwner={(owner) => { setFilterOwner(owner); setShowFilters(true); setActiveCategory("todos"); }}
+                onPriceChange={handlePriceChange}
               />
             ))}
           </div>
