@@ -31,6 +31,7 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
   const [showOwnerPhone, setShowOwnerPhone] = useState(false);
   const [generatingAI, setGeneratingAI] = useState<string | null>(null);
   const [showAIOptions, setShowAIOptions] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
 
   if (!property) return null;
 
