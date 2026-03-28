@@ -1048,7 +1048,7 @@ function PropertyRow({
             {property.empreendimento && (
               <Link
                 to={`/empreendimento/${property.empreendimento.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`}
-                className="font-black text-accent hover:underline truncate uppercase text-[11px] tracking-wide"
+                className="font-black text-foreground uppercase text-[12px] tracking-wide px-2.5 py-1 rounded-md border border-border bg-background hover:bg-muted transition-colors shadow-sm"
                 onClick={(e) => e.stopPropagation()}
               >{property.empreendimento}</Link>
             )}
@@ -1090,40 +1090,52 @@ function PropertyRow({
         </div>
 
         {/* ── COL 3: Financeiro ── */}
-        <div className="w-[200px] flex-shrink-0 border-r border-border px-3 py-2 flex flex-col justify-center gap-1" onClick={(e) => e.stopPropagation()}>
-          <div className="flex items-baseline justify-between">
-            <span className="text-[9px] text-muted-foreground uppercase font-semibold">À vista</span>
-            <InlinePrice value={property.price} onChange={(v) => onPriceChange?.(property.id, "price", v)} className="text-[15px] font-black text-accent" />
-          </div>
+        <div className="w-[220px] flex-shrink-0 border-r border-border px-3 py-2 flex flex-col justify-center gap-0.5" onClick={(e) => e.stopPropagation()}>
+          {/* Main price - highlighted */}
+          <InlinePrice value={property.price} onChange={(v) => onPriceChange?.(property.id, "price", v)} className="text-[18px] font-black text-emerald-500" />
+          <span className="text-[8px] text-muted-foreground uppercase font-semibold tracking-wider">Valor à vista</span>
+
+          {/* Promotional price */}
           {property.priceInstallment && (
-            <div className="flex items-baseline justify-between">
-              <span className="text-[9px] text-muted-foreground uppercase font-semibold">Promocional</span>
-              <InlinePrice value={property.priceInstallment} onChange={(v) => onPriceChange?.(property.id, "priceInstallment", v)} className="text-[13px] font-bold text-foreground" />
+            <div className="mt-0.5">
+              <InlinePrice value={property.priceInstallment} onChange={(v) => onPriceChange?.(property.id, "priceInstallment", v)} className="text-[14px] font-bold text-red-500" />
+              <span className="text-[8px] text-muted-foreground uppercase font-semibold tracking-wider ml-1">Promocional</span>
             </div>
           )}
+
+          {/* Commission + approximate value */}
+          {property.commission != null && (
+            <div className="flex items-center gap-1.5 mt-1">
+              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold bg-primary/10 text-primary">
+                <Percent className="w-2.5 h-2.5" /> {property.commission}%
+              </span>
+              <span className="text-[9px] text-muted-foreground font-medium">
+                ≈ {formatCurrency(Math.round(property.price * (property.commission / 100)))}
+              </span>
+            </div>
+          )}
+
+          {/* Bonus + validity */}
+          {property.bonus != null && (
+            <div className="flex items-center gap-1.5">
+              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-500/10 text-amber-400">
+                <Gift className="w-2.5 h-2.5" /> {formatCurrency(property.bonus)}
+              </span>
+              <span className="text-[8px] text-muted-foreground">válido</span>
+            </div>
+          )}
+
           {/* Payment conditions */}
           {property.paymentConditions && property.paymentConditions.length > 0 && (
-            <div className="flex flex-wrap gap-0.5" onClick={(e) => e.stopPropagation()}>
+            <div className="flex flex-wrap gap-0.5 mt-0.5">
               {property.paymentConditions.map((cond) => (
                 <button key={cond}
-                  className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors cursor-pointer"
+                  className="px-1.5 py-0.5 rounded text-[9px] font-black text-foreground bg-muted uppercase tracking-wide hover:bg-secondary transition-colors cursor-pointer"
                   onClick={() => onFilterByCondition?.(cond)}
                 >{cond}</button>
               ))}
             </div>
           )}
-          <div className="flex items-center gap-2">
-            {property.commission != null && (
-              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold bg-primary/10 text-primary">
-                <Percent className="w-2.5 h-2.5" /> {property.commission}%
-              </span>
-            )}
-            {property.bonus != null && (
-              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-500/10 text-amber-400">
-                <Gift className="w-2.5 h-2.5" /> {formatCurrency(property.bonus)}
-              </span>
-            )}
-          </div>
         </div>
 
         {/* ── COL 4: Proprietário + Chaves + Datas ── */}
