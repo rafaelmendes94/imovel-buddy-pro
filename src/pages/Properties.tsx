@@ -354,11 +354,11 @@ export default function Properties() {
             <button
               key={stat.label}
               onClick={stat.onClick}
-              className="bg-card border border-border rounded-xl p-3 hover:bg-muted/50 transition-colors text-left"
+              className="bg-card border border-border rounded-xl p-2 sm:p-3 hover:bg-muted/50 transition-colors text-left"
             >
-              <stat.icon className="w-4 h-4 text-primary mb-1" />
-              <p className="text-xl font-bold text-foreground">{stat.count}</p>
-              <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{stat.label}</p>
+              <stat.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary mb-0.5 sm:mb-1" />
+              <p className="text-base sm:text-xl font-bold text-foreground">{stat.count}</p>
+              <p className="text-[8px] sm:text-[10px] text-muted-foreground font-medium uppercase tracking-wider truncate">{stat.label}</p>
             </button>
           ))}
         </div>
