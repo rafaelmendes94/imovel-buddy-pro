@@ -343,7 +343,7 @@ export default function Properties() {
                 <div>
                   <p className="text-[8px] font-bold uppercase text-emerald-600 leading-none">VGV Vendidos</p>
                   <p className="text-sm font-black text-foreground leading-tight">
-                    {formatCurrency(initialProperties.filter(p => p.status === "Vendido").reduce((sum, p) => sum + p.price, 0))}
+                    {formatCurrency(propertyList.filter(p => p.status === "Vendido").reduce((sum, p) => sum + p.price, 0))}
                   </p>
                 </div>
               </div>
@@ -352,7 +352,7 @@ export default function Properties() {
                 <div>
                   <p className="text-[8px] font-bold uppercase text-amber-600 leading-none">Comissões Pagas</p>
                   <p className="text-sm font-black text-foreground leading-tight">
-                    {formatCurrency(initialProperties.filter(p => p.status === "Vendido").reduce((sum, p) => sum + (p.price * (p.commission || 0) / 100), 0))}
+                    {formatCurrency(propertyList.filter(p => p.status === "Vendido").reduce((sum, p) => sum + (p.price * (p.commission || 0) / 100), 0))}
                   </p>
                 </div>
               </div>
