@@ -52,7 +52,7 @@ serve(async (req) => {
     const preference = {
       items: [
         {
-          title: `ImobCRM - ${plan.name}`,
+          title: `MV Connect - ${plan.name}`,
           quantity: 1,
           unit_price: Number(plan.price),
           currency_id: "BRL",
