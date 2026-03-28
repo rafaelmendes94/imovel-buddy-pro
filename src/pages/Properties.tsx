@@ -890,7 +890,7 @@ function PropertyRow({
 
         {/* ── BLOCK 1: Foto + Imóvel + Localização ── */}
         <div className="flex gap-2.5 items-center min-w-0 flex-1 pr-4 border-r border-border cursor-pointer" onClick={() => onSelect?.(property)}>
-          <img src={property.images[0] || property.image} alt={property.title} className="w-14 h-14 rounded-lg object-cover flex-shrink-0" />
+          <img src={property.images[0] || property.image} alt={property.title} className="w-[72px] h-[72px] rounded-lg object-cover flex-shrink-0" />
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <h3
@@ -954,16 +954,10 @@ function PropertyRow({
               ))}
             </div>
           )}
-          <button
-            className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-primary transition-colors mt-1"
-            onClick={(e) => {
-              e.stopPropagation();
-              toast.info("Abrindo pasta de chaves no Drive...");
-              window.open(`https://drive.google.com/drive/search?q=${encodeURIComponent(property.title + " chaves")}`, "_blank");
-            }}
-          >
-            <Key className="w-3 h-3" />Chaves
-          </button>
+          <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-1">
+            <Key className="w-3 h-3 flex-shrink-0" />
+            <span className="truncate">{property.keysLocation || "Não informado"}</span>
+          </div>
         </div>
 
         {/* ── BLOCK 3: Corretor + WhatsApp + Datas ── */}
