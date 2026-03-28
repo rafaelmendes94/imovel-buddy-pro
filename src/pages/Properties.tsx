@@ -1443,7 +1443,7 @@ function PropertyRow({
           {/* Keys */}
           <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
             <Key className="w-3.5 h-3.5 flex-shrink-0 text-amber-400" />
-            <span className="truncate">{property.keysLocation || "Não informado"}</span>
+            <span className="truncate font-bold text-foreground">{property.keysLocation || "Não informado"}</span>
           </div>
           {/* Dates */}
           <div className="space-y-0.5 text-[10px] text-muted-foreground">

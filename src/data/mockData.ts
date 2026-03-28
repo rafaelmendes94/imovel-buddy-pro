@@ -39,6 +39,7 @@ export interface Property {
   posicaoSolar?: string;
   infraestrutura?: string[];
   vista?: string;
+  condicao?: "Mobiliado" | "Semi-mobiliado" | "Vazio" | "Decorado";
   ownerType?: "Construtora" | "Investidor" | "Particular" | "Adm Comercial";
   priceInstallment?: number;
   commission?: number;
