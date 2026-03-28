@@ -15,7 +15,7 @@ import {
   Phone, Heart, FileCheck, Eye, Repeat, CreditCard, DollarSign, Ban,
   Share2, CalendarCheck, CalendarClock, AlertTriangle, Pencil, Image,
   FolderDown, User, ShieldCheck, Percent, Gift, BarChart3, FileSignature,
-  TrendingUp, Wallet, RefreshCw, ArrowUp, ArrowDown, Banknote,
+  TrendingUp, Wallet, RefreshCw, ArrowUp, ArrowDown, Banknote, Copy,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -248,6 +248,24 @@ export default function Properties() {
       prev.map((p) => (p.id === id ? { ...p, updatedAt: new Date().toISOString() } : p))
     );
     toast.success("Data de atualização renovada!");
+  };
+
+  const handleDuplicate = (id: string) => {
+    const original = propertyList.find(p => p.id === id);
+    if (!original) return;
+    const newId = `dup-${Date.now()}`;
+    const newCode = `MV${String(propertyList.length + 1).padStart(2, "0")}`;
+    const duplicate: Property = {
+      ...original,
+      id: newId,
+      code: newCode,
+      title: `${original.title} (Cópia)`,
+      status: "Disponível",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    setPropertyList(prev => [duplicate, ...prev]);
+    toast.success("Imóvel duplicado com sucesso!");
   };
 
   const cities = useMemo(() => [...new Set(propertyList.map(p => p.city))].sort(), [propertyList]);
@@ -747,6 +765,7 @@ export default function Properties() {
                 onNavigateToValuation={handleNavigateToValuation}
                 onNavigateToContract={handleNavigateToContract}
                 onQuickUpdate={handleQuickUpdate}
+                onDuplicate={handleDuplicate}
               />
             ))}
           </div>
@@ -1278,7 +1297,7 @@ const cleanEmpreendimentoName = (name: string) => name.replace(/^(Ed\.\s*|Cond\.
 
 // ---- PropertyRow (redesigned) ----
 function PropertyRow({
-  property, onStatusChange, onSelect, isFavorited, onToggleFavorite, onFilterByTitle, onFilterByCondition, onFilterByOwner, onPriceChange, allProperties, onDealLabelChange, onNavigateToValuation, onNavigateToContract, onQuickUpdate,
+  property, onStatusChange, onSelect, isFavorited, onToggleFavorite, onFilterByTitle, onFilterByCondition, onFilterByOwner, onPriceChange, allProperties, onDealLabelChange, onNavigateToValuation, onNavigateToContract, onQuickUpdate, onDuplicate,
 }: {
   property: Property;
   onStatusChange: (id: string, status: Property["status"]) => void;
@@ -1294,6 +1313,7 @@ function PropertyRow({
   onNavigateToValuation?: (p: Property) => void;
   onNavigateToContract?: (p: Property) => void;
   onQuickUpdate?: (id: string) => void;
+  onDuplicate?: (id: string) => void;
 }) {
   const dealScore = useMemo(() => analyzeDealScore(property, allProperties || []), [property, allProperties]);
   const [showCelebration, setShowCelebration] = useState(false);
@@ -1646,6 +1666,10 @@ function PropertyRow({
             }}
             className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors" title="Compartilhar"
           ><Share2 className="w-3.5 h-3.5 text-foreground" /></button>
+          <button
+            onClick={() => onDuplicate?.(property.id)}
+            className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors" title="Duplicar imóvel"
+          ><Copy className="w-3.5 h-3.5 text-foreground" /></button>
         </div>
       </div>
     </div>
