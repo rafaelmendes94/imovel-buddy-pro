@@ -170,9 +170,27 @@ export default function Properties() {
     toast.success("Valor atualizado!");
   };
 
-  const handleDealLabelChange = (propertyId: string, label: Property["dealLabel"]) => {
-    setPropertyList((prev) => prev.map((p) => (p.id === propertyId ? { ...p, dealLabel: label } : p)));
-    toast.success(label ? `Classificado como "${label}"` : "Classificação removida");
+  const handleNavigateToValuation = (property: Property) => {
+    const params = new URLSearchParams({
+      tipo: property.type,
+      cidade: property.city,
+      bairro: property.neighborhood || "",
+      area: String(property.area),
+      quartos: String(property.bedrooms),
+      endereco: property.address,
+      titulo: property.title,
+    });
+    navigate(`/avaliacoes?${params.toString()}`);
+  };
+
+  const handleNavigateToContract = (property: Property) => {
+    const params = new URLSearchParams({
+      imovel: property.title,
+      endereco: `${property.address}, ${property.city}`,
+      valor: String(property.price),
+      proprietario: property.owner || "",
+    });
+    navigate(`/contratos?${params.toString()}`);
   };
 
   const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterCondition || filterEmpreendimento || filterType || filterOwner || filterNeighborhood || filterStreet || filterCode;
