@@ -107,6 +107,7 @@ export const properties: Property[] = [
     posicaoSolar: "Nascente",
     infraestrutura: ["Piscina", "Churrasqueira", "Salão de Festas", "Academia"],
     vista: "Mar",
+    condicao: "Decorado",
   },
   {
     id: "2",
@@ -153,6 +154,7 @@ export const properties: Property[] = [
     posicaoSolar: "Poente",
     infraestrutura: ["Piscina", "Sauna", "Espaço Gourmet", "Brinquedoteca"],
     vista: "Mar / Lago",
+    condicao: "Mobiliado",
   },
   {
     id: "3",
