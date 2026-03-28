@@ -41,7 +41,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           >
             <Menu className="w-5 h-5 text-foreground" />
           </button>
-          <span className="text-sm font-bold text-foreground">ImobCRM</span>
+          <span className="text-sm font-bold text-foreground">MV Connect</span>
         </div>
         {children}
       </main>

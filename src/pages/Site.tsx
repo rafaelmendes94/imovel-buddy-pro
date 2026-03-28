@@ -1462,7 +1462,7 @@ export default function Site() {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-xs text-gray-500">
-            © 2024 ImobCRM. Todos os direitos reservados.
+            © 2024 MV Connect. Todos os direitos reservados.
           </div>
         </div>
       </footer>
