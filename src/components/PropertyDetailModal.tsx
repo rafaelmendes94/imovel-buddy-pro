@@ -4,7 +4,7 @@ import {
   X, MapPin, BedDouble, Bath, Car, Ruler, Phone, Waves, Paintbrush,
   Building2, ChevronLeft, ChevronRight, ExternalLink, Play, Repeat,
   CreditCard, Navigation, Share2, Heart, Maximize2, Download, Key,
-  Pencil, Check, HardDrive, Flame, TrendingUp
+  Pencil, Check, HardDrive, Flame, TrendingUp, Eye, EyeOff, User
 } from "lucide-react";
 import { formatCurrency, type Property } from "@/data/mockData";
 import { cn } from "@/lib/utils";
@@ -26,6 +26,7 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
   const [showVideo, setShowVideo] = useState(false);
   const [editingField, setEditingField] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<Record<string, string>>({});
+  const [showOwnerPhone, setShowOwnerPhone] = useState(false);
 
   if (!property) return null;
 
@@ -447,11 +448,45 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
           </div>
 
           {/* Características do Imóvel - Editable selects */}
-          <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-            <p className="text-xs font-bold text-gray-800 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-              <Building2 className="w-3.5 h-3.5 text-amber-500" /> Características do Imóvel
+          <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
+            <p className="text-sm font-bold text-gray-800 uppercase tracking-wider mb-4 flex items-center gap-1.5">
+              <Building2 className="w-4 h-4 text-amber-500" /> Características do Imóvel
             </p>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+
+            {/* Proprietário */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 p-3 bg-white rounded-lg border border-gray-200">
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">
+                  <User className="w-3 h-3 inline mr-1" />Proprietário
+                </label>
+                <p className="text-sm font-bold text-gray-900">{property.owner || "Não informado"}</p>
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">
+                  <Phone className="w-3 h-3 inline mr-1" />Telefone do Proprietário
+                </label>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-bold text-gray-900">
+                    {property.ownerPhone
+                      ? showOwnerPhone
+                        ? property.ownerPhone.replace(/(\d{2})(\d{2})(\d{5})(\d{4})/, "+$1 ($2) $3-$4")
+                        : "••••••••••••"
+                      : "Não informado"}
+                  </p>
+                  {property.ownerPhone && (
+                    <button
+                      onClick={() => setShowOwnerPhone(!showOwnerPhone)}
+                      className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-700"
+                      title={showOwnerPhone ? "Ocultar número" : "Mostrar número"}
+                    >
+                      {showOwnerPhone ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {/* Posição no Prédio */}
               <div>
                 <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">Posição no Prédio</label>
