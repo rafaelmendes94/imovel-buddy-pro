@@ -275,6 +275,81 @@ export default function Properties() {
           ))}
         </div>
 
+        {/* Freshness Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <button
+            onClick={() => setFilterFreshness(filterFreshness === "30" ? "all" : "30")}
+            className={cn(
+              "bg-card border rounded-xl p-4 text-left transition-all hover:shadow-md group",
+              filterFreshness === "30" ? "border-emerald-500 ring-2 ring-emerald-500/20" : "border-border"
+            )}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-500">Atualizados (30 dias)</p>
+                <p className="text-3xl font-black text-foreground mt-1">{freshnessStats.within30}</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">imóveis em dia</p>
+              </div>
+              <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                <CalendarCheck className="w-5 h-5 text-emerald-500" />
+              </div>
+            </div>
+          </button>
+          <button
+            onClick={() => setFilterFreshness(filterFreshness === "60" ? "all" : "60")}
+            className={cn(
+              "bg-card border rounded-xl p-4 text-left transition-all hover:shadow-md group",
+              filterFreshness === "60" ? "border-amber-500 ring-2 ring-amber-500/20" : "border-border"
+            )}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-amber-500">Atenção (31-60 dias)</p>
+                <p className="text-3xl font-black text-foreground mt-1">{freshnessStats.within60}</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">precisam de revisão</p>
+              </div>
+              <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                <CalendarClock className="w-5 h-5 text-amber-500" />
+              </div>
+            </div>
+          </button>
+          <button
+            onClick={() => setFilterFreshness(filterFreshness === "90" ? "all" : "90")}
+            className={cn(
+              "bg-card border rounded-xl p-4 text-left transition-all hover:shadow-md group",
+              filterFreshness === "90" ? "border-destructive ring-2 ring-destructive/20" : "border-border"
+            )}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-destructive">Desatualizados (+90 dias)</p>
+                <p className="text-3xl font-black text-foreground mt-1">{freshnessStats.over90}</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">ação urgente necessária</p>
+              </div>
+              <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5 text-destructive" />
+              </div>
+            </div>
+          </button>
+        </div>
+
+        {/* Active freshness filter indicator */}
+        {filterFreshness !== "all" && (
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50 border border-border text-sm">
+            <span className="text-muted-foreground">Filtrando por:</span>
+            <span className={cn("font-semibold",
+              filterFreshness === "30" && "text-emerald-500",
+              filterFreshness === "60" && "text-amber-500",
+              filterFreshness === "90" && "text-destructive",
+            )}>
+              {filterFreshness === "30" ? "Atualizados nos últimos 30 dias" : filterFreshness === "60" ? "Atualizados entre 31-60 dias" : "Desatualizados há mais de 90 dias"}
+            </span>
+            <button onClick={() => setFilterFreshness("all")} className="ml-auto p-1 rounded hover:bg-muted">
+              <X className="w-3.5 h-3.5 text-muted-foreground" />
+            </button>
+          </div>
+        )}
+
         {/* Category Tabs + Search + Filters */}
         <div className="space-y-3">
           {/* Category pills */}
