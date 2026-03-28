@@ -867,15 +867,23 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
         )}
       </div>
 
-        {/* Floating Update Button */}
-        {hasChanges && (
+        {/* Floating Action Buttons */}
+        <div className="sticky bottom-4 z-10 flex items-center justify-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300">
           <button
-            onClick={handleConfirmUpdate}
-            className="sticky bottom-4 mx-auto flex items-center gap-2 px-6 py-3 rounded-full bg-emerald-500 text-white text-sm font-bold shadow-2xl hover:bg-emerald-600 transition-all animate-in fade-in slide-in-from-bottom-4 duration-300 z-10"
+            onClick={onClose}
+            className="flex items-center gap-2 px-5 py-3 rounded-full bg-muted text-muted-foreground text-sm font-bold shadow-2xl hover:bg-muted/80 transition-all border border-border"
           >
-            <Check className="w-4 h-4" /> Atualizar Imóvel
+            <ChevronLeft className="w-4 h-4" /> Voltar
           </button>
-        )}
+          {hasChanges && (
+            <button
+              onClick={handleConfirmUpdate}
+              className="flex items-center gap-2 px-6 py-3 rounded-full bg-emerald-500 text-white text-sm font-bold shadow-2xl hover:bg-emerald-600 transition-all"
+            >
+              <Check className="w-4 h-4" /> Atualizar Imóvel
+            </button>
+          )}
+        </div>
     </div>
   );
 }
