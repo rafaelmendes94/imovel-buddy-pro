@@ -101,8 +101,14 @@ const categories: { key: Category; label: string; icon: typeof Home }[] = [
   { key: "vendidos", label: "Vendidos", icon: Trophy },
 ];
 
+// Auto-generate codes for properties that don't have one
+const propertiesWithCodes = initialProperties.map((p, i) => ({
+  ...p,
+  code: p.code || `MV${String(i + 1).padStart(2, "0")}`,
+}));
+
 export default function Properties() {
-  const [propertyList, setPropertyList] = useState<Property[]>(initialProperties);
+  const [propertyList, setPropertyList] = useState<Property[]>(propertiesWithCodes);
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<Category>("todos");
   const [view, setView] = useState<"grid" | "list" | "map">("grid");
@@ -118,6 +124,7 @@ export default function Properties() {
   const [filterOwner, setFilterOwner] = useState("");
   const [filterNeighborhood, setFilterNeighborhood] = useState("");
   const [filterStreet, setFilterStreet] = useState("");
+  const [filterCode, setFilterCode] = useState("");
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [viewingTerm, setViewingTerm] = useState<string | null>(null);
   const [favoriteIds, setFavoriteIds] = useState<string[]>(() => {
@@ -160,11 +167,12 @@ export default function Properties() {
     toast.success("Valor atualizado!");
   };
 
-  const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterCondition || filterEmpreendimento || filterType || filterOwner || filterNeighborhood || filterStreet;
+  const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterCondition || filterEmpreendimento || filterType || filterOwner || filterNeighborhood || filterStreet || filterCode;
 
   const clearFilters = () => {
     setFilterCity(""); setFilterBedrooms(""); setFilterPriceMin(""); setFilterPriceMax(""); setFilterCondition("");
-    setFilterEmpreendimento(""); setFilterType(""); setFilterOwner(""); setFilterNeighborhood(""); setFilterStreet(""); setSearch("");
+    setFilterEmpreendimento(""); setFilterType(""); setFilterOwner(""); setFilterNeighborhood(""); setFilterStreet(""); setFilterCode(""); setSearch("");
+    setShowInactive(false);
   };
 
   const cities = useMemo(() => [...new Set(propertyList.map(p => p.city))].sort(), [propertyList]);
