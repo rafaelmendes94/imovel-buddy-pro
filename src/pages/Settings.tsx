@@ -1,10 +1,12 @@
 import { AppLayout } from "@/components/AppLayout";
+import { BackButton } from "@/components/BackButton";
 import { Building2, CreditCard, Bell, Shield } from "lucide-react";
 
 export default function Settings() {
   return (
     <AppLayout>
       <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
+        <BackButton />
         <div>
           <h1 className="text-2xl font-bold text-foreground">Configurações</h1>
           <p className="text-sm text-muted-foreground mt-1">
