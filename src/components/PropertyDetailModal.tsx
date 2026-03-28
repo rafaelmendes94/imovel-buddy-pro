@@ -795,6 +795,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                   <option value="Construtora">Construtora</option>
                   <option value="Investidor">Investidor</option>
                   <option value="Adm Comercial">Adm Comercial</option>
+                  <option value="Exclusividade">Exclusividade</option>
                 </select>
               </div>
               <div>

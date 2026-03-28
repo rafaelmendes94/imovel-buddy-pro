@@ -41,7 +41,7 @@ export interface Property {
   elevadores?: number;
   vista?: string;
   condicao?: "Mobiliado" | "Semi-mobiliado" | "Vazio" | "Decorado";
-  ownerType?: "Construtora" | "Investidor" | "Particular" | "Adm Comercial";
+  ownerType?: "Construtora" | "Investidor" | "Particular" | "Adm Comercial" | "Exclusividade";
   priceInstallment?: number;
   commission?: number;
   bonus?: number;
