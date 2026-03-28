@@ -33,6 +33,7 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
   const [generatingAI, setGeneratingAI] = useState<string | null>(null);
   const [showAIOptions, setShowAIOptions] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [editingBlock, setEditingBlock] = useState<string | null>(null);
 
   if (!property) return null;
 
