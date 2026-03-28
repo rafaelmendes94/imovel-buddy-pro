@@ -17,7 +17,7 @@ import {
   FolderDown, User, ShieldCheck, Percent, Gift, BarChart3, FileSignature,
   TrendingUp, Wallet, RefreshCw, ArrowUp, ArrowDown, Banknote, Copy, Maximize2, Scan,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -123,6 +123,7 @@ const propertiesWithCodes = initialProperties.map((p, i) => ({
 
 export default function Properties() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [propertyList, setPropertyList] = useState<Property[]>(propertiesWithCodes);
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<Category>("todos");
@@ -142,7 +143,25 @@ export default function Properties() {
   const [filterCode, setFilterCode] = useState("");
   const [filterParking, setFilterParking] = useState("");
   const [sortBy, setSortBy] = useState<"default" | "price-asc" | "price-desc" | "name-asc" | "name-desc" | "updated" | "created">("default");
-  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  
+  // Restore selected property from URL param
+  const propertyIdFromUrl = searchParams.get("property");
+  const [selectedProperty, setSelectedPropertyState] = useState<Property | null>(() => {
+    if (propertyIdFromUrl) {
+      return propertiesWithCodes.find(p => p.id === propertyIdFromUrl) || null;
+    }
+    return null;
+  });
+
+  const setSelectedProperty = (p: Property | null) => {
+    setSelectedPropertyState(p);
+    if (p) {
+      setSearchParams(prev => { prev.set("property", p.id); return prev; }, { replace: true });
+    } else {
+      setSearchParams(prev => { prev.delete("property"); return prev; }, { replace: true });
+    }
+  };
+
   const [viewingTerm, setViewingTerm] = useState<string | null>(null);
   const [favoriteIds, setFavoriteIds] = useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem("mv-favorites") || "[]"); } catch { return []; }
