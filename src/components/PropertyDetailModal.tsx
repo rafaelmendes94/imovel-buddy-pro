@@ -6,7 +6,7 @@ import {
   CreditCard, Navigation, Share2, Heart, Maximize2, Download, Key,
   Pencil, Check, HardDrive, Flame, TrendingUp, Eye, EyeOff, User,
   Sparkles, Loader2, Target, Zap, FileText, MapPinned, DollarSign,
-  Gift, Percent, FileCheck, Hash
+  Gift, Percent, FileCheck, Hash, Scan
 } from "lucide-react";
 import { formatCurrency, type Property } from "@/data/mockData";
 import { cn } from "@/lib/utils";
@@ -460,7 +460,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
           {/* Specs grid - editable */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="bg-gray-50 rounded-xl p-4 text-center border border-gray-100">
-              <Ruler className="w-5 h-5 mx-auto text-amber-500 mb-1.5" />
+              <Maximize2 className="w-5 h-5 mx-auto text-amber-500 mb-1.5" />
               <p className="text-xl font-bold text-gray-900">
                 <EditableField field="area" value={property.area} label="área" type="number" />m²
               </p>
@@ -514,7 +514,61 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
               </div>
               <div>
                 <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Empreendimento</label>
-                <EditableField field="empreendimento" value={property.empreendimento || ""} label="empreendimento" />
+                <select
+                  value={property.empreendimento || ""}
+                  onChange={(e) => {
+                    if (!onUpdateProperty) return;
+                    const selected = e.target.value;
+                    if (!selected) {
+                      updateProperty({ ...property, empreendimento: undefined });
+                      toast.success("Empreendimento removido");
+                      return;
+                    }
+                    // Find a property with this empreendimento to pull shared data
+                    const ref = allProperties.find(p => p.empreendimento === selected && p.id !== property.id);
+                    if (ref) {
+                      updateProperty({
+                        ...property,
+                        empreendimento: selected,
+                        address: ref.address || property.address,
+                        city: ref.city || property.city,
+                        neighborhood: ref.neighborhood || property.neighborhood,
+                        infraestrutura: ref.infraestrutura || property.infraestrutura,
+                        posicaoPredio: property.posicaoPredio || ref.posicaoPredio,
+                        posicaoSolar: property.posicaoSolar || ref.posicaoSolar,
+                      });
+                      toast.success(`Dados do empreendimento "${selected}" aplicados!`);
+                    } else {
+                      updateProperty({ ...property, empreendimento: selected });
+                      toast.success("Empreendimento atualizado!");
+                    }
+                  }}
+                  className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                >
+                  <option value="">Selecione ou digite novo</option>
+                  {[...new Set(allProperties.map(p => p.empreendimento).filter(Boolean))].sort().map(emp => (
+                    <option key={emp} value={emp}>{emp}</option>
+                  ))}
+                </select>
+                {/* Allow typing a new empreendimento */}
+                {!allProperties.some(p => p.empreendimento === property.empreendimento) && property.empreendimento && (
+                  <p className="text-[10px] text-amber-600 mt-1 font-medium">Novo: {property.empreendimento}</p>
+                )}
+                <input
+                  type="text"
+                  placeholder="Ou digite um novo..."
+                  className="w-full mt-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && onUpdateProperty) {
+                      const val = (e.target as HTMLInputElement).value.trim();
+                      if (val) {
+                        updateProperty({ ...property, empreendimento: val });
+                        toast.success(`Empreendimento "${val}" definido!`);
+                        (e.target as HTMLInputElement).value = "";
+                      }
+                    }
+                  }}
+                />
               </div>
               <div>
                 <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Bairro</label>
