@@ -1592,7 +1592,6 @@ function PropertyRow({
             <div className="flex items-center justify-between gap-1">
               <span className="flex items-center gap-0.5"><CalendarClock className="w-3 h-3" /> Atualização</span>
               <div className="flex items-center gap-1.5">
-                <span className={cn("font-semibold", updateColor)}>{updatedFormatted}</span>
                 <button
                   onClick={(e) => { e.stopPropagation(); onQuickUpdate?.(property.id); }}
                   title="Atualizar data agora"
@@ -1600,6 +1599,7 @@ function PropertyRow({
                 >
                   <RefreshCw className="w-3 h-3" />
                 </button>
+                <span className={cn("font-semibold", updateColor)}>{updatedFormatted}</span>
               </div>
             </div>
           </div>
