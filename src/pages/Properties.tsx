@@ -12,7 +12,7 @@ import {
   CheckCircle2, Clock, Home, Key, Trophy, FileCode, ChevronDown,
   Star, Fence, TreePine, Waves, Paintbrush, Filter, X, SlidersHorizontal,
   Phone, Heart, FileCheck, Eye, Repeat, CreditCard, DollarSign, Ban,
-  Share2,
+  Share2, CalendarCheck, CalendarClock, AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -113,6 +113,7 @@ export default function Properties() {
   const [favoriteIds, setFavoriteIds] = useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem("mv-favorites") || "[]"); } catch { return []; }
   });
+  const [filterFreshness, setFilterFreshness] = useState<"all" | "30" | "60" | "90">("all");
 
   const xmlMenuRef = useRef<HTMLDivElement>(null);
 
@@ -153,8 +154,34 @@ export default function Properties() {
   // Cities for filter
   const cities = useMemo(() => [...new Set(propertyList.map(p => p.city))].sort(), [propertyList]);
 
+  // Freshness helpers
+  const now = new Date();
+  const getDaysSinceUpdate = (p: Property) => {
+    const updated = p.updatedAt ? new Date(p.updatedAt) : new Date(p.createdAt);
+    return Math.floor((now.getTime() - updated.getTime()) / (1000 * 60 * 60 * 24));
+  };
+
+  const freshnessStats = useMemo(() => {
+    let within30 = 0, within60 = 0, over90 = 0;
+    propertyList.forEach(p => {
+      const days = getDaysSinceUpdate(p);
+      if (days <= 30) within30++;
+      else if (days <= 60) within60++;
+      else if (days > 90) over90++;
+    });
+    return { within30, within60, over90 };
+  }, [propertyList]);
+
   const filtered = useMemo(() => {
     return propertyList.filter((p) => {
+      // Freshness filter
+      if (filterFreshness !== "all") {
+        const days = getDaysSinceUpdate(p);
+        if (filterFreshness === "30" && days > 30) return false;
+        if (filterFreshness === "60" && (days <= 30 || days > 60)) return false;
+        if (filterFreshness === "90" && days <= 90) return false;
+      }
+
       // Category
       if (activeCategory === "apartamentos" && p.type !== "Apartamento") return false;
       if (activeCategory === "casas" && p.type !== "Casa") return false;
@@ -179,7 +206,7 @@ export default function Properties() {
 
       return true;
     });
-  }, [propertyList, activeCategory, search, filterCity, filterBedrooms, filterPriceMin, filterPriceMax, filterCondition]);
+  }, [propertyList, activeCategory, search, filterCity, filterBedrooms, filterPriceMin, filterPriceMax, filterCondition, filterFreshness]);
 
   const favoritedProperties = propertyList.filter((p) => favoriteIds.includes(p.id));
 
@@ -247,6 +274,81 @@ export default function Properties() {
             </button>
           ))}
         </div>
+
+        {/* Freshness Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <button
+            onClick={() => setFilterFreshness(filterFreshness === "30" ? "all" : "30")}
+            className={cn(
+              "bg-card border rounded-xl p-4 text-left transition-all hover:shadow-md group",
+              filterFreshness === "30" ? "border-emerald-500 ring-2 ring-emerald-500/20" : "border-border"
+            )}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-500">Atualizados (30 dias)</p>
+                <p className="text-3xl font-black text-foreground mt-1">{freshnessStats.within30}</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">imóveis em dia</p>
+              </div>
+              <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                <CalendarCheck className="w-5 h-5 text-emerald-500" />
+              </div>
+            </div>
+          </button>
+          <button
+            onClick={() => setFilterFreshness(filterFreshness === "60" ? "all" : "60")}
+            className={cn(
+              "bg-card border rounded-xl p-4 text-left transition-all hover:shadow-md group",
+              filterFreshness === "60" ? "border-amber-500 ring-2 ring-amber-500/20" : "border-border"
+            )}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-amber-500">Atenção (31-60 dias)</p>
+                <p className="text-3xl font-black text-foreground mt-1">{freshnessStats.within60}</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">precisam de revisão</p>
+              </div>
+              <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                <CalendarClock className="w-5 h-5 text-amber-500" />
+              </div>
+            </div>
+          </button>
+          <button
+            onClick={() => setFilterFreshness(filterFreshness === "90" ? "all" : "90")}
+            className={cn(
+              "bg-card border rounded-xl p-4 text-left transition-all hover:shadow-md group",
+              filterFreshness === "90" ? "border-destructive ring-2 ring-destructive/20" : "border-border"
+            )}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-destructive">Desatualizados (+90 dias)</p>
+                <p className="text-3xl font-black text-foreground mt-1">{freshnessStats.over90}</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">ação urgente necessária</p>
+              </div>
+              <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5 text-destructive" />
+              </div>
+            </div>
+          </button>
+        </div>
+
+        {/* Active freshness filter indicator */}
+        {filterFreshness !== "all" && (
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50 border border-border text-sm">
+            <span className="text-muted-foreground">Filtrando por:</span>
+            <span className={cn("font-semibold",
+              filterFreshness === "30" && "text-emerald-500",
+              filterFreshness === "60" && "text-amber-500",
+              filterFreshness === "90" && "text-destructive",
+            )}>
+              {filterFreshness === "30" ? "Atualizados nos últimos 30 dias" : filterFreshness === "60" ? "Atualizados entre 31-60 dias" : "Desatualizados há mais de 90 dias"}
+            </span>
+            <button onClick={() => setFilterFreshness("all")} className="ml-auto p-1 rounded hover:bg-muted">
+              <X className="w-3.5 h-3.5 text-muted-foreground" />
+            </button>
+          </div>
+        )}
 
         {/* Category Tabs + Search + Filters */}
         <div className="space-y-3">
@@ -521,6 +623,43 @@ function StatusBar({ currentStatus, onChangeStatus }: { currentStatus: Property[
   );
 }
 
+// ---- Update Badge ----
+function UpdateBadge({ updatedAt, createdAt, compact }: { updatedAt?: string; createdAt: string; compact?: boolean }) {
+  const date = updatedAt || createdAt;
+  const updated = new Date(date);
+  const now = new Date();
+  const days = Math.floor((now.getTime() - updated.getTime()) / (1000 * 60 * 60 * 24));
+  const formatted = updated.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
+
+  const color = days <= 30
+    ? "text-emerald-500 bg-emerald-500/10"
+    : days <= 60
+    ? "text-amber-500 bg-amber-500/10"
+    : "text-destructive bg-destructive/10";
+
+  const label = days <= 30 ? "Atualizado" : days <= 60 ? "Revisar" : "Desatualizado";
+  const Icon = days <= 30 ? CalendarCheck : days <= 60 ? CalendarClock : AlertTriangle;
+
+  if (compact) {
+    return (
+      <div className={cn("inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold", color)}>
+        <Icon className="w-3 h-3" />
+        {formatted} • {days}d
+      </div>
+    );
+  }
+
+  return (
+    <div className={cn("flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[11px] font-semibold", color)}>
+      <div className="flex items-center gap-1.5">
+        <Icon className="w-3.5 h-3.5" />
+        <span>{label} • {formatted}</span>
+      </div>
+      <span className="text-[10px] opacity-70">{days} dias</span>
+    </div>
+  );
+}
+
 // ---- Sold Celebration ----
 function SoldCelebration() {
   const particles = Array.from({ length: 30 }, (_, i) => ({
@@ -680,6 +819,9 @@ function PropertyCard({
           </div>
         )}
 
+        {/* Last update indicator */}
+        <UpdateBadge updatedAt={property.updatedAt} createdAt={property.createdAt} />
+
         {/* Broker + WhatsApp */}
         <div className="flex items-center justify-between pt-2 border-t border-border">
           <div className="flex items-center gap-2">
@@ -792,6 +934,7 @@ function PropertyRow({
             </div>
           )}
         </div>
+        <UpdateBadge updatedAt={property.updatedAt} createdAt={property.createdAt} compact />
         <StatusBar currentStatus={property.status} onChangeStatus={handleStatusChange} />
       </div>
       <div className="text-right flex-shrink-0 space-y-1">
