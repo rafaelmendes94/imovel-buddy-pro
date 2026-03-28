@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 
 interface PropertyMapProps {
   properties: Property[];
+  onSelectProperty?: (property: Property) => void;
 }
 
 function formatShortPrice(price: number): string {
@@ -20,7 +21,7 @@ function getDistance(lat1: number, lng1: number, lat2: number, lng2: number): nu
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-export function PropertyMap({ properties }: PropertyMapProps) {
+export function PropertyMap({ properties, onSelectProperty }: PropertyMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
