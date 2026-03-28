@@ -90,6 +90,36 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
 
   const cancelEdit = () => setEditingField(null);
 
+  // -- AI Description Generation --
+  const aiStyles = [
+    { id: "gatilhos", label: "Gatilhos de Venda", icon: Target, color: "text-red-500 bg-red-50 border-red-200 hover:bg-red-100" },
+    { id: "agressiva", label: "Agressiva (Vendas)", icon: Zap, color: "text-orange-500 bg-orange-50 border-orange-200 hover:bg-orange-100" },
+    { id: "informativa", label: "Informativa Completa", icon: FileText, color: "text-blue-500 bg-blue-50 border-blue-200 hover:bg-blue-100" },
+    { id: "geolocalizacao", label: "Geolocalização", icon: MapPinned, color: "text-emerald-500 bg-emerald-50 border-emerald-200 hover:bg-emerald-100" },
+  ];
+
+  const handleGenerateDescription = async (style: string) => {
+    setGeneratingAI(style);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-description", {
+        body: { property, style },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      if (data?.description) {
+        setEditValues((prev) => ({ ...prev, description: data.description }));
+        setEditingField("description");
+        setShowAIOptions(false);
+        toast.success("Descrição gerada com IA! Revise e salve.");
+      }
+    } catch (e: any) {
+      console.error("AI description error:", e);
+      toast.error(e?.message || "Erro ao gerar descrição com IA");
+    } finally {
+      setGeneratingAI(null);
+    }
+  };
+
   // -- Share --
   const handleShare = async () => {
     const shareData = {
