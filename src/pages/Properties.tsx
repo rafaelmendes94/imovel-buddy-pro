@@ -6,7 +6,7 @@ import { PropertyMap } from "@/components/PropertyMap";
 import { PropertyDetailModal } from "@/components/PropertyDetailModal";
 import { RoutePlanner } from "@/components/RoutePlanner";
 import { SharkAI } from "@/components/SharkAI";
-import { properties as initialProperties, formatCurrency, Property } from "@/data/mockData";
+import { properties as initialProperties, salesRecords, formatCurrency, Property } from "@/data/mockData";
 import {
   Building2, Search, Plus, MapPin, BedDouble, Bath, Car, Ruler,
   Download, Send, LayoutGrid, List, Map, ChevronLeft, ChevronRight,
@@ -379,7 +379,7 @@ export default function Properties() {
           ))}
         </div>
 
-        {/* VGV Card + Relatórios */}
+        {/* VGV Cards + Relatórios */}
         <div className="flex items-center gap-3">
           <div className="flex-1 bg-gradient-to-r from-primary/10 to-primary/5 border-2 border-primary/30 rounded-xl p-3 sm:p-4">
             <div className="flex items-center justify-between">
@@ -397,9 +397,25 @@ export default function Properties() {
               </div>
             </div>
           </div>
+          <div className="flex-1 bg-gradient-to-r from-emerald-500/10 to-emerald-500/5 border-2 border-emerald-500/30 rounded-xl p-3 sm:p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider text-emerald-600">VGV Vendidos</p>
+                <p className="text-2xl sm:text-4xl font-black text-foreground mt-1">
+                  {formatCurrency(salesRecords.reduce((sum, s) => sum + s.price, 0))}
+                </p>
+                <p className="text-[9px] sm:text-[11px] text-muted-foreground mt-0.5">
+                  {salesRecords.length} vendas realizadas
+                </p>
+              </div>
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+                <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600" />
+              </div>
+            </div>
+          </div>
           <Link
             to="/relatorios"
-            className="flex flex-col items-center justify-center gap-1.5 bg-primary text-primary-foreground rounded-xl px-5 py-4 sm:py-5 hover:bg-primary/90 transition-colors shadow-sm"
+            className="flex flex-col items-center justify-center gap-1.5 bg-primary text-primary-foreground rounded-xl px-5 py-4 sm:py-5 hover:bg-primary/90 transition-colors shadow-sm flex-shrink-0"
           >
             <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6" />
             <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Relatórios</span>
