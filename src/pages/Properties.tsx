@@ -677,10 +677,14 @@ export default function Properties() {
               {s.label}
             </button>
           ))}
-          <span className="ml-auto text-sm text-muted-foreground">
+        </div>
+
+        {/* Results count */}
+        <div className="flex items-center gap-2 px-1">
+          <span className="text-sm font-semibold text-muted-foreground">
             {sorted.length} imóvel(is)
-            {favoriteIds.length > 0 && <span className="ml-3 text-accent font-medium">♥ {favoriteIds.length}</span>}
           </span>
+          {favoriteIds.length > 0 && <span className="text-sm text-accent font-medium">♥ {favoriteIds.length}</span>}
         </div>
 
         {/* Content */}
