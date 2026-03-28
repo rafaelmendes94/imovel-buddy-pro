@@ -919,6 +919,54 @@ function PropertyCard({
   );
 }
 
+// ---- Inline Price Editor ----
+function InlinePrice({ value, onChange, className }: { value: number; onChange: (v: number) => void; className?: string }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const startEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setDraft(String(value));
+    setEditing(true);
+  };
+
+  useEffect(() => {
+    if (editing && inputRef.current) inputRef.current.focus();
+  }, [editing]);
+
+  const commit = () => {
+    const parsed = parseFloat(draft.replace(/[^\d]/g, ""));
+    if (!isNaN(parsed) && parsed > 0 && parsed !== value) onChange(parsed);
+    setEditing(false);
+  };
+
+  if (editing) {
+    return (
+      <input
+        ref={inputRef}
+        type="text"
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => { if (e.key === "Enter") commit(); if (e.key === "Escape") setEditing(false); }}
+        className={cn("bg-transparent border-b border-primary outline-none text-right w-[120px]", className)}
+        onClick={(e) => e.stopPropagation()}
+      />
+    );
+  }
+
+  return (
+    <span
+      className={cn("cursor-pointer hover:opacity-70 transition-opacity", className)}
+      onClick={startEdit}
+      title="Clique para editar o valor"
+    >
+      {formatCurrency(value)}
+    </span>
+  );
+}
+
 // ---- PropertyRow (redesigned) ----
 function PropertyRow({
   property, onStatusChange, onSelect, isFavorited, onToggleFavorite, onFilterByTitle, onFilterByCondition, onFilterByOwner, onPriceChange,
