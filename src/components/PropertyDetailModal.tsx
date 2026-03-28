@@ -581,9 +581,9 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
             </div>
 
             {/* Infraestrutura */}
-            <div className="mt-3">
-              <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Infraestrutura</label>
-              <div className="flex flex-wrap gap-1.5">
+            <div className="mt-4">
+              <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 block">Infraestrutura</label>
+              <div className="flex flex-wrap gap-2">
                 {["Piscina", "Churrasqueira", "Salão de Festas", "Academia", "Sauna", "Espaço Gourmet", "Brinquedoteca", "Playground", "Quadra", "Portaria 24h", "Elevador", "Jardim"].map((item) => {
                   const isActive = property.infraestrutura?.includes(item);
                   return (
