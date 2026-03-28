@@ -209,6 +209,7 @@ export const properties: Property[] = [
     id: "5",
     title: "Terreno Condomínio Xangri-lá",
     address: "Rua dos Coqueiros, 150",
+    neighborhood: "Bosque do Litoral",
     city: "Xangri-lá",
     type: "Terreno",
     status: "Disponível",
