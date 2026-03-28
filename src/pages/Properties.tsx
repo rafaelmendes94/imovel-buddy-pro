@@ -1294,7 +1294,7 @@ function PropertyRow({
           )}
 
           {/* Deal Thermometer */}
-          <DealThermometer dealScore={dealScore} manualLabel={property.dealLabel} onLabelChange={(lbl) => onDealLabelChange?.(property.id, lbl)} />
+          <DealThermometer dealScore={dealScore} manualLabel={property.dealLabel} />
         </div>
 
         {/* ── COL 4: Proprietário + Chaves + Datas + Status ── */}
