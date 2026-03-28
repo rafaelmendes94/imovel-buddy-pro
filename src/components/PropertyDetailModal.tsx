@@ -84,12 +84,31 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
         case "infraestrutura": updated.infraestrutura = val.split(",").map(s => s.trim()).filter(Boolean); break;
       }
       onUpdateProperty(updated);
+      setHasChanges(true);
       toast.success("Informação atualizada!");
     }
     setEditingField(null);
   };
 
   const cancelEdit = () => setEditingField(null);
+
+  // -- Confirm update (stamp updatedAt) --
+  const handleConfirmUpdate = () => {
+    if (onUpdateProperty && hasChanges) {
+      onUpdateProperty({ ...property, updatedAt: new Date().toISOString() });
+      setHasChanges(false);
+      toast.success("Imóvel atualizado! Data de atualização registrada.");
+    }
+  };
+
+  // -- Close with auto-update --
+  const handleClose = () => {
+    if (hasChanges && onUpdateProperty) {
+      onUpdateProperty({ ...property, updatedAt: new Date().toISOString() });
+      toast.success("Alterações salvas e data atualizada.");
+    }
+    onClose();
+  };
 
   // -- AI Description Generation --
   const aiStyles = [
