@@ -282,15 +282,32 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                 <EditableField field="title" value={property.title} label="título" />
               </span>
             </h2>
-            <span className={cn(
-              "px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide flex-shrink-0",
-              property.status === "Disponível" ? "bg-emerald-500 text-white" :
-              property.status === "Vendido" ? "bg-red-500 text-white" :
-              property.status === "Reservado" ? "bg-amber-500 text-white" :
-              "bg-blue-500 text-white"
-            )}>
-              {property.status}
-            </span>
+            {property.code && (
+              <span className="text-[11px] font-black text-gray-500 bg-gray-100 px-2 py-0.5 rounded flex-shrink-0">
+                <EditableField field="code" value={property.code} label="código" />
+              </span>
+            )}
+            <select
+              value={property.status}
+              onChange={(e) => {
+                if (onUpdateProperty) {
+                  updateProperty({ ...property, status: e.target.value as Property["status"] });
+                  toast.success("Status atualizado!");
+                }
+              }}
+              className={cn(
+                "px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide flex-shrink-0 cursor-pointer border-0 focus:outline-none focus:ring-2 focus:ring-amber-400",
+                property.status === "Disponível" ? "bg-emerald-500 text-white" :
+                property.status === "Vendido" ? "bg-red-500 text-white" :
+                property.status === "Reservado" ? "bg-amber-500 text-white" :
+                property.status === "Alugado" ? "bg-blue-500 text-white" :
+                "bg-gray-500 text-white"
+              )}
+            >
+              {(["Disponível", "Vendido", "Reservado", "Alugado", "Suspenso"] as const).map(s => (
+                <option key={s} value={s} className="text-gray-900 bg-white">{s}</option>
+              ))}
+            </select>
           </div>
           {/* Action buttons in header */}
           <div className="flex items-center gap-1.5 flex-shrink-0">
