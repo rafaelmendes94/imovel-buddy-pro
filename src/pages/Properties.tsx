@@ -720,6 +720,7 @@ function PropertyCard({
   onToggleFavorite?: (id: string) => void;
   onFilterByTitle?: (title: string) => void;
   onFilterByCondition?: (cond: string) => void;
+  onFilterByOwner?: (owner: string) => void;
 }) {
   const [showCelebration, setShowCelebration] = useState(false);
   const [animatePulse, setAnimatePulse] = useState(false);
@@ -883,6 +884,7 @@ function PropertyRow({
   onToggleFavorite?: (id: string) => void;
   onFilterByTitle?: (title: string) => void;
   onFilterByCondition?: (cond: string) => void;
+  onFilterByOwner?: (owner: string) => void;
 }) {
   const [showCelebration, setShowCelebration] = useState(false);
   const [animatePulse, setAnimatePulse] = useState(false);
