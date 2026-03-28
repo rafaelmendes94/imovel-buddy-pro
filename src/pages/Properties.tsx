@@ -291,9 +291,19 @@ export default function Properties() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Imóveis</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              {propertyList.length} imóveis cadastrados • VGV {formatCurrency(totalVGV)}
-            </p>
+            <div className="flex items-center gap-4 mt-1">
+              <p className="text-sm text-muted-foreground">
+                {propertyList.length} imóveis cadastrados
+              </p>
+              <span className="text-sm font-semibold text-emerald-500">VGV {formatCurrency(totalVGV)}</span>
+              <span className="text-sm font-semibold text-primary">Vendas {formatCurrency(totalSold)}</span>
+              <button
+                onClick={() => navigate("/relatorios")}
+                className="flex items-center gap-1 text-[11px] font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-md hover:bg-primary/20 transition-colors"
+              >
+                <BarChart3 className="w-3 h-3" /> Relatório de Vendas
+              </button>
+            </div>
           </div>
           <div className="flex gap-2 self-start">
             <div className="relative" ref={xmlMenuRef}>

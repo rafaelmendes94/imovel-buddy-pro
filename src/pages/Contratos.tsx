@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import {
   FileText, ScrollText, Receipt, CreditCard, FileSignature, ShieldCheck,
@@ -138,12 +139,35 @@ const templates: Template[] = [
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-contract`;
 
 export default function Contratos() {
+  const [searchParams] = useSearchParams();
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
   const [generatedText, setGeneratedText] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState("");
+
+  // Auto-select template and pre-fill fields from URL params
+  useEffect(() => {
+    const imovel = searchParams.get("imovel");
+    const endereco = searchParams.get("endereco");
+    const valor = searchParams.get("valor");
+    const proprietario = searchParams.get("proprietario");
+
+    if (imovel || endereco || valor || proprietario) {
+      // Auto-select "Compra e Venda" template
+      const compraVenda = templates.find(t => t.id === "compra-venda");
+      if (compraVenda) {
+        setSelectedTemplate(compraVenda);
+        const prefill: Record<string, string> = {};
+        if (imovel) prefill["Descrição do Imóvel"] = imovel;
+        if (endereco) prefill["Endereço do Imóvel"] = endereco;
+        if (valor) prefill["Valor da Venda"] = Number(valor).toLocaleString("pt-BR", { minimumFractionDigits: 2 });
+        if (proprietario) prefill["Nome do Vendedor"] = proprietario;
+        setFieldValues(prefill);
+      }
+    }
+  }, [searchParams]);
 
   const handleSelectTemplate = (template: Template) => {
     setSelectedTemplate(template);
