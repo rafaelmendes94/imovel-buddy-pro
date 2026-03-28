@@ -913,6 +913,35 @@ function PropertyCard({
   );
 }
 
+// ---- Row Carousel (compact) ----
+function RowCarousel({ images }: { images: string[] }) {
+  const [current, setCurrent] = useState(0);
+  return (
+    <div className="relative w-full h-full min-h-[140px] overflow-hidden group/row-carousel">
+      {images.map((src, i) => (
+        <img key={i} src={src} alt={`Foto ${i + 1}`} className={cn("absolute inset-0 w-full h-full object-cover transition-all duration-400", i === current ? "opacity-100" : "opacity-0")} />
+      ))}
+      {images.length > 1 && (
+        <>
+          <button onClick={(e) => { e.stopPropagation(); setCurrent((c) => (c === 0 ? images.length - 1 : c - 1)); }}
+            className="absolute left-1 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-foreground/50 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover/row-carousel:opacity-100 transition-opacity">
+            <ChevronLeft className="w-3.5 h-3.5 text-background" />
+          </button>
+          <button onClick={(e) => { e.stopPropagation(); setCurrent((c) => (c === images.length - 1 ? 0 : c + 1)); }}
+            className="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-foreground/50 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover/row-carousel:opacity-100 transition-opacity">
+            <ChevronRight className="w-3.5 h-3.5 text-background" />
+          </button>
+          <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-0.5">
+            {images.map((_, i) => (
+              <span key={i} className={cn("w-1 h-1 rounded-full transition-all", i === current ? "bg-background w-3" : "bg-background/50")} />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 // ---- Inline Price Editor ----
 function InlinePrice({ value, onChange, className }: { value: number; onChange: (v: number) => void; className?: string }) {
   const [editing, setEditing] = useState(false);
@@ -1009,12 +1038,11 @@ function PropertyRow({
 
       <div className="flex items-stretch">
 
-        {/* ── COL 1: Foto ── */}
-        <div className="relative w-[180px] flex-shrink-0 cursor-pointer aspect-[4/3]" onClick={() => onSelect?.(property)}>
-          <img src={property.images[0] || property.image} alt={property.title} className="absolute inset-0 w-full h-full object-cover" />
-          {/* Owner type badge on photo */}
+        {/* ── COL 1: Foto com carrossel ── */}
+        <div className="relative w-[160px] flex-shrink-0">
+          <RowCarousel images={property.images.length > 0 ? property.images : [property.image]} />
           {ownerTypeInfo && (
-            <span className={cn("absolute top-2 left-2 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wide shadow-sm", ownerTypeInfo.color)}>
+            <span className={cn("absolute top-2 left-2 z-10 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wide shadow-sm", ownerTypeInfo.color)}>
               {ownerTypeInfo.label}
             </span>
           )}
@@ -1022,20 +1050,6 @@ function PropertyRow({
 
         {/* ── COL 2: Identidade + Dados Técnicos ── */}
         <div className="flex-1 min-w-0 border-r border-border px-3 py-2 flex flex-col justify-center gap-1">
-          {/* Quick status selector */}
-          <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-            {allStatuses.map((s) => {
-              const cfg = statusConfig[s];
-              const active = s === property.status;
-              return (
-                <button key={s} onClick={() => handleStatusChange(s)}
-                  className={cn("px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wide transition-all",
-                    active ? `${cfg.bg} ${cfg.color} ${cfg.border} border` : "text-muted-foreground hover:bg-muted"
-                  )}
-                >{statusLabels[s]}</button>
-              );
-            })}
-          </div>
           {/* Title */}
           <h3
             className="font-bold text-card-foreground text-sm truncate hover:text-primary cursor-pointer transition-colors leading-tight"
@@ -1138,8 +1152,8 @@ function PropertyRow({
           )}
         </div>
 
-        {/* ── COL 4: Proprietário + Chaves + Datas ── */}
-        <div className="w-[170px] flex-shrink-0 border-r border-border px-3 py-2 flex flex-col justify-center gap-1" onClick={(e) => e.stopPropagation()}>
+        {/* ── COL 4: Proprietário + Chaves + Datas + Status ── */}
+        <div className="w-[180px] flex-shrink-0 border-r border-border px-3 py-2 flex flex-col justify-center gap-1" onClick={(e) => e.stopPropagation()}>
           {property.owner ? (
             <>
               <button
@@ -1167,15 +1181,29 @@ function PropertyRow({
             <span className="truncate">{property.keysLocation || "Não informado"}</span>
           </div>
           {/* Dates */}
-          <div className="space-y-0.5 text-[9px] text-muted-foreground mt-0.5">
+          <div className="space-y-0.5 text-[9px] text-muted-foreground">
             <div className="flex items-center justify-between gap-1">
-              <span className="flex items-center gap-0.5"><CalendarCheck className="w-2.5 h-2.5" /> Inclusão</span>
+              <span className="flex items-center gap-0.5"><CalendarCheck className="w-2.5 h-2.5" /> Incl.</span>
               <span className="font-medium text-foreground">{createdFormatted}</span>
             </div>
             <div className="flex items-center justify-between gap-1">
-              <span className="flex items-center gap-0.5"><CalendarClock className="w-2.5 h-2.5" /> Atualiz.</span>
+              <span className="flex items-center gap-0.5"><CalendarClock className="w-2.5 h-2.5" /> Atu.</span>
               <span className={cn("font-semibold", updateColor)}>{updatedFormatted}</span>
             </div>
+          </div>
+          {/* Quick status selector */}
+          <div className="flex items-center gap-0.5 flex-wrap mt-0.5">
+            {allStatuses.map((s) => {
+              const cfg = statusConfig[s];
+              const active = s === property.status;
+              return (
+                <button key={s} onClick={() => handleStatusChange(s)}
+                  className={cn("px-1 py-0.5 rounded text-[7px] font-bold uppercase tracking-wide transition-all",
+                    active ? `${cfg.bg} ${cfg.color} ${cfg.border} border` : "text-muted-foreground hover:bg-muted"
+                  )}
+                >{statusLabels[s]}</button>
+              );
+            })}
           </div>
         </div>
 
