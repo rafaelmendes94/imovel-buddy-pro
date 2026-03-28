@@ -1050,8 +1050,8 @@ function PropertyCard({
           {property.bedrooms > 0 && <span className="flex items-center gap-1"><BedDouble className="w-3.5 h-3.5" /> {property.bedrooms}</span>}
           {property.bathrooms > 0 && <span className="flex items-center gap-1"><Bath className="w-3.5 h-3.5" /> {property.bathrooms}</span>}
           {property.parking > 0 && <span className="flex items-center gap-1"><Car className="w-3.5 h-3.5" /> {property.parking}</span>}
-          <span className="flex items-center gap-1"><Ruler className="w-3.5 h-3.5" /> {property.area}m² total</span>
-          {property.privateArea && <span className="flex items-center gap-1"><Ruler className="w-3.5 h-3.5" /> {property.privateArea}m² priv.</span>}
+          <span className="flex items-center gap-1"><Maximize2 className="w-3.5 h-3.5" /> {property.area}m² total</span>
+          {property.privateArea && <span className="flex items-center gap-1"><Scan className="w-3.5 h-3.5" /> {property.privateArea}m² priv.</span>}
         </div>
 
         {/* Payment conditions */}
@@ -1408,8 +1408,8 @@ function PropertyRow({
             {property.bedrooms > 0 && <span className="flex items-center gap-0.5 whitespace-nowrap"><BedDouble className="w-3 h-3" />{property.bedrooms}</span>}
             {property.bathrooms > 0 && <span className="flex items-center gap-0.5 whitespace-nowrap"><Bath className="w-3 h-3" />{property.bathrooms}</span>}
             {property.parking > 0 && <span className="flex items-center gap-0.5 whitespace-nowrap"><Car className="w-3 h-3" />{property.parking}</span>}
-            <span className="flex items-center gap-0.5 font-semibold whitespace-nowrap"><Ruler className="w-3 h-3" />{property.area}m²</span>
-            {property.privateArea && <span className="flex items-center gap-0.5 font-semibold whitespace-nowrap"><Ruler className="w-3 h-3" />{property.privateArea}m² priv.</span>}
+            <span className="flex items-center gap-0.5 font-semibold whitespace-nowrap"><Maximize2 className="w-3 h-3" />{property.area}m²</span>
+            {property.privateArea && <span className="flex items-center gap-0.5 font-semibold whitespace-nowrap"><Scan className="w-3 h-3" />{property.privateArea}m² priv.</span>}
           </div>
 
           {/* Row 3a: Características do apartamento */}
