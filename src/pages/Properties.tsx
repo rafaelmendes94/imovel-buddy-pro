@@ -167,6 +167,11 @@ export default function Properties() {
     toast.success("Valor atualizado!");
   };
 
+  const handleDealLabelChange = (propertyId: string, label: Property["dealLabel"]) => {
+    setPropertyList((prev) => prev.map((p) => (p.id === propertyId ? { ...p, dealLabel: label } : p)));
+    toast.success(label ? `Classificado como "${label}"` : "Classificação removida");
+  };
+
   const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterCondition || filterEmpreendimento || filterType || filterOwner || filterNeighborhood || filterStreet || filterCode;
 
   const clearFilters = () => {
@@ -590,6 +595,7 @@ export default function Properties() {
                 onFilterByOwner={(owner) => { setFilterOwner(owner); setShowFilters(true); setActiveCategory("todos"); }}
                 onPriceChange={handlePriceChange}
                 allProperties={propertyList}
+                onDealLabelChange={handleDealLabelChange}
               />
             ))}
           </div>
@@ -1059,8 +1065,9 @@ function analyzeDealScore(property: Property, allProperties: Property[]): DealSc
 }
 
 // ---- Deal Thermometer Component ----
-function DealThermometer({ dealScore }: { dealScore: DealScore }) {
-  const { score, label, estimatedDays } = dealScore;
+function DealThermometer({ dealScore, manualLabel, onLabelChange }: { dealScore: DealScore; manualLabel?: Property["dealLabel"]; onLabelChange?: (label: Property["dealLabel"]) => void }) {
+  const effectiveLabel = manualLabel || dealScore.label;
+  const { score, estimatedDays } = dealScore;
 
   const getThermometerColor = () => {
     if (score >= 80) return "bg-emerald-500";
@@ -1069,10 +1076,10 @@ function DealThermometer({ dealScore }: { dealScore: DealScore }) {
     return "bg-red-400";
   };
 
-  const getLabelStyle = () => {
-    if (score >= 80) return "text-emerald-500 bg-emerald-500/10 border-emerald-500/30";
-    if (score >= 60) return "text-emerald-400 bg-emerald-500/10 border-emerald-500/20";
-    if (score >= 40) return "text-amber-400 bg-amber-500/10 border-amber-500/20";
+  const getLabelStyle = (lbl: string) => {
+    if (lbl === "Oferta") return "text-emerald-500 bg-emerald-500/10 border-emerald-500/30";
+    if (lbl === "Bom Negócio") return "text-emerald-400 bg-emerald-500/10 border-emerald-500/20";
+    if (lbl === "Normal") return "text-amber-400 bg-amber-500/10 border-amber-500/20";
     return "text-red-400 bg-red-500/10 border-red-500/20";
   };
 
@@ -1083,17 +1090,40 @@ function DealThermometer({ dealScore }: { dealScore: DealScore }) {
     return "🕐";
   };
 
+  const dealLabels: Array<Property["dealLabel"]> = ["Oferta", "Bom Negócio", "Normal", "Acima da Média"];
+
   return (
     <div className="mt-1.5 space-y-1">
       {/* Deal label badge */}
       <div className="flex items-center gap-1.5">
-        <span className={cn("text-[9px] font-black uppercase tracking-wide px-1.5 py-0.5 rounded border", getLabelStyle())}>
-          {score >= 60 ? "🏷️ " : ""}{label}
+        <span className={cn("text-[9px] font-black uppercase tracking-wide px-1.5 py-0.5 rounded border", getLabelStyle(effectiveLabel))}>
+          {effectiveLabel === "Oferta" || effectiveLabel === "Bom Negócio" ? "🏷️ " : ""}{effectiveLabel}
         </span>
+        {manualLabel && <span className="text-[7px] text-muted-foreground italic">manual</span>}
         <span className="text-[8px] text-muted-foreground font-semibold">
           R$ {Math.round(dealScore.pricePerM2).toLocaleString("pt-BR")}/m²
         </span>
       </div>
+
+      {/* Manual label buttons */}
+      {onLabelChange && (
+        <div className="flex items-center gap-1 flex-wrap">
+          {dealLabels.map((lbl) => (
+            <button
+              key={lbl}
+              onClick={() => onLabelChange(manualLabel === lbl ? null : lbl)}
+              className={cn(
+                "text-[8px] font-bold px-1.5 py-0.5 rounded border transition-all",
+                manualLabel === lbl
+                  ? getLabelStyle(lbl!) + " ring-1 ring-offset-1 ring-primary/30"
+                  : "text-muted-foreground border-border hover:bg-muted"
+              )}
+            >
+              {lbl}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Thermometer bar */}
       <div className="flex items-center gap-1.5">
@@ -1118,7 +1148,7 @@ function DealThermometer({ dealScore }: { dealScore: DealScore }) {
 
 // ---- PropertyRow (redesigned) ----
 function PropertyRow({
-  property, onStatusChange, onSelect, isFavorited, onToggleFavorite, onFilterByTitle, onFilterByCondition, onFilterByOwner, onPriceChange, allProperties,
+  property, onStatusChange, onSelect, isFavorited, onToggleFavorite, onFilterByTitle, onFilterByCondition, onFilterByOwner, onPriceChange, allProperties, onDealLabelChange,
 }: {
   property: Property;
   onStatusChange: (id: string, status: Property["status"]) => void;
@@ -1130,6 +1160,7 @@ function PropertyRow({
   onFilterByOwner?: (owner: string) => void;
   onPriceChange?: (id: string, field: "price" | "priceInstallment", value: number) => void;
   allProperties?: Property[];
+  onDealLabelChange?: (id: string, label: Property["dealLabel"]) => void;
 }) {
   const dealScore = useMemo(() => analyzeDealScore(property, allProperties || []), [property, allProperties]);
   const [showCelebration, setShowCelebration] = useState(false);
@@ -1286,7 +1317,7 @@ function PropertyRow({
           )}
 
           {/* Deal Thermometer */}
-          <DealThermometer dealScore={dealScore} />
+          <DealThermometer dealScore={dealScore} manualLabel={property.dealLabel} onLabelChange={(lbl) => onDealLabelChange?.(property.id, lbl)} />
         </div>
 
         {/* ── COL 4: Proprietário + Chaves + Datas + Status ── */}
