@@ -31,6 +31,7 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
   const [showOwnerPhone, setShowOwnerPhone] = useState(false);
   const [generatingAI, setGeneratingAI] = useState<string | null>(null);
   const [showAIOptions, setShowAIOptions] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
 
   if (!property) return null;
 
@@ -82,13 +83,39 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
         case "condicao": updated.condicao = val as Property["condicao"]; break;
         case "infraestrutura": updated.infraestrutura = val.split(",").map(s => s.trim()).filter(Boolean); break;
       }
-      onUpdateProperty(updated);
+      updateProperty(updated);
       toast.success("Informação atualizada!");
     }
     setEditingField(null);
   };
 
   const cancelEdit = () => setEditingField(null);
+
+  // Wrapper to track changes
+  const updateProperty = (updated: Property) => {
+    if (onUpdateProperty) {
+      onUpdateProperty(updated);
+      setHasChanges(true);
+    }
+  };
+
+  // -- Confirm update (stamp updatedAt) --
+  const handleConfirmUpdate = () => {
+    if (onUpdateProperty && hasChanges) {
+      onUpdateProperty({ ...property, updatedAt: new Date().toISOString() });
+      setHasChanges(false);
+      toast.success("Imóvel atualizado! Data de atualização registrada.");
+    }
+  };
+
+  // -- Close with auto-update --
+  const handleClose = () => {
+    if (hasChanges && onUpdateProperty) {
+      onUpdateProperty({ ...property, updatedAt: new Date().toISOString() });
+      toast.success("Alterações salvas e data atualizada.");
+    }
+    onClose();
+  };
 
   // -- AI Description Generation --
   const aiStyles = [
@@ -222,7 +249,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[2000] flex items-start justify-center overflow-y-auto p-2 sm:p-4 pt-4 sm:pt-6 pb-6 sm:pb-8" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[2000] flex items-start justify-center overflow-y-auto p-2 sm:p-4 pt-4 sm:pt-6 pb-6 sm:pb-8" onClick={handleClose}>
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl animate-in fade-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
 
         {/* Header */}
@@ -249,6 +276,11 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
           </div>
           {/* Action buttons in header */}
           <div className="flex items-center gap-1.5 flex-shrink-0">
+            {hasChanges && (
+              <button onClick={handleConfirmUpdate} className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-500 text-white text-xs font-bold hover:bg-emerald-600 transition-colors animate-in fade-in">
+                <Check className="w-3.5 h-3.5" /> Atualizar
+              </button>
+            )}
             <button onClick={handleShare} className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-amber-600" title="Compartilhar">
               <Share2 className="w-4.5 h-4.5" />
             </button>
@@ -258,7 +290,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
             <button onClick={handleDriveDownload} className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-purple-600" title="Baixar do Drive (Chaves)">
               <Key className="w-4.5 h-4.5" />
             </button>
-            <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+            <button onClick={handleClose} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
               <X className="w-5 h-5 text-gray-500" />
             </button>
           </div>
@@ -534,7 +566,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
               onChange={(e) => {
                 if (onUpdateProperty) {
                   const val = e.target.value || undefined;
-                  onUpdateProperty({ ...property, vista: val, seaView: val === "Mar" || val === "Mar / Lago" });
+                  updateProperty({ ...property, vista: val, seaView: val === "Mar" || val === "Mar / Lago" });
                   toast.success("Vista atualizada!");
                 }
               }}
@@ -556,7 +588,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
               onChange={(e) => {
                 if (onUpdateProperty) {
                   const val = (e.target.value || undefined) as Property["condicao"];
-                  onUpdateProperty({ ...property, condicao: val, decorated: val === "Decorado" || val === "Mobiliado" });
+                  updateProperty({ ...property, condicao: val, decorated: val === "Decorado" || val === "Mobiliado" });
                   toast.success("Condição atualizada!");
                 }
               }}
@@ -622,7 +654,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                   value={property.posicaoPredio || ""}
                   onChange={(e) => {
                     if (onUpdateProperty) {
-                      onUpdateProperty({ ...property, posicaoPredio: e.target.value || undefined });
+                      updateProperty({ ...property, posicaoPredio: e.target.value || undefined });
                       toast.success("Posição atualizada!");
                     }
                   }}
@@ -645,7 +677,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                   value={property.posicaoSolar || ""}
                   onChange={(e) => {
                     if (onUpdateProperty) {
-                      onUpdateProperty({ ...property, posicaoSolar: e.target.value || undefined });
+                      updateProperty({ ...property, posicaoSolar: e.target.value || undefined });
                       toast.success("Posição solar atualizada!");
                     }
                   }}
@@ -668,7 +700,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                   value={property.vista || ""}
                   onChange={(e) => {
                     if (onUpdateProperty) {
-                      onUpdateProperty({ ...property, vista: e.target.value || undefined });
+                      updateProperty({ ...property, vista: e.target.value || undefined });
                       toast.success("Vista atualizada!");
                     }
                   }}
@@ -693,7 +725,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                   value={property.condicao || ""}
                   onChange={(e) => {
                     if (onUpdateProperty) {
-                      onUpdateProperty({ ...property, condicao: (e.target.value || undefined) as Property["condicao"] });
+                      updateProperty({ ...property, condicao: (e.target.value || undefined) as Property["condicao"] });
                       toast.success("Condição atualizada!");
                     }
                   }}
@@ -723,7 +755,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                         const updated = isActive
                           ? current.filter(i => i !== item)
                           : [...current, item];
-                        onUpdateProperty({ ...property, infraestrutura: updated });
+                        updateProperty({ ...property, infraestrutura: updated });
                         toast.success(isActive ? `"${item}" removido` : `"${item}" adicionado`);
                       }}
                       className={cn(
@@ -749,7 +781,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                     value={property.elevadores || 1}
                     onChange={(e) => {
                       if (!onUpdateProperty) return;
-                      onUpdateProperty({ ...property, elevadores: parseInt(e.target.value) || 1 });
+                      updateProperty({ ...property, elevadores: parseInt(e.target.value) || 1 });
                     }}
                     className="w-16 px-2 py-1 rounded border border-input text-xs bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                   />
@@ -778,7 +810,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                     onClick={() => {
                       const newLabel = isSelected ? null : lbl;
                       if (onUpdateProperty) {
-                        onUpdateProperty({ ...property, dealLabel: newLabel });
+                        updateProperty({ ...property, dealLabel: newLabel });
                       }
                       toast.success(newLabel ? `Classificado como "${newLabel}"` : "Classificação removida");
                     }}
