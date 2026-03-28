@@ -599,97 +599,67 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
             }
 
             if (blockId === "valor") {
+              const isEditingValor = editingBlock === "valor";
+              const valorFields: FieldConfig[] = [
+                { id: "price", label: "Valor do Imóvel", render: () => isEditingValor ? <span className="flex items-center gap-1"><span className="text-sm font-bold text-muted-foreground">R$</span><EditableField field="price" value={property.price} label="valor" type="number" /></span> : <span className="text-sm font-bold text-foreground">{formatCurrency(property.price)}</span> },
+                { id: "priceInstallment", label: "Valor Promocional", render: () => isEditingValor ? <span className="flex items-center gap-1"><span className="text-sm font-bold text-muted-foreground">R$</span><EditableField field="priceInstallment" value={property.priceInstallment || 0} label="valor promocional" type="number" /></span> : <span className="text-sm font-medium text-foreground">{property.priceInstallment ? formatCurrency(property.priceInstallment) : "—"}</span> },
+                { id: "commission", label: "Comissão (%)", render: () => isEditingValor ? <EditableField field="commission" value={property.commission || 0} label="comissão" type="number" /> : <span className="text-sm font-medium text-foreground">{property.commission ? `${property.commission}%` : "—"}</span> },
+                { id: "commissionValue", label: "Valor Comissão", render: () => <span className="text-sm font-semibold text-emerald-700">{formatCurrency(property.price * (property.commission || 0) / 100)}</span> },
+                { id: "bonus", label: "Bônus", render: () => isEditingValor ? <span className="flex items-center gap-1"><span className="text-sm font-bold text-muted-foreground">R$</span><EditableField field="bonus" value={property.bonus || 0} label="bônus" type="number" /></span> : <span className="text-sm font-medium text-foreground">{property.bonus ? formatCurrency(property.bonus) : "—"}</span> },
+                { id: "bonusExpiry", label: "Validade Bônus", render: () => isEditingValor ? <EditableField field="bonusExpiry" value={property.bonusExpiry || ""} label="validade bônus" /> : <span className="text-sm font-medium text-foreground">{property.bonusExpiry || "—"}</span> },
+              ];
+
               return blockWrapper("valor",
-                <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
+                <div className="bg-muted/50 rounded-xl p-5 border border-border">
                   <div className="flex items-center justify-between mb-4">
-                    <p className="text-sm font-bold text-gray-800 uppercase tracking-wider flex items-center gap-1.5">
-                      <span className="cursor-grab active:cursor-grabbing mr-1 text-gray-300 hover:text-gray-500">⠿</span>
-                      <DollarSign className="w-4 h-4 text-amber-500" /> Valor e Condições de Pagamento
+                    <p className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                      <span className="cursor-grab active:cursor-grabbing mr-1 text-muted-foreground/50 hover:text-muted-foreground">⠿</span>
+                      <DollarSign className="w-4 h-4 text-amber-500" /> Valor e Condições
                     </p>
-                    <button onClick={() => setEditingBlock(editingBlock === "valor" ? null : "valor")} className={cn("p-1.5 rounded-lg transition-colors", editingBlock === "valor" ? "bg-amber-100 text-amber-600" : "hover:bg-gray-200 text-gray-400")}>
+                    <button onClick={() => setEditingBlock(isEditingValor ? null : "valor")} className={cn("p-1.5 rounded-lg transition-colors", isEditingValor ? "bg-amber-100 text-amber-600" : "hover:bg-muted text-muted-foreground")}>
                       <Pencil className="w-3.5 h-3.5" />
                     </button>
                   </div>
-                  {editingBlock === "valor" ? (
+                  <DraggableFieldGrid storageKey="fields-valor" fields={valorFields} editing={isEditingValor} />
+
+                  {isEditingValor && (
                     <>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                        <div>
-                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Valor do Imóvel</label>
-                          <div className="flex items-center gap-1">
-                            <span className="text-sm font-bold text-gray-500">R$</span>
-                            <EditableField field="price" value={property.price} label="valor" type="number" />
-                          </div>
-                        </div>
-                        <div>
-                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Valor Promocional</label>
-                          <div className="flex items-center gap-1">
-                            <span className="text-sm font-bold text-gray-500">R$</span>
-                            <EditableField field="priceInstallment" value={property.priceInstallment || 0} label="valor promocional" type="number" />
-                          </div>
-                        </div>
-                      </div>
-                      <div className="mt-4 pt-4 border-t border-gray-200">
-                        <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 block flex items-center gap-1">
-                          <Percent className="w-3 h-3" /> Corretagem
-                        </label>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                          <div>
-                            <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Comissão (%)</label>
-                            <EditableField field="commission" value={property.commission || 0} label="comissão" type="number" />
-                          </div>
-                          <div>
-                            <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Valor Comissão</label>
-                            <span className="text-sm font-semibold text-emerald-700">R$ {formatCurrency(property.price * (property.commission || 0) / 100).replace("R$\u00a0", "")}</span>
-                          </div>
-                          <div>
-                            <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Bônus</label>
-                            <div className="flex items-center gap-1">
-                              <span className="text-sm font-bold text-gray-500">R$</span>
-                              <EditableField field="bonus" value={property.bonus || 0} label="bônus" type="number" />
-                            </div>
-                          </div>
-                          <div>
-                            <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Validade Bônus</label>
-                            <EditableField field="bonusExpiry" value={property.bonusExpiry || ""} label="validade bônus" />
-                          </div>
-                        </div>
-                      </div>
-                      <div className="mt-4">
-                        <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 block flex items-center gap-1">
+                      <div className="mt-4 pt-4 border-t border-border">
+                        <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2 block flex items-center gap-1">
                           <CreditCard className="w-3 h-3" /> Condições de Pagamento
                         </label>
-                        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Parcelamento Direto</p>
+                        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Parcelamento Direto</p>
                         <div className="flex flex-wrap gap-1.5 mb-3">
                           {["12x", "24x", "36x", "48x", "60x", "72x", "84x", "100x", "120x"].map((cond) => {
                             const isActive = property.paymentConditions?.includes(cond);
                             return (
                               <button key={cond} onClick={() => { if (!onUpdateProperty) return; const current = property.paymentConditions || []; const updated = isActive ? current.filter(c => c !== cond) : [...current, cond]; updateProperty({ ...property, paymentConditions: updated }); toast.success(isActive ? `"${cond}" removido` : `"${cond}" adicionado`); }}
-                                className={cn("px-3 py-1.5 rounded-lg text-xs font-bold border transition-all", isActive ? "bg-emerald-50 text-emerald-700 border-emerald-300" : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50")}>{cond}</button>
+                                className={cn("px-3 py-1.5 rounded-lg text-xs font-bold border transition-all", isActive ? "bg-emerald-50 text-emerald-700 border-emerald-300" : "bg-background text-muted-foreground border-border hover:bg-muted")}>{cond}</button>
                             );
                           })}
                         </div>
-                        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Outras Condições</p>
+                        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Outras Condições</p>
                         <div className="flex flex-wrap gap-1.5">
                           {["Financiamento Bancário", "Dação de Imóvel", "Dação de Automóvel", "Permuta", "Plano Safra", "À Vista", "FGTS"].map((cond) => {
                             const isActive = property.paymentConditions?.includes(cond);
                             return (
                               <button key={cond} onClick={() => { if (!onUpdateProperty) return; const current = property.paymentConditions || []; const updated = isActive ? current.filter(c => c !== cond) : [...current, cond]; updateProperty({ ...property, paymentConditions: updated }); toast.success(isActive ? `"${cond}" removido` : `"${cond}" adicionado`); }}
-                                className={cn("px-3 py-1.5 rounded-lg text-xs font-bold border transition-all", isActive ? "bg-blue-50 text-blue-700 border-blue-300" : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50")}>{cond}</button>
+                                className={cn("px-3 py-1.5 rounded-lg text-xs font-bold border transition-all", isActive ? "bg-blue-50 text-blue-700 border-blue-300" : "bg-background text-muted-foreground border-border hover:bg-muted")}>{cond}</button>
                             );
                           })}
                         </div>
                       </div>
                       <div className="flex items-center gap-4 mt-4">
                         <div className="flex items-center gap-3">
-                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Aceita Permuta</label>
+                          <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider whitespace-nowrap">Aceita Permuta</label>
                           <button onClick={() => { if (onUpdateProperty) { updateProperty({ ...property, acceptsExchange: !property.acceptsExchange }); toast.success(property.acceptsExchange ? "Permuta desativada" : "Permuta ativada"); } }}
                             className={cn("w-10 h-6 rounded-full transition-colors relative", property.acceptsExchange ? "bg-emerald-500" : "bg-gray-300")}>
                             <span className={cn("absolute w-4 h-4 rounded-full bg-white top-1 transition-all shadow-sm", property.acceptsExchange ? "left-5" : "left-1")} />
                           </button>
                         </div>
                       </div>
-                      <div className="mt-4 pt-4 border-t border-gray-200">
-                        <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 block flex items-center gap-1">
+                      <div className="mt-4 pt-4 border-t border-border">
+                        <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2 block flex items-center gap-1">
                           <Flame className="w-3 h-3 text-orange-500" /> Classificação de Negócio
                         </label>
                         <div className="flex flex-wrap gap-2">
@@ -698,36 +668,31 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                             const styles: Record<string, string> = { "Oferta": "text-emerald-700 bg-emerald-50 border-emerald-300 ring-emerald-400", "Bom Negócio": "text-emerald-600 bg-emerald-50 border-emerald-200 ring-emerald-300", "Normal": "text-amber-700 bg-amber-50 border-amber-300 ring-amber-400", "Acima da Média": "text-red-600 bg-red-50 border-red-300 ring-red-400" };
                             return (
                               <button key={lbl} onClick={() => { const newLabel = isSelected ? null : lbl; if (onUpdateProperty) { updateProperty({ ...property, dealLabel: newLabel }); } toast.success(newLabel ? `Classificado como "${newLabel}"` : "Classificação removida"); }}
-                                className={cn("px-4 py-2 rounded-lg text-sm font-bold border-2 transition-all", isSelected ? styles[lbl] + " ring-2 ring-offset-1 shadow-sm" : "text-gray-500 bg-white border-gray-200 hover:bg-gray-50")}>
+                                className={cn("px-4 py-2 rounded-lg text-sm font-bold border-2 transition-all", isSelected ? styles[lbl] + " ring-2 ring-offset-1 shadow-sm" : "text-muted-foreground bg-background border-border hover:bg-muted")}>
                                 {lbl === "Oferta" && "🏷️ "}{lbl === "Bom Negócio" && "🏷️ "}{lbl}
                               </button>
                             );
                           })}
                         </div>
                         {property.dealLabel && (
-                          <p className="text-[11px] text-gray-500 mt-2 flex items-center gap-1">
-                            <TrendingUp className="w-3 h-3" /> Classificação: <span className="font-bold text-gray-700">{property.dealLabel}</span>
+                          <p className="text-[11px] text-muted-foreground mt-2 flex items-center gap-1">
+                            <TrendingUp className="w-3 h-3" /> Classificação: <span className="font-bold text-foreground">{property.dealLabel}</span>
                           </p>
                         )}
                       </div>
                     </>
-                  ) : (
-                    <div className="space-y-2">
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                        <div><span className="text-[10px] text-gray-400 block">Valor</span><span className="text-sm font-bold text-gray-800">{formatCurrency(property.price)}</span></div>
-                        <div><span className="text-[10px] text-gray-400 block">Valor Promocional</span><span className="text-sm font-medium text-gray-800">{property.priceInstallment ? formatCurrency(property.priceInstallment) : "—"}</span></div>
-                        <div><span className="text-[10px] text-gray-400 block">Comissão</span><span className="text-sm font-medium text-gray-800">{property.commission ? `${property.commission}%` : "—"}</span></div>
-                        <div><span className="text-[10px] text-gray-400 block">Bônus</span><span className="text-sm font-medium text-gray-800">{property.bonus ? formatCurrency(property.bonus) : "—"}</span></div>
-                      </div>
+                  )}
+                  {!isEditingValor && (
+                    <div className="space-y-2 mt-3">
                       {property.paymentConditions && property.paymentConditions.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5 mt-1">
+                        <div className="flex flex-wrap gap-1.5">
                           {property.paymentConditions.map((c) => (
                             <span key={c} className="px-2 py-1 rounded text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">{c}</span>
                           ))}
                         </div>
                       )}
                       {property.dealLabel && (
-                        <p className="text-[11px] text-gray-600 mt-1">Classificação: <span className="font-bold">{property.dealLabel}</span></p>
+                        <p className="text-[11px] text-muted-foreground">Classificação: <span className="font-bold">{property.dealLabel}</span></p>
                       )}
                       {property.acceptsExchange && <span className="text-[11px] font-bold text-orange-600">✓ Aceita Permuta</span>}
                     </div>
