@@ -1070,10 +1070,10 @@ function DealThermometer({ dealScore, manualLabel, onLabelChange }: { dealScore:
     return "bg-red-400";
   };
 
-  const getLabelStyle = () => {
-    if (score >= 80) return "text-emerald-500 bg-emerald-500/10 border-emerald-500/30";
-    if (score >= 60) return "text-emerald-400 bg-emerald-500/10 border-emerald-500/20";
-    if (score >= 40) return "text-amber-400 bg-amber-500/10 border-amber-500/20";
+  const getLabelStyle = (lbl: string) => {
+    if (lbl === "Oferta") return "text-emerald-500 bg-emerald-500/10 border-emerald-500/30";
+    if (lbl === "Bom Negócio") return "text-emerald-400 bg-emerald-500/10 border-emerald-500/20";
+    if (lbl === "Normal") return "text-amber-400 bg-amber-500/10 border-amber-500/20";
     return "text-red-400 bg-red-500/10 border-red-500/20";
   };
 
@@ -1084,17 +1084,40 @@ function DealThermometer({ dealScore, manualLabel, onLabelChange }: { dealScore:
     return "🕐";
   };
 
+  const dealLabels: Array<Property["dealLabel"]> = ["Oferta", "Bom Negócio", "Normal", "Acima da Média"];
+
   return (
     <div className="mt-1.5 space-y-1">
       {/* Deal label badge */}
       <div className="flex items-center gap-1.5">
-        <span className={cn("text-[9px] font-black uppercase tracking-wide px-1.5 py-0.5 rounded border", getLabelStyle())}>
-          {score >= 60 ? "🏷️ " : ""}{label}
+        <span className={cn("text-[9px] font-black uppercase tracking-wide px-1.5 py-0.5 rounded border", getLabelStyle(effectiveLabel))}>
+          {effectiveLabel === "Oferta" || effectiveLabel === "Bom Negócio" ? "🏷️ " : ""}{effectiveLabel}
         </span>
+        {manualLabel && <span className="text-[7px] text-muted-foreground italic">manual</span>}
         <span className="text-[8px] text-muted-foreground font-semibold">
           R$ {Math.round(dealScore.pricePerM2).toLocaleString("pt-BR")}/m²
         </span>
       </div>
+
+      {/* Manual label buttons */}
+      {onLabelChange && (
+        <div className="flex items-center gap-1 flex-wrap">
+          {dealLabels.map((lbl) => (
+            <button
+              key={lbl}
+              onClick={() => onLabelChange(manualLabel === lbl ? null : lbl)}
+              className={cn(
+                "text-[8px] font-bold px-1.5 py-0.5 rounded border transition-all",
+                manualLabel === lbl
+                  ? getLabelStyle(lbl!) + " ring-1 ring-offset-1 ring-primary/30"
+                  : "text-muted-foreground border-border hover:bg-muted"
+              )}
+            >
+              {lbl}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Thermometer bar */}
       <div className="flex items-center gap-1.5">
