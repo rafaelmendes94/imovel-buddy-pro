@@ -154,8 +154,34 @@ export default function Properties() {
   // Cities for filter
   const cities = useMemo(() => [...new Set(propertyList.map(p => p.city))].sort(), [propertyList]);
 
+  // Freshness helpers
+  const now = new Date();
+  const getDaysSinceUpdate = (p: Property) => {
+    const updated = p.updatedAt ? new Date(p.updatedAt) : new Date(p.createdAt);
+    return Math.floor((now.getTime() - updated.getTime()) / (1000 * 60 * 60 * 24));
+  };
+
+  const freshnessStats = useMemo(() => {
+    let within30 = 0, within60 = 0, over90 = 0;
+    propertyList.forEach(p => {
+      const days = getDaysSinceUpdate(p);
+      if (days <= 30) within30++;
+      else if (days <= 60) within60++;
+      else if (days > 90) over90++;
+    });
+    return { within30, within60, over90 };
+  }, [propertyList]);
+
   const filtered = useMemo(() => {
     return propertyList.filter((p) => {
+      // Freshness filter
+      if (filterFreshness !== "all") {
+        const days = getDaysSinceUpdate(p);
+        if (filterFreshness === "30" && days > 30) return false;
+        if (filterFreshness === "60" && (days <= 30 || days > 60)) return false;
+        if (filterFreshness === "90" && days <= 90) return false;
+      }
+
       // Category
       if (activeCategory === "apartamentos" && p.type !== "Apartamento") return false;
       if (activeCategory === "casas" && p.type !== "Casa") return false;
@@ -180,7 +206,7 @@ export default function Properties() {
 
       return true;
     });
-  }, [propertyList, activeCategory, search, filterCity, filterBedrooms, filterPriceMin, filterPriceMax, filterCondition]);
+  }, [propertyList, activeCategory, search, filterCity, filterBedrooms, filterPriceMin, filterPriceMax, filterCondition, filterFreshness]);
 
   const favoritedProperties = propertyList.filter((p) => favoriteIds.includes(p.id));
 
