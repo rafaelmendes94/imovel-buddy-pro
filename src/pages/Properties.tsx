@@ -793,7 +793,6 @@ function PropertyCard({
 
       <div className="relative cursor-pointer" onClick={() => onSelect?.(property)}>
         <ImageCarousel images={property.images} alt={property.title} />
-        </span>
 
         {/* Exclusivity badge */}
         {property.exclusivityTerm && (
