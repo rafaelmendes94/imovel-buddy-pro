@@ -1009,12 +1009,11 @@ function PropertyRow({
 
       <div className="flex items-stretch">
 
-        {/* ── COL 1: Foto ── */}
-        <div className="relative w-[180px] flex-shrink-0 cursor-pointer aspect-[4/3]" onClick={() => onSelect?.(property)}>
-          <img src={property.images[0] || property.image} alt={property.title} className="absolute inset-0 w-full h-full object-cover" />
-          {/* Owner type badge on photo */}
+        {/* ── COL 1: Foto com carrossel ── */}
+        <div className="relative w-[160px] flex-shrink-0">
+          <RowCarousel images={property.images.length > 0 ? property.images : [property.image]} />
           {ownerTypeInfo && (
-            <span className={cn("absolute top-2 left-2 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wide shadow-sm", ownerTypeInfo.color)}>
+            <span className={cn("absolute top-2 left-2 z-10 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wide shadow-sm", ownerTypeInfo.color)}>
               {ownerTypeInfo.label}
             </span>
           )}
