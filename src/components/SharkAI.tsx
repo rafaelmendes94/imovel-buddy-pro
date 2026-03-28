@@ -13,6 +13,7 @@ import {
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import sharkIcon from "@/assets/shark-icon.png";
+import sharkFriendlyIcon from "@/assets/shark-friendly.png";
 
 interface SharkAIProps {
   properties: Property[];
@@ -122,17 +123,29 @@ export function SharkAI({ properties, onSelectProperty }: SharkAIProps) {
       <AnimatePresence>
         {!isOpen && (
           <motion.button
-            initial={{ scale: 0, rotate: -180 }}
-            animate={{ scale: 1, rotate: 0 }}
-            exit={{ scale: 0, rotate: 180 }}
-            whileHover={{ scale: 1.15 }}
+            initial={{ scale: 0, y: 20 }}
+            animate={{ scale: 1, y: 0 }}
+            exit={{ scale: 0, y: 20 }}
+            whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-24 left-6 z-50 w-16 h-16 rounded-full bg-gradient-to-br from-slate-900 to-blue-900 shadow-2xl flex items-center justify-center hover:shadow-cyan-500/50 transition-shadow overflow-hidden border-2 border-cyan-400/50"
+            className="fixed bottom-24 left-6 z-50 w-16 h-16 rounded-full bg-gradient-to-br from-sky-500 to-blue-600 shadow-2xl flex items-center justify-center hover:shadow-sky-400/40 transition-shadow overflow-hidden border-2 border-sky-300/60"
           >
-            <img src={sharkIcon} alt="Shark AI" className="w-14 h-14 object-contain" />
-            {/* Pulse ring */}
-            <span className="absolute inset-0 rounded-full bg-cyan-400/20 animate-ping" />
+            <motion.img
+              src={sharkFriendlyIcon}
+              alt="Shark AI"
+              className="w-12 h-12 object-contain"
+              animate={{
+                y: [0, -6, 0],
+                rotate: [0, 5, -5, 0],
+              }}
+              transition={{
+                duration: 2,
+                ease: "easeInOut",
+                repeat: Infinity,
+                repeatDelay: 58,
+              }}
+            />
           </motion.button>
         )}
       </AnimatePresence>
