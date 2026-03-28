@@ -76,12 +76,16 @@ function downloadXml(xml: string, portal: string) {
   URL.revokeObjectURL(url);
 }
 
-const allStatuses: Property["status"][] = ["Disponível", "Vendido", "Reservado", "Alugado"];
+const allStatuses: Property["status"][] = ["Disponível", "Vendido", "Reservado", "Alugado", "Suspenso"];
+const statusLabels: Record<Property["status"], string> = {
+  Disponível: "Ativo", Vendido: "Vendido", Reservado: "Reservado", Alugado: "Alugado", Suspenso: "Suspenso",
+};
 const statusConfig: Record<Property["status"], { color: string; bg: string; border: string; icon: typeof Home }> = {
   Disponível: { color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/30", icon: Home },
   Vendido: { color: "text-red-400", bg: "bg-red-500/10", border: "border-red-500/30", icon: CheckCircle2 },
   Reservado: { color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/30", icon: Clock },
   Alugado: { color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/30", icon: Key },
+  Suspenso: { color: "text-gray-400", bg: "bg-gray-500/10", border: "border-gray-500/30", icon: Ban },
 };
 
 type Category = "todos" | "apartamentos" | "casas" | "terrenos" | "decorados" | "vista-mar" | "permuta" | "vendidos";
