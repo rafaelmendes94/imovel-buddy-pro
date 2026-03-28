@@ -510,95 +510,95 @@ export default function Properties() {
 
           {/* Advanced Filters Panel */}
           {showFilters && (
-            <div className="bg-card border border-border rounded-xl p-3 sm:p-4">
-              <div className="flex flex-nowrap gap-2 sm:gap-3 overflow-x-auto pb-1">
-                <div className="min-w-[150px] flex-shrink-0">
-                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block whitespace-nowrap">Empreendimento</label>
-                  <select value={filterEmpreendimento} onChange={(e) => setFilterEmpreendimento(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+            <div className="bg-card border border-border rounded-xl p-2 sm:p-3">
+              <div className="flex flex-wrap gap-1.5">
+                <div className="flex-1 min-w-[100px]">
+                  <label className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5 block whitespace-nowrap">Empreendimento</label>
+                  <select value={filterEmpreendimento} onChange={(e) => setFilterEmpreendimento(e.target.value)} className="w-full px-2 py-1.5 rounded border border-input text-[11px] bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring">
                     <option value="">Todos</option>
                     {empreendimentos.map(e => <option key={e} value={e}>{e}</option>)}
                   </select>
                 </div>
-                <div className="min-w-[110px] flex-shrink-0">
-                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block whitespace-nowrap">Tipo</label>
-                  <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+                <div className="flex-1 min-w-[70px]">
+                  <label className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5 block whitespace-nowrap">Tipo</label>
+                  <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="w-full px-2 py-1.5 rounded border border-input text-[11px] bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring">
                     <option value="">Todos</option>
                     {types.map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </div>
-                <div className="min-w-[140px] flex-shrink-0">
-                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block whitespace-nowrap">Proprietário</label>
-                  <select value={filterOwner} onChange={(e) => setFilterOwner(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+                <div className="flex-1 min-w-[90px]">
+                  <label className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5 block whitespace-nowrap">Proprietário</label>
+                  <select value={filterOwner} onChange={(e) => setFilterOwner(e.target.value)} className="w-full px-2 py-1.5 rounded border border-input text-[11px] bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring">
                     <option value="">Todos</option>
                     {owners.map(o => <option key={o} value={o}>{o}</option>)}
                   </select>
                 </div>
-                <div className="min-w-[120px] flex-shrink-0">
-                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block whitespace-nowrap">Cidade</label>
-                  <select value={filterCity} onChange={(e) => setFilterCity(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+                <div className="flex-1 min-w-[75px]">
+                  <label className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5 block whitespace-nowrap">Cidade</label>
+                  <select value={filterCity} onChange={(e) => setFilterCity(e.target.value)} className="w-full px-2 py-1.5 rounded border border-input text-[11px] bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring">
                     <option value="">Todas</option>
                     {cities.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
-                <div className="min-w-[120px] flex-shrink-0">
-                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block whitespace-nowrap">Bairro</label>
-                  <select value={filterNeighborhood} onChange={(e) => setFilterNeighborhood(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+                <div className="flex-1 min-w-[75px]">
+                  <label className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5 block whitespace-nowrap">Bairro</label>
+                  <select value={filterNeighborhood} onChange={(e) => setFilterNeighborhood(e.target.value)} className="w-full px-2 py-1.5 rounded border border-input text-[11px] bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring">
                     <option value="">Todos</option>
                     {neighborhoods.map(n => <option key={n} value={n}>{n}</option>)}
                   </select>
                 </div>
-                <div className="min-w-[120px] flex-shrink-0">
-                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block whitespace-nowrap">Rua</label>
-                  <select value={filterStreet} onChange={(e) => setFilterStreet(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+                <div className="flex-1 min-w-[70px]">
+                  <label className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5 block whitespace-nowrap">Rua</label>
+                  <select value={filterStreet} onChange={(e) => setFilterStreet(e.target.value)} className="w-full px-2 py-1.5 rounded border border-input text-[11px] bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring">
                     <option value="">Todas</option>
                     {streets.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </div>
-                <div className="min-w-[100px] flex-shrink-0">
-                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block whitespace-nowrap">Quartos (mín.)</label>
-                  <select value={filterBedrooms} onChange={(e) => setFilterBedrooms(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
-                    <option value="">Qualquer</option>
+                <div className="flex-1 min-w-[60px]">
+                  <label className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5 block whitespace-nowrap">Quartos</label>
+                  <select value={filterBedrooms} onChange={(e) => setFilterBedrooms(e.target.value)} className="w-full px-2 py-1.5 rounded border border-input text-[11px] bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring">
+                    <option value="">-</option>
                     <option value="1">1+</option><option value="2">2+</option><option value="3">3+</option><option value="4">4+</option>
                   </select>
                 </div>
-                <div className="min-w-[100px] flex-shrink-0">
-                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block whitespace-nowrap">Vagas (mín.)</label>
-                  <select value={filterParking} onChange={(e) => setFilterParking(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
-                    <option value="">Qualquer</option>
+                <div className="flex-1 min-w-[55px]">
+                  <label className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5 block whitespace-nowrap">Vagas</label>
+                  <select value={filterParking} onChange={(e) => setFilterParking(e.target.value)} className="w-full px-2 py-1.5 rounded border border-input text-[11px] bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring">
+                    <option value="">-</option>
                     <option value="1">1+</option><option value="2">2+</option><option value="3">3+</option>
-                   </select>
-                </div>
-                <div className="min-w-[110px] flex-shrink-0">
-                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block whitespace-nowrap">Preço mín.</label>
-                  <select value={filterPriceMin} onChange={(e) => setFilterPriceMin(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
-                    <option value="">Sem mínimo</option>
-                    <option value="200000">R$ 200 mil</option><option value="500000">R$ 500 mil</option><option value="800000">R$ 800 mil</option><option value="1000000">R$ 1 milhão</option>
                   </select>
                 </div>
-                <div className="min-w-[110px] flex-shrink-0">
-                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block whitespace-nowrap">Preço máx.</label>
-                  <select value={filterPriceMax} onChange={(e) => setFilterPriceMax(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
-                    <option value="">Sem máximo</option>
-                    <option value="500000">R$ 500 mil</option><option value="800000">R$ 800 mil</option><option value="1000000">R$ 1 milhão</option><option value="1500000">R$ 1,5 milhão</option><option value="2000000">R$ 2 milhões</option>
+                <div className="flex-1 min-w-[75px]">
+                  <label className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5 block whitespace-nowrap">Preço mín.</label>
+                  <select value={filterPriceMin} onChange={(e) => setFilterPriceMin(e.target.value)} className="w-full px-2 py-1.5 rounded border border-input text-[11px] bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring">
+                    <option value="">-</option>
+                    <option value="200000">200k</option><option value="500000">500k</option><option value="800000">800k</option><option value="1000000">1M</option>
                   </select>
                 </div>
-                <div className="min-w-[110px] flex-shrink-0">
-                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block whitespace-nowrap">Incluir inativos</label>
+                <div className="flex-1 min-w-[75px]">
+                  <label className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5 block whitespace-nowrap">Preço máx.</label>
+                  <select value={filterPriceMax} onChange={(e) => setFilterPriceMax(e.target.value)} className="w-full px-2 py-1.5 rounded border border-input text-[11px] bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring">
+                    <option value="">-</option>
+                    <option value="500000">500k</option><option value="800000">800k</option><option value="1000000">1M</option><option value="1500000">1,5M</option><option value="2000000">2M</option>
+                  </select>
+                </div>
+                <div className="flex-1 min-w-[75px]">
+                  <label className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5 block whitespace-nowrap">Inativos</label>
                   <button
                     onClick={() => setShowInactive(!showInactive)}
-                    className={`w-full px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                    className={`w-full px-2 py-1.5 rounded border text-[11px] font-medium transition-colors ${
                       showInactive
                         ? "border-primary bg-primary/10 text-primary"
                         : "border-input bg-background text-muted-foreground hover:bg-muted"
                     }`}
                   >
-                    {showInactive ? "✓ Inativos" : "Apenas ativos"}
+                    {showInactive ? "✓ Sim" : "Não"}
                   </button>
                 </div>
-                <div className="min-w-[90px] flex-shrink-0 flex items-end">
+                <div className="flex-1 min-w-[60px] flex items-end">
                   {hasActiveFilters && (
-                    <button onClick={clearFilters} className="flex items-center gap-1 px-4 py-2 rounded-lg bg-muted text-muted-foreground text-sm font-medium hover:bg-destructive/10 hover:text-destructive transition-colors w-full justify-center whitespace-nowrap">
-                      <X className="w-3.5 h-3.5" /> Limpar
+                    <button onClick={clearFilters} className="flex items-center gap-1 px-2 py-1.5 rounded bg-muted text-muted-foreground text-[11px] font-medium hover:bg-destructive/10 hover:text-destructive transition-colors w-full justify-center whitespace-nowrap">
+                      <X className="w-3 h-3" /> Limpar
                     </button>
                   )}
                 </div>
