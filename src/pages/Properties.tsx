@@ -1586,7 +1586,7 @@ function PropertyRow({
         </div>
 
         {/* ── COL 3.5: Analytics ── */}
-        <div className="w-[170px] flex-shrink-0 border-r border-border px-3 py-2 flex flex-col justify-start gap-1.5" onClick={(e) => e.stopPropagation()}>
+        <div className="w-full md:w-[170px] flex-shrink-0 md:border-r border-border px-3 py-2 flex flex-col justify-start gap-1.5" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center gap-1.5 mb-0.5">
             <BarChart3 className="w-3.5 h-3.5 text-primary" />
             <span className="text-[11px] font-black text-primary uppercase tracking-wider">Analytics</span>
