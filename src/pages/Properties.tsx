@@ -250,6 +250,24 @@ export default function Properties() {
     toast.success("Data de atualização renovada!");
   };
 
+  const handleDuplicate = (id: string) => {
+    const original = propertyList.find(p => p.id === id);
+    if (!original) return;
+    const newId = `dup-${Date.now()}`;
+    const newCode = `MV${String(propertyList.length + 1).padStart(2, "0")}`;
+    const duplicate: Property = {
+      ...original,
+      id: newId,
+      code: newCode,
+      title: `${original.title} (Cópia)`,
+      status: "Disponível",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    setPropertyList(prev => [duplicate, ...prev]);
+    toast.success("Imóvel duplicado com sucesso!");
+  };
+
   const cities = useMemo(() => [...new Set(propertyList.map(p => p.city))].sort(), [propertyList]);
   const empreendimentos = useMemo(() => [...new Set(propertyList.map(p => p.empreendimento).filter(Boolean))].sort() as string[], [propertyList]);
   const owners = useMemo(() => [...new Set(propertyList.map(p => p.owner).filter(Boolean))].sort() as string[], [propertyList]);
