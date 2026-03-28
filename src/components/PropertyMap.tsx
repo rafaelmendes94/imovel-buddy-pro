@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Property, formatCurrency } from "@/data/mockData";
+import { cn } from "@/lib/utils";
 
 interface PropertyMapProps {
   properties: Property[];
@@ -48,27 +49,26 @@ export function PropertyMap({ properties }: PropertyMapProps) {
           ? [properties[0].lat, properties[0].lng]
           : [-23.55, -46.63];
 
-      const map = L.map(mapRef.current).setView(center, 11);
+      const map = L.map(mapRef.current, {
+        zoomControl: false,
+      }).setView(center, 11);
       mapInstanceRef.current = map;
 
-      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
-        attribution: '&copy; Esri, Maxar, Earthstar Geographics',
+      // Zoom control bottom-right
+      L.control.zoom({ position: "bottomright" }).addTo(map);
+
+      // Clean map style (CartoDB Positron)
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+        attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
         maxZoom: 19,
+        subdomains: "abcd",
       }).addTo(map);
 
-      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}", {
-        maxZoom: 19,
-      }).addTo(map);
-
-      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}", {
-        maxZoom: 19,
-      }).addTo(map);
-
-      const typeConfig: Record<string, { emoji: string; color: string; bg: string }> = {
-        Apartamento: { emoji: "🏢", color: "#3b82f6", bg: "#dbeafe" },
-        Casa: { emoji: "🏠", color: "#10b981", bg: "#d1fae5" },
-        Comercial: { emoji: "🏪", color: "#f59e0b", bg: "#fef3c7" },
-        Terreno: { emoji: "🌳", color: "#8b5cf6", bg: "#ede9fe" },
+      const typeConfig: Record<string, { emoji: string; color: string }> = {
+        Apartamento: { emoji: "🏢", color: "#2563eb" },
+        Casa: { emoji: "🏠", color: "#059669" },
+        Comercial: { emoji: "🏪", color: "#d97706" },
+        Terreno: { emoji: "🌳", color: "#7c3aed" },
       };
 
       properties.forEach((property) => {
@@ -77,13 +77,12 @@ export function PropertyMap({ properties }: PropertyMapProps) {
 
         const icon = L.divIcon({
           className: "",
-          html: `<div style="display:flex;flex-direction:column;align-items:center;transform:translate(-50%,-100%);">
-            <div style="background:${cfg.bg};border:2px solid ${cfg.color};border-radius:10px 10px 10px 0;padding:3px 5px;box-shadow:0 2px 8px rgba(0,0,0,0.35);display:flex;align-items:center;gap:3px;white-space:nowrap;">
-              <span style="font-size:14px;line-height:1;">${cfg.emoji}</span>
-              <span style="font-size:9px;font-weight:800;color:${cfg.color};">${shortPrice}</span>
+          html: `<div style="display:flex;flex-direction:column;align-items:center;transform:translate(-50%,-100%);cursor:pointer;">
+            <div style="background:${cfg.color};border-radius:8px 8px 8px 0;padding:4px 8px;box-shadow:0 2px 12px rgba(0,0,0,0.25);display:flex;align-items:center;gap:4px;white-space:nowrap;">
+              <span style="font-size:12px;line-height:1;">${cfg.emoji}</span>
+              <span style="font-size:10px;font-weight:800;color:#fff;letter-spacing:0.3px;">${shortPrice}</span>
             </div>
-            <div style="width:2px;height:5px;background:${cfg.color};"></div>
-            <div style="width:5px;height:5px;background:${cfg.color};border-radius:50%;"></div>
+            <div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid ${cfg.color};"></div>
           </div>`,
           iconSize: [0, 0],
           iconAnchor: [0, 0],
@@ -94,23 +93,65 @@ export function PropertyMap({ properties }: PropertyMapProps) {
         markersRef.current.push(marker);
 
         marker.bindPopup(`
-          <div style="width:230px;font-family:system-ui,sans-serif;">
-            <img src="${property.image}" alt="${property.title}" style="width:100%;height:100px;object-fit:cover;border-radius:6px;margin-bottom:8px;" />
-            <div style="display:flex;align-items:center;gap:4px;margin-bottom:4px;">
-              <span style="font-size:14px;">${cfg.emoji}</span>
-              <span style="font-size:10px;font-weight:700;color:${cfg.color};background:${cfg.bg};padding:1px 6px;border-radius:4px;">${property.type}</span>
-              <span style="font-size:10px;font-weight:600;color:#888;">${property.status}</span>
+          <div style="width:250px;font-family:system-ui,-apple-system,sans-serif;padding:0;">
+            <img src="${property.image}" alt="${property.title}" style="width:100%;height:120px;object-fit:cover;border-radius:8px 8px 0 0;display:block;" />
+            <div style="padding:12px;">
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+                <span style="font-size:10px;font-weight:700;color:#fff;background:${cfg.color};padding:2px 8px;border-radius:4px;letter-spacing:0.5px;text-transform:uppercase;">${property.type}</span>
+                <span style="font-size:10px;font-weight:500;color:#94a3b8;">${property.status}</span>
+              </div>
+              <h3 style="font-size:14px;font-weight:700;margin:0 0 4px 0;color:#0f172a;line-height:1.3;">${property.title}</h3>
+              <p style="font-size:11px;color:#64748b;margin:0 0 8px 0;line-height:1.4;">📍 ${property.address}${property.neighborhood ? `, ${property.neighborhood}` : ""} – ${property.city}</p>
+              <div style="display:flex;align-items:baseline;justify-content:space-between;">
+                <p style="font-size:18px;font-weight:800;color:${cfg.color};margin:0;">${formatCurrency(property.price)}</p>
+                <p style="font-size:11px;color:#94a3b8;margin:0;">
+                  ${property.bedrooms > 0 ? `${property.bedrooms}🛏` : ""} ${property.area}m²
+                </p>
+              </div>
             </div>
-            <h3 style="font-size:13px;font-weight:600;margin:0 0 4px 0;">${property.title}</h3>
-            <p style="font-size:11px;color:#666;margin:0 0 4px 0;">📍 ${property.address}${property.neighborhood ? `, ${property.neighborhood}` : ""} - ${property.city}</p>
-            <p style="font-size:14px;font-weight:700;color:#d97706;margin:0 0 4px 0;">${formatCurrency(property.price)}</p>
-            <p style="font-size:11px;color:#888;margin:0;">
-              ${property.bedrooms > 0 ? `🛏 ${property.bedrooms}` : ""} 
-              📐 ${property.area}m²
-            </p>
           </div>
-        `);
+        `, { className: "clean-popup", maxWidth: 260, minWidth: 250, closeButton: true });
       });
+
+      // Custom popup style
+      const style = document.createElement("style");
+      style.textContent = `
+        .clean-popup .leaflet-popup-content-wrapper {
+          border-radius: 12px !important;
+          padding: 0 !important;
+          box-shadow: 0 8px 30px rgba(0,0,0,0.15) !important;
+          overflow: hidden;
+          border: 1px solid #e2e8f0;
+        }
+        .clean-popup .leaflet-popup-content {
+          margin: 0 !important;
+          line-height: 1.4 !important;
+        }
+        .clean-popup .leaflet-popup-tip {
+          box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+          border: 1px solid #e2e8f0;
+        }
+        .clean-popup .leaflet-popup-close-button {
+          color: #fff !important;
+          font-size: 20px !important;
+          width: 28px !important;
+          height: 28px !important;
+          top: 4px !important;
+          right: 4px !important;
+          background: rgba(0,0,0,0.3);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          line-height: 1;
+          padding: 0;
+        }
+        .clean-popup .leaflet-popup-close-button:hover {
+          background: rgba(0,0,0,0.5);
+          color: #fff !important;
+        }
+      `;
+      document.head.appendChild(style);
     };
     document.head.appendChild(script);
 
@@ -137,11 +178,10 @@ export function PropertyMap({ properties }: PropertyMapProps) {
       if (circleRef.current) map.removeLayer(circleRef.current);
       circleRef.current = L.circle([lat, lng], {
         radius: nearbyRadius * 1000,
-        color: "#3b82f6",
-        fillColor: "#3b82f6",
-        fillOpacity: 0.1,
+        color: "#2563eb",
+        fillColor: "#2563eb",
+        fillOpacity: 0.08,
         weight: 2,
-        dashArray: "6 4",
       }).addTo(map);
 
       let count = 0;
@@ -151,9 +191,9 @@ export function PropertyMap({ properties }: PropertyMapProps) {
         const el = marker.getElement?.();
         if (dist <= nearbyRadius) {
           count++;
-          if (el) el.style.opacity = "1";
+          if (el) { el.style.opacity = "1"; el.style.transform = "scale(1)"; }
         } else {
-          if (el) el.style.opacity = "0.25";
+          if (el) { el.style.opacity = "0.2"; el.style.transform = "scale(0.8)"; }
         }
       });
       setNearbyCount(count);
@@ -174,50 +214,66 @@ export function PropertyMap({ properties }: PropertyMapProps) {
     }
     markersRef.current.forEach((marker) => {
       const el = marker.getElement?.();
-      if (el) el.style.opacity = "1";
+      if (el) { el.style.opacity = "1"; el.style.transform = "scale(1)"; }
     });
   };
 
   return (
-    <div className="elevated-card rounded-xl overflow-hidden relative" style={{ height: "600px" }}>
-      {/* Nearby controls */}
-      <div className="absolute top-3 right-3 z-[1000] flex flex-col gap-2">
+    <div className="rounded-xl overflow-hidden relative border border-border shadow-sm" style={{ height: "600px" }}>
+      {/* Controls */}
+      <div className="absolute top-4 right-4 z-[1000] flex flex-col gap-2">
         <button
           onClick={() => nearbyMode ? clearNearby() : setNearbyMode(true)}
-          className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold shadow-lg transition-all ${
+          className={cn(
+            "flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-semibold shadow-lg transition-all backdrop-blur-sm",
             nearbyMode
-              ? "bg-blue-500 text-white"
-              : "bg-white text-gray-800 hover:bg-gray-100"
-          }`}
+              ? "bg-primary text-primary-foreground"
+              : "bg-card/95 text-foreground border border-border hover:bg-muted"
+          )}
         >
-          📍 {nearbyMode ? "Sair modo próximos" : "Imóveis próximos"}
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+          {nearbyMode ? "Sair do modo" : "Buscar próximos"}
         </button>
 
         {nearbyMode && (
-          <div className="bg-white rounded-lg shadow-lg p-3 space-y-2 min-w-[180px]">
-            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Raio de busca</p>
+          <div className="bg-card/95 backdrop-blur-sm rounded-lg shadow-lg p-3 space-y-2.5 min-w-[190px] border border-border">
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Raio de busca</p>
             <div className="flex gap-1">
               {[1, 2, 5, 10].map((r) => (
                 <button
                   key={r}
                   onClick={() => setNearbyRadius(r)}
-                  className={`flex-1 px-2 py-1 rounded text-[10px] font-bold transition-colors ${
+                  className={cn(
+                    "flex-1 px-2 py-1.5 rounded-md text-[11px] font-bold transition-all",
                     nearbyRadius === r
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "bg-muted text-muted-foreground hover:bg-secondary"
+                  )}
                 >
                   {r}km
                 </button>
               ))}
             </div>
-            <p className="text-[11px] text-gray-500 text-center">
-              {nearbyCenter
-                ? `${nearbyCount} imóvel(is) em ${nearbyRadius}km`
-                : "Clique no mapa para buscar"}
-            </p>
+            {nearbyCenter ? (
+              <div className="flex items-center justify-between bg-muted/50 rounded-md px-2.5 py-1.5">
+                <span className="text-[11px] font-semibold text-foreground">{nearbyCount} imóvel(is)</span>
+                <span className="text-[10px] text-muted-foreground">em {nearbyRadius}km</span>
+              </div>
+            ) : (
+              <p className="text-[11px] text-muted-foreground text-center py-1">
+                Clique no mapa para buscar
+              </p>
+            )}
           </div>
         )}
+      </div>
+
+      {/* Property count badge */}
+      <div className="absolute top-4 left-4 z-[1000]">
+        <div className="bg-card/95 backdrop-blur-sm rounded-lg shadow-lg px-3 py-2 border border-border flex items-center gap-2">
+          <span className="text-[11px] font-bold text-foreground">{properties.length}</span>
+          <span className="text-[10px] text-muted-foreground">imóveis no mapa</span>
+        </div>
       </div>
 
       <div ref={mapRef} style={{ height: "100%", width: "100%" }} />
