@@ -397,27 +397,6 @@ export default function Properties() {
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
-          {[
-            { label: "Total", count: propertyList.length, icon: Star, onClick: () => setActiveCategory("todos") },
-            { label: "Ativos", count: propertyList.filter(p => p.status === "Disponível").length, icon: Home, onClick: () => setActiveCategory("todos") },
-            { label: "Apartamentos", count: propertyList.filter(p => p.type === "Apartamento").length, icon: Building2, onClick: () => setActiveCategory("apartamentos") },
-            { label: "Casas", count: propertyList.filter(p => p.type === "Casa").length, icon: Home, onClick: () => setActiveCategory("casas") },
-            { label: "Terrenos", count: propertyList.filter(p => p.type === "Terreno").length, icon: TreePine, onClick: () => setActiveCategory("terrenos") },
-            { label: "Decorados", count: propertyList.filter(p => p.decorated).length, icon: Paintbrush, onClick: () => setActiveCategory("decorados") },
-          ].map((stat) => (
-            <button
-              key={stat.label}
-              onClick={stat.onClick}
-              className="bg-card border border-border rounded-xl p-2 sm:p-3 hover:bg-muted/50 transition-colors text-left"
-            >
-              <stat.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary mb-0.5 sm:mb-1" />
-              <p className="text-base sm:text-xl font-bold text-foreground">{stat.count}</p>
-              <p className="text-[8px] sm:text-[10px] text-muted-foreground font-medium uppercase tracking-wider truncate">{stat.label}</p>
-            </button>
-          ))}
-        </div>
 
         {/* Freshness Cards */}
         <div className="grid grid-cols-3 gap-2 sm:gap-3">
