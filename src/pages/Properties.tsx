@@ -1311,7 +1311,7 @@ function PropertyRow({
         </div>
 
         {/* ── COL 2: Identidade + Dados Técnicos ── */}
-        <div className="flex-1 min-w-0 border-r border-border px-4 py-2 flex flex-col justify-center gap-1">
+        <div className="flex-1 min-w-0 border-r border-border px-4 py-2 flex flex-col justify-start gap-1">
           {/* Row 1: Title + Code */}
           <div className="flex items-center gap-2 min-w-0">
             <h3
@@ -1414,7 +1414,7 @@ function PropertyRow({
         </div>
 
         {/* ── COL 3: Financeiro ── */}
-        <div className="w-[220px] flex-shrink-0 border-r border-border px-3 py-2 flex flex-col justify-center gap-0.5" onClick={(e) => e.stopPropagation()}>
+        <div className="w-[220px] flex-shrink-0 border-r border-border px-3 py-2 flex flex-col justify-start gap-0.5" onClick={(e) => e.stopPropagation()}>
           {/* Main price */}
           <InlinePrice value={property.price} onChange={(v) => onPriceChange?.(property.id, "price", v)} className="text-[22px] font-black text-emerald-500 drop-shadow-sm" />
 
@@ -1472,7 +1472,7 @@ function PropertyRow({
         </div>
 
         {/* ── COL 3.5: Analytics ── */}
-        <div className="w-[170px] flex-shrink-0 border-r border-border px-3 py-2 flex flex-col justify-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+        <div className="w-[170px] flex-shrink-0 border-r border-border px-3 py-2 flex flex-col justify-start gap-1.5" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center gap-1.5 mb-0.5">
             <BarChart3 className="w-3.5 h-3.5 text-primary" />
             <span className="text-[11px] font-black text-primary uppercase tracking-wider">Analytics</span>
@@ -1499,7 +1499,7 @@ function PropertyRow({
         </div>
 
         {/* ── COL 4: Proprietário + Chaves + Datas + Status ── */}
-        <div className="w-[190px] flex-shrink-0 border-r border-border px-3 py-2 flex flex-col justify-center gap-1" onClick={(e) => e.stopPropagation()}>
+        <div className="w-[190px] flex-shrink-0 border-r border-border px-3 py-2 flex flex-col justify-start gap-1" onClick={(e) => e.stopPropagation()}>
           {/* Owner */}
           {property.owner ? (
             <div className="border-b border-border pb-1.5 mb-0.5">
@@ -1564,7 +1564,7 @@ function PropertyRow({
         </div>
 
         {/* ── COL 5: Ações (ícones) ── */}
-        <div className="w-[52px] flex-shrink-0 flex flex-col items-center justify-center gap-1.5 py-2" onClick={(e) => e.stopPropagation()}>
+        <div className="w-[52px] flex-shrink-0 flex flex-col items-center justify-start gap-1.5 py-2" onClick={(e) => e.stopPropagation()}>
           <button
             onClick={() => onSelect?.(property)}
             className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors" title="Editar"
