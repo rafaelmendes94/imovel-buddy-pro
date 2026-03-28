@@ -37,8 +37,8 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
   const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${property.address}, ${property.city}`)}`;
   const videoUrl = "https://www.youtube.com/embed/dQw4w9WgXcQ";
 
-  const similar = allProperties
-    .filter((p) => p.id !== property.id && (p.type === property.type || p.city === property.city))
+  const ownerProperties = allProperties
+    .filter((p) => p.id !== property.id && p.owner && property.owner && p.owner === property.owner)
     .slice(0, 6);
 
   const prevImage = (e: React.MouseEvent) => {
