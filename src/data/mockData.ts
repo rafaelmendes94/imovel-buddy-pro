@@ -95,6 +95,7 @@ export const properties: Property[] = [
   },
   {
     id: "2",
+    code: "MV02",
     title: "Cobertura Duplex Vista Mar",
     address: "Rua Sepé, 500",
     neighborhood: "Centro",
@@ -134,6 +135,7 @@ export const properties: Property[] = [
   },
   {
     id: "3",
+    code: "MV03",
     title: "Casa em Condomínio Xangri-lá",
     address: "Rua das Hortênsias, 300",
     neighborhood: "Rainha do Mar",
@@ -173,6 +175,7 @@ export const properties: Property[] = [
   },
   {
     id: "4",
+    code: "MV04",
     title: "Sala Comercial Centro Capão",
     address: "Av. Paraguassú, 800",
     neighborhood: "Centro",
@@ -209,6 +212,7 @@ export const properties: Property[] = [
   },
   {
     id: "5",
+    code: "MV05",
     title: "Terreno Condomínio Xangri-lá",
     address: "Rua dos Coqueiros, 150",
     neighborhood: "Bosque do Litoral",
@@ -246,6 +250,7 @@ export const properties: Property[] = [
   },
   {
     id: "6",
+    code: "MV06",
     title: "Apartamento Praia de Atlântida",
     address: "Av. Central, 200",
     neighborhood: "Atlântida",
