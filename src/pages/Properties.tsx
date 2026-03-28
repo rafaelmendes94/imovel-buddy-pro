@@ -918,16 +918,16 @@ function PropertyRow({
     <div className={cn("elevated-card rounded-xl relative overflow-hidden transition-all duration-300", animatePulse && "animate-sold-pulse")}>
       {showCelebration && <SoldCelebration />}
 
-      <div className="px-2 py-2 flex items-stretch gap-0">
+      <div className="flex items-stretch">
 
-        {/* ── BLOCO 1: Foto + Empreendimento/Edifício + Localização ── */}
-        <div className="flex gap-2 items-center min-w-0 w-[240px] flex-shrink-0 pr-3 border-r border-border cursor-pointer" onClick={() => onSelect?.(property)}>
-          <img src={property.images[0] || property.image} alt={property.title} className="w-[76px] h-[76px] rounded-lg object-cover flex-shrink-0" />
-          <div className="min-w-0 flex-1">
+        {/* ── BLOCO 1: Foto + Empreendimento + Localização ── */}
+        <div className="flex items-stretch w-[260px] flex-shrink-0 border-r border-border cursor-pointer" onClick={() => onSelect?.(property)}>
+          <img src={property.images[0] || property.image} alt={property.title} className="w-[100px] object-cover flex-shrink-0" />
+          <div className="min-w-0 flex-1 flex flex-col justify-center px-2.5 py-2">
             {property.empreendimento && (
               <Link
                 to={`/empreendimento/${property.empreendimento.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`}
-                className="text-[11px] font-bold text-accent hover:underline truncate block"
+                className="text-[11px] font-bold text-accent hover:underline truncate block leading-tight"
                 onClick={(e) => e.stopPropagation()}
                 title="Abrir página do empreendimento"
               >{property.empreendimento}</Link>
@@ -935,12 +935,12 @@ function PropertyRow({
             {[property.unitNumber, property.boxNumber, property.quadra, property.lote].filter(Boolean).length > 0 && (
               <div className="flex flex-wrap gap-1 mt-0.5">
                 {[property.unitNumber, property.boxNumber, property.quadra, property.lote].filter(Boolean).map((part) => (
-                  <span key={part} className="text-[9px] text-muted-foreground bg-muted px-1 py-0 rounded">{part}</span>
+                  <span key={part} className="text-[9px] text-muted-foreground bg-muted px-1 rounded leading-tight">{part}</span>
                 ))}
               </div>
             )}
             <button
-              className="flex items-center gap-1 mt-1 text-[10px] text-muted-foreground hover:text-primary transition-colors"
+              className="flex items-center gap-1 mt-1 text-[10px] text-muted-foreground hover:text-primary transition-colors leading-tight"
               onClick={(e) => {
                 e.stopPropagation();
                 window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${property.address}, ${property.city}`)}`, "_blank");
@@ -950,29 +950,29 @@ function PropertyRow({
               <MapPin className="w-2.5 h-2.5 flex-shrink-0" />
               <span className="truncate">{property.address}, {property.city}</span>
             </button>
-            <div className="flex items-center gap-1 mt-0.5 text-[10px] text-muted-foreground">
+            <div className="flex items-center gap-1 mt-0.5 text-[10px] text-muted-foreground leading-tight">
               <Key className="w-2.5 h-2.5 flex-shrink-0" />
               <span className="truncate">{property.keysLocation || "Não informado"}</span>
             </div>
           </div>
         </div>
 
-        {/* ── BLOCO 2: Título + Status + Tipo + Dormitórios + Dados ── */}
-        <div className="px-3 border-r border-border flex flex-col justify-center w-[200px] flex-shrink-0">
-          <div className="flex items-center gap-1.5">
-            <h3
-              className="font-semibold text-card-foreground text-[12px] truncate hover:text-primary cursor-pointer transition-colors"
-              onClick={() => onFilterByTitle?.(property.title)}
-              title="Ver títulos semelhantes"
-            >{property.title}</h3>
-            <span className={cn("px-1 py-0 rounded text-[8px] font-bold uppercase tracking-wide flex-shrink-0",
+        {/* ── BLOCO 2: Título + Status + Tipo + Dados ── */}
+        <div className="px-3 border-r border-border flex flex-col justify-center w-[190px] flex-shrink-0 py-2">
+          <h3
+            className="font-semibold text-card-foreground text-[12px] truncate hover:text-primary cursor-pointer transition-colors leading-tight"
+            onClick={() => onFilterByTitle?.(property.title)}
+            title="Ver títulos semelhantes"
+          >{property.title}</h3>
+          <div className="flex items-center gap-1.5 mt-0.5">
+            <span className={cn("px-1.5 py-0 rounded text-[8px] font-bold uppercase tracking-wide",
               property.status === "Vendido" ? "bg-red-500/10 text-red-400" :
               property.status === "Reservado" ? "bg-amber-500/10 text-amber-400" :
               property.status === "Alugado" ? "bg-blue-500/10 text-blue-400" :
               "bg-emerald-500/10 text-emerald-400"
             )}>{property.status}</span>
+            <span className="text-[10px] font-medium text-primary">{property.type}</span>
           </div>
-          <span className="text-[10px] font-medium text-primary mt-0.5">{property.type}</span>
           <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">
             {property.bedrooms > 0 && <span className="flex items-center gap-0.5"><BedDouble className="w-2.5 h-2.5" />{property.bedrooms}</span>}
             {property.bathrooms > 0 && <span className="flex items-center gap-0.5"><Bath className="w-2.5 h-2.5" />{property.bathrooms}</span>}
@@ -980,43 +980,43 @@ function PropertyRow({
             <span className="flex items-center gap-0.5"><Ruler className="w-2.5 h-2.5" />{property.area}m²</span>
           </div>
           <div className="flex gap-1 mt-1">
-            {property.seaView && <span className="text-[8px] px-1 rounded bg-blue-500/10 text-blue-400 font-bold">🌊 Mar</span>}
-            {property.decorated && <span className="text-[8px] px-1 rounded bg-purple-500/10 text-purple-400 font-bold">🎨 Dec.</span>}
-            {property.acceptsExchange && <span className="text-[8px] px-1 rounded bg-emerald-500/10 text-emerald-400 font-bold">🔄 Permuta</span>}
+            {property.seaView && <span className="text-[8px] px-1 rounded bg-blue-500/10 text-blue-400 font-bold leading-tight">🌊 Mar</span>}
+            {property.decorated && <span className="text-[8px] px-1 rounded bg-purple-500/10 text-purple-400 font-bold leading-tight">🎨 Dec.</span>}
+            {property.acceptsExchange && <span className="text-[8px] px-1 rounded bg-emerald-500/10 text-emerald-400 font-bold leading-tight">🔄 Permuta</span>}
           </div>
         </div>
 
         {/* ── BLOCO 3: Valor + Condições + Datas ── */}
-        <div className="px-3 border-r border-border flex flex-col justify-center w-[160px] flex-shrink-0">
+        <div className="px-3 border-r border-border flex flex-col justify-center w-[155px] flex-shrink-0 py-2">
           <p className="text-sm font-bold text-accent leading-tight">{formatCurrency(property.price)}</p>
           {property.paymentConditions && property.paymentConditions.length > 0 && (
             <div className="flex flex-wrap gap-0.5 mt-1" onClick={(e) => e.stopPropagation()}>
               {property.paymentConditions.map((cond) => (
                 <button key={cond}
-                  className="px-1 py-0 rounded text-[9px] font-bold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors cursor-pointer"
+                  className="px-1 py-0 rounded text-[9px] font-bold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors cursor-pointer leading-tight"
                   onClick={() => onFilterByCondition?.(cond)}
                 >{cond}</button>
               ))}
             </div>
           )}
-          <div className="mt-1.5 text-[9px] text-muted-foreground space-y-0">
-            <div className="flex justify-between gap-1">
-              <span className="flex items-center gap-0.5"><CalendarCheck className="w-2.5 h-2.5" />Inclusão:</span>
+          <div className="mt-1.5 text-[9px] text-muted-foreground space-y-0.5">
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-0.5"><CalendarCheck className="w-2.5 h-2.5" />Incl.</span>
               <span className="font-medium text-foreground">{createdFormatted}</span>
             </div>
-            <div className="flex justify-between gap-1">
-              <span className="flex items-center gap-0.5"><CalendarClock className="w-2.5 h-2.5" />Atualiz.:</span>
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-0.5"><CalendarClock className="w-2.5 h-2.5" />Atu.</span>
               <span className={cn("font-semibold", updateColor)}>{updatedFormatted}</span>
             </div>
           </div>
         </div>
 
-        {/* ── BLOCO 4: Proprietário + Tipo + Exclusividade ── */}
-        <div className="px-3 border-r border-border flex flex-col justify-center w-[175px] flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+        {/* ── BLOCO 4: Proprietário ── */}
+        <div className="px-3 border-r border-border flex flex-col justify-center w-[170px] flex-shrink-0 py-2" onClick={(e) => e.stopPropagation()}>
           {property.owner ? (
             <>
               <button
-                className="text-[11px] font-semibold text-foreground hover:text-primary transition-colors truncate block text-left"
+                className="text-[11px] font-semibold text-foreground hover:text-primary transition-colors truncate block text-left leading-tight"
                 onClick={() => onFilterByOwner?.(property.owner!)}
                 title={`Ver todos imóveis de ${property.owner}`}
               >{property.owner}</button>
@@ -1025,13 +1025,13 @@ function PropertyRow({
                   href={`https://wa.me/${property.ownerPhone}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-[10px] text-emerald-500 hover:text-emerald-400 transition-colors mt-0.5"
+                  className="flex items-center gap-1 text-[10px] text-emerald-500 hover:text-emerald-400 transition-colors mt-0.5 leading-tight"
                 >
                   <Phone className="w-2.5 h-2.5" /> {property.ownerPhone.replace(/^55/, "").replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3")}
                 </a>
               )}
               {ownerTypeInfo && (
-                <span className={cn("inline-flex items-center gap-1 mt-1 px-1.5 py-0.5 rounded text-[9px] font-bold w-fit", ownerTypeInfo.color)}>
+                <span className={cn("inline-flex items-center gap-1 mt-1 px-1.5 py-0.5 rounded text-[9px] font-bold w-fit leading-tight", ownerTypeInfo.color)}>
                   <ownerTypeInfo.icon className="w-2.5 h-2.5" /> {property.ownerType}
                 </span>
               )}
@@ -1040,14 +1040,14 @@ function PropertyRow({
             <span className="text-[10px] text-muted-foreground">Sem proprietário</span>
           )}
           {property.exclusivityTerm && (
-            <span className="inline-flex items-center gap-1 mt-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-500/10 text-amber-400 w-fit">
+            <span className="inline-flex items-center gap-1 mt-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-500/10 text-amber-400 w-fit leading-tight">
               <FileCheck className="w-2.5 h-2.5" /> Exclusividade
             </span>
           )}
         </div>
 
         {/* ── BLOCO 5: Ações ── */}
-        <div className="pl-2 flex flex-col items-center justify-center gap-1" onClick={(e) => e.stopPropagation()}>
+        <div className="px-2 flex flex-col items-center justify-center gap-1 py-2" onClick={(e) => e.stopPropagation()}>
           <button
             onClick={() => onSelect?.(property)}
             className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors" title="Editar dados"
