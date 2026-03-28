@@ -1167,63 +1167,63 @@ function PropertyRow({
       <div className="flex items-stretch">
 
         {/* ── COL 1: Foto com carrossel ── */}
-        <div className="relative w-[160px] flex-shrink-0">
+        <div className="relative w-[200px] h-[200px] flex-shrink-0">
           <RowCarousel images={property.images.length > 0 ? property.images : [property.image]} />
           {ownerTypeInfo && (
-            <span className={cn("absolute top-2 left-2 z-10 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wide shadow-sm", ownerTypeInfo.color)}>
+            <span className={cn("absolute top-2 left-2 z-10 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wide shadow-sm", ownerTypeInfo.color)}>
               {ownerTypeInfo.label}
             </span>
           )}
         </div>
 
         {/* ── COL 2: Identidade + Dados Técnicos ── */}
-        <div className="flex-1 min-w-0 border-r border-border px-3 py-2 flex flex-col justify-center gap-1">
+        <div className="flex-1 min-w-0 border-r border-border px-4 py-3 flex flex-col justify-center gap-1.5">
           {/* Title + Code */}
           <div className="flex items-center gap-2">
             <h3
-              className="font-bold text-card-foreground text-sm truncate hover:text-primary cursor-pointer transition-colors leading-tight"
+              className="font-bold text-card-foreground text-base truncate hover:text-primary cursor-pointer transition-colors leading-tight"
               onClick={() => onFilterByTitle?.(property.title)}
               title="Ver títulos semelhantes"
             >{property.title}</h3>
             {property.code && (
-              <span className="text-[10px] font-black text-primary bg-primary/10 px-1.5 py-0.5 rounded">{property.code}</span>
+              <span className="text-[11px] font-black text-primary bg-primary/10 px-2 py-0.5 rounded">{property.code}</span>
             )}
           </div>
 
           {/* Empreendimento + Unit info row */}
-          <div className="flex items-center gap-2 flex-wrap text-[10px]">
+          <div className="flex items-center gap-2 flex-wrap">
             {property.empreendimento && (
               <Link
                 to={`/empreendimento/${property.empreendimento.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`}
-                className="font-black text-foreground uppercase text-[12px] tracking-wide px-2.5 py-1 rounded-md border border-border bg-background hover:bg-muted transition-colors shadow-sm"
+                className="font-black text-foreground uppercase text-[13px] tracking-wide px-3 py-1 rounded-md border border-border bg-background hover:bg-muted transition-colors shadow-sm"
                 onClick={(e) => e.stopPropagation()}
               >{property.empreendimento}</Link>
             )}
             {unitParts.map((part) => (
-              <span key={part} className="font-black text-foreground uppercase text-[11px] tracking-wide px-2 py-0.5 rounded-md border border-border bg-background shadow-sm">{part}</span>
+              <span key={part} className="font-black text-foreground uppercase text-[12px] tracking-wide px-2.5 py-0.5 rounded-md border border-border bg-background shadow-sm">{part}</span>
             ))}
-            <span className="font-semibold text-primary">{property.type}</span>
+            <span className="font-semibold text-primary text-[12px]">{property.type}</span>
           </div>
 
           {/* Specs row */}
-          <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
-            {property.bedrooms > 0 && <span className="flex items-center gap-0.5"><BedDouble className="w-3 h-3" />{property.bedrooms} dorm.</span>}
-            {property.bathrooms > 0 && <span className="flex items-center gap-0.5"><Bath className="w-3 h-3" />{property.bathrooms} ban.</span>}
-            {property.parking > 0 && <span className="flex items-center gap-0.5"><Car className="w-3 h-3" />{property.parking} vaga(s)</span>}
-            <span className="flex items-center gap-0.5"><Ruler className="w-3 h-3" />{property.area}m² total</span>
-            {property.privateArea && <span className="flex items-center gap-0.5"><Ruler className="w-3 h-3" />{property.privateArea}m² priv.</span>}
+          <div className="flex items-center gap-4 text-[12px] text-muted-foreground">
+            {property.bedrooms > 0 && <span className="flex items-center gap-1"><BedDouble className="w-3.5 h-3.5" />{property.bedrooms} dorm.</span>}
+            {property.bathrooms > 0 && <span className="flex items-center gap-1"><Bath className="w-3.5 h-3.5" />{property.bathrooms} ban.</span>}
+            {property.parking > 0 && <span className="flex items-center gap-1"><Car className="w-3.5 h-3.5" />{property.parking} vaga(s)</span>}
+            <span className="flex items-center gap-1 font-semibold"><Ruler className="w-3.5 h-3.5" />{property.area}m² total</span>
+            {property.privateArea && <span className="flex items-center gap-1 font-semibold"><Ruler className="w-3.5 h-3.5" />{property.privateArea}m² priv.</span>}
           </div>
 
           {/* Tags row */}
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {property.seaView && <span className="text-[8px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 font-bold">🌊 Vista Mar</span>}
-            {property.decorated && <span className="text-[8px] px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 font-bold">🎨 Decorado</span>}
-            {property.acceptsExchange && <span className="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold">🔄 Permuta</span>}
-            {property.exclusivityTerm && <span className="text-[8px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 font-bold">📄 Exclusivo</span>}
+          <div className="flex items-center gap-2 flex-wrap">
+            {property.seaView && <span className="text-[10px] px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 font-bold">🌊 Vista Mar</span>}
+            {property.decorated && <span className="text-[10px] px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 font-bold">🎨 Decorado</span>}
+            {property.acceptsExchange && <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold">🔄 Permuta</span>}
+            {property.exclusivityTerm && <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 font-bold">📄 Exclusivo</span>}
           </div>
 
           {/* Location row */}
-          <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+          <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
             <button
               className="flex items-center gap-1 hover:text-primary transition-colors"
               onClick={(e) => {
@@ -1231,7 +1231,7 @@ function PropertyRow({
                 window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${property.address}, ${property.neighborhood || ""}, ${property.city}`)}`, "_blank");
               }}
             >
-              <MapPin className="w-3 h-3 flex-shrink-0" />
+              <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
               <span className="truncate">{property.city}{property.neighborhood ? ` • ${property.neighborhood}` : ""} • {property.address}</span>
             </button>
           </div>
