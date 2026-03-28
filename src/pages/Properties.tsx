@@ -1225,15 +1225,19 @@ function PropertyRow({
 
         {/* ── COL 2: Identidade + Dados Técnicos ── */}
         <div className="flex-1 min-w-0 border-r border-border px-4 py-3 flex flex-col justify-center gap-1.5">
-          {/* Title + Code */}
+          {/* Title + Type + Code */}
           <div className="flex items-center gap-2">
             <h3
               className="font-bold text-card-foreground text-base truncate hover:text-primary cursor-pointer transition-colors leading-tight"
               onClick={() => onFilterByTitle?.(property.title)}
               title="Ver títulos semelhantes"
             >{property.title}</h3>
+            <span className="text-[12px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded flex items-center gap-1 flex-shrink-0">
+              {property.type === "Apartamento" ? <Building2 className="w-3 h-3" /> : property.type === "Casa" ? <Home className="w-3 h-3" /> : property.type === "Terreno" ? <TreePine className="w-3 h-3" /> : <Building2 className="w-3 h-3" />}
+              {property.type}
+            </span>
             {property.code && (
-              <span className="text-[11px] font-black text-primary bg-primary/10 px-2 py-0.5 rounded">{property.code}</span>
+              <span className="text-[11px] font-black text-muted-foreground bg-muted px-2 py-0.5 rounded flex-shrink-0">{property.code}</span>
             )}
           </div>
 
@@ -1249,7 +1253,6 @@ function PropertyRow({
             {unitParts.map((part) => (
               <span key={part} className="font-black text-foreground uppercase text-[12px] tracking-wide px-2.5 py-0.5 rounded-md border border-border bg-background shadow-sm">{part}</span>
             ))}
-            <span className="font-semibold text-primary text-[12px]">{property.type}</span>
           </div>
 
           {/* Specs row */}
@@ -1287,7 +1290,7 @@ function PropertyRow({
         {/* ── COL 3: Financeiro ── */}
         <div className="w-[220px] flex-shrink-0 border-r border-border px-3 py-2 flex flex-col justify-center gap-0.5" onClick={(e) => e.stopPropagation()}>
           {/* Main price */}
-          <InlinePrice value={property.price} onChange={(v) => onPriceChange?.(property.id, "price", v)} className="text-[18px] font-black text-emerald-500" />
+          <InlinePrice value={property.price} onChange={(v) => onPriceChange?.(property.id, "price", v)} className="text-[22px] font-black text-emerald-500 drop-shadow-sm" />
 
           {/* Promotional price */}
           {property.priceInstallment && (
@@ -1343,38 +1346,38 @@ function PropertyRow({
         </div>
 
         {/* ── COL 3.5: Analytics ── */}
-        <div className="w-[160px] flex-shrink-0 border-r border-border px-3 py-2 flex flex-col justify-center gap-1.5" onClick={(e) => e.stopPropagation()}>
-          <div className="flex items-center gap-1 mb-0.5">
-            <BarChart3 className="w-3 h-3 text-primary" />
-            <span className="text-[9px] font-black text-primary uppercase tracking-wider">Analytics</span>
+        <div className="w-[170px] flex-shrink-0 border-r border-border px-3 py-2 flex flex-col justify-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <BarChart3 className="w-3.5 h-3.5 text-primary" />
+            <span className="text-[11px] font-black text-primary uppercase tracking-wider">Analytics</span>
           </div>
 
           {/* Deal Thermometer */}
           <DealThermometer dealScore={dealScore} manualLabel={property.dealLabel} />
 
           {/* View counter */}
-          <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted/50">
-            <Eye className="w-3 h-3 text-muted-foreground" />
-            <span className="text-[10px] font-bold text-foreground">{property.views ?? Math.floor(Math.random() * 200 + 10)}</span>
-            <span className="text-[8px] text-muted-foreground">views</span>
+          <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md bg-muted/50">
+            <Eye className="w-3.5 h-3.5 text-muted-foreground" />
+            <span className="text-[12px] font-bold text-foreground">{property.views ?? Math.floor(Math.random() * 200 + 10)}</span>
+            <span className="text-[10px] text-muted-foreground">views</span>
           </div>
 
           {/* Valuation link */}
           <button
             onClick={() => onNavigateToValuation?.(property)}
-            className="flex items-center gap-1 px-2 py-1.5 rounded-md bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-[9px] font-bold uppercase tracking-wide"
+            className="flex items-center gap-1 px-2 py-1.5 rounded-md bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-[10px] font-bold uppercase tracking-wide"
             title="Avaliar imóvel com IA"
           >
-            <TrendingUp className="w-3 h-3" /> Avaliar com IA
+            <TrendingUp className="w-3.5 h-3.5" /> Avaliar com IA
           </button>
         </div>
 
         {/* ── COL 4: Proprietário + Chaves + Datas + Status ── */}
-        <div className="w-[180px] flex-shrink-0 border-r border-border px-3 py-2 flex flex-col justify-center gap-1" onClick={(e) => e.stopPropagation()}>
+        <div className="w-[190px] flex-shrink-0 border-r border-border px-3 py-2 flex flex-col justify-center gap-1.5" onClick={(e) => e.stopPropagation()}>
           {property.owner ? (
             <>
               <button
-                className="text-[11px] font-bold text-foreground hover:text-primary transition-colors truncate text-left leading-tight"
+                className="text-[13px] font-bold text-foreground hover:text-primary transition-colors truncate text-left leading-tight"
                 onClick={() => onFilterByOwner?.(property.owner!)}
                 title={`Ver todos imóveis de ${property.owner}`}
               >{property.owner}</button>
@@ -1383,28 +1386,28 @@ function PropertyRow({
                   href={`https://wa.me/${property.ownerPhone}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-[10px] text-emerald-500 hover:text-emerald-400 transition-colors"
+                  className="flex items-center gap-1 text-[11px] text-emerald-500 hover:text-emerald-400 transition-colors"
                 >
-                  <Phone className="w-2.5 h-2.5" /> {property.ownerPhone.replace(/^55/, "").replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3")}
+                  <Phone className="w-3 h-3" /> {property.ownerPhone.replace(/^55/, "").replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3")}
                 </a>
               )}
             </>
           ) : (
-            <span className="text-[10px] text-muted-foreground italic">Sem proprietário</span>
+            <span className="text-[11px] text-muted-foreground italic">Sem proprietário</span>
           )}
           {/* Keys */}
-          <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-            <Key className="w-3 h-3 flex-shrink-0 text-amber-400" />
+          <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+            <Key className="w-3.5 h-3.5 flex-shrink-0 text-amber-400" />
             <span className="truncate">{property.keysLocation || "Não informado"}</span>
           </div>
           {/* Dates */}
-          <div className="space-y-0.5 text-[9px] text-muted-foreground">
+          <div className="space-y-0.5 text-[10px] text-muted-foreground">
             <div className="flex items-center justify-between gap-1">
-              <span className="flex items-center gap-0.5"><CalendarCheck className="w-2.5 h-2.5" /> Inclusão</span>
+              <span className="flex items-center gap-0.5"><CalendarCheck className="w-3 h-3" /> Inclusão</span>
               <span className="font-medium text-foreground">{createdFormatted}</span>
             </div>
             <div className="flex items-center justify-between gap-1">
-              <span className="flex items-center gap-0.5"><CalendarClock className="w-2.5 h-2.5" /> Atualização</span>
+              <span className="flex items-center gap-0.5"><CalendarClock className="w-3 h-3" /> Atualização</span>
               <span className={cn("font-semibold", updateColor)}>{updatedFormatted}</span>
             </div>
           </div>
