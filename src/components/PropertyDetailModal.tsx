@@ -83,8 +83,7 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
         case "condicao": updated.condicao = val as Property["condicao"]; break;
         case "infraestrutura": updated.infraestrutura = val.split(",").map(s => s.trim()).filter(Boolean); break;
       }
-      onUpdateProperty(updated);
-      setHasChanges(true);
+      updateProperty(updated);
       toast.success("Informação atualizada!");
     }
     setEditingField(null);
