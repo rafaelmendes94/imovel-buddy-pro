@@ -4,11 +4,13 @@ import {
   X, MapPin, BedDouble, Bath, Car, Ruler, Phone, Waves, Paintbrush,
   Building2, ChevronLeft, ChevronRight, ExternalLink, Play, Repeat,
   CreditCard, Navigation, Share2, Heart, Maximize2, Download, Key,
-  Pencil, Check, HardDrive, Flame, TrendingUp, Eye, EyeOff, User
+  Pencil, Check, HardDrive, Flame, TrendingUp, Eye, EyeOff, User,
+  Sparkles, Loader2, Target, Zap, FileText, MapPinned
 } from "lucide-react";
 import { formatCurrency, type Property } from "@/data/mockData";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PropertyDetailModalProps {
   property: Property | null;
@@ -27,6 +29,8 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
   const [editingField, setEditingField] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<Record<string, string>>({});
   const [showOwnerPhone, setShowOwnerPhone] = useState(false);
+  const [generatingAI, setGeneratingAI] = useState<string | null>(null);
+  const [showAIOptions, setShowAIOptions] = useState(false);
 
   if (!property) return null;
 
@@ -85,6 +89,36 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
   };
 
   const cancelEdit = () => setEditingField(null);
+
+  // -- AI Description Generation --
+  const aiStyles = [
+    { id: "gatilhos", label: "Gatilhos de Venda", icon: Target, color: "text-red-500 bg-red-50 border-red-200 hover:bg-red-100" },
+    { id: "agressiva", label: "Agressiva (Vendas)", icon: Zap, color: "text-orange-500 bg-orange-50 border-orange-200 hover:bg-orange-100" },
+    { id: "informativa", label: "Informativa Completa", icon: FileText, color: "text-blue-500 bg-blue-50 border-blue-200 hover:bg-blue-100" },
+    { id: "geolocalizacao", label: "Geolocalização", icon: MapPinned, color: "text-emerald-500 bg-emerald-50 border-emerald-200 hover:bg-emerald-100" },
+  ];
+
+  const handleGenerateDescription = async (style: string) => {
+    setGeneratingAI(style);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-description", {
+        body: { property, style },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      if (data?.description) {
+        setEditValues((prev) => ({ ...prev, description: data.description }));
+        setEditingField("description");
+        setShowAIOptions(false);
+        toast.success("Descrição gerada com IA! Revise e salve.");
+      }
+    } catch (e: any) {
+      console.error("AI description error:", e);
+      toast.error(e?.message || "Erro ao gerar descrição com IA");
+    } finally {
+      setGeneratingAI(null);
+    }
+  };
 
   // -- Share --
   const handleShare = async () => {
@@ -393,32 +427,96 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
             </div>
           </div>
 
-          {/* Descrição - editable */}
+          {/* Descrição - editable + AI */}
           <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs font-bold text-gray-800 uppercase tracking-wider">Descrição</p>
-              {editingField !== "description" && (
-                <button onClick={() => startEdit("description", property.description || "")} className="text-xs text-amber-500 hover:text-amber-600 flex items-center gap-1 font-semibold">
-                  <Pencil className="w-3 h-3" /> Editar
-                </button>
-              )}
+              <div className="flex items-center gap-1.5">
+                {editingField !== "description" && (
+                  <>
+                    <button
+                      onClick={() => setShowAIOptions(!showAIOptions)}
+                      className={cn(
+                        "text-xs flex items-center gap-1 font-semibold px-2 py-1 rounded-lg border transition-colors",
+                        showAIOptions
+                          ? "text-purple-700 bg-purple-100 border-purple-300"
+                          : "text-purple-500 bg-purple-50 border-purple-200 hover:bg-purple-100"
+                      )}
+                      disabled={!!generatingAI}
+                    >
+                      {generatingAI ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                      Gerar com IA
+                    </button>
+                    <button onClick={() => startEdit("description", property.description || "")} className="text-xs text-amber-500 hover:text-amber-600 flex items-center gap-1 font-semibold">
+                      <Pencil className="w-3 h-3" /> Editar
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
+
+            {/* AI Style Options */}
+            {showAIOptions && editingField !== "description" && (
+              <div className="mb-3 grid grid-cols-2 gap-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                {aiStyles.map((style) => (
+                  <button
+                    key={style.id}
+                    onClick={() => handleGenerateDescription(style.id)}
+                    disabled={!!generatingAI}
+                    className={cn(
+                      "flex items-center gap-2 px-3 py-2.5 rounded-lg border text-xs font-semibold transition-all",
+                      style.color,
+                      generatingAI === style.id && "opacity-70 cursor-wait"
+                    )}
+                  >
+                    {generatingAI === style.id ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <style.icon className="w-3.5 h-3.5" />
+                    )}
+                    {style.label}
+                  </button>
+                ))}
+              </div>
+            )}
+
             {editingField === "description" ? (
               <div className="space-y-2">
                 <textarea
                   value={editValues.description ?? property.description ?? ""}
                   onChange={(e) => setEditValues((prev) => ({ ...prev, description: e.target.value }))}
-                  className="w-full bg-white border border-amber-300 rounded-lg px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-400 min-h-[80px]"
+                  className="w-full bg-white border border-amber-300 rounded-lg px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-400 min-h-[120px]"
                   autoFocus
                 />
-                <div className="flex gap-1.5">
+                <div className="flex gap-1.5 flex-wrap">
                   <button onClick={() => saveEdit("description")} className="px-3 py-1.5 rounded-lg bg-emerald-500 text-white text-xs font-bold hover:bg-emerald-600 transition-colors">Salvar</button>
                   <button onClick={cancelEdit} className="px-3 py-1.5 rounded-lg bg-gray-200 text-gray-600 text-xs font-bold hover:bg-gray-300 transition-colors">Cancelar</button>
+                  <div className="flex-1" />
+                  {aiStyles.map((style) => (
+                    <button
+                      key={style.id}
+                      onClick={() => handleGenerateDescription(style.id)}
+                      disabled={!!generatingAI}
+                      className={cn(
+                        "flex items-center gap-1 px-2 py-1.5 rounded-lg border text-[10px] font-semibold transition-all",
+                        style.color,
+                        generatingAI === style.id && "opacity-70 cursor-wait"
+                      )}
+                      title={`Regerar: ${style.label}`}
+                    >
+                      {generatingAI === style.id ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : (
+                        <style.icon className="w-3 h-3" />
+                      )}
+                      <span className="hidden sm:inline">{style.label}</span>
+                    </button>
+                  ))}
                 </div>
               </div>
             ) : (
               <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
-                {property.description || "Sem descrição. Clique em editar para adicionar."}
+                {property.description || "Sem descrição. Clique em editar ou gere com IA."}
               </p>
             )}
           </div>
