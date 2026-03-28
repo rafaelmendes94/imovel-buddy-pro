@@ -605,22 +605,51 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
             <p className="text-sm font-bold text-gray-800 uppercase tracking-wider mb-4 flex items-center gap-1.5">
               <DollarSign className="w-4 h-4 text-amber-500" /> Valor e Condições de Pagamento
             </p>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {/* Valores */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Valor do Imóvel</label>
+                <div className="flex items-center gap-1">
+                  <span className="text-sm font-bold text-gray-500">R$</span>
+                  <EditableField field="price" value={property.price} label="valor" type="number" />
+                </div>
+              </div>
               <div>
                 <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Valor Promocional</label>
-                <EditableField field="priceInstallment" value={property.priceInstallment || 0} label="valor promocional" type="number" />
+                <div className="flex items-center gap-1">
+                  <span className="text-sm font-bold text-gray-500">R$</span>
+                  <EditableField field="priceInstallment" value={property.priceInstallment || 0} label="valor promocional" type="number" />
+                </div>
               </div>
-              <div>
-                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Comissão (%)</label>
-                <EditableField field="commission" value={property.commission || 0} label="comissão" type="number" />
-              </div>
-              <div>
-                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Bônus (R$)</label>
-                <EditableField field="bonus" value={property.bonus || 0} label="bônus" type="number" />
-              </div>
-              <div>
-                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Validade Bônus</label>
-                <EditableField field="bonusExpiry" value={property.bonusExpiry || ""} label="validade bônus" />
+            </div>
+
+            {/* Corretagem */}
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 block flex items-center gap-1">
+                <Percent className="w-3 h-3" /> Corretagem
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div>
+                  <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Comissão (%)</label>
+                  <EditableField field="commission" value={property.commission || 0} label="comissão" type="number" />
+                </div>
+                <div>
+                  <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Valor Comissão</label>
+                  <span className="text-sm font-semibold text-emerald-700">
+                    R$ {formatCurrency(property.price * (property.commission || 0) / 100).replace("R$\u00a0", "")}
+                  </span>
+                </div>
+                <div>
+                  <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Bônus</label>
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm font-bold text-gray-500">R$</span>
+                    <EditableField field="bonus" value={property.bonus || 0} label="bônus" type="number" />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Validade Bônus</label>
+                  <EditableField field="bonusExpiry" value={property.bonusExpiry || ""} label="validade bônus" />
+                </div>
               </div>
             </div>
 
