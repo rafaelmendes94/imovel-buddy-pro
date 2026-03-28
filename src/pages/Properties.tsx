@@ -1237,6 +1237,8 @@ function DealThermometer({ dealScore, manualLabel }: { dealScore: DealScore; man
   );
 }
 
+const cleanEmpreendimentoName = (name: string) => name.replace(/^(Ed\.\s*|Cond\.\s*|Edifício\s*|Condomínio\s*)/i, "").trim();
+
 // ---- PropertyRow (redesigned) ----
 function PropertyRow({
   property, onStatusChange, onSelect, isFavorited, onToggleFavorite, onFilterByTitle, onFilterByCondition, onFilterByOwner, onPriceChange, allProperties, onDealLabelChange, onNavigateToValuation, onNavigateToContract, onQuickUpdate,
