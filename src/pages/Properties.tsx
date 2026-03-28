@@ -386,36 +386,36 @@ export default function Properties() {
           <button
             onClick={() => setFilterFreshness(filterFreshness === "60" ? "all" : "60")}
             className={cn(
-              "bg-card border rounded-xl p-4 text-left transition-all hover:shadow-md group",
+              "bg-card border rounded-xl p-2 sm:p-4 text-left transition-all hover:shadow-md group",
               filterFreshness === "60" ? "border-amber-500 ring-2 ring-amber-500/20" : "border-border"
             )}
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-amber-500">Atenção (31-60 dias)</p>
-                <p className="text-3xl font-black text-foreground mt-1">{freshnessStats.within60}</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">precisam de revisão</p>
+                <p className="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider text-amber-500">Atenção (31-60d)</p>
+                <p className="text-xl sm:text-3xl font-black text-foreground mt-0.5 sm:mt-1">{freshnessStats.within60}</p>
+                <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5 hidden sm:block">precisam de revisão</p>
               </div>
-              <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
-                <CalendarClock className="w-5 h-5 text-amber-500" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                <CalendarClock className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500" />
               </div>
             </div>
           </button>
           <button
             onClick={() => setFilterFreshness(filterFreshness === "90" ? "all" : "90")}
             className={cn(
-              "bg-card border rounded-xl p-4 text-left transition-all hover:shadow-md group",
+              "bg-card border rounded-xl p-2 sm:p-4 text-left transition-all hover:shadow-md group",
               filterFreshness === "90" ? "border-destructive ring-2 ring-destructive/20" : "border-border"
             )}
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-destructive">Desatualizados (+90 dias)</p>
-                <p className="text-3xl font-black text-foreground mt-1">{freshnessStats.over90}</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">ação urgente necessária</p>
+                <p className="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider text-destructive">Desatualizados (+90d)</p>
+                <p className="text-xl sm:text-3xl font-black text-foreground mt-0.5 sm:mt-1">{freshnessStats.over90}</p>
+                <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5 hidden sm:block">ação urgente</p>
               </div>
-              <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center">
-                <AlertTriangle className="w-5 h-5 text-destructive" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-destructive/10 flex items-center justify-center">
+                <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-destructive" />
               </div>
             </div>
           </button>
