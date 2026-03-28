@@ -404,6 +404,7 @@ export default function Properties() {
             <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6" />
             <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Relatórios</span>
           </Link>
+        </div>
 
         {/* Freshness Cards */}
         <div className="grid grid-cols-3 gap-2 sm:gap-3">
