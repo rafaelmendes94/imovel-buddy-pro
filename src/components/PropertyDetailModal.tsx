@@ -599,7 +599,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                         toast.success(isActive ? `"${item}" removido` : `"${item}" adicionado`);
                       }}
                       className={cn(
-                        "px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all",
+                        "px-3 py-1.5 rounded-lg text-xs font-bold border transition-all",
                         isActive
                           ? "bg-amber-50 text-amber-700 border-amber-300"
                           : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50"
