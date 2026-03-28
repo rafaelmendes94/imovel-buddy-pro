@@ -173,6 +173,7 @@ export const properties: Property[] = [
     id: "4",
     title: "Sala Comercial Centro Capão",
     address: "Av. Paraguassú, 800",
+    neighborhood: "Centro",
     city: "Capão da Canoa",
     type: "Comercial",
     status: "Alugado",
