@@ -875,7 +875,7 @@ function PropertyCard({
 
 // ---- PropertyRow (enhanced) ----
 function PropertyRow({
-  property, onStatusChange, onSelect, isFavorited, onToggleFavorite, onFilterByTitle, onFilterByCondition,
+  property, onStatusChange, onSelect, isFavorited, onToggleFavorite, onFilterByTitle, onFilterByCondition, onFilterByOwner,
 }: {
   property: Property;
   onStatusChange: (id: string, status: Property["status"]) => void;
