@@ -625,18 +625,41 @@ export default function Properties() {
           )}
         </div>
 
-        {/* Results info */}
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            {filtered.length} imóvel(is) encontrado(s)
-            {favoriteIds.length > 0 && <span className="ml-3 text-accent font-medium">♥ {favoriteIds.length} favorito(s)</span>}
-          </p>
+        {/* Quick Sort Bar */}
+        <div className="flex items-center gap-2 flex-wrap bg-card border border-border rounded-lg px-3 py-2">
+          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mr-1">Ordenar:</span>
+          {([
+            { key: "default", label: "Padrão" },
+            { key: "price-desc", label: "Maior Valor" },
+            { key: "price-asc", label: "Menor Valor" },
+            { key: "name-asc", label: "A → Z Edifício" },
+            { key: "name-desc", label: "Z → A Edifício" },
+            { key: "updated", label: "Últ. Atualizados" },
+            { key: "created", label: "Últ. Incluídos" },
+          ] as { key: typeof sortBy; label: string }[]).map((s) => (
+            <button
+              key={s.key}
+              onClick={() => setSortBy(s.key)}
+              className={cn(
+                "px-2.5 py-1 rounded-md text-[11px] font-semibold transition-colors",
+                sortBy === s.key
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground hover:bg-secondary"
+              )}
+            >
+              {s.label}
+            </button>
+          ))}
+          <span className="ml-auto text-sm text-muted-foreground">
+            {sorted.length} imóvel(is)
+            {favoriteIds.length > 0 && <span className="ml-3 text-accent font-medium">♥ {favoriteIds.length}</span>}
+          </span>
         </div>
 
         {/* Content */}
         {view === "grid" ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-5">
-            {filtered.map((property) => (
+            {sorted.map((property) => (
               <PropertyCard
                 key={property.id}
                 property={property}
