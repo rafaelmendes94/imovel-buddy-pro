@@ -295,7 +295,7 @@ export default function Properties() {
       if (activeCategory === "casas" && p.type !== "Casa") return false;
       if (activeCategory === "terrenos" && p.type !== "Terreno") return false;
       if (activeCategory === "lotes" && p.type !== "Lote") return false;
-      if (activeCategory === "lotes-cond" && p.type !== "Lote Condomínio") return false;
+      
       if (activeCategory === "condominios" && p.type !== "Condomínio") return false;
       if (activeCategory === "decorados" && !p.decorated) return false;
       if (activeCategory === "vista-mar" && !p.seaView) return false;
