@@ -12,6 +12,7 @@ import { formatCurrency, type Property } from "@/data/mockData";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { DraggableFieldGrid, type FieldConfig } from "./DraggableFieldGrid";
 
 interface PropertyDetailModalProps {
   property: Property | null;
@@ -555,189 +556,110 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
             );
 
             if (blockId === "identificacao") {
+              const idFields: FieldConfig[] = [
+                { id: "tipo", label: "Tipo", render: () => editingBlock === "identificacao" ? (
+                  <select value={property.type} onChange={(e) => { if (onUpdateProperty) { updateProperty({ ...property, type: e.target.value as Property["type"] }); toast.success("Tipo atualizado!"); } }} className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+                    {(["Apartamento", "Casa", "Comercial", "Terreno", "Lote", "Condomínio"] as const).map(t => (<option key={t} value={t}>{t}</option>))}
+                  </select>
+                ) : <span className="text-sm font-medium text-foreground">{property.type}</span> },
+                { id: "empreendimento", label: "Empreendimento", render: () => editingBlock === "identificacao" ? (
+                  <div className="w-full space-y-1.5">
+                    <select value={property.empreendimento || ""} onChange={(e) => { if (!onUpdateProperty) return; const selected = e.target.value; if (!selected) { updateProperty({ ...property, empreendimento: undefined }); toast.success("Empreendimento removido"); return; } const ref = allProperties.find(p => p.empreendimento === selected && p.id !== property.id); if (ref) { updateProperty({ ...property, empreendimento: selected, address: ref.address || property.address, city: ref.city || property.city, neighborhood: ref.neighborhood || property.neighborhood, infraestrutura: ref.infraestrutura || property.infraestrutura, posicaoPredio: property.posicaoPredio || ref.posicaoPredio, posicaoSolar: property.posicaoSolar || ref.posicaoSolar }); toast.success(`Dados do empreendimento "${selected}" aplicados!`); } else { updateProperty({ ...property, empreendimento: selected }); toast.success("Empreendimento atualizado!"); } }} className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+                      <option value="">Selecione</option>
+                      {[...new Set(allProperties.map(p => p.empreendimento).filter(Boolean))].sort().map(emp => (<option key={emp} value={emp}>{emp}</option>))}
+                    </select>
+                    <input type="text" placeholder="Ou digite um novo..." className="w-full px-3 py-1.5 rounded-lg border border-input text-xs bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring" onKeyDown={(e) => { if (e.key === "Enter" && onUpdateProperty) { const val = (e.target as HTMLInputElement).value.trim(); if (val) { updateProperty({ ...property, empreendimento: val }); toast.success(`Empreendimento "${val}" definido!`); (e.target as HTMLInputElement).value = ""; } } }} />
+                  </div>
+                ) : <span className="text-sm font-medium text-foreground">{property.empreendimento || "—"}</span> },
+                { id: "bairro", label: "Bairro", render: () => editingBlock === "identificacao" ? <EditableField field="neighborhood" value={property.neighborhood || ""} label="bairro" /> : <span className="text-sm font-medium text-foreground">{property.neighborhood || "—"}</span> },
+                { id: "cidade", label: "Cidade", render: () => editingBlock === "identificacao" ? <EditableField field="city" value={property.city || ""} label="cidade" /> : <span className="text-sm font-medium text-foreground">{property.city || "—"}</span> },
+                { id: "endereco", label: "Endereço Completo", colSpan: 2, render: () => editingBlock === "identificacao" ? <EditableField field="address" value={property.address || ""} label="endereço" /> : <span className="text-sm font-medium text-foreground">{property.address || "—"}</span> },
+                { id: "areaTotal", label: "Área Total", render: () => editingBlock === "identificacao" ? <span className="flex items-center gap-1"><EditableField field="area" value={property.area || 0} label="área total" type="number" /><span className="text-[10px] text-muted-foreground">m²</span></span> : <span className="text-sm font-medium text-foreground">{property.area ? `${property.area}m²` : "—"}</span> },
+                { id: "areaPriv", label: "Área Privativa", render: () => editingBlock === "identificacao" ? <span className="flex items-center gap-1"><EditableField field="privateArea" value={property.privateArea || 0} label="área privativa" type="number" /><span className="text-[10px] text-muted-foreground">m²</span></span> : <span className="text-sm font-medium text-foreground">{property.privateArea ? `${property.privateArea}m²` : "—"}</span> },
+                { id: "unidade", label: "Unidade/Apt", render: () => editingBlock === "identificacao" ? <EditableField field="unitNumber" value={property.unitNumber || ""} label="unidade" /> : <span className="text-sm font-medium text-foreground">{property.unitNumber || "—"}</span> },
+                { id: "box", label: "Box", render: () => editingBlock === "identificacao" ? <EditableField field="boxNumber" value={property.boxNumber || ""} label="box" /> : <span className="text-sm font-medium text-foreground">{property.boxNumber || "—"}</span> },
+                { id: "quadra", label: "Quadra", render: () => editingBlock === "identificacao" ? <EditableField field="quadra" value={property.quadra || ""} label="quadra" /> : <span className="text-sm font-medium text-foreground">{property.quadra || "—"}</span> },
+                { id: "lote", label: "Lote", render: () => editingBlock === "identificacao" ? <EditableField field="lote" value={property.lote || ""} label="lote" /> : <span className="text-sm font-medium text-foreground">{property.lote || "—"}</span> },
+              ];
+
               return blockWrapper("identificacao",
-                <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
+                <div className="bg-muted/50 rounded-xl p-5 border border-border">
                   <div className="flex items-center justify-between mb-4">
-                    <p className="text-sm font-bold text-gray-800 uppercase tracking-wider flex items-center gap-1.5">
-                      <span className="cursor-grab active:cursor-grabbing mr-1 text-gray-300 hover:text-gray-500">⠿</span>
+                    <p className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                      <span className="cursor-grab active:cursor-grabbing mr-1 text-muted-foreground/50 hover:text-muted-foreground">⠿</span>
                       <Hash className="w-4 h-4 text-amber-500" /> Identificação
                     </p>
-                    <button onClick={() => setEditingBlock(editingBlock === "identificacao" ? null : "identificacao")} className={cn("p-1.5 rounded-lg transition-colors", editingBlock === "identificacao" ? "bg-amber-100 text-amber-600" : "hover:bg-gray-200 text-gray-400")}>
+                    <button onClick={() => setEditingBlock(editingBlock === "identificacao" ? null : "identificacao")} className={cn("p-1.5 rounded-lg transition-colors", editingBlock === "identificacao" ? "bg-amber-100 text-amber-600" : "hover:bg-muted text-muted-foreground")}>
                       <Pencil className="w-3.5 h-3.5" />
                     </button>
                   </div>
-                  {editingBlock === "identificacao" ? (
-                    <>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                        <div>
-                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Tipo</label>
-                          <select value={property.type} onChange={(e) => { if (onUpdateProperty) { updateProperty({ ...property, type: e.target.value as Property["type"] }); toast.success("Tipo atualizado!"); } }} className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400">
-                            {(["Apartamento", "Casa", "Comercial", "Terreno", "Lote", "Condomínio"] as const).map(t => (<option key={t} value={t}>{t}</option>))}
-                          </select>
-                        </div>
-                        <div>
-                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Empreendimento</label>
-                          <select value={property.empreendimento || ""} onChange={(e) => { if (!onUpdateProperty) return; const selected = e.target.value; if (!selected) { updateProperty({ ...property, empreendimento: undefined }); toast.success("Empreendimento removido"); return; } const ref = allProperties.find(p => p.empreendimento === selected && p.id !== property.id); if (ref) { updateProperty({ ...property, empreendimento: selected, address: ref.address || property.address, city: ref.city || property.city, neighborhood: ref.neighborhood || property.neighborhood, infraestrutura: ref.infraestrutura || property.infraestrutura, posicaoPredio: property.posicaoPredio || ref.posicaoPredio, posicaoSolar: property.posicaoSolar || ref.posicaoSolar }); toast.success(`Dados do empreendimento "${selected}" aplicados!`); } else { updateProperty({ ...property, empreendimento: selected }); toast.success("Empreendimento atualizado!"); } }} className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400">
-                            <option value="">Selecione ou digite novo</option>
-                            {[...new Set(allProperties.map(p => p.empreendimento).filter(Boolean))].sort().map(emp => (<option key={emp} value={emp}>{emp}</option>))}
-                          </select>
-                          <input type="text" placeholder="Ou digite um novo..." className="w-full mt-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400" onKeyDown={(e) => { if (e.key === "Enter" && onUpdateProperty) { const val = (e.target as HTMLInputElement).value.trim(); if (val) { updateProperty({ ...property, empreendimento: val }); toast.success(`Empreendimento "${val}" definido!`); (e.target as HTMLInputElement).value = ""; } } }} />
-                        </div>
-                        <div>
-                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Bairro</label>
-                          <EditableField field="neighborhood" value={property.neighborhood || ""} label="bairro" />
-                        </div>
-                        <div>
-                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Cidade</label>
-                          <EditableField field="city" value={property.city || ""} label="cidade" />
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
-                        <div className="col-span-2">
-                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Endereço Completo</label>
-                          <EditableField field="address" value={property.address || ""} label="endereço" />
-                        </div>
-                        <div>
-                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Área Total</label>
-                          <EditableField field="area" value={property.area || 0} label="área total" type="number" />
-                          <span className="text-[10px] text-gray-400">m²</span>
-                        </div>
-                        <div>
-                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Área Privativa</label>
-                          <EditableField field="privateArea" value={property.privateArea || 0} label="área privativa" type="number" />
-                          <span className="text-[10px] text-gray-400">m²</span>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
-                        <div>
-                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Unidade/Apt</label>
-                          <EditableField field="unitNumber" value={property.unitNumber || ""} label="unidade" />
-                        </div>
-                        <div>
-                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Box</label>
-                          <EditableField field="boxNumber" value={property.boxNumber || ""} label="box" />
-                        </div>
-                        <div>
-                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Quadra</label>
-                          <EditableField field="quadra" value={property.quadra || ""} label="quadra" />
-                        </div>
-                        <div>
-                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Lote</label>
-                          <EditableField field="lote" value={property.lote || ""} label="lote" />
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      <div><span className="text-[10px] text-gray-400 block">Tipo</span><span className="text-sm font-medium text-gray-800">{property.type}</span></div>
-                      <div><span className="text-[10px] text-gray-400 block">Empreendimento</span><span className="text-sm font-medium text-gray-800">{property.empreendimento || "—"}</span></div>
-                      <div><span className="text-[10px] text-gray-400 block">Bairro</span><span className="text-sm font-medium text-gray-800">{property.neighborhood || "—"}</span></div>
-                      <div><span className="text-[10px] text-gray-400 block">Cidade</span><span className="text-sm font-medium text-gray-800">{property.city || "—"}</span></div>
-                      <div className="col-span-2"><span className="text-[10px] text-gray-400 block">Endereço</span><span className="text-sm font-medium text-gray-800">{property.address || "—"}</span></div>
-                      <div><span className="text-[10px] text-gray-400 block">Área Total</span><span className="text-sm font-medium text-gray-800">{property.area ? `${property.area}m²` : "—"}</span></div>
-                      <div><span className="text-[10px] text-gray-400 block">Área Privativa</span><span className="text-sm font-medium text-gray-800">{property.privateArea ? `${property.privateArea}m²` : "—"}</span></div>
-                      <div><span className="text-[10px] text-gray-400 block">Unidade</span><span className="text-sm font-medium text-gray-800">{property.unitNumber || "—"}</span></div>
-                      <div><span className="text-[10px] text-gray-400 block">Box</span><span className="text-sm font-medium text-gray-800">{property.boxNumber || "—"}</span></div>
-                      <div><span className="text-[10px] text-gray-400 block">Quadra</span><span className="text-sm font-medium text-gray-800">{property.quadra || "—"}</span></div>
-                      <div><span className="text-[10px] text-gray-400 block">Lote</span><span className="text-sm font-medium text-gray-800">{property.lote || "—"}</span></div>
-                    </div>
-                  )}
+                  <DraggableFieldGrid storageKey="fields-identificacao" fields={idFields} editing={editingBlock === "identificacao"} />
                 </div>
               );
             }
 
             if (blockId === "valor") {
+              const isEditingValor = editingBlock === "valor";
+              const valorFields: FieldConfig[] = [
+                { id: "price", label: "Valor do Imóvel", render: () => isEditingValor ? <span className="flex items-center gap-1"><span className="text-sm font-bold text-muted-foreground">R$</span><EditableField field="price" value={property.price} label="valor" type="number" /></span> : <span className="text-sm font-bold text-foreground">{formatCurrency(property.price)}</span> },
+                { id: "priceInstallment", label: "Valor Promocional", render: () => isEditingValor ? <span className="flex items-center gap-1"><span className="text-sm font-bold text-muted-foreground">R$</span><EditableField field="priceInstallment" value={property.priceInstallment || 0} label="valor promocional" type="number" /></span> : <span className="text-sm font-medium text-foreground">{property.priceInstallment ? formatCurrency(property.priceInstallment) : "—"}</span> },
+                { id: "commission", label: "Comissão (%)", render: () => isEditingValor ? <EditableField field="commission" value={property.commission || 0} label="comissão" type="number" /> : <span className="text-sm font-medium text-foreground">{property.commission ? `${property.commission}%` : "—"}</span> },
+                { id: "commissionValue", label: "Valor Comissão", render: () => <span className="text-sm font-semibold text-emerald-700">{formatCurrency(property.price * (property.commission || 0) / 100)}</span> },
+                { id: "bonus", label: "Bônus", render: () => isEditingValor ? <span className="flex items-center gap-1"><span className="text-sm font-bold text-muted-foreground">R$</span><EditableField field="bonus" value={property.bonus || 0} label="bônus" type="number" /></span> : <span className="text-sm font-medium text-foreground">{property.bonus ? formatCurrency(property.bonus) : "—"}</span> },
+                { id: "bonusExpiry", label: "Validade Bônus", render: () => isEditingValor ? <EditableField field="bonusExpiry" value={property.bonusExpiry || ""} label="validade bônus" /> : <span className="text-sm font-medium text-foreground">{property.bonusExpiry || "—"}</span> },
+              ];
+
               return blockWrapper("valor",
-                <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
+                <div className="bg-muted/50 rounded-xl p-5 border border-border">
                   <div className="flex items-center justify-between mb-4">
-                    <p className="text-sm font-bold text-gray-800 uppercase tracking-wider flex items-center gap-1.5">
-                      <span className="cursor-grab active:cursor-grabbing mr-1 text-gray-300 hover:text-gray-500">⠿</span>
-                      <DollarSign className="w-4 h-4 text-amber-500" /> Valor e Condições de Pagamento
+                    <p className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                      <span className="cursor-grab active:cursor-grabbing mr-1 text-muted-foreground/50 hover:text-muted-foreground">⠿</span>
+                      <DollarSign className="w-4 h-4 text-amber-500" /> Valor e Condições
                     </p>
-                    <button onClick={() => setEditingBlock(editingBlock === "valor" ? null : "valor")} className={cn("p-1.5 rounded-lg transition-colors", editingBlock === "valor" ? "bg-amber-100 text-amber-600" : "hover:bg-gray-200 text-gray-400")}>
+                    <button onClick={() => setEditingBlock(isEditingValor ? null : "valor")} className={cn("p-1.5 rounded-lg transition-colors", isEditingValor ? "bg-amber-100 text-amber-600" : "hover:bg-muted text-muted-foreground")}>
                       <Pencil className="w-3.5 h-3.5" />
                     </button>
                   </div>
-                  {editingBlock === "valor" ? (
+                  <DraggableFieldGrid storageKey="fields-valor" fields={valorFields} editing={isEditingValor} />
+
+                  {isEditingValor && (
                     <>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                        <div>
-                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Valor do Imóvel</label>
-                          <div className="flex items-center gap-1">
-                            <span className="text-sm font-bold text-gray-500">R$</span>
-                            <EditableField field="price" value={property.price} label="valor" type="number" />
-                          </div>
-                        </div>
-                        <div>
-                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Valor Promocional</label>
-                          <div className="flex items-center gap-1">
-                            <span className="text-sm font-bold text-gray-500">R$</span>
-                            <EditableField field="priceInstallment" value={property.priceInstallment || 0} label="valor promocional" type="number" />
-                          </div>
-                        </div>
-                      </div>
-                      <div className="mt-4 pt-4 border-t border-gray-200">
-                        <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 block flex items-center gap-1">
-                          <Percent className="w-3 h-3" /> Corretagem
-                        </label>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                          <div>
-                            <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Comissão (%)</label>
-                            <EditableField field="commission" value={property.commission || 0} label="comissão" type="number" />
-                          </div>
-                          <div>
-                            <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Valor Comissão</label>
-                            <span className="text-sm font-semibold text-emerald-700">R$ {formatCurrency(property.price * (property.commission || 0) / 100).replace("R$\u00a0", "")}</span>
-                          </div>
-                          <div>
-                            <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Bônus</label>
-                            <div className="flex items-center gap-1">
-                              <span className="text-sm font-bold text-gray-500">R$</span>
-                              <EditableField field="bonus" value={property.bonus || 0} label="bônus" type="number" />
-                            </div>
-                          </div>
-                          <div>
-                            <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Validade Bônus</label>
-                            <EditableField field="bonusExpiry" value={property.bonusExpiry || ""} label="validade bônus" />
-                          </div>
-                        </div>
-                      </div>
-                      <div className="mt-4">
-                        <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 block flex items-center gap-1">
+                      <div className="mt-4 pt-4 border-t border-border">
+                        <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2 block flex items-center gap-1">
                           <CreditCard className="w-3 h-3" /> Condições de Pagamento
                         </label>
-                        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Parcelamento Direto</p>
+                        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Parcelamento Direto</p>
                         <div className="flex flex-wrap gap-1.5 mb-3">
                           {["12x", "24x", "36x", "48x", "60x", "72x", "84x", "100x", "120x"].map((cond) => {
                             const isActive = property.paymentConditions?.includes(cond);
                             return (
                               <button key={cond} onClick={() => { if (!onUpdateProperty) return; const current = property.paymentConditions || []; const updated = isActive ? current.filter(c => c !== cond) : [...current, cond]; updateProperty({ ...property, paymentConditions: updated }); toast.success(isActive ? `"${cond}" removido` : `"${cond}" adicionado`); }}
-                                className={cn("px-3 py-1.5 rounded-lg text-xs font-bold border transition-all", isActive ? "bg-emerald-50 text-emerald-700 border-emerald-300" : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50")}>{cond}</button>
+                                className={cn("px-3 py-1.5 rounded-lg text-xs font-bold border transition-all", isActive ? "bg-emerald-50 text-emerald-700 border-emerald-300" : "bg-background text-muted-foreground border-border hover:bg-muted")}>{cond}</button>
                             );
                           })}
                         </div>
-                        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Outras Condições</p>
+                        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Outras Condições</p>
                         <div className="flex flex-wrap gap-1.5">
                           {["Financiamento Bancário", "Dação de Imóvel", "Dação de Automóvel", "Permuta", "Plano Safra", "À Vista", "FGTS"].map((cond) => {
                             const isActive = property.paymentConditions?.includes(cond);
                             return (
                               <button key={cond} onClick={() => { if (!onUpdateProperty) return; const current = property.paymentConditions || []; const updated = isActive ? current.filter(c => c !== cond) : [...current, cond]; updateProperty({ ...property, paymentConditions: updated }); toast.success(isActive ? `"${cond}" removido` : `"${cond}" adicionado`); }}
-                                className={cn("px-3 py-1.5 rounded-lg text-xs font-bold border transition-all", isActive ? "bg-blue-50 text-blue-700 border-blue-300" : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50")}>{cond}</button>
+                                className={cn("px-3 py-1.5 rounded-lg text-xs font-bold border transition-all", isActive ? "bg-blue-50 text-blue-700 border-blue-300" : "bg-background text-muted-foreground border-border hover:bg-muted")}>{cond}</button>
                             );
                           })}
                         </div>
                       </div>
                       <div className="flex items-center gap-4 mt-4">
                         <div className="flex items-center gap-3">
-                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Aceita Permuta</label>
+                          <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider whitespace-nowrap">Aceita Permuta</label>
                           <button onClick={() => { if (onUpdateProperty) { updateProperty({ ...property, acceptsExchange: !property.acceptsExchange }); toast.success(property.acceptsExchange ? "Permuta desativada" : "Permuta ativada"); } }}
                             className={cn("w-10 h-6 rounded-full transition-colors relative", property.acceptsExchange ? "bg-emerald-500" : "bg-gray-300")}>
                             <span className={cn("absolute w-4 h-4 rounded-full bg-white top-1 transition-all shadow-sm", property.acceptsExchange ? "left-5" : "left-1")} />
                           </button>
                         </div>
                       </div>
-                      <div className="mt-4 pt-4 border-t border-gray-200">
-                        <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 block flex items-center gap-1">
+                      <div className="mt-4 pt-4 border-t border-border">
+                        <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2 block flex items-center gap-1">
                           <Flame className="w-3 h-3 text-orange-500" /> Classificação de Negócio
                         </label>
                         <div className="flex flex-wrap gap-2">
@@ -746,36 +668,31 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                             const styles: Record<string, string> = { "Oferta": "text-emerald-700 bg-emerald-50 border-emerald-300 ring-emerald-400", "Bom Negócio": "text-emerald-600 bg-emerald-50 border-emerald-200 ring-emerald-300", "Normal": "text-amber-700 bg-amber-50 border-amber-300 ring-amber-400", "Acima da Média": "text-red-600 bg-red-50 border-red-300 ring-red-400" };
                             return (
                               <button key={lbl} onClick={() => { const newLabel = isSelected ? null : lbl; if (onUpdateProperty) { updateProperty({ ...property, dealLabel: newLabel }); } toast.success(newLabel ? `Classificado como "${newLabel}"` : "Classificação removida"); }}
-                                className={cn("px-4 py-2 rounded-lg text-sm font-bold border-2 transition-all", isSelected ? styles[lbl] + " ring-2 ring-offset-1 shadow-sm" : "text-gray-500 bg-white border-gray-200 hover:bg-gray-50")}>
+                                className={cn("px-4 py-2 rounded-lg text-sm font-bold border-2 transition-all", isSelected ? styles[lbl] + " ring-2 ring-offset-1 shadow-sm" : "text-muted-foreground bg-background border-border hover:bg-muted")}>
                                 {lbl === "Oferta" && "🏷️ "}{lbl === "Bom Negócio" && "🏷️ "}{lbl}
                               </button>
                             );
                           })}
                         </div>
                         {property.dealLabel && (
-                          <p className="text-[11px] text-gray-500 mt-2 flex items-center gap-1">
-                            <TrendingUp className="w-3 h-3" /> Classificação: <span className="font-bold text-gray-700">{property.dealLabel}</span>
+                          <p className="text-[11px] text-muted-foreground mt-2 flex items-center gap-1">
+                            <TrendingUp className="w-3 h-3" /> Classificação: <span className="font-bold text-foreground">{property.dealLabel}</span>
                           </p>
                         )}
                       </div>
                     </>
-                  ) : (
-                    <div className="space-y-2">
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                        <div><span className="text-[10px] text-gray-400 block">Valor</span><span className="text-sm font-bold text-gray-800">{formatCurrency(property.price)}</span></div>
-                        <div><span className="text-[10px] text-gray-400 block">Valor Promocional</span><span className="text-sm font-medium text-gray-800">{property.priceInstallment ? formatCurrency(property.priceInstallment) : "—"}</span></div>
-                        <div><span className="text-[10px] text-gray-400 block">Comissão</span><span className="text-sm font-medium text-gray-800">{property.commission ? `${property.commission}%` : "—"}</span></div>
-                        <div><span className="text-[10px] text-gray-400 block">Bônus</span><span className="text-sm font-medium text-gray-800">{property.bonus ? formatCurrency(property.bonus) : "—"}</span></div>
-                      </div>
+                  )}
+                  {!isEditingValor && (
+                    <div className="space-y-2 mt-3">
                       {property.paymentConditions && property.paymentConditions.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5 mt-1">
+                        <div className="flex flex-wrap gap-1.5">
                           {property.paymentConditions.map((c) => (
                             <span key={c} className="px-2 py-1 rounded text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">{c}</span>
                           ))}
                         </div>
                       )}
                       {property.dealLabel && (
-                        <p className="text-[11px] text-gray-600 mt-1">Classificação: <span className="font-bold">{property.dealLabel}</span></p>
+                        <p className="text-[11px] text-muted-foreground">Classificação: <span className="font-bold">{property.dealLabel}</span></p>
                       )}
                       {property.acceptsExchange && <span className="text-[11px] font-bold text-orange-600">✓ Aceita Permuta</span>}
                     </div>
@@ -785,208 +702,174 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
             }
 
             if (blockId === "proprietario") {
+              const propFields: FieldConfig[] = [
+                { id: "owner", label: "Proprietário", render: () => editingBlock === "proprietario" ? (
+                  <div className="w-full space-y-1.5">
+                    <select value={property.owner || ""} onChange={(e) => { if (!onUpdateProperty) return; const selectedOwner = e.target.value; if (!selectedOwner) { updateProperty({ ...property, owner: undefined, ownerPhone: undefined, ownerType: undefined }); return; } const ref = allProperties.find(p => p.owner === selectedOwner && p.id !== property.id); if (ref) { updateProperty({ ...property, owner: selectedOwner, ownerPhone: ref.ownerPhone || property.ownerPhone, ownerType: ref.ownerType || property.ownerType }); toast.success(`Dados do proprietário "${selectedOwner}" aplicados!`); } else { updateProperty({ ...property, owner: selectedOwner }); } }} className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+                      <option value="">Selecione</option>
+                      {[...new Set(allProperties.map(p => p.owner).filter(Boolean))].sort().map(owner => (<option key={owner} value={owner}>{owner}</option>))}
+                    </select>
+                    <input type="text" placeholder="Ou digite um novo..." className="w-full px-3 py-1.5 rounded-lg border border-input text-xs bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring" onKeyDown={(e) => { if (e.key === "Enter" && onUpdateProperty) { const val = (e.target as HTMLInputElement).value.trim(); if (val) { updateProperty({ ...property, owner: val }); toast.success(`Proprietário "${val}" definido!`); (e.target as HTMLInputElement).value = ""; } } }} />
+                  </div>
+                ) : <span className="text-sm font-medium text-foreground">{property.owner || "—"}</span> },
+                { id: "ownerPhone", label: "Telefone", render: () => editingBlock === "proprietario" ? <EditableField field="ownerPhone" value={property.ownerPhone || ""} label="telefone" /> : <span className="text-sm font-medium text-foreground">{property.ownerPhone || "—"}</span> },
+                { id: "ownerType", label: "Tipo Proprietário", render: () => editingBlock === "proprietario" ? (
+                  <select value={property.ownerType || ""} onChange={(e) => { if (onUpdateProperty) { updateProperty({ ...property, ownerType: (e.target.value || undefined) as Property["ownerType"] }); toast.success("Tipo atualizado!"); } }} className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+                    <option value="">Selecione</option>
+                    <option value="Particular">Particular</option>
+                    <option value="Construtora">Construtora</option>
+                    <option value="Investidor">Investidor</option>
+                    <option value="Adm Comercial">Adm Comercial</option>
+                    <option value="Exclusividade">Exclusividade</option>
+                  </select>
+                ) : <span className="text-sm font-medium text-foreground">{property.ownerType || "—"}</span> },
+                { id: "keysLocation", label: "Chaves do Imóvel", render: () => editingBlock === "proprietario" ? <EditableField field="keysLocation" value={property.keysLocation || ""} label="chaves" /> : <span className="text-sm font-medium text-foreground">{property.keysLocation || "—"}</span> },
+                { id: "exclusivity", label: "Exclusividade", render: () => editingBlock === "proprietario" ? <EditableField field="exclusivityTerm" value={property.exclusivityTerm || ""} label="exclusividade" /> : <span className="text-sm font-medium text-foreground">{property.exclusivityTerm || "—"}</span> },
+                { id: "broker", label: "Corretor", render: () => editingBlock === "proprietario" ? <EditableField field="broker" value={property.broker} label="corretor" /> : <span className="text-sm font-medium text-foreground">{property.broker}</span> },
+              ];
+
               return blockWrapper("proprietario",
-                <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
+                <div className="bg-muted/50 rounded-xl p-5 border border-border">
                   <div className="flex items-center justify-between mb-4">
-                    <p className="text-sm font-bold text-gray-800 uppercase tracking-wider flex items-center gap-1.5">
-                      <span className="cursor-grab active:cursor-grabbing mr-1 text-gray-300 hover:text-gray-500">⠿</span>
-                      <User className="w-4 h-4 text-amber-500" /> Identificação
+                    <p className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                      <span className="cursor-grab active:cursor-grabbing mr-1 text-muted-foreground/50 hover:text-muted-foreground">⠿</span>
+                      <User className="w-4 h-4 text-amber-500" /> Proprietário
                     </p>
-                    <button onClick={() => setEditingBlock(editingBlock === "proprietario" ? null : "proprietario")} className={cn("p-1.5 rounded-lg transition-colors", editingBlock === "proprietario" ? "bg-amber-100 text-amber-600" : "hover:bg-gray-200 text-gray-400")}>
+                    <button onClick={() => setEditingBlock(editingBlock === "proprietario" ? null : "proprietario")} className={cn("p-1.5 rounded-lg transition-colors", editingBlock === "proprietario" ? "bg-amber-100 text-amber-600" : "hover:bg-muted text-muted-foreground")}>
                       <Pencil className="w-3.5 h-3.5" />
                     </button>
                   </div>
-                  {editingBlock === "proprietario" ? (
-                    <>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div>
-                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block"><User className="w-3 h-3 inline mr-1" />Proprietário</label>
-                          <select value={property.owner || ""} onChange={(e) => { if (!onUpdateProperty) return; const selectedOwner = e.target.value; if (!selectedOwner) { updateProperty({ ...property, owner: undefined, ownerPhone: undefined, ownerType: undefined }); return; } const ref = allProperties.find(p => p.owner === selectedOwner && p.id !== property.id); if (ref) { updateProperty({ ...property, owner: selectedOwner, ownerPhone: ref.ownerPhone || property.ownerPhone, ownerType: ref.ownerType || property.ownerType }); toast.success(`Dados do proprietário "${selectedOwner}" aplicados!`); } else { updateProperty({ ...property, owner: selectedOwner }); } }} className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400">
-                            <option value="">Selecione</option>
-                            {[...new Set(allProperties.map(p => p.owner).filter(Boolean))].sort().map(owner => (<option key={owner} value={owner}>{owner}</option>))}
-                          </select>
-                          <input type="text" placeholder="Ou digite um novo..." className="w-full mt-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400" onKeyDown={(e) => { if (e.key === "Enter" && onUpdateProperty) { const val = (e.target as HTMLInputElement).value.trim(); if (val) { updateProperty({ ...property, owner: val }); toast.success(`Proprietário "${val}" definido!`); (e.target as HTMLInputElement).value = ""; } } }} />
-                        </div>
-                        <div>
-                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block"><Phone className="w-3 h-3 inline mr-1" />Telefone</label>
-                          <EditableField field="ownerPhone" value={property.ownerPhone || ""} label="telefone" />
-                        </div>
-                        <div>
-                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Tipo Proprietário</label>
-                          <select value={property.ownerType || ""} onChange={(e) => { if (onUpdateProperty) { updateProperty({ ...property, ownerType: (e.target.value || undefined) as Property["ownerType"] }); toast.success("Tipo atualizado!"); } }} className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400">
-                            <option value="">Selecione</option>
-                            <option value="Particular">Particular</option>
-                            <option value="Construtora">Construtora</option>
-                            <option value="Investidor">Investidor</option>
-                            <option value="Adm Comercial">Adm Comercial</option>
-                            <option value="Exclusividade">Exclusividade</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block"><Key className="w-3 h-3 inline mr-1" />Chaves do Imóvel</label>
-                          <EditableField field="keysLocation" value={property.keysLocation || ""} label="localização das chaves" />
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-                        <div>
-                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block"><FileCheck className="w-3 h-3 inline mr-1" />Termo de Exclusividade</label>
-                          <EditableField field="exclusivityTerm" value={property.exclusivityTerm || ""} label="termo de exclusividade" />
-                        </div>
-                        <div>
-                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Corretor</label>
-                          <EditableField field="broker" value={property.broker} label="corretor" />
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      <div><span className="text-[10px] text-gray-400 block">Proprietário</span><span className="text-sm font-medium text-gray-800">{property.owner || "—"}</span></div>
-                      <div><span className="text-[10px] text-gray-400 block">Telefone</span><span className="text-sm font-medium text-gray-800">{property.ownerPhone || "—"}</span></div>
-                      <div><span className="text-[10px] text-gray-400 block">Tipo</span><span className="text-sm font-medium text-gray-800">{property.ownerType || "—"}</span></div>
-                      <div><span className="text-[10px] text-gray-400 block">Chaves</span><span className="text-sm font-medium text-gray-800">{property.keysLocation || "—"}</span></div>
-                      <div><span className="text-[10px] text-gray-400 block">Exclusividade</span><span className="text-sm font-medium text-gray-800">{property.exclusivityTerm || "—"}</span></div>
-                      <div><span className="text-[10px] text-gray-400 block">Corretor</span><span className="text-sm font-medium text-gray-800">{property.broker}</span></div>
-                    </div>
-                  )}
+                  <DraggableFieldGrid storageKey="fields-proprietario" fields={propFields} editing={editingBlock === "proprietario"} />
                 </div>
               );
             }
 
             if (blockId === "caracteristicas") {
+              const isEditingCaract = editingBlock === "caracteristicas";
               const allCaracteristicas = [
                 { group: "Terreno / Lote", items: ["Beira Lago", "Beira Rio", "Beira Mar", "Terreno Seco", "Terreno Alagadiço", "Murado", "Cercado", "Esquina", "Frente p/ Rua", "Plano", "Aclive", "Declive", "Aterrado"] },
                 { group: "Documentação", items: ["Escriturado", "Financiável", "Registro de Imóveis", "IPTU em Dia", "Matrícula Atualizada"] },
                 { group: "Estrutura", items: ["Laje", "Pé-Direito Duplo", "Cobertura", "Mezanino", "Varanda", "Sacada", "Lavabo", "Closet", "Suíte Master", "Dependência de Empregada"] },
               ];
 
+              const selectClass = "w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring";
+
+              const caractFields: FieldConfig[] = [
+                { id: "condicao", label: "Condição / Mobília", render: () => isEditingCaract ? (
+                  <select value={property.condicao || ""} onChange={(e) => { if (onUpdateProperty) { const val = (e.target.value || undefined) as Property["condicao"]; updateProperty({ ...property, condicao: val, decorated: val === "Decorado" || val === "Mobiliado" }); toast.success("Condição atualizada!"); } }} className={selectClass}>
+                    <option value="">Selecione</option>
+                    <option value="Mobiliado">🛋️ Mobiliado</option>
+                    <option value="Semi-mobiliado">🪑 Semi-mobiliado</option>
+                    <option value="Vazio">📦 Vazio</option>
+                    <option value="Decorado">🎨 Decorado</option>
+                  </select>
+                ) : <span className="text-sm font-medium text-foreground">{property.condicao || "—"}</span> },
+                { id: "vista", label: "Vista", render: () => isEditingCaract ? (
+                  <select value={property.vista || ""} onChange={(e) => { if (onUpdateProperty) { const val = e.target.value || undefined; updateProperty({ ...property, vista: val, seaView: val === "Mar" || val === "Mar / Lago" }); toast.success("Vista atualizada!"); } }} className={selectClass}>
+                    <option value="">Selecione</option>
+                    <option value="Mar">🌊 Mar</option>
+                    <option value="Lago">💧 Lago</option>
+                    <option value="Mar / Lago">🌊💧 Mar / Lago</option>
+                    <option value="Cidade">🏙️ Cidade</option>
+                    <option value="Parque">🌳 Parque</option>
+                    <option value="Piscina">🏊 Piscina</option>
+                    <option value="Rua">🛣️ Rua</option>
+                    <option value="Interna">🏠 Interna</option>
+                  </select>
+                ) : <span className="text-sm font-medium text-foreground">{property.vista || "—"}</span> },
+                { id: "padrao", label: "Padrão", render: () => isEditingCaract ? (
+                  <select value={property.padrao || ""} onChange={(e) => { if (onUpdateProperty) { updateProperty({ ...property, padrao: (e.target.value || undefined) as Property["padrao"] }); toast.success("Padrão atualizado!"); } }} className={selectClass}>
+                    <option value="">Selecione</option>
+                    <option value="Econômico">Econômico</option>
+                    <option value="Médio Padrão">Médio Padrão</option>
+                    <option value="Alto Padrão">Alto Padrão</option>
+                    <option value="Luxo">Luxo</option>
+                  </select>
+                ) : <span className="text-sm font-medium text-foreground">{property.padrao || "—"}</span> },
+                { id: "posicaoPredio", label: "Posição no Prédio", render: () => isEditingCaract ? (
+                  <select value={property.posicaoPredio || ""} onChange={(e) => { if (onUpdateProperty) { updateProperty({ ...property, posicaoPredio: e.target.value || undefined }); toast.success("Posição atualizada!"); } }} className={selectClass}>
+                    <option value="">Selecione</option>
+                    <option value="Frente">Frente</option>
+                    <option value="Fundos">Fundos</option>
+                    <option value="Lateral Esquerda">Lateral Esquerda</option>
+                    <option value="Lateral Direita">Lateral Direita</option>
+                    <option value="Frente/Lateral">Frente/Lateral</option>
+                    <option value="Fundos/Lateral">Fundos/Lateral</option>
+                  </select>
+                ) : <span className="text-sm font-medium text-foreground">{property.posicaoPredio || "—"}</span> },
+                { id: "posicaoSolar", label: "Posição Solar", render: () => isEditingCaract ? (
+                  <select value={property.posicaoSolar || ""} onChange={(e) => { if (onUpdateProperty) { updateProperty({ ...property, posicaoSolar: e.target.value || undefined }); toast.success("Posição solar atualizada!"); } }} className={selectClass}>
+                    <option value="">Selecione</option>
+                    <option value="Nascente">Nascente (Sol da manhã)</option>
+                    <option value="Poente">Poente (Sol da tarde)</option>
+                    <option value="Norte">Norte</option>
+                    <option value="Sul">Sul</option>
+                    <option value="Nascente/Norte">Nascente/Norte</option>
+                    <option value="Poente/Sul">Poente/Sul</option>
+                  </select>
+                ) : <span className="text-sm font-medium text-foreground">{property.posicaoSolar || "—"}</span> },
+              ];
+
               return blockWrapper("caracteristicas",
-                <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
+                <div className="bg-muted/50 rounded-xl p-5 border border-border">
                   <div className="flex items-center justify-between mb-4">
-                    <p className="text-sm font-bold text-gray-800 uppercase tracking-wider flex items-center gap-1.5">
-                      <span className="cursor-grab active:cursor-grabbing mr-1 text-gray-300 hover:text-gray-500">⠿</span>
+                    <p className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                      <span className="cursor-grab active:cursor-grabbing mr-1 text-muted-foreground/50 hover:text-muted-foreground">⠿</span>
                       <Building2 className="w-4 h-4 text-amber-500" /> Características do Imóvel
                     </p>
-                    <button onClick={() => setEditingBlock(editingBlock === "caracteristicas" ? null : "caracteristicas")} className={cn("p-1.5 rounded-lg transition-colors", editingBlock === "caracteristicas" ? "bg-amber-100 text-amber-600" : "hover:bg-gray-200 text-gray-400")}>
+                    <button onClick={() => setEditingBlock(isEditingCaract ? null : "caracteristicas")} className={cn("p-1.5 rounded-lg transition-colors", isEditingCaract ? "bg-amber-100 text-amber-600" : "hover:bg-muted text-muted-foreground")}>
                       <Pencil className="w-3.5 h-3.5" />
                     </button>
                   </div>
-                  {editingBlock === "caracteristicas" ? (
+                  <DraggableFieldGrid storageKey="fields-caracteristicas" fields={caractFields} columns={4} editing={isEditingCaract} />
+
+                  {isEditingCaract && (
                     <>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                        <div>
-                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Condição / Mobília</label>
-                          <select value={property.condicao || ""} onChange={(e) => { if (onUpdateProperty) { const val = (e.target.value || undefined) as Property["condicao"]; updateProperty({ ...property, condicao: val, decorated: val === "Decorado" || val === "Mobiliado" }); toast.success("Condição atualizada!"); } }} className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400">
-                            <option value="">Selecione</option>
-                            <option value="Mobiliado">🛋️ Mobiliado</option>
-                            <option value="Semi-mobiliado">🪑 Semi-mobiliado</option>
-                            <option value="Vazio">📦 Vazio</option>
-                            <option value="Decorado">🎨 Decorado</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Vista</label>
-                          <select value={property.vista || ""} onChange={(e) => { if (onUpdateProperty) { const val = e.target.value || undefined; updateProperty({ ...property, vista: val, seaView: val === "Mar" || val === "Mar / Lago" }); toast.success("Vista atualizada!"); } }} className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400">
-                            <option value="">Selecione</option>
-                            <option value="Mar">🌊 Mar</option>
-                            <option value="Lago">💧 Lago</option>
-                            <option value="Mar / Lago">🌊💧 Mar / Lago</option>
-                            <option value="Cidade">🏙️ Cidade</option>
-                            <option value="Parque">🌳 Parque</option>
-                            <option value="Piscina">🏊 Piscina</option>
-                            <option value="Rua">🛣️ Rua</option>
-                            <option value="Interna">🏠 Interna</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Padrão</label>
-                          <select value={property.padrao || ""} onChange={(e) => { if (onUpdateProperty) { updateProperty({ ...property, padrao: (e.target.value || undefined) as Property["padrao"] }); toast.success("Padrão atualizado!"); } }} className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400">
-                            <option value="">Selecione</option>
-                            <option value="Econômico">Econômico</option>
-                            <option value="Médio Padrão">Médio Padrão</option>
-                            <option value="Alto Padrão">Alto Padrão</option>
-                            <option value="Luxo">Luxo</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Posição no Prédio</label>
-                          <select value={property.posicaoPredio || ""} onChange={(e) => { if (onUpdateProperty) { updateProperty({ ...property, posicaoPredio: e.target.value || undefined }); toast.success("Posição atualizada!"); } }} className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400">
-                            <option value="">Selecione</option>
-                            <option value="Frente">Frente</option>
-                            <option value="Fundos">Fundos</option>
-                            <option value="Lateral Esquerda">Lateral Esquerda</option>
-                            <option value="Lateral Direita">Lateral Direita</option>
-                            <option value="Frente/Lateral">Frente/Lateral</option>
-                            <option value="Fundos/Lateral">Fundos/Lateral</option>
-                          </select>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
-                        <div>
-                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Posição Solar</label>
-                          <select value={property.posicaoSolar || ""} onChange={(e) => { if (onUpdateProperty) { updateProperty({ ...property, posicaoSolar: e.target.value || undefined }); toast.success("Posição solar atualizada!"); } }} className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400">
-                            <option value="">Selecione</option>
-                            <option value="Nascente">Nascente (Sol da manhã)</option>
-                            <option value="Poente">Poente (Sol da tarde)</option>
-                            <option value="Norte">Norte</option>
-                            <option value="Sul">Sul</option>
-                            <option value="Nascente/Norte">Nascente/Norte</option>
-                            <option value="Poente/Sul">Poente/Sul</option>
-                          </select>
-                        </div>
-                      </div>
-                      {/* Infraestrutura */}
-                      <div className="mt-4">
-                        <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 block">Infraestrutura</label>
-                        <div className="flex flex-wrap gap-2">
+                      <div className="mt-4 pt-4 border-t border-border">
+                        <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2 block">Infraestrutura</label>
+                        <div className="flex flex-wrap gap-1.5">
                           {["Piscina", "Churrasqueira", "Salão de Festas", "Academia", "Sauna", "Espaço Gourmet", "Brinquedoteca", "Playground", "Quadra", "Portaria 24h", "Elevador", "Jardim"].map((item) => {
                             const isActive = property.infraestrutura?.includes(item);
                             return (
                               <button key={item} onClick={() => { if (!onUpdateProperty) return; const current = property.infraestrutura || []; const updated = isActive ? current.filter(i => i !== item) : [...current, item]; updateProperty({ ...property, infraestrutura: updated }); toast.success(isActive ? `"${item}" removido` : `"${item}" adicionado`); }}
-                                className={cn("px-3 py-1.5 rounded-lg text-xs font-bold border transition-all", isActive ? "bg-amber-50 text-amber-700 border-amber-300" : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50")}>{item}</button>
+                                className={cn("px-3 py-1.5 rounded-lg text-xs font-bold border transition-all", isActive ? "bg-amber-50 text-amber-700 border-amber-300" : "bg-background text-muted-foreground border-border hover:bg-muted")}>{item}</button>
                             );
                           })}
                         </div>
                         {property.infraestrutura?.includes("Elevador") && (
                           <div className="flex items-center gap-2 mt-2">
-                            <label className="text-[11px] font-bold text-gray-500 whitespace-nowrap">Qtd. Elevadores:</label>
+                            <label className="text-[11px] font-bold text-muted-foreground whitespace-nowrap">Qtd. Elevadores:</label>
                             <input type="number" min={1} max={20} value={property.elevadores || 1} onChange={(e) => { if (!onUpdateProperty) return; updateProperty({ ...property, elevadores: parseInt(e.target.value) || 1 }); }} className="w-16 px-2 py-1 rounded border border-input text-xs bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring" />
                           </div>
                         )}
                       </div>
-                      {/* Outras Características por grupo */}
                       {allCaracteristicas.map(({ group, items }) => (
                         <div key={group} className="mt-4">
-                          <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5 block">{group}</label>
+                          <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">{group}</label>
                           <div className="flex flex-wrap gap-1.5">
                             {items.map((item) => {
                               const isActive = property.outrasCaracteristicas?.includes(item);
                               return (
                                 <button key={item} onClick={() => { if (!onUpdateProperty) return; const current = property.outrasCaracteristicas || []; const updated = isActive ? current.filter(i => i !== item) : [...current, item]; updateProperty({ ...property, outrasCaracteristicas: updated }); toast.success(isActive ? `"${item}" removido` : `"${item}" adicionado`); }}
-                                  className={cn("px-3 py-1.5 rounded-lg text-xs font-bold border transition-all", isActive ? "bg-blue-50 text-blue-700 border-blue-300" : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50")}>{item}</button>
+                                  className={cn("px-3 py-1.5 rounded-lg text-xs font-bold border transition-all", isActive ? "bg-blue-50 text-blue-700 border-blue-300" : "bg-background text-muted-foreground border-border hover:bg-muted")}>{item}</button>
                               );
                             })}
                           </div>
                         </div>
                       ))}
                     </>
-                  ) : (
-                    <div className="space-y-2">
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                        <div><span className="text-[10px] text-gray-400 block">Condição</span><span className="text-sm font-medium text-gray-800">{property.condicao || "—"}</span></div>
-                        <div><span className="text-[10px] text-gray-400 block">Vista</span><span className="text-sm font-medium text-gray-800">{property.vista || "—"}</span></div>
-                        <div><span className="text-[10px] text-gray-400 block">Padrão</span><span className="text-sm font-medium text-gray-800">{property.padrao || "—"}</span></div>
-                        <div><span className="text-[10px] text-gray-400 block">Posição Prédio</span><span className="text-sm font-medium text-gray-800">{property.posicaoPredio || "—"}</span></div>
-                        <div><span className="text-[10px] text-gray-400 block">Posição Solar</span><span className="text-sm font-medium text-gray-800">{property.posicaoSolar || "—"}</span></div>
-                      </div>
+                  )}
+                  {!isEditingCaract && (
+                    <div className="space-y-2 mt-3">
                       {property.infraestrutura && property.infraestrutura.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5 mt-1">
+                        <div className="flex flex-wrap gap-1.5">
                           {property.infraestrutura.map((i) => (
                             <span key={i} className="px-2 py-1 rounded text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">{i}</span>
                           ))}
                         </div>
                       )}
                       {property.outrasCaracteristicas && property.outrasCaracteristicas.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5 mt-1">
+                        <div className="flex flex-wrap gap-1.5">
                           {property.outrasCaracteristicas.map((i) => (
                             <span key={i} className="px-2 py-1 rounded text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">{i}</span>
                           ))}
