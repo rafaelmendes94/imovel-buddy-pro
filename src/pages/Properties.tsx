@@ -1455,7 +1455,10 @@ function PropertyRow({
         {/* ── COL 3: Financeiro ── */}
         <div className="w-[220px] flex-shrink-0 border-r border-border px-3 py-2 flex flex-col justify-start gap-0.5" onClick={(e) => e.stopPropagation()}>
           {/* Main price */}
-          <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Valor do Imóvel</span>
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <DollarSign className="w-3.5 h-3.5 text-emerald-500" />
+            <span className="text-[11px] font-black text-emerald-500 uppercase tracking-wider">Valor do Imóvel</span>
+          </div>
           <div className="flex items-center gap-1">
             <InlinePrice value={property.price} onChange={(v) => onPriceChange?.(property.id, "price", v)} className="text-[22px] font-black text-emerald-500 drop-shadow-sm" />
             {(() => {
@@ -1549,6 +1552,10 @@ function PropertyRow({
 
         {/* ── COL 4: Proprietário + Chaves + Datas + Status ── */}
         <div className="w-[190px] flex-shrink-0 border-r border-border px-3 py-2 flex flex-col justify-start gap-1" onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <User className="w-3.5 h-3.5 text-primary" />
+            <span className="text-[11px] font-black text-primary uppercase tracking-wider">Proprietário</span>
+          </div>
           {/* Owner */}
           {property.owner ? (
             <div className="border-b border-border pb-1.5 mb-0.5">
