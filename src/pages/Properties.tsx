@@ -1035,15 +1035,15 @@ function PropertyRow({
         </div>
 
         {/* ── COL 3: Financeiro ── */}
-        <div className="w-[200px] flex-shrink-0 border-r border-border px-3 py-2 flex flex-col justify-center gap-1">
+        <div className="w-[200px] flex-shrink-0 border-r border-border px-3 py-2 flex flex-col justify-center gap-1" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-baseline justify-between">
             <span className="text-[9px] text-muted-foreground uppercase font-semibold">À vista</span>
-            <span className="text-[15px] font-black text-accent">{formatCurrency(property.price)}</span>
+            <InlinePrice value={property.price} onChange={(v) => onPriceChange?.(property.id, "price", v)} className="text-[15px] font-black text-accent" />
           </div>
           {property.priceInstallment && (
             <div className="flex items-baseline justify-between">
               <span className="text-[9px] text-muted-foreground uppercase font-semibold">Promocional</span>
-              <span className="text-[13px] font-bold text-foreground">{formatCurrency(property.priceInstallment)}</span>
+              <InlinePrice value={property.priceInstallment} onChange={(v) => onPriceChange?.(property.id, "priceInstallment", v)} className="text-[13px] font-bold text-foreground" />
             </div>
           )}
           {/* Payment conditions */}
