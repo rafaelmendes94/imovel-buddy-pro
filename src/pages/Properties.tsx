@@ -112,6 +112,8 @@ export default function Properties() {
   const [filterEmpreendimento, setFilterEmpreendimento] = useState("");
   const [filterType, setFilterType] = useState("");
   const [filterOwner, setFilterOwner] = useState("");
+  const [filterNeighborhood, setFilterNeighborhood] = useState("");
+  const [filterStreet, setFilterStreet] = useState("");
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [viewingTerm, setViewingTerm] = useState<string | null>(null);
   const [favoriteIds, setFavoriteIds] = useState<string[]>(() => {
@@ -149,17 +151,19 @@ export default function Properties() {
     setPropertyList((prev) => prev.map((p) => (p.id === propertyId ? { ...p, status: newStatus } : p)));
   };
 
-  const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterCondition || filterEmpreendimento || filterType || filterOwner;
+  const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterCondition || filterEmpreendimento || filterType || filterOwner || filterNeighborhood || filterStreet;
 
   const clearFilters = () => {
     setFilterCity(""); setFilterBedrooms(""); setFilterPriceMin(""); setFilterPriceMax(""); setFilterCondition("");
-    setFilterEmpreendimento(""); setFilterType(""); setFilterOwner(""); setSearch("");
+    setFilterEmpreendimento(""); setFilterType(""); setFilterOwner(""); setFilterNeighborhood(""); setFilterStreet(""); setSearch("");
   };
 
   const cities = useMemo(() => [...new Set(propertyList.map(p => p.city))].sort(), [propertyList]);
   const empreendimentos = useMemo(() => [...new Set(propertyList.map(p => p.empreendimento).filter(Boolean))].sort() as string[], [propertyList]);
   const owners = useMemo(() => [...new Set(propertyList.map(p => p.owner).filter(Boolean))].sort() as string[], [propertyList]);
   const types = useMemo(() => [...new Set(propertyList.map(p => p.type))].sort(), [propertyList]);
+  const neighborhoods = useMemo(() => [...new Set(propertyList.map(p => p.neighborhood).filter(Boolean))].sort() as string[], [propertyList]);
+  const streets = useMemo(() => [...new Set(propertyList.map(p => p.address))].sort(), [propertyList]);
 
   // Freshness helpers
   const now = new Date();
