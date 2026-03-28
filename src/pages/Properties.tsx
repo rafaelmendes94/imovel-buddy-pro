@@ -368,7 +368,7 @@ export default function Properties() {
           <button
             onClick={() => setFilterFreshness(filterFreshness === "30" ? "all" : "30")}
             className={cn(
-              "bg-card border rounded-xl p-4 text-left transition-all hover:shadow-md group",
+              "bg-card border rounded-xl p-2 sm:p-4 text-left transition-all hover:shadow-md group",
               filterFreshness === "30" ? "border-emerald-500 ring-2 ring-emerald-500/20" : "border-border"
             )}
           >
