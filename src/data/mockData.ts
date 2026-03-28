@@ -35,6 +35,10 @@ export interface Property {
   keysLocation?: string;
   description?: string;
   updatedAt?: string;
+  posicaoPredio?: string;
+  posicaoSolar?: string;
+  infraestrutura?: string[];
+  vista?: string;
   ownerType?: "Construtora" | "Investidor" | "Particular" | "Adm Comercial";
   priceInstallment?: number;
   commission?: number;
