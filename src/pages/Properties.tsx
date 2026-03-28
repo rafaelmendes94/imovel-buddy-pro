@@ -108,6 +108,9 @@ export default function Properties() {
   const [filterPriceMin, setFilterPriceMin] = useState("");
   const [filterPriceMax, setFilterPriceMax] = useState("");
   const [filterCondition, setFilterCondition] = useState("");
+  const [filterEmpreendimento, setFilterEmpreendimento] = useState("");
+  const [filterType, setFilterType] = useState("");
+  const [filterOwner, setFilterOwner] = useState("");
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [viewingTerm, setViewingTerm] = useState<string | null>(null);
   const [favoriteIds, setFavoriteIds] = useState<string[]>(() => {
@@ -144,15 +147,17 @@ export default function Properties() {
     setPropertyList((prev) => prev.map((p) => (p.id === propertyId ? { ...p, status: newStatus } : p)));
   };
 
-  const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterCondition;
+  const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterCondition || filterEmpreendimento || filterType || filterOwner;
 
   const clearFilters = () => {
     setFilterCity(""); setFilterBedrooms(""); setFilterPriceMin(""); setFilterPriceMax(""); setFilterCondition("");
-    setSearch("");
+    setFilterEmpreendimento(""); setFilterType(""); setFilterOwner(""); setSearch("");
   };
 
-  // Cities for filter
   const cities = useMemo(() => [...new Set(propertyList.map(p => p.city))].sort(), [propertyList]);
+  const empreendimentos = useMemo(() => [...new Set(propertyList.map(p => p.empreendimento).filter(Boolean))].sort() as string[], [propertyList]);
+  const owners = useMemo(() => [...new Set(propertyList.map(p => p.owner).filter(Boolean))].sort() as string[], [propertyList]);
+  const types = useMemo(() => [...new Set(propertyList.map(p => p.type))].sort(), [propertyList]);
 
   // Freshness helpers
   const now = new Date();
@@ -203,10 +208,13 @@ export default function Properties() {
       if (filterPriceMin && p.price < parseInt(filterPriceMin)) return false;
       if (filterPriceMax && p.price > parseInt(filterPriceMax)) return false;
       if (filterCondition && !(p.paymentConditions?.some(c => c.toLowerCase().includes(filterCondition.toLowerCase())))) return false;
+      if (filterEmpreendimento && p.empreendimento !== filterEmpreendimento) return false;
+      if (filterType && p.type !== filterType) return false;
+      if (filterOwner && p.owner !== filterOwner) return false;
 
       return true;
     });
-  }, [propertyList, activeCategory, search, filterCity, filterBedrooms, filterPriceMin, filterPriceMax, filterCondition, filterFreshness]);
+  }, [propertyList, activeCategory, search, filterCity, filterBedrooms, filterPriceMin, filterPriceMax, filterCondition, filterFreshness, filterEmpreendimento, filterType, filterOwner]);
 
   const favoritedProperties = propertyList.filter((p) => favoriteIds.includes(p.id));
 
@@ -421,7 +429,28 @@ export default function Properties() {
           {/* Advanced Filters Panel */}
           {showFilters && (
             <div className="bg-card border border-border rounded-xl p-4">
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-8 gap-3">
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Empreendimento</label>
+                  <select value={filterEmpreendimento} onChange={(e) => setFilterEmpreendimento(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+                    <option value="">Todos</option>
+                    {empreendimentos.map(e => <option key={e} value={e}>{e}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Tipo</label>
+                  <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+                    <option value="">Todos</option>
+                    {types.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Proprietário</label>
+                  <select value={filterOwner} onChange={(e) => setFilterOwner(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+                    <option value="">Todos</option>
+                    {owners.map(o => <option key={o} value={o}>{o}</option>)}
+                  </select>
+                </div>
                 <div>
                   <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Cidade</label>
                   <select value={filterCity} onChange={(e) => setFilterCity(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
@@ -450,15 +479,7 @@ export default function Properties() {
                     <option value="500000">R$ 500 mil</option><option value="800000">R$ 800 mil</option><option value="1000000">R$ 1 milhão</option><option value="1500000">R$ 1,5 milhão</option><option value="2000000">R$ 2 milhões</option>
                   </select>
                 </div>
-                <div>
-                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Condições</label>
-                  <select value={filterCondition} onChange={(e) => setFilterCondition(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
-                    <option value="">Todas</option>
-                    <option value="12x">12x</option><option value="24x">24x</option><option value="36x">36x</option><option value="48x">48x</option>
-                    <option value="60x">60x</option><option value="72x">72x</option><option value="84x">84x</option><option value="Permuta">Permuta</option><option value="Carro">Carro</option>
-                  </select>
-                </div>
-                <div className="flex items-end">
+                <div className="flex items-end gap-2">
                   {hasActiveFilters && (
                     <button onClick={clearFilters} className="flex items-center gap-1 px-4 py-2 rounded-lg bg-muted text-muted-foreground text-sm font-medium hover:bg-destructive/10 hover:text-destructive transition-colors">
                       <X className="w-3.5 h-3.5" /> Limpar
@@ -492,6 +513,7 @@ export default function Properties() {
                 onToggleFavorite={toggleFavorite}
                 onFilterByTitle={(title) => { setSearch(title.split(" ").slice(0, 2).join(" ")); setActiveCategory("todos"); }}
                 onFilterByCondition={(cond) => { setFilterCondition(cond); setShowFilters(true); setActiveCategory("todos"); }}
+                onFilterByOwner={(owner) => { setFilterOwner(owner); setShowFilters(true); setActiveCategory("todos"); }}
               />
             ))}
           </div>
@@ -507,6 +529,7 @@ export default function Properties() {
                 onToggleFavorite={toggleFavorite}
                 onFilterByTitle={(title) => { setSearch(title.split(" ").slice(0, 2).join(" ")); setActiveCategory("todos"); }}
                 onFilterByCondition={(cond) => { setFilterCondition(cond); setShowFilters(true); setActiveCategory("todos"); }}
+                onFilterByOwner={(owner) => { setFilterOwner(owner); setShowFilters(true); setActiveCategory("todos"); }}
               />
             ))}
           </div>
@@ -697,6 +720,7 @@ function PropertyCard({
   onToggleFavorite?: (id: string) => void;
   onFilterByTitle?: (title: string) => void;
   onFilterByCondition?: (cond: string) => void;
+  onFilterByOwner?: (owner: string) => void;
 }) {
   const [showCelebration, setShowCelebration] = useState(false);
   const [animatePulse, setAnimatePulse] = useState(false);
@@ -851,7 +875,7 @@ function PropertyCard({
 
 // ---- PropertyRow (enhanced) ----
 function PropertyRow({
-  property, onStatusChange, onSelect, isFavorited, onToggleFavorite, onFilterByTitle, onFilterByCondition,
+  property, onStatusChange, onSelect, isFavorited, onToggleFavorite, onFilterByTitle, onFilterByCondition, onFilterByOwner,
 }: {
   property: Property;
   onStatusChange: (id: string, status: Property["status"]) => void;
@@ -860,6 +884,7 @@ function PropertyRow({
   onToggleFavorite?: (id: string) => void;
   onFilterByTitle?: (title: string) => void;
   onFilterByCondition?: (cond: string) => void;
+  onFilterByOwner?: (owner: string) => void;
 }) {
   const [showCelebration, setShowCelebration] = useState(false);
   const [animatePulse, setAnimatePulse] = useState(false);
@@ -960,24 +985,33 @@ function PropertyRow({
           </div>
         </div>
 
-        {/* ── BLOCK 3: Corretor + WhatsApp + Datas ── */}
-        <div className="px-4 border-r border-border flex flex-col justify-center w-[170px] flex-shrink-0">
-          <div className="flex items-center gap-2 mb-1.5">
-            <img src={broker.photo} alt={property.broker} className="w-7 h-7 rounded-full object-cover border border-accent flex-shrink-0" />
-            <div className="min-w-0">
-              <p className="text-[11px] font-semibold text-foreground truncate leading-tight">{property.broker}</p>
-              <p className="text-[9px] text-muted-foreground">Corretor(a)</p>
+        {/* ── BLOCK 3: Proprietário + Corretor + Datas ── */}
+        <div className="px-4 border-r border-border flex flex-col justify-center w-[185px] flex-shrink-0">
+          {property.owner && (
+            <div className="mb-1.5" onClick={(e) => e.stopPropagation()}>
+              <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Proprietário</p>
+              <button
+                className="text-[11px] font-semibold text-foreground hover:text-primary transition-colors truncate block max-w-full text-left"
+                onClick={() => onFilterByOwner?.(property.owner!)}
+                title={`Ver todos imóveis de ${property.owner}`}
+              >{property.owner}</button>
+              {property.ownerPhone && (
+                <a
+                  href={`https://wa.me/${property.ownerPhone}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-[10px] text-emerald-500 hover:text-emerald-400 transition-colors mt-0.5"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Phone className="w-2.5 h-2.5" /> {property.ownerPhone.replace(/^55/, "").replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3")}
+                </a>
+              )}
             </div>
+          )}
+          <div className="flex items-center gap-1.5 mb-1">
+            <img src={broker.photo} alt={property.broker} className="w-5 h-5 rounded-full object-cover border border-accent flex-shrink-0" />
+            <p className="text-[10px] text-muted-foreground truncate">{property.broker}</p>
           </div>
-          <a
-            href={`https://wa.me/${broker.whatsapp}?text=${whatsappMessage}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-1 px-2 py-1 rounded-md bg-emerald-600 text-white text-[10px] font-bold hover:bg-emerald-700 transition-colors mb-1.5"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Phone className="w-2.5 h-2.5" /> WhatsApp
-          </a>
           <div className="text-[9px] text-muted-foreground space-y-0">
             <div className="flex justify-between"><span>Inclusão:</span><span className="font-medium text-foreground">{createdFormatted}</span></div>
             <div className="flex justify-between"><span>Atualização:</span><span className={cn("font-semibold", updateColor)}>{updatedFormatted}</span></div>
