@@ -9,6 +9,7 @@ export interface Property {
   status: "Disponível" | "Vendido" | "Reservado" | "Alugado" | "Suspenso";
   price: number;
   area: number;
+  privateArea?: number;
   bedrooms: number;
   bathrooms: number;
   parking: number;
@@ -38,6 +39,7 @@ export interface Property {
   priceInstallment?: number;
   commission?: number;
   bonus?: number;
+  bonusExpiry?: string;
 }
 
 export interface Broker {
@@ -64,6 +66,7 @@ export const properties: Property[] = [
     status: "Disponível",
     price: 950000,
     area: 120,
+    privateArea: 98,
     bedrooms: 3,
     bathrooms: 2,
     parking: 2,
@@ -92,6 +95,7 @@ export const properties: Property[] = [
     priceInstallment: 1050000,
     commission: 5,
     bonus: 2000,
+    bonusExpiry: "2026-04-30",
   },
   {
     id: "2",
@@ -104,6 +108,7 @@ export const properties: Property[] = [
     status: "Reservado",
     price: 1800000,
     area: 250,
+    privateArea: 210,
     bedrooms: 4,
     bathrooms: 4,
     parking: 3,
@@ -132,6 +137,7 @@ export const properties: Property[] = [
     priceInstallment: 2100000,
     commission: 6,
     bonus: 5000,
+    bonusExpiry: "2026-05-15",
   },
   {
     id: "3",
@@ -172,6 +178,7 @@ export const properties: Property[] = [
     priceInstallment: 1400000,
     commission: 5,
     bonus: 3000,
+    bonusExpiry: "2026-06-01",
   },
   {
     id: "4",
@@ -247,6 +254,7 @@ export const properties: Property[] = [
     priceInstallment: 420000,
     commission: 5,
     bonus: 1500,
+    bonusExpiry: "2026-04-15",
   },
   {
     id: "6",
