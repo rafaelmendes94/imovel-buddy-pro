@@ -93,7 +93,7 @@ const statusConfig: Record<Property["status"], { color: string; bg: string; bord
 
 type Category = "todos" | "apartamentos" | "casas" | "terrenos" | "lotes" | "lotes-cond" | "condominios" | "decorados" | "vista-mar" | "permuta" | "vendidos";
 
-const categories: { key: Category; label: string; icon: typeof Home }[] = [
+const defaultCategories: { key: Category; label: string; icon: typeof Home }[] = [
   { key: "todos", label: "Todos", icon: Search },
   { key: "apartamentos", label: "Apartamentos", icon: Building2 },
   { key: "casas", label: "Casas", icon: Home },
@@ -104,6 +104,16 @@ const categories: { key: Category; label: string; icon: typeof Home }[] = [
   { key: "decorados", label: "Decorados", icon: Paintbrush },
   { key: "vista-mar", label: "Vista Mar", icon: Waves },
 ];
+
+const getSavedCategoryOrder = (): typeof defaultCategories => {
+  try {
+    const saved = JSON.parse(localStorage.getItem("mv-category-order") || "[]") as Category[];
+    if (saved.length === defaultCategories.length) {
+      return saved.map(key => defaultCategories.find(c => c.key === key)!).filter(Boolean);
+    }
+  } catch {}
+  return defaultCategories;
+};
 
 // Auto-generate codes for properties that don't have one
 const propertiesWithCodes = initialProperties.map((p, i) => ({
@@ -139,6 +149,23 @@ export default function Properties() {
   });
   const [filterFreshness, setFilterFreshness] = useState<"all" | "30" | "60" | "90">("all");
   const [showInactive, setShowInactive] = useState(false);
+  const [categories, setCategories] = useState(getSavedCategoryOrder);
+  const dragCatRef = useRef<number | null>(null);
+
+  const handleCatDragStart = (idx: number) => { dragCatRef.current = idx; };
+  const handleCatDragOver = (e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    if (dragCatRef.current === null || dragCatRef.current === idx) return;
+    setCategories(prev => {
+      const updated = [...prev];
+      const [moved] = updated.splice(dragCatRef.current!, 1);
+      updated.splice(idx, 0, moved);
+      dragCatRef.current = idx;
+      localStorage.setItem("mv-category-order", JSON.stringify(updated.map(c => c.key)));
+      return updated;
+    });
+  };
+  const handleCatDragEnd = () => { dragCatRef.current = null; };
 
   const xmlMenuRef = useRef<HTMLDivElement>(null);
 
@@ -630,12 +657,16 @@ export default function Properties() {
 
         {/* Category + Sort Bar */}
         <div className="flex items-center gap-2 overflow-x-auto bg-card border border-border rounded-lg px-3 py-2">
-          {categories.map((cat) => (
+          {categories.map((cat, idx) => (
             <button
               key={cat.key}
+              draggable
+              onDragStart={() => handleCatDragStart(idx)}
+              onDragOver={(e) => handleCatDragOver(e, idx)}
+              onDragEnd={handleCatDragEnd}
               onClick={() => setActiveCategory(cat.key)}
               className={cn(
-                "flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold whitespace-nowrap transition-all",
+                "flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold whitespace-nowrap transition-all cursor-grab active:cursor-grabbing",
                 activeCategory === cat.key
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "bg-secondary text-secondary-foreground hover:bg-muted"
