@@ -91,13 +91,16 @@ const statusConfig: Record<Property["status"], { color: string; bg: string; bord
   Suspenso: { color: "text-gray-400", bg: "bg-gray-500/10", border: "border-gray-500/30", icon: Ban },
 };
 
-type Category = "todos" | "apartamentos" | "casas" | "terrenos" | "decorados" | "vista-mar" | "permuta" | "vendidos";
+type Category = "todos" | "apartamentos" | "casas" | "terrenos" | "lotes" | "lotes-cond" | "condominios" | "decorados" | "vista-mar" | "permuta" | "vendidos";
 
 const categories: { key: Category; label: string; icon: typeof Home }[] = [
   { key: "todos", label: "Todos", icon: Search },
   { key: "apartamentos", label: "Apartamentos", icon: Building2 },
   { key: "casas", label: "Casas", icon: Home },
   { key: "terrenos", label: "Terrenos", icon: TreePine },
+  { key: "lotes", label: "Lotes", icon: Fence },
+  { key: "lotes-cond", label: "Lote Cond.", icon: Fence },
+  { key: "condominios", label: "Condomínios", icon: Building2 },
   { key: "decorados", label: "Decorados", icon: Paintbrush },
   { key: "vista-mar", label: "Vista Mar", icon: Waves },
 ];
@@ -264,6 +267,9 @@ export default function Properties() {
       if (activeCategory === "apartamentos" && p.type !== "Apartamento") return false;
       if (activeCategory === "casas" && p.type !== "Casa") return false;
       if (activeCategory === "terrenos" && p.type !== "Terreno") return false;
+      if (activeCategory === "lotes" && p.type !== "Lote") return false;
+      if (activeCategory === "lotes-cond" && p.type !== "Lote Condomínio") return false;
+      if (activeCategory === "condominios" && p.type !== "Condomínio") return false;
       if (activeCategory === "decorados" && !p.decorated) return false;
       if (activeCategory === "vista-mar" && !p.seaView) return false;
       if (activeCategory === "permuta" && !p.acceptsExchange) return false;
