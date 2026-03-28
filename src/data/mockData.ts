@@ -95,6 +95,7 @@ export const properties: Property[] = [
     id: "2",
     title: "Cobertura Duplex Vista Mar",
     address: "Rua Sepé, 500",
+    neighborhood: "Centro",
     city: "Capão da Canoa",
     type: "Apartamento",
     status: "Reservado",
