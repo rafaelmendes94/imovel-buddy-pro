@@ -489,7 +489,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {/* Posição no Prédio */}
               <div>
-                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">Posição no Prédio</label>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Posição no Prédio</label>
                 <select
                   value={property.posicaoPredio || ""}
                   onChange={(e) => {
@@ -498,7 +498,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                       toast.success("Posição atualizada!");
                     }
                   }}
-                  className="w-full px-2.5 py-2 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
                 >
                   <option value="">Selecione</option>
                   <option value="Frente">Frente</option>
@@ -512,7 +512,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
 
               {/* Posição Solar */}
               <div>
-                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">Posição Solar</label>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Posição Solar</label>
                 <select
                   value={property.posicaoSolar || ""}
                   onChange={(e) => {
@@ -521,7 +521,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                       toast.success("Posição solar atualizada!");
                     }
                   }}
-                  className="w-full px-2.5 py-2 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
                 >
                   <option value="">Selecione</option>
                   <option value="Nascente">Nascente (Sol da manhã)</option>
@@ -535,7 +535,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
 
               {/* Vista */}
               <div>
-                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">Vista</label>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Vista</label>
                 <select
                   value={property.vista || ""}
                   onChange={(e) => {
@@ -544,7 +544,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                       toast.success("Vista atualizada!");
                     }
                   }}
-                  className="w-full px-2.5 py-2 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
                 >
                   <option value="">Selecione</option>
                   <option value="Mar">Mar</option>
@@ -560,7 +560,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
 
               {/* Condição */}
               <div>
-                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">Condição</label>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Condição</label>
                 <select
                   value={property.condicao || ""}
                   onChange={(e) => {
@@ -569,7 +569,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                       toast.success("Condição atualizada!");
                     }
                   }}
-                  className="w-full px-2.5 py-2 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
                 >
                   <option value="">Selecione</option>
                   <option value="Mobiliado">Mobiliado</option>
