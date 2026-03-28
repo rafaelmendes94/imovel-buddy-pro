@@ -696,7 +696,7 @@ export default function Properties() {
             ))}
           </div>
         ) : (
-          <PropertyMap properties={filtered} />
+          <PropertyMap properties={sorted} />
         )}
 
         {filtered.length === 0 && (
