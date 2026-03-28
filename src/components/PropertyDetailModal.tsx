@@ -701,105 +701,66 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
 
           {/* Identificação - Proprietário */}
           <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
-            <p className="text-sm font-bold text-gray-800 uppercase tracking-wider mb-4 flex items-center gap-1.5">
-              <User className="w-4 h-4 text-amber-500" /> Identificação
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div>
-                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">
-                  <User className="w-3 h-3 inline mr-1" />Proprietário
-                </label>
-                <select
-                  value={property.owner || ""}
-                  onChange={(e) => {
-                    if (!onUpdateProperty) return;
-                    const selectedOwner = e.target.value;
-                    if (!selectedOwner) {
-                      updateProperty({ ...property, owner: undefined, ownerPhone: undefined, ownerType: undefined });
-                      return;
-                    }
-                    // Find existing property with this owner to pull their info
-                    const ref = allProperties.find(p => p.owner === selectedOwner && p.id !== property.id);
-                    if (ref) {
-                      updateProperty({
-                        ...property,
-                        owner: selectedOwner,
-                        ownerPhone: ref.ownerPhone || property.ownerPhone,
-                        ownerType: ref.ownerType || property.ownerType,
-                      });
-                      toast.success(`Dados do proprietário "${selectedOwner}" aplicados!`);
-                    } else {
-                      updateProperty({ ...property, owner: selectedOwner });
-                    }
-                  }}
-                  className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
-                >
-                  <option value="">Selecione</option>
-                  {[...new Set(allProperties.map(p => p.owner).filter(Boolean))].sort().map(owner => (
-                    <option key={owner} value={owner}>{owner}</option>
-                  ))}
-                </select>
-                <input
-                  type="text"
-                  placeholder="Ou digite um novo..."
-                  className="w-full mt-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && onUpdateProperty) {
-                      const val = (e.target as HTMLInputElement).value.trim();
-                      if (val) {
-                        updateProperty({ ...property, owner: val });
-                        toast.success(`Proprietário "${val}" definido!`);
-                        (e.target as HTMLInputElement).value = "";
-                      }
-                    }
-                  }}
-                />
-              </div>
-              <div>
-                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">
-                  <Phone className="w-3 h-3 inline mr-1" />Telefone
-                </label>
-                <EditableField field="ownerPhone" value={property.ownerPhone || ""} label="telefone" />
-              </div>
-              <div>
-                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Tipo Proprietário</label>
-                <select
-                  value={property.ownerType || ""}
-                  onChange={(e) => {
-                    if (onUpdateProperty) {
-                      updateProperty({ ...property, ownerType: (e.target.value || undefined) as Property["ownerType"] });
-                      toast.success("Tipo atualizado!");
-                    }
-                  }}
-                  className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
-                >
-                  <option value="">Selecione</option>
-                  <option value="Particular">Particular</option>
-                  <option value="Construtora">Construtora</option>
-                  <option value="Investidor">Investidor</option>
-                  <option value="Adm Comercial">Adm Comercial</option>
-                  <option value="Exclusividade">Exclusividade</option>
-                </select>
-              </div>
-              <div>
-                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">
-                  <Key className="w-3 h-3 inline mr-1" />Chaves do Imóvel
-                </label>
-                <EditableField field="keysLocation" value={property.keysLocation || ""} label="localização das chaves" />
-              </div>
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-sm font-bold text-gray-800 uppercase tracking-wider flex items-center gap-1.5">
+                <User className="w-4 h-4 text-amber-500" /> Identificação
+              </p>
+              <button onClick={() => setEditingBlock(editingBlock === "proprietario" ? null : "proprietario")} className={cn("p-1.5 rounded-lg transition-colors", editingBlock === "proprietario" ? "bg-amber-100 text-amber-600" : "hover:bg-gray-200 text-gray-400")}>
+                <Pencil className="w-3.5 h-3.5" />
+              </button>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-              <div>
-                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">
-                  <FileCheck className="w-3 h-3 inline mr-1" />Termo de Exclusividade
-                </label>
-                <EditableField field="exclusivityTerm" value={property.exclusivityTerm || ""} label="termo de exclusividade" />
+            {editingBlock === "proprietario" ? (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div>
+                    <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block"><User className="w-3 h-3 inline mr-1" />Proprietário</label>
+                    <select value={property.owner || ""} onChange={(e) => { if (!onUpdateProperty) return; const selectedOwner = e.target.value; if (!selectedOwner) { updateProperty({ ...property, owner: undefined, ownerPhone: undefined, ownerType: undefined }); return; } const ref = allProperties.find(p => p.owner === selectedOwner && p.id !== property.id); if (ref) { updateProperty({ ...property, owner: selectedOwner, ownerPhone: ref.ownerPhone || property.ownerPhone, ownerType: ref.ownerType || property.ownerType }); toast.success(`Dados do proprietário "${selectedOwner}" aplicados!`); } else { updateProperty({ ...property, owner: selectedOwner }); } }} className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                      <option value="">Selecione</option>
+                      {[...new Set(allProperties.map(p => p.owner).filter(Boolean))].sort().map(owner => (<option key={owner} value={owner}>{owner}</option>))}
+                    </select>
+                    <input type="text" placeholder="Ou digite um novo..." className="w-full mt-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400" onKeyDown={(e) => { if (e.key === "Enter" && onUpdateProperty) { const val = (e.target as HTMLInputElement).value.trim(); if (val) { updateProperty({ ...property, owner: val }); toast.success(`Proprietário "${val}" definido!`); (e.target as HTMLInputElement).value = ""; } } }} />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block"><Phone className="w-3 h-3 inline mr-1" />Telefone</label>
+                    <EditableField field="ownerPhone" value={property.ownerPhone || ""} label="telefone" />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Tipo Proprietário</label>
+                    <select value={property.ownerType || ""} onChange={(e) => { if (onUpdateProperty) { updateProperty({ ...property, ownerType: (e.target.value || undefined) as Property["ownerType"] }); toast.success("Tipo atualizado!"); } }} className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                      <option value="">Selecione</option>
+                      <option value="Particular">Particular</option>
+                      <option value="Construtora">Construtora</option>
+                      <option value="Investidor">Investidor</option>
+                      <option value="Adm Comercial">Adm Comercial</option>
+                      <option value="Exclusividade">Exclusividade</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block"><Key className="w-3 h-3 inline mr-1" />Chaves do Imóvel</label>
+                    <EditableField field="keysLocation" value={property.keysLocation || ""} label="localização das chaves" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                  <div>
+                    <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block"><FileCheck className="w-3 h-3 inline mr-1" />Termo de Exclusividade</label>
+                    <EditableField field="exclusivityTerm" value={property.exclusivityTerm || ""} label="termo de exclusividade" />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Corretor</label>
+                    <EditableField field="broker" value={property.broker} label="corretor" />
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div><span className="text-[10px] text-gray-400 block">Proprietário</span><span className="text-sm font-medium text-gray-800">{property.owner || "—"}</span></div>
+                <div><span className="text-[10px] text-gray-400 block">Telefone</span><span className="text-sm font-medium text-gray-800">{property.ownerPhone || "—"}</span></div>
+                <div><span className="text-[10px] text-gray-400 block">Tipo</span><span className="text-sm font-medium text-gray-800">{property.ownerType || "—"}</span></div>
+                <div><span className="text-[10px] text-gray-400 block">Chaves</span><span className="text-sm font-medium text-gray-800">{property.keysLocation || "—"}</span></div>
+                <div><span className="text-[10px] text-gray-400 block">Exclusividade</span><span className="text-sm font-medium text-gray-800">{property.exclusivityTerm || "—"}</span></div>
+                <div><span className="text-[10px] text-gray-400 block">Corretor</span><span className="text-sm font-medium text-gray-800">{property.broker}</span></div>
               </div>
-              <div>
-                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Corretor</label>
-                <EditableField field="broker" value={property.broker} label="corretor" />
-              </div>
-            </div>
+            )}
           </div>
 
           {/* Características do Imóvel */}
