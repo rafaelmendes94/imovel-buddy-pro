@@ -32,6 +32,7 @@ export interface Property {
   keysLocation?: string;
   description?: string;
   updatedAt?: string;
+  ownerType?: "Construtora" | "Investidor" | "Particular" | "Adm Comercial";
 }
 
 export interface Broker {
@@ -80,6 +81,7 @@ export const properties: Property[] = [
     unitNumber: "Ap 302",
     boxNumber: "Box 12",
     keysLocation: "Na imobiliária Alpha Imóveis",
+    ownerType: "Particular",
   },
   {
     id: "2",
@@ -114,6 +116,7 @@ export const properties: Property[] = [
     unitNumber: "Cobertura 01",
     boxNumber: "Box 01, 02, 03",
     keysLocation: "Com o proprietário",
+    ownerType: "Construtora",
   },
   {
     id: "3",
@@ -148,6 +151,7 @@ export const properties: Property[] = [
     quadra: "Q-05",
     lote: "L-18",
     keysLocation: "Na portaria do condomínio",
+    ownerType: "Construtora",
   },
   {
     id: "4",
@@ -180,6 +184,7 @@ export const properties: Property[] = [
     empreendimento: "Centro Comercial Capão",
     unitNumber: "Sala 205",
     keysLocation: "Na administradora do prédio",
+    ownerType: "Investidor",
   },
   {
     id: "5",
@@ -212,6 +217,7 @@ export const properties: Property[] = [
     empreendimento: "Cond. Bosque do Litoral",
     quadra: "Q-12",
     lote: "L-07",
+    ownerType: "Particular",
   },
   {
     id: "6",
@@ -245,6 +251,7 @@ export const properties: Property[] = [
     empreendimento: "Residencial Atlântida",
     unitNumber: "Ap 104",
     boxNumber: "Box 08",
+    ownerType: "Particular",
   },
 ];
 
