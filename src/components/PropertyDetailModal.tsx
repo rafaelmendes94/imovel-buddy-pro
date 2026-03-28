@@ -268,11 +268,10 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
     toast.success("Ficha do imóvel baixada!");
   };
 
-  // -- Download from Drive (keys) --
-  const handleDriveDownload = () => {
-    toast.info("Abrindo pasta de chaves no Drive...", { description: "Conecte sua conta do Google Drive para acessar os documentos do imóvel." });
-    // Simulate opening drive folder for keys
-    window.open(`https://drive.google.com/drive/search?q=${encodeURIComponent(property.title + " chaves")}`, "_blank");
+  // -- Download material completo --
+  const handleMaterialDownload = () => {
+    toast.info("Preparando material completo...", { description: "Fotos, plantas, documentos e fichas do imóvel." });
+    window.open(`https://drive.google.com/drive/search?q=${encodeURIComponent(property.title + " material")}`, "_blank");
   };
 
   // -- Editable field component --
@@ -360,8 +359,8 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
             <button onClick={handleDownload} className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-blue-600" title="Baixar ficha">
               <Download className="w-4.5 h-4.5" />
             </button>
-            <button onClick={handleDriveDownload} className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-purple-600" title="Baixar do Drive (Chaves)">
-              <Key className="w-4.5 h-4.5" />
+            <button onClick={handleMaterialDownload} className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-purple-600" title="Material Completo">
+              <Download className="w-4.5 h-4.5" />
             </button>
             <button onClick={handleClose} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
               <X className="w-5 h-5 text-gray-500" />
@@ -449,8 +448,8 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
           <button onClick={handleDownload} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
             <Download className="w-4 h-4 text-blue-500" /> Baixar Ficha
           </button>
-          <button onClick={handleDriveDownload} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
-            <Key className="w-4 h-4 text-purple-500" /> Chaves / Drive
+          <button onClick={handleMaterialDownload} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
+            <Download className="w-4 h-4 text-purple-500" /> Material Completo
           </button>
         </div>
 
