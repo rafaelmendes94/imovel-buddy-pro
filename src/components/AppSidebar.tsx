@@ -15,9 +15,9 @@ interface NavItem {
 }
 
 const defaultNavItems: NavItem[] = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/" },
+  { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
   { icon: FileText, label: "Relatórios", path: "/relatorios" },
-  { icon: Globe, label: "Site", path: "/site" },
+  { icon: Globe, label: "Site", path: "/site-editor" },
   { icon: Building2, label: "Imóveis", path: "/imoveis" },
   { icon: Building, label: "Edifícios", path: "/edificios" },
   { icon: Fence, label: "Condomínios", path: "/condominios" },
