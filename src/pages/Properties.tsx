@@ -985,24 +985,33 @@ function PropertyRow({
           </div>
         </div>
 
-        {/* ── BLOCK 3: Corretor + WhatsApp + Datas ── */}
-        <div className="px-4 border-r border-border flex flex-col justify-center w-[170px] flex-shrink-0">
-          <div className="flex items-center gap-2 mb-1.5">
-            <img src={broker.photo} alt={property.broker} className="w-7 h-7 rounded-full object-cover border border-accent flex-shrink-0" />
-            <div className="min-w-0">
-              <p className="text-[11px] font-semibold text-foreground truncate leading-tight">{property.broker}</p>
-              <p className="text-[9px] text-muted-foreground">Corretor(a)</p>
+        {/* ── BLOCK 3: Proprietário + Corretor + Datas ── */}
+        <div className="px-4 border-r border-border flex flex-col justify-center w-[185px] flex-shrink-0">
+          {property.owner && (
+            <div className="mb-1.5" onClick={(e) => e.stopPropagation()}>
+              <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Proprietário</p>
+              <button
+                className="text-[11px] font-semibold text-foreground hover:text-primary transition-colors truncate block max-w-full text-left"
+                onClick={() => onFilterByOwner?.(property.owner!)}
+                title={`Ver todos imóveis de ${property.owner}`}
+              >{property.owner}</button>
+              {property.ownerPhone && (
+                <a
+                  href={`https://wa.me/${property.ownerPhone}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-[10px] text-emerald-500 hover:text-emerald-400 transition-colors mt-0.5"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Phone className="w-2.5 h-2.5" /> {property.ownerPhone.replace(/^55/, "").replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3")}
+                </a>
+              )}
             </div>
+          )}
+          <div className="flex items-center gap-1.5 mb-1">
+            <img src={broker.photo} alt={property.broker} className="w-5 h-5 rounded-full object-cover border border-accent flex-shrink-0" />
+            <p className="text-[10px] text-muted-foreground truncate">{property.broker}</p>
           </div>
-          <a
-            href={`https://wa.me/${broker.whatsapp}?text=${whatsappMessage}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-1 px-2 py-1 rounded-md bg-emerald-600 text-white text-[10px] font-bold hover:bg-emerald-700 transition-colors mb-1.5"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Phone className="w-2.5 h-2.5" /> WhatsApp
-          </a>
           <div className="text-[9px] text-muted-foreground space-y-0">
             <div className="flex justify-between"><span>Inclusão:</span><span className="font-medium text-foreground">{createdFormatted}</span></div>
             <div className="flex justify-between"><span>Atualização:</span><span className={cn("font-semibold", updateColor)}>{updatedFormatted}</span></div>
