@@ -622,6 +622,8 @@ export default function Properties() {
                 onPriceChange={handlePriceChange}
                 allProperties={propertyList}
                 onDealLabelChange={handleDealLabelChange}
+                onNavigateToValuation={handleNavigateToValuation}
+                onNavigateToContract={handleNavigateToContract}
               />
             ))}
           </div>
