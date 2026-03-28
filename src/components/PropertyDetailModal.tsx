@@ -600,10 +600,10 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
             </div>
           </div>
 
-          {/* Valores, Pagamento e Classificação */}
+          {/* Valor e Condições de Pagamento */}
           <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
             <p className="text-sm font-bold text-gray-800 uppercase tracking-wider mb-4 flex items-center gap-1.5">
-              <DollarSign className="w-4 h-4 text-amber-500" /> Valores e Negócio
+              <DollarSign className="w-4 h-4 text-amber-500" /> Valor e Condições de Pagamento
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div>
@@ -652,7 +652,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
             </div>
 
             {/* Toggles */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-4">
+            <div className="flex items-center gap-4 mt-4">
               <div className="flex items-center gap-3">
                 <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Aceita Permuta</label>
                 <button
@@ -668,40 +668,6 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                   )}
                 >
                   <span className={cn("absolute w-4 h-4 rounded-full bg-white top-1 transition-all shadow-sm", property.acceptsExchange ? "left-5" : "left-1")} />
-                </button>
-              </div>
-              <div className="flex items-center gap-3">
-                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Vista Mar</label>
-                <button
-                  onClick={() => {
-                    if (onUpdateProperty) {
-                      updateProperty({ ...property, seaView: !property.seaView });
-                      toast.success(property.seaView ? "Vista mar desativada" : "Vista mar ativada");
-                    }
-                  }}
-                  className={cn(
-                    "w-10 h-6 rounded-full transition-colors relative",
-                    property.seaView ? "bg-blue-500" : "bg-gray-300"
-                  )}
-                >
-                  <span className={cn("absolute w-4 h-4 rounded-full bg-white top-1 transition-all shadow-sm", property.seaView ? "left-5" : "left-1")} />
-                </button>
-              </div>
-              <div className="flex items-center gap-3">
-                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Decorado</label>
-                <button
-                  onClick={() => {
-                    if (onUpdateProperty) {
-                      updateProperty({ ...property, decorated: !property.decorated });
-                      toast.success(property.decorated ? "Decorado desativado" : "Decorado ativado");
-                    }
-                  }}
-                  className={cn(
-                    "w-10 h-6 rounded-full transition-colors relative",
-                    property.decorated ? "bg-purple-500" : "bg-gray-300"
-                  )}
-                >
-                  <span className={cn("absolute w-4 h-4 rounded-full bg-white top-1 transition-all shadow-sm", property.decorated ? "left-5" : "left-1")} />
                 </button>
               </div>
             </div>
