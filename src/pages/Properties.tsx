@@ -485,6 +485,8 @@ export default function Properties() {
                     {streets.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </div>
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Quartos (mín.)</label>
                   <select value={filterBedrooms} onChange={(e) => setFilterBedrooms(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
                     <option value="">Qualquer</option>
                     <option value="1">1+</option><option value="2">2+</option><option value="3">3+</option><option value="4">4+</option>
