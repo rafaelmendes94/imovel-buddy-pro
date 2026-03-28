@@ -1022,6 +1022,20 @@ function PropertyRow({
 
         {/* ── COL 2: Identidade + Dados Técnicos ── */}
         <div className="flex-1 min-w-0 border-r border-border px-3 py-2 flex flex-col justify-center gap-1">
+          {/* Quick status selector */}
+          <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+            {allStatuses.map((s) => {
+              const cfg = statusConfig[s];
+              const active = s === property.status;
+              return (
+                <button key={s} onClick={() => handleStatusChange(s)}
+                  className={cn("px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wide transition-all",
+                    active ? `${cfg.bg} ${cfg.color} ${cfg.border} border` : "text-muted-foreground hover:bg-muted"
+                  )}
+                >{statusLabels[s]}</button>
+              );
+            })}
+          </div>
           {/* Title */}
           <h3
             className="font-bold text-card-foreground text-sm truncate hover:text-primary cursor-pointer transition-colors leading-tight"
