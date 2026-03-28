@@ -1392,8 +1392,8 @@ function PropertyRow({
                   <Eye className="w-3 h-3" /> {property.vista}
                 </span>
               )}
-              {property.seaView && <span className="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 font-bold whitespace-nowrap">🌊 Vista Mar</span>}
-              {property.decorated && <span className="px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 font-bold whitespace-nowrap">🎨 Decorado</span>}
+              {property.seaView && !property.vista?.toLowerCase().includes("mar") && <span className="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 font-bold whitespace-nowrap">🌊 Vista Mar</span>}
+              {property.decorated && !property.condicao?.toLowerCase().includes("decorado") && <span className="px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 font-bold whitespace-nowrap">🎨 Decorado</span>}
               {property.condicao && (
                 <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500 font-semibold whitespace-nowrap">
                   🏠 {property.condicao}
