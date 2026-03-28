@@ -852,6 +852,106 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
             </div>
           </div>
 
+          {/* Características do Imóvel */}
+          <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
+            <p className="text-sm font-bold text-gray-800 uppercase tracking-wider mb-4 flex items-center gap-1.5">
+              <Building2 className="w-4 h-4 text-amber-500" /> Características do Imóvel
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {/* Posição no Prédio */}
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Posição no Prédio</label>
+                <select
+                  value={property.posicaoPredio || ""}
+                  onChange={(e) => {
+                    if (onUpdateProperty) {
+                      updateProperty({ ...property, posicaoPredio: e.target.value || undefined });
+                      toast.success("Posição atualizada!");
+                    }
+                  }}
+                  className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                >
+                  <option value="">Selecione</option>
+                  <option value="Frente">Frente</option>
+                  <option value="Fundos">Fundos</option>
+                  <option value="Lateral Esquerda">Lateral Esquerda</option>
+                  <option value="Lateral Direita">Lateral Direita</option>
+                  <option value="Frente/Lateral">Frente/Lateral</option>
+                  <option value="Fundos/Lateral">Fundos/Lateral</option>
+                </select>
+              </div>
+              {/* Posição Solar */}
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Posição Solar</label>
+                <select
+                  value={property.posicaoSolar || ""}
+                  onChange={(e) => {
+                    if (onUpdateProperty) {
+                      updateProperty({ ...property, posicaoSolar: e.target.value || undefined });
+                      toast.success("Posição solar atualizada!");
+                    }
+                  }}
+                  className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                >
+                  <option value="">Selecione</option>
+                  <option value="Nascente">Nascente (Sol da manhã)</option>
+                  <option value="Poente">Poente (Sol da tarde)</option>
+                  <option value="Norte">Norte</option>
+                  <option value="Sul">Sul</option>
+                  <option value="Nascente/Norte">Nascente/Norte</option>
+                  <option value="Poente/Sul">Poente/Sul</option>
+                </select>
+              </div>
+            </div>
+            {/* Infraestrutura */}
+            <div className="mt-4">
+              <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 block">Infraestrutura</label>
+              <div className="flex flex-wrap gap-2">
+                {["Piscina", "Churrasqueira", "Salão de Festas", "Academia", "Sauna", "Espaço Gourmet", "Brinquedoteca", "Playground", "Quadra", "Portaria 24h", "Elevador", "Jardim"].map((item) => {
+                  const isActive = property.infraestrutura?.includes(item);
+                  return (
+                    <button
+                      key={item}
+                      onClick={() => {
+                        if (!onUpdateProperty) return;
+                        const current = property.infraestrutura || [];
+                        const updated = isActive
+                          ? current.filter(i => i !== item)
+                          : [...current, item];
+                        updateProperty({ ...property, infraestrutura: updated });
+                        toast.success(isActive ? `"${item}" removido` : `"${item}" adicionado`);
+                      }}
+                      className={cn(
+                        "px-3 py-1.5 rounded-lg text-xs font-bold border transition-all",
+                        isActive
+                          ? "bg-amber-50 text-amber-700 border-amber-300"
+                          : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50"
+                      )}
+                    >
+                      {item}
+                    </button>
+                  );
+                })}
+              </div>
+              {property.infraestrutura?.includes("Elevador") && (
+                <div className="flex items-center gap-2 mt-2">
+                  <label className="text-[11px] font-bold text-gray-500 whitespace-nowrap">Qtd. Elevadores:</label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={20}
+                    value={property.elevadores || 1}
+                    onChange={(e) => {
+                      if (!onUpdateProperty) return;
+                      updateProperty({ ...property, elevadores: parseInt(e.target.value) || 1 });
+                    }}
+                    className="w-16 px-2 py-1 rounded border border-input text-xs bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Video section */}
           <div className="rounded-xl overflow-hidden border border-gray-200">
             <button onClick={() => setShowVideo(!showVideo)} className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors">
