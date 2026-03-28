@@ -35,6 +35,10 @@ export interface Property {
   keysLocation?: string;
   description?: string;
   updatedAt?: string;
+  posicaoPredio?: string;
+  posicaoSolar?: string;
+  infraestrutura?: string[];
+  vista?: string;
   ownerType?: "Construtora" | "Investidor" | "Particular" | "Adm Comercial";
   priceInstallment?: number;
   commission?: number;
@@ -98,6 +102,10 @@ export const properties: Property[] = [
     commission: 5,
     bonus: 2000,
     bonusExpiry: "2026-04-30",
+    posicaoPredio: "Frente",
+    posicaoSolar: "Nascente",
+    infraestrutura: ["Piscina", "Churrasqueira", "Salão de Festas", "Academia"],
+    vista: "Mar",
   },
   {
     id: "2",
@@ -140,6 +148,10 @@ export const properties: Property[] = [
     commission: 6,
     bonus: 5000,
     bonusExpiry: "2026-05-15",
+    posicaoPredio: "Lateral Esquerda",
+    posicaoSolar: "Poente",
+    infraestrutura: ["Piscina", "Sauna", "Espaço Gourmet", "Brinquedoteca"],
+    vista: "Mar / Lago",
   },
   {
     id: "3",
