@@ -1064,12 +1064,17 @@ function PropertyRow({
 
         {/* ── COL 2: Identidade + Dados Técnicos ── */}
         <div className="flex-1 min-w-0 border-r border-border px-3 py-2 flex flex-col justify-center gap-1">
-          {/* Title */}
-          <h3
-            className="font-bold text-card-foreground text-sm truncate hover:text-primary cursor-pointer transition-colors leading-tight"
-            onClick={() => onFilterByTitle?.(property.title)}
-            title="Ver títulos semelhantes"
-          >{property.title}</h3>
+          {/* Title + Code */}
+          <div className="flex items-center gap-2">
+            {property.code && (
+              <span className="text-[10px] font-black text-primary bg-primary/10 px-1.5 py-0.5 rounded">{property.code}</span>
+            )}
+            <h3
+              className="font-bold text-card-foreground text-sm truncate hover:text-primary cursor-pointer transition-colors leading-tight"
+              onClick={() => onFilterByTitle?.(property.title)}
+              title="Ver títulos semelhantes"
+            >{property.title}</h3>
+          </div>
 
           {/* Empreendimento + Unit info row */}
           <div className="flex items-center gap-2 flex-wrap text-[10px]">
