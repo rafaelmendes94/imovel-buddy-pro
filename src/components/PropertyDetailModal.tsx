@@ -69,10 +69,14 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
       const updated = { ...property };
       switch (field) {
         case "title": updated.title = val; break;
+        case "code": updated.code = val; break;
         case "price": updated.price = Number(val) || property.price; break;
+        case "priceInstallment": updated.priceInstallment = Number(val) || 0; break;
         case "address": updated.address = val; break;
         case "city": updated.city = val; break;
+        case "neighborhood": updated.neighborhood = val; break;
         case "area": updated.area = Number(val) || property.area; break;
+        case "privateArea": updated.privateArea = Number(val) || 0; break;
         case "bedrooms": updated.bedrooms = Number(val) || 0; break;
         case "bathrooms": updated.bathrooms = Number(val) || 0; break;
         case "parking": updated.parking = Number(val) || 0; break;
@@ -82,6 +86,19 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
         case "vista": updated.vista = val; break;
         case "condicao": updated.condicao = val as Property["condicao"]; break;
         case "infraestrutura": updated.infraestrutura = val.split(",").map(s => s.trim()).filter(Boolean); break;
+        case "empreendimento": updated.empreendimento = val || undefined; break;
+        case "unitNumber": updated.unitNumber = val || undefined; break;
+        case "boxNumber": updated.boxNumber = val || undefined; break;
+        case "quadra": updated.quadra = val || undefined; break;
+        case "lote": updated.lote = val || undefined; break;
+        case "keysLocation": updated.keysLocation = val || undefined; break;
+        case "exclusivityTerm": updated.exclusivityTerm = val || undefined; break;
+        case "owner": updated.owner = val || undefined; break;
+        case "ownerPhone": updated.ownerPhone = val || undefined; break;
+        case "broker": updated.broker = val; break;
+        case "commission": updated.commission = Number(val) || undefined; break;
+        case "bonus": updated.bonus = Number(val) || undefined; break;
+        case "bonusExpiry": updated.bonusExpiry = val || undefined; break;
       }
       updateProperty(updated);
       toast.success("Informação atualizada!");
