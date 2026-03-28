@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
+import { AppLayout } from "@/components/AppLayout";
 import {
   FileText, ScrollText, Receipt, CreditCard, FileSignature, ShieldCheck,
   Sparkles, Loader2, Download, Copy, ArrowLeft, ChevronRight, Pencil, Check, X,
