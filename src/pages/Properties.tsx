@@ -874,7 +874,7 @@ function PropertyCard({
   );
 }
 
-// ---- PropertyRow (enhanced) ----
+// ---- PropertyRow (5 blocks) ----
 function PropertyRow({
   property, onStatusChange, onSelect, isFavorited, onToggleFavorite, onFilterByTitle, onFilterByCondition, onFilterByOwner,
 }: {
@@ -889,8 +889,6 @@ function PropertyRow({
 }) {
   const [showCelebration, setShowCelebration] = useState(false);
   const [animatePulse, setAnimatePulse] = useState(false);
-  const broker = brokerInfo[property.broker] || { photo: "", whatsapp: "5511999999999" };
-  const whatsappMessage = encodeURIComponent(`Olá! Tenho interesse no imóvel: ${property.title} - ${formatCurrency(property.price)}`);
 
   const handleStatusChange = (newStatus: Property["status"]) => {
     if (newStatus === "Vendido" && property.status !== "Vendido") {
@@ -907,68 +905,89 @@ function PropertyRow({
   const daysSinceUpdate = Math.floor((new Date().getTime() - new Date(updatedDate).getTime()) / (1000 * 60 * 60 * 24));
   const updateColor = daysSinceUpdate <= 30 ? "text-emerald-500" : daysSinceUpdate <= 60 ? "text-amber-500" : "text-destructive";
 
+  const ownerTypeConfig: Record<string, { icon: typeof User; color: string }> = {
+    Construtora: { icon: Building2, color: "text-blue-400 bg-blue-500/10" },
+    Investidor: { icon: DollarSign, color: "text-amber-400 bg-amber-500/10" },
+    Particular: { icon: User, color: "text-emerald-400 bg-emerald-500/10" },
+    "Adm Comercial": { icon: ShieldCheck, color: "text-purple-400 bg-purple-500/10" },
+  };
+
+  const ownerTypeInfo = property.ownerType ? ownerTypeConfig[property.ownerType] : null;
+
   return (
     <div className={cn("elevated-card rounded-xl relative overflow-hidden transition-all duration-300", animatePulse && "animate-sold-pulse")}>
       {showCelebration && <SoldCelebration />}
 
-      {/* Main row */}
-      <div className="px-3 py-2.5 flex items-center gap-0">
+      <div className="px-2 py-2 flex items-stretch gap-0">
 
-        {/* ── BLOCK 1: Foto + Imóvel + Localização ── */}
-        <div className="flex gap-2.5 items-center min-w-0 flex-1 pr-4 border-r border-border cursor-pointer" onClick={() => onSelect?.(property)}>
-          <img src={property.images[0] || property.image} alt={property.title} className="w-[72px] h-[72px] rounded-lg object-cover flex-shrink-0" />
+        {/* ── BLOCO 1: Foto + Empreendimento/Edifício + Localização ── */}
+        <div className="flex gap-2 items-center min-w-0 w-[240px] flex-shrink-0 pr-3 border-r border-border cursor-pointer" onClick={() => onSelect?.(property)}>
+          <img src={property.images[0] || property.image} alt={property.title} className="w-[76px] h-[76px] rounded-lg object-cover flex-shrink-0" />
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <h3
-                className="font-semibold text-card-foreground text-[13px] truncate hover:text-primary cursor-pointer transition-colors"
-                onClick={(e) => { e.stopPropagation(); onFilterByTitle?.(property.title); }}
-                title="Ver títulos semelhantes"
-              >{property.title}</h3>
-              <span className={cn("px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide flex-shrink-0",
-                property.status === "Vendido" ? "bg-red-500/10 text-red-400" :
-                property.status === "Reservado" ? "bg-amber-500/10 text-amber-400" :
-                property.status === "Alugado" ? "bg-blue-500/10 text-blue-400" :
-                "bg-emerald-500/10 text-emerald-400"
-              )}>{property.status}</span>
-            </div>
-            <div className="flex items-center gap-1.5 mt-0.5" onClick={(e) => e.stopPropagation()}>
-              {property.empreendimento && (
-                <Link
-                  to={`/empreendimento/${property.empreendimento.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`}
-                  className="text-[10px] font-semibold text-accent hover:underline truncate"
-                >{property.empreendimento}</Link>
-              )}
-              {[property.unitNumber, property.boxNumber, property.quadra, property.lote].filter(Boolean).map((part) => (
-                <span key={part} className="text-[10px] text-muted-foreground">· {part}</span>
-              ))}
-              <span className="text-[10px] text-muted-foreground font-medium">· {property.type}</span>
-            </div>
-            <div className="flex items-center gap-2.5 mt-0.5">
-              <button
-                className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-primary transition-colors"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${property.address}, ${property.city}`)}`, "_blank");
-                }}
-              >
-                <MapPin className="w-2.5 h-2.5" />{property.address}, {property.city}
-              </button>
-              <span className="text-border">|</span>
-              <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                {property.bedrooms > 0 && <span className="flex items-center gap-0.5"><BedDouble className="w-2.5 h-2.5" />{property.bedrooms}</span>}
-                {property.bathrooms > 0 && <span className="flex items-center gap-0.5"><Bath className="w-2.5 h-2.5" />{property.bathrooms}</span>}
-                {property.parking > 0 && <span className="flex items-center gap-0.5"><Car className="w-2.5 h-2.5" />{property.parking}</span>}
-                <span className="flex items-center gap-0.5"><Ruler className="w-2.5 h-2.5" />{property.area}m²</span>
-                {property.seaView && <span className="text-blue-400">🌊</span>}
-                {property.decorated && <span className="text-purple-400">🎨</span>}
-                {property.acceptsExchange && <span className="text-emerald-400">🔄</span>}
+            {property.empreendimento && (
+              <Link
+                to={`/empreendimento/${property.empreendimento.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`}
+                className="text-[11px] font-bold text-accent hover:underline truncate block"
+                onClick={(e) => e.stopPropagation()}
+                title="Abrir página do empreendimento"
+              >{property.empreendimento}</Link>
+            )}
+            {[property.unitNumber, property.boxNumber, property.quadra, property.lote].filter(Boolean).length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-0.5">
+                {[property.unitNumber, property.boxNumber, property.quadra, property.lote].filter(Boolean).map((part) => (
+                  <span key={part} className="text-[9px] text-muted-foreground bg-muted px-1 py-0 rounded">{part}</span>
+                ))}
               </div>
+            )}
+            <button
+              className="flex items-center gap-1 mt-1 text-[10px] text-muted-foreground hover:text-primary transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${property.address}, ${property.city}`)}`, "_blank");
+              }}
+              title="Abrir no Google Maps"
+            >
+              <MapPin className="w-2.5 h-2.5 flex-shrink-0" />
+              <span className="truncate">{property.address}, {property.city}</span>
+            </button>
+            <div className="flex items-center gap-1 mt-0.5 text-[10px] text-muted-foreground">
+              <Key className="w-2.5 h-2.5 flex-shrink-0" />
+              <span className="truncate">{property.keysLocation || "Não informado"}</span>
             </div>
           </div>
         </div>
 
-        {/* ── BLOCK 2: Preço + Condições + Chaves ── */}
-        <div className="px-4 border-r border-border flex flex-col justify-center w-[155px] flex-shrink-0">
+        {/* ── BLOCO 2: Título + Status + Tipo + Dormitórios + Dados ── */}
+        <div className="px-3 border-r border-border flex flex-col justify-center w-[200px] flex-shrink-0">
+          <div className="flex items-center gap-1.5">
+            <h3
+              className="font-semibold text-card-foreground text-[12px] truncate hover:text-primary cursor-pointer transition-colors"
+              onClick={() => onFilterByTitle?.(property.title)}
+              title="Ver títulos semelhantes"
+            >{property.title}</h3>
+            <span className={cn("px-1 py-0 rounded text-[8px] font-bold uppercase tracking-wide flex-shrink-0",
+              property.status === "Vendido" ? "bg-red-500/10 text-red-400" :
+              property.status === "Reservado" ? "bg-amber-500/10 text-amber-400" :
+              property.status === "Alugado" ? "bg-blue-500/10 text-blue-400" :
+              "bg-emerald-500/10 text-emerald-400"
+            )}>{property.status}</span>
+          </div>
+          <span className="text-[10px] font-medium text-primary mt-0.5">{property.type}</span>
+          <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">
+            {property.bedrooms > 0 && <span className="flex items-center gap-0.5"><BedDouble className="w-2.5 h-2.5" />{property.bedrooms}</span>}
+            {property.bathrooms > 0 && <span className="flex items-center gap-0.5"><Bath className="w-2.5 h-2.5" />{property.bathrooms}</span>}
+            {property.parking > 0 && <span className="flex items-center gap-0.5"><Car className="w-2.5 h-2.5" />{property.parking}</span>}
+            <span className="flex items-center gap-0.5"><Ruler className="w-2.5 h-2.5" />{property.area}m²</span>
+          </div>
+          <div className="flex gap-1 mt-1">
+            {property.seaView && <span className="text-[8px] px-1 rounded bg-blue-500/10 text-blue-400 font-bold">🌊 Mar</span>}
+            {property.decorated && <span className="text-[8px] px-1 rounded bg-purple-500/10 text-purple-400 font-bold">🎨 Dec.</span>}
+            {property.acceptsExchange && <span className="text-[8px] px-1 rounded bg-emerald-500/10 text-emerald-400 font-bold">🔄 Permuta</span>}
+          </div>
+        </div>
+
+        {/* ── BLOCO 3: Valor + Condições + Datas ── */}
+        <div className="px-3 border-r border-border flex flex-col justify-center w-[160px] flex-shrink-0">
           <p className="text-sm font-bold text-accent leading-tight">{formatCurrency(property.price)}</p>
           {property.paymentConditions && property.paymentConditions.length > 0 && (
             <div className="flex flex-wrap gap-0.5 mt-1" onClick={(e) => e.stopPropagation()}>
@@ -980,19 +999,24 @@ function PropertyRow({
               ))}
             </div>
           )}
-          <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-1">
-            <Key className="w-3 h-3 flex-shrink-0" />
-            <span className="truncate">{property.keysLocation || "Não informado"}</span>
+          <div className="mt-1.5 text-[9px] text-muted-foreground space-y-0">
+            <div className="flex justify-between gap-1">
+              <span className="flex items-center gap-0.5"><CalendarCheck className="w-2.5 h-2.5" />Inclusão:</span>
+              <span className="font-medium text-foreground">{createdFormatted}</span>
+            </div>
+            <div className="flex justify-between gap-1">
+              <span className="flex items-center gap-0.5"><CalendarClock className="w-2.5 h-2.5" />Atualiz.:</span>
+              <span className={cn("font-semibold", updateColor)}>{updatedFormatted}</span>
+            </div>
           </div>
         </div>
 
-        {/* ── BLOCK 3: Proprietário + Corretor + Datas ── */}
-        <div className="px-4 border-r border-border flex flex-col justify-center w-[185px] flex-shrink-0">
-          {property.owner && (
-            <div className="mb-1.5" onClick={(e) => e.stopPropagation()}>
-              <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Proprietário</p>
+        {/* ── BLOCO 4: Proprietário + Tipo + Exclusividade ── */}
+        <div className="px-3 border-r border-border flex flex-col justify-center w-[175px] flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+          {property.owner ? (
+            <>
               <button
-                className="text-[11px] font-semibold text-foreground hover:text-primary transition-colors truncate block max-w-full text-left"
+                className="text-[11px] font-semibold text-foreground hover:text-primary transition-colors truncate block text-left"
                 onClick={() => onFilterByOwner?.(property.owner!)}
                 title={`Ver todos imóveis de ${property.owner}`}
               >{property.owner}</button>
@@ -1002,50 +1026,58 @@ function PropertyRow({
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-1 text-[10px] text-emerald-500 hover:text-emerald-400 transition-colors mt-0.5"
-                  onClick={(e) => e.stopPropagation()}
                 >
                   <Phone className="w-2.5 h-2.5" /> {property.ownerPhone.replace(/^55/, "").replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3")}
                 </a>
               )}
-            </div>
+              {ownerTypeInfo && (
+                <span className={cn("inline-flex items-center gap-1 mt-1 px-1.5 py-0.5 rounded text-[9px] font-bold w-fit", ownerTypeInfo.color)}>
+                  <ownerTypeInfo.icon className="w-2.5 h-2.5" /> {property.ownerType}
+                </span>
+              )}
+            </>
+          ) : (
+            <span className="text-[10px] text-muted-foreground">Sem proprietário</span>
           )}
-          <div className="flex items-center gap-1.5 mb-1">
-            <img src={broker.photo} alt={property.broker} className="w-5 h-5 rounded-full object-cover border border-accent flex-shrink-0" />
-            <p className="text-[10px] text-muted-foreground truncate">{property.broker}</p>
-          </div>
-          <div className="text-[9px] text-muted-foreground space-y-0">
-            <div className="flex justify-between"><span>Inclusão:</span><span className="font-medium text-foreground">{createdFormatted}</span></div>
-            <div className="flex justify-between"><span>Atualização:</span><span className={cn("font-semibold", updateColor)}>{updatedFormatted}</span></div>
-          </div>
+          {property.exclusivityTerm && (
+            <span className="inline-flex items-center gap-1 mt-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-500/10 text-amber-400 w-fit">
+              <FileCheck className="w-2.5 h-2.5" /> Exclusividade
+            </span>
+          )}
         </div>
 
-        {/* ── BLOCK 4: Ações ── */}
-        <div className="pl-3 flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+        {/* ── BLOCO 5: Ações ── */}
+        <div className="pl-2 flex flex-col items-center justify-center gap-1" onClick={(e) => e.stopPropagation()}>
+          <button
+            onClick={() => onSelect?.(property)}
+            className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors" title="Editar dados"
+          ><Pencil className="w-3 h-3 text-primary" /></button>
           <button
             onClick={async () => {
               const shareData = { title: property.title, text: `${property.title} - ${formatCurrency(property.price)}\n${property.address}, ${property.city}`, url: window.location.href };
               if (navigator.share) { try { await navigator.share(shareData); } catch { /* cancelled */ } }
               else { await navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`); toast.success("Link copiado!"); }
             }}
-            className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors" title="Compartilhar"
-          ><Share2 className="w-3.5 h-3.5 text-foreground" /></button>
+            className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors" title="Compartilhar"
+          ><Share2 className="w-3 h-3 text-foreground" /></button>
           <button
             onClick={() => {
-              const content = `FICHA: ${property.title}\nPreço: ${formatCurrency(property.price)}\nEndereço: ${property.address}, ${property.city}\nÁrea: ${property.area}m² | Quartos: ${property.bedrooms} | Vagas: ${property.parking}\nCorretor: ${property.broker}`;
-              const blob = new Blob([content], { type: "text/plain;charset=utf-8" }); const url = URL.createObjectURL(blob);
-              const a = document.createElement("a"); a.href = url; a.download = `ficha_${property.title.replace(/\s+/g, "_").toLowerCase()}.txt`; a.click(); URL.revokeObjectURL(url); toast.success("Ficha baixada!");
+              property.images.forEach((img, i) => {
+                const a = document.createElement("a"); a.href = img; a.download = `${property.title.replace(/\s+/g, "_")}_foto_${i + 1}.jpg`; a.target = "_blank"; a.click();
+              });
+              toast.success(`${property.images.length} foto(s) baixando...`);
             }}
-            className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors" title="Baixar ficha"
-          ><Download className="w-3.5 h-3.5 text-foreground" /></button>
+            className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors" title="Baixar fotos"
+          ><Image className="w-3 h-3 text-foreground" /></button>
           <button
             onClick={() => { toast.info("Abrindo Drive..."); window.open(`https://drive.google.com/drive/search?q=${encodeURIComponent(property.title)}`, "_blank"); }}
-            className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors" title="Baixar do Drive"
-          ><FileCode className="w-3.5 h-3.5 text-foreground" /></button>
+            className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors" title="Drive completo"
+          ><FolderDown className="w-3 h-3 text-foreground" /></button>
           <button
             onClick={() => onToggleFavorite?.(property.id)}
-            className={cn("w-8 h-8 rounded-lg flex items-center justify-center transition-colors", isFavorited ? "bg-red-500/10 text-red-500" : "bg-secondary text-muted-foreground hover:text-red-500")}
+            className={cn("w-7 h-7 rounded-lg flex items-center justify-center transition-colors", isFavorited ? "bg-red-500/10 text-red-500" : "bg-secondary text-muted-foreground hover:text-red-500")}
             title="Favoritar"
-          ><Heart className={cn("w-3.5 h-3.5", isFavorited && "fill-current")} /></button>
+          ><Heart className={cn("w-3 h-3", isFavorited && "fill-current")} /></button>
         </div>
       </div>
     </div>
