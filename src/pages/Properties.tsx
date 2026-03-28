@@ -460,7 +460,12 @@ export default function Properties() {
           {/* Advanced Filters Panel */}
           {showFilters && (
             <div className="bg-card border border-border rounded-xl p-4">
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-10 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 xl:grid-cols-12 gap-3">
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Código</label>
+                  <input type="text" value={filterCode} onChange={(e) => setFilterCode(e.target.value)} placeholder="MV01..."
+                    className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+                </div>
                 <div>
                   <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Empreendimento</label>
                   <select value={filterEmpreendimento} onChange={(e) => setFilterEmpreendimento(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
@@ -524,22 +529,22 @@ export default function Properties() {
                     <option value="500000">R$ 500 mil</option><option value="800000">R$ 800 mil</option><option value="1000000">R$ 1 milhão</option><option value="1500000">R$ 1,5 milhão</option><option value="2000000">R$ 2 milhões</option>
                   </select>
                 </div>
-                <div className="flex items-end gap-2">
-                  <div>
-                    <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Incluir inativos</label>
-                    <button
-                      onClick={() => setShowInactive(!showInactive)}
-                      className={`w-full px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
-                        showInactive
-                          ? "border-primary bg-primary/10 text-primary"
-                          : "border-input bg-background text-muted-foreground hover:bg-muted"
-                      }`}
-                    >
-                      {showInactive ? "✓ Vendidos/Alugados" : "Apenas ativos"}
-                    </button>
-                  </div>
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Incluir inativos</label>
+                  <button
+                    onClick={() => setShowInactive(!showInactive)}
+                    className={`w-full px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                      showInactive
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-input bg-background text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    {showInactive ? "✓ Inativos" : "Apenas ativos"}
+                  </button>
+                </div>
+                <div className="flex items-end">
                   {hasActiveFilters && (
-                    <button onClick={clearFilters} className="flex items-center gap-1 px-4 py-2 rounded-lg bg-muted text-muted-foreground text-sm font-medium hover:bg-destructive/10 hover:text-destructive transition-colors">
+                    <button onClick={clearFilters} className="flex items-center gap-1 px-4 py-2 rounded-lg bg-muted text-muted-foreground text-sm font-medium hover:bg-destructive/10 hover:text-destructive transition-colors w-full justify-center">
                       <X className="w-3.5 h-3.5" /> Limpar
                     </button>
                   )}
