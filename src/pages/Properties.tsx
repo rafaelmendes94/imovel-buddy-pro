@@ -13,8 +13,10 @@ import {
   Star, Fence, TreePine, Waves, Paintbrush, Filter, X, SlidersHorizontal,
   Phone, Heart, FileCheck, Eye, Repeat, CreditCard, DollarSign, Ban,
   Share2, CalendarCheck, CalendarClock, AlertTriangle, Pencil, Image,
-  FolderDown, User, ShieldCheck, Percent, Gift,
+  FolderDown, User, ShieldCheck, Percent, Gift, BarChart3, FileSignature,
+  TrendingUp,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
