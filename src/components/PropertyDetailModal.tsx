@@ -29,6 +29,8 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
   const [editingField, setEditingField] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<Record<string, string>>({});
   const [showOwnerPhone, setShowOwnerPhone] = useState(false);
+  const [generatingAI, setGeneratingAI] = useState<string | null>(null);
+  const [showAIOptions, setShowAIOptions] = useState(false);
 
   if (!property) return null;
 
