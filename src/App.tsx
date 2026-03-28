@@ -57,6 +57,7 @@ const App = () => (
         <AuthProvider>
           <Routes>
             {/* Public routes */}
+            <Route path="/" element={<Site />} />
             <Route path="/login" element={<Login />} />
             <Route path="/registro" element={<Registro />} />
             <Route path="/corretor/:slug" element={<BrokerSite />} />
@@ -74,7 +75,7 @@ const App = () => (
             <Route path="/painel/assinatura" element={<AuthGuard requiredRoles={["broker"]} allowBlocked><BrokerAssinatura /></AuthGuard>} />
 
             {/* Legacy routes - now require auth */}
-            <Route path="/" element={<AuthGuard><Dashboard /></AuthGuard>} />
+            <Route path="/dashboard" element={<AuthGuard><Dashboard /></AuthGuard>} />
             <Route path="/imoveis" element={<AuthGuard><Properties /></AuthGuard>} />
             <Route path="/edificios" element={<AuthGuard><Buildings /></AuthGuard>} />
             <Route path="/edificios/:id" element={<AuthGuard><BuildingDetail /></AuthGuard>} />
@@ -85,7 +86,7 @@ const App = () => (
             <Route path="/corretores" element={<AuthGuard><Brokers /></AuthGuard>} />
             <Route path="/relatorios" element={<AuthGuard><Reports /></AuthGuard>} />
             <Route path="/configuracoes" element={<AuthGuard><Settings /></AuthGuard>} />
-            <Route path="/site" element={<AuthGuard><Site /></AuthGuard>} />
+            <Route path="/site-editor" element={<AuthGuard><Site /></AuthGuard>} />
             <Route path="/todos-imoveis" element={<AuthGuard><AllProperties /></AuthGuard>} />
             <Route path="/ranking" element={<AuthGuard><RankingPage /></AuthGuard>} />
             <Route path="/avaliacoes" element={<AuthGuard><Avaliacoes /></AuthGuard>} />
