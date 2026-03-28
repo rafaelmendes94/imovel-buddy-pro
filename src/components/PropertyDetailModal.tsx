@@ -37,8 +37,8 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
   const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${property.address}, ${property.city}`)}`;
   const videoUrl = "https://www.youtube.com/embed/dQw4w9WgXcQ";
 
-  const similar = allProperties
-    .filter((p) => p.id !== property.id && (p.type === property.type || p.city === property.city))
+  const ownerProperties = allProperties
+    .filter((p) => p.id !== property.id && p.owner && property.owner && p.owner === property.owner)
     .slice(0, 6);
 
   const prevImage = (e: React.MouseEvent) => {
@@ -727,12 +727,12 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
           </div>
         </div>
 
-        {/* Similar properties */}
-        {similar.length > 0 && (
+        {/* Outros imóveis do proprietário */}
+        {ownerProperties.length > 0 && (
           <div className="border-t border-gray-100 p-5 sm:p-6">
-            <h3 className="text-base font-bold text-gray-900 mb-4">Imóveis Similares</h3>
+            <h3 className="text-base font-bold text-gray-900 mb-4">Outros imóveis de {property.owner}</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {similar.map((sp) => (
+              {ownerProperties.map((sp) => (
                 <SimilarCard key={sp.id} property={sp} onSelect={() => { setCurrentImageIndex(0); setShowVideo(false); onSelectSimilar?.(sp); }} />
               ))}
             </div>
