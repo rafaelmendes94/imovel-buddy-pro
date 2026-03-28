@@ -134,6 +134,7 @@ export const properties: Property[] = [
     id: "3",
     title: "Casa em Condomínio Xangri-lá",
     address: "Rua das Hortênsias, 300",
+    neighborhood: "Rainha do Mar",
     city: "Xangri-lá",
     type: "Casa",
     status: "Disponível",
