@@ -242,7 +242,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[2000] flex items-start justify-center overflow-y-auto p-2 sm:p-4 pt-4 sm:pt-6 pb-6 sm:pb-8" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[2000] flex items-start justify-center overflow-y-auto p-2 sm:p-4 pt-4 sm:pt-6 pb-6 sm:pb-8" onClick={handleClose}>
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl animate-in fade-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
 
         {/* Header */}
@@ -269,6 +269,11 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
           </div>
           {/* Action buttons in header */}
           <div className="flex items-center gap-1.5 flex-shrink-0">
+            {hasChanges && (
+              <button onClick={handleConfirmUpdate} className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-500 text-white text-xs font-bold hover:bg-emerald-600 transition-colors animate-in fade-in">
+                <Check className="w-3.5 h-3.5" /> Atualizar
+              </button>
+            )}
             <button onClick={handleShare} className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-amber-600" title="Compartilhar">
               <Share2 className="w-4.5 h-4.5" />
             </button>
@@ -278,7 +283,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
             <button onClick={handleDriveDownload} className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-purple-600" title="Baixar do Drive (Chaves)">
               <Key className="w-4.5 h-4.5" />
             </button>
-            <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+            <button onClick={handleClose} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
               <X className="w-5 h-5 text-gray-500" />
             </button>
           </div>
