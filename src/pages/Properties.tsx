@@ -1286,8 +1286,8 @@ function PropertyRow({
             {property.privateArea && <span className="flex items-center gap-0.5 font-semibold whitespace-nowrap"><Ruler className="w-3 h-3" />{property.privateArea}m² priv.</span>}
           </div>
 
-          {/* Row 3b: Posição, Solar, Infra, Vista */}
-          {(property.posicaoPredio || property.posicaoSolar || property.vista || (property.infraestrutura && property.infraestrutura.length > 0)) && (
+          {/* Row 3b: Posição, Solar, Infra, Vista, Vista Mar, Decorado */}
+          {(property.posicaoPredio || property.posicaoSolar || property.vista || (property.infraestrutura && property.infraestrutura.length > 0) || property.seaView || property.decorated) && (
             <div className="flex items-center gap-2 text-[10px] text-muted-foreground flex-wrap">
               {property.posicaoPredio && (
                 <span className="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-muted font-semibold whitespace-nowrap">
@@ -1304,6 +1304,8 @@ function PropertyRow({
                   <Eye className="w-3 h-3" /> {property.vista}
                 </span>
               )}
+              {property.seaView && <span className="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 font-bold whitespace-nowrap">🌊 Vista Mar</span>}
+              {property.decorated && <span className="px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 font-bold whitespace-nowrap">🎨 Decorado</span>}
               {property.infraestrutura && property.infraestrutura.length > 0 && (
                 <span className="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-muted font-semibold whitespace-nowrap">
                   🏗️ {property.infraestrutura.join(", ")}
@@ -1314,9 +1316,6 @@ function PropertyRow({
 
           {/* Row 4: Tags */}
           <div className="flex items-center gap-1.5 flex-wrap">
-            {property.seaView && <span className="text-[10px] px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 font-bold whitespace-nowrap">🌊 Vista Mar</span>}
-            {property.decorated && <span className="text-[10px] px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 font-bold whitespace-nowrap">🎨 Decorado</span>}
-            {property.acceptsExchange && <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold whitespace-nowrap">🔄 Permuta</span>}
             {property.exclusivityTerm && <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 font-bold whitespace-nowrap">📄 Exclusivo</span>}
           </div>
 
