@@ -1014,6 +1014,37 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                 </div>
               )}
             </div>
+            {/* Outras Características */}
+            <div className="mt-4">
+              <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 block">Outras Características</label>
+              <div className="flex flex-wrap gap-2">
+                {["Beira Lago", "Beira Rio", "Beira Mar", "Terreno Seco", "Terreno Alagadiço", "Murado", "Cercado", "Esquina", "Frente p/ Rua", "Plano", "Aclive", "Declive", "Aterrado", "Escriturado", "Financiável"].map((item) => {
+                  const isActive = property.outrasCaracteristicas?.includes(item);
+                  return (
+                    <button
+                      key={item}
+                      onClick={() => {
+                        if (!onUpdateProperty) return;
+                        const current = property.outrasCaracteristicas || [];
+                        const updated = isActive
+                          ? current.filter(i => i !== item)
+                          : [...current, item];
+                        updateProperty({ ...property, outrasCaracteristicas: updated });
+                        toast.success(isActive ? `"${item}" removido` : `"${item}" adicionado`);
+                      }}
+                      className={cn(
+                        "px-3 py-1.5 rounded-lg text-xs font-bold border transition-all",
+                        isActive
+                          ? "bg-blue-50 text-blue-700 border-blue-300"
+                          : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50"
+                      )}
+                    >
+                      {item}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
 
           {/* Video section */}

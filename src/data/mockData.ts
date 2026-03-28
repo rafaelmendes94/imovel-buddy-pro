@@ -49,6 +49,7 @@ export interface Property {
   dealLabel?: "Oferta" | "Bom Negócio" | "Normal" | "Acima da Média" | null;
   views?: number;
   padrao?: "Econômico" | "Médio Padrão" | "Alto Padrão" | "Luxo";
+  outrasCaracteristicas?: string[];
 }
 
 export interface Broker {
