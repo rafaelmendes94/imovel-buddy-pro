@@ -375,9 +375,9 @@ export default function Properties() {
           ))}
         </div>
 
-        {/* VGV Cards + Relatórios */}
-        <div className="flex items-center gap-3">
-          <div className="flex-1 bg-gradient-to-r from-primary/10 to-primary/5 border-2 border-primary/30 rounded-xl p-3 sm:p-4">
+        {/* VGV Cards */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-2 border-primary/30 rounded-xl p-3 sm:p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider text-primary">VGV Carteira Ativa</p>
@@ -393,7 +393,7 @@ export default function Properties() {
               </div>
             </div>
           </div>
-          <div className="flex-1 bg-gradient-to-r from-emerald-500/10 to-emerald-500/5 border-2 border-emerald-500/30 rounded-xl p-3 sm:p-4">
+          <div className="bg-gradient-to-r from-emerald-500/10 to-emerald-500/5 border-2 border-emerald-500/30 rounded-xl p-3 sm:p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider text-emerald-600">VGV Vendidos</p>
@@ -409,13 +409,6 @@ export default function Properties() {
               </div>
             </div>
           </div>
-          <Link
-            to="/relatorios"
-            className="flex flex-col items-center justify-center gap-1.5 bg-primary text-primary-foreground rounded-xl px-5 py-4 sm:py-5 hover:bg-primary/90 transition-colors shadow-sm flex-shrink-0"
-          >
-            <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6" />
-            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Relatórios</span>
-          </Link>
         </div>
 
         {/* Freshness Cards */}
