@@ -26,7 +26,8 @@ export interface Property {
   boxNumber?: string;
   quadra?: string;
   lote?: string;
-  exclusivityTerm?: string; // URL to PDF or image of the exclusivity term
+  exclusivityTerm?: string;
+  keysLocation?: string;
   description?: string;
   updatedAt?: string;
 }
@@ -74,6 +75,7 @@ export const properties: Property[] = [
     empreendimento: "Ed. Atlântico Sul",
     unitNumber: "Ap 302",
     boxNumber: "Box 12",
+    keysLocation: "Na imobiliária Alpha Imóveis",
   },
   {
     id: "2",
@@ -105,6 +107,7 @@ export const properties: Property[] = [
     empreendimento: "Ed. Panorama Beach",
     unitNumber: "Cobertura 01",
     boxNumber: "Box 01, 02, 03",
+    keysLocation: "Com o proprietário",
   },
   {
     id: "3",
@@ -136,6 +139,7 @@ export const properties: Property[] = [
     empreendimento: "Cond. Reserva das Dunas",
     quadra: "Q-05",
     lote: "L-18",
+    keysLocation: "Na portaria do condomínio",
   },
   {
     id: "4",
@@ -165,6 +169,7 @@ export const properties: Property[] = [
     paymentConditions: ["12x"],
     empreendimento: "Centro Comercial Capão",
     unitNumber: "Sala 205",
+    keysLocation: "Na administradora do prédio",
   },
   {
     id: "5",
