@@ -488,7 +488,6 @@ export default function Properties() {
                 </div>
               </div>
             </div>
-            </div>
           )}
         </div>
 
