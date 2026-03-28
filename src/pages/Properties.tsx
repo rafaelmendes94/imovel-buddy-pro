@@ -595,6 +595,7 @@ export default function Properties() {
                 onFilterByOwner={(owner) => { setFilterOwner(owner); setShowFilters(true); setActiveCategory("todos"); }}
                 onPriceChange={handlePriceChange}
                 allProperties={propertyList}
+                onDealLabelChange={handleDealLabelChange}
               />
             ))}
           </div>
