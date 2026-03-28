@@ -765,201 +765,136 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
 
           {/* Características do Imóvel */}
           <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
-            <p className="text-sm font-bold text-gray-800 uppercase tracking-wider mb-4 flex items-center gap-1.5">
-              <Building2 className="w-4 h-4 text-amber-500" /> Características do Imóvel
-            </p>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {/* Condição / Mobília */}
-              <div>
-                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Condição / Mobília</label>
-                <select
-                  value={property.condicao || ""}
-                  onChange={(e) => {
-                    if (onUpdateProperty) {
-                      const val = (e.target.value || undefined) as Property["condicao"];
-                      updateProperty({ ...property, condicao: val, decorated: val === "Decorado" || val === "Mobiliado" });
-                      toast.success("Condição atualizada!");
-                    }
-                  }}
-                  className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
-                >
-                  <option value="">Selecione</option>
-                  <option value="Mobiliado">🛋️ Mobiliado</option>
-                  <option value="Semi-mobiliado">🪑 Semi-mobiliado</option>
-                  <option value="Vazio">📦 Vazio</option>
-                  <option value="Decorado">🎨 Decorado</option>
-                </select>
-              </div>
-              {/* Vista */}
-              <div>
-                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Vista</label>
-                <select
-                  value={property.vista || ""}
-                  onChange={(e) => {
-                    if (onUpdateProperty) {
-                      const val = e.target.value || undefined;
-                      updateProperty({ ...property, vista: val, seaView: val === "Mar" || val === "Mar / Lago" });
-                      toast.success("Vista atualizada!");
-                    }
-                  }}
-                  className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
-                >
-                  <option value="">Selecione</option>
-                  <option value="Mar">🌊 Mar</option>
-                  <option value="Lago">💧 Lago</option>
-                  <option value="Mar / Lago">🌊💧 Mar / Lago</option>
-                  <option value="Cidade">🏙️ Cidade</option>
-                  <option value="Parque">🌳 Parque</option>
-                  <option value="Piscina">🏊 Piscina</option>
-                  <option value="Rua">🛣️ Rua</option>
-                  <option value="Interna">🏠 Interna</option>
-                </select>
-              </div>
-              {/* Padrão */}
-              <div>
-                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Padrão</label>
-                <select
-                  value={property.padrao || ""}
-                  onChange={(e) => {
-                    if (onUpdateProperty) {
-                      updateProperty({ ...property, padrao: (e.target.value || undefined) as Property["padrao"] });
-                      toast.success("Padrão atualizado!");
-                    }
-                  }}
-                  className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
-                >
-                  <option value="">Selecione</option>
-                  <option value="Econômico">Econômico</option>
-                  <option value="Médio Padrão">Médio Padrão</option>
-                  <option value="Alto Padrão">Alto Padrão</option>
-                  <option value="Luxo">Luxo</option>
-                </select>
-              </div>
-              {/* Posição no Prédio */}
-              <div>
-                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Posição no Prédio</label>
-                <select
-                  value={property.posicaoPredio || ""}
-                  onChange={(e) => {
-                    if (onUpdateProperty) {
-                      updateProperty({ ...property, posicaoPredio: e.target.value || undefined });
-                      toast.success("Posição atualizada!");
-                    }
-                  }}
-                  className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
-                >
-                  <option value="">Selecione</option>
-                  <option value="Frente">Frente</option>
-                  <option value="Fundos">Fundos</option>
-                  <option value="Lateral Esquerda">Lateral Esquerda</option>
-                  <option value="Lateral Direita">Lateral Direita</option>
-                  <option value="Frente/Lateral">Frente/Lateral</option>
-                  <option value="Fundos/Lateral">Fundos/Lateral</option>
-                </select>
-              </div>
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-sm font-bold text-gray-800 uppercase tracking-wider flex items-center gap-1.5">
+                <Building2 className="w-4 h-4 text-amber-500" /> Características do Imóvel
+              </p>
+              <button onClick={() => setEditingBlock(editingBlock === "caracteristicas" ? null : "caracteristicas")} className={cn("p-1.5 rounded-lg transition-colors", editingBlock === "caracteristicas" ? "bg-amber-100 text-amber-600" : "hover:bg-gray-200 text-gray-400")}>
+                <Pencil className="w-3.5 h-3.5" />
+              </button>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
-              {/* Posição Solar */}
-              <div>
-                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Posição Solar</label>
-                <select
-                  value={property.posicaoSolar || ""}
-                  onChange={(e) => {
-                    if (onUpdateProperty) {
-                      updateProperty({ ...property, posicaoSolar: e.target.value || undefined });
-                      toast.success("Posição solar atualizada!");
-                    }
-                  }}
-                  className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
-                >
-                  <option value="">Selecione</option>
-                  <option value="Nascente">Nascente (Sol da manhã)</option>
-                  <option value="Poente">Poente (Sol da tarde)</option>
-                  <option value="Norte">Norte</option>
-                  <option value="Sul">Sul</option>
-                  <option value="Nascente/Norte">Nascente/Norte</option>
-                  <option value="Poente/Sul">Poente/Sul</option>
-                </select>
-              </div>
-            </div>
-            {/* Infraestrutura */}
-            <div className="mt-4">
-              <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 block">Infraestrutura</label>
-              <div className="flex flex-wrap gap-2">
-                {["Piscina", "Churrasqueira", "Salão de Festas", "Academia", "Sauna", "Espaço Gourmet", "Brinquedoteca", "Playground", "Quadra", "Portaria 24h", "Elevador", "Jardim"].map((item) => {
-                  const isActive = property.infraestrutura?.includes(item);
-                  return (
-                    <button
-                      key={item}
-                      onClick={() => {
-                        if (!onUpdateProperty) return;
-                        const current = property.infraestrutura || [];
-                        const updated = isActive
-                          ? current.filter(i => i !== item)
-                          : [...current, item];
-                        updateProperty({ ...property, infraestrutura: updated });
-                        toast.success(isActive ? `"${item}" removido` : `"${item}" adicionado`);
-                      }}
-                      className={cn(
-                        "px-3 py-1.5 rounded-lg text-xs font-bold border transition-all",
-                        isActive
-                          ? "bg-amber-50 text-amber-700 border-amber-300"
-                          : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50"
-                      )}
-                    >
-                      {item}
-                    </button>
-                  );
-                })}
-              </div>
-              {property.infraestrutura?.includes("Elevador") && (
-                <div className="flex items-center gap-2 mt-2">
-                  <label className="text-[11px] font-bold text-gray-500 whitespace-nowrap">Qtd. Elevadores:</label>
-                  <input
-                    type="number"
-                    min={1}
-                    max={20}
-                    value={property.elevadores || 1}
-                    onChange={(e) => {
-                      if (!onUpdateProperty) return;
-                      updateProperty({ ...property, elevadores: parseInt(e.target.value) || 1 });
-                    }}
-                    className="w-16 px-2 py-1 rounded border border-input text-xs bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-                  />
+            {editingBlock === "caracteristicas" ? (
+              <>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div>
+                    <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Condição / Mobília</label>
+                    <select value={property.condicao || ""} onChange={(e) => { if (onUpdateProperty) { const val = (e.target.value || undefined) as Property["condicao"]; updateProperty({ ...property, condicao: val, decorated: val === "Decorado" || val === "Mobiliado" }); toast.success("Condição atualizada!"); } }} className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                      <option value="">Selecione</option>
+                      <option value="Mobiliado">🛋️ Mobiliado</option>
+                      <option value="Semi-mobiliado">🪑 Semi-mobiliado</option>
+                      <option value="Vazio">📦 Vazio</option>
+                      <option value="Decorado">🎨 Decorado</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Vista</label>
+                    <select value={property.vista || ""} onChange={(e) => { if (onUpdateProperty) { const val = e.target.value || undefined; updateProperty({ ...property, vista: val, seaView: val === "Mar" || val === "Mar / Lago" }); toast.success("Vista atualizada!"); } }} className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                      <option value="">Selecione</option>
+                      <option value="Mar">🌊 Mar</option>
+                      <option value="Lago">💧 Lago</option>
+                      <option value="Mar / Lago">🌊💧 Mar / Lago</option>
+                      <option value="Cidade">🏙️ Cidade</option>
+                      <option value="Parque">🌳 Parque</option>
+                      <option value="Piscina">🏊 Piscina</option>
+                      <option value="Rua">🛣️ Rua</option>
+                      <option value="Interna">🏠 Interna</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Padrão</label>
+                    <select value={property.padrao || ""} onChange={(e) => { if (onUpdateProperty) { updateProperty({ ...property, padrao: (e.target.value || undefined) as Property["padrao"] }); toast.success("Padrão atualizado!"); } }} className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                      <option value="">Selecione</option>
+                      <option value="Econômico">Econômico</option>
+                      <option value="Médio Padrão">Médio Padrão</option>
+                      <option value="Alto Padrão">Alto Padrão</option>
+                      <option value="Luxo">Luxo</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Posição no Prédio</label>
+                    <select value={property.posicaoPredio || ""} onChange={(e) => { if (onUpdateProperty) { updateProperty({ ...property, posicaoPredio: e.target.value || undefined }); toast.success("Posição atualizada!"); } }} className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                      <option value="">Selecione</option>
+                      <option value="Frente">Frente</option>
+                      <option value="Fundos">Fundos</option>
+                      <option value="Lateral Esquerda">Lateral Esquerda</option>
+                      <option value="Lateral Direita">Lateral Direita</option>
+                      <option value="Frente/Lateral">Frente/Lateral</option>
+                      <option value="Fundos/Lateral">Fundos/Lateral</option>
+                    </select>
+                  </div>
                 </div>
-              )}
-            </div>
-            {/* Outras Características */}
-            <div className="mt-4">
-              <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 block">Outras Características</label>
-              <div className="flex flex-wrap gap-2">
-                {["Beira Lago", "Beira Rio", "Beira Mar", "Terreno Seco", "Terreno Alagadiço", "Murado", "Cercado", "Esquina", "Frente p/ Rua", "Plano", "Aclive", "Declive", "Aterrado", "Escriturado", "Financiável"].map((item) => {
-                  const isActive = property.outrasCaracteristicas?.includes(item);
-                  return (
-                    <button
-                      key={item}
-                      onClick={() => {
-                        if (!onUpdateProperty) return;
-                        const current = property.outrasCaracteristicas || [];
-                        const updated = isActive
-                          ? current.filter(i => i !== item)
-                          : [...current, item];
-                        updateProperty({ ...property, outrasCaracteristicas: updated });
-                        toast.success(isActive ? `"${item}" removido` : `"${item}" adicionado`);
-                      }}
-                      className={cn(
-                        "px-3 py-1.5 rounded-lg text-xs font-bold border transition-all",
-                        isActive
-                          ? "bg-blue-50 text-blue-700 border-blue-300"
-                          : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50"
-                      )}
-                    >
-                      {item}
-                    </button>
-                  );
-                })}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
+                  <div>
+                    <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Posição Solar</label>
+                    <select value={property.posicaoSolar || ""} onChange={(e) => { if (onUpdateProperty) { updateProperty({ ...property, posicaoSolar: e.target.value || undefined }); toast.success("Posição solar atualizada!"); } }} className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                      <option value="">Selecione</option>
+                      <option value="Nascente">Nascente (Sol da manhã)</option>
+                      <option value="Poente">Poente (Sol da tarde)</option>
+                      <option value="Norte">Norte</option>
+                      <option value="Sul">Sul</option>
+                      <option value="Nascente/Norte">Nascente/Norte</option>
+                      <option value="Poente/Sul">Poente/Sul</option>
+                    </select>
+                  </div>
+                </div>
+                {/* Infraestrutura */}
+                <div className="mt-4">
+                  <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 block">Infraestrutura</label>
+                  <div className="flex flex-wrap gap-2">
+                    {["Piscina", "Churrasqueira", "Salão de Festas", "Academia", "Sauna", "Espaço Gourmet", "Brinquedoteca", "Playground", "Quadra", "Portaria 24h", "Elevador", "Jardim"].map((item) => {
+                      const isActive = property.infraestrutura?.includes(item);
+                      return (
+                        <button key={item} onClick={() => { if (!onUpdateProperty) return; const current = property.infraestrutura || []; const updated = isActive ? current.filter(i => i !== item) : [...current, item]; updateProperty({ ...property, infraestrutura: updated }); toast.success(isActive ? `"${item}" removido` : `"${item}" adicionado`); }}
+                          className={cn("px-3 py-1.5 rounded-lg text-xs font-bold border transition-all", isActive ? "bg-amber-50 text-amber-700 border-amber-300" : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50")}>{item}</button>
+                      );
+                    })}
+                  </div>
+                  {property.infraestrutura?.includes("Elevador") && (
+                    <div className="flex items-center gap-2 mt-2">
+                      <label className="text-[11px] font-bold text-gray-500 whitespace-nowrap">Qtd. Elevadores:</label>
+                      <input type="number" min={1} max={20} value={property.elevadores || 1} onChange={(e) => { if (!onUpdateProperty) return; updateProperty({ ...property, elevadores: parseInt(e.target.value) || 1 }); }} className="w-16 px-2 py-1 rounded border border-input text-xs bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring" />
+                    </div>
+                  )}
+                </div>
+                {/* Outras Características */}
+                <div className="mt-4">
+                  <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 block">Outras Características</label>
+                  <div className="flex flex-wrap gap-2">
+                    {["Beira Lago", "Beira Rio", "Beira Mar", "Terreno Seco", "Terreno Alagadiço", "Murado", "Cercado", "Esquina", "Frente p/ Rua", "Plano", "Aclive", "Declive", "Aterrado", "Escriturado", "Financiável"].map((item) => {
+                      const isActive = property.outrasCaracteristicas?.includes(item);
+                      return (
+                        <button key={item} onClick={() => { if (!onUpdateProperty) return; const current = property.outrasCaracteristicas || []; const updated = isActive ? current.filter(i => i !== item) : [...current, item]; updateProperty({ ...property, outrasCaracteristicas: updated }); toast.success(isActive ? `"${item}" removido` : `"${item}" adicionado`); }}
+                          className={cn("px-3 py-1.5 rounded-lg text-xs font-bold border transition-all", isActive ? "bg-blue-50 text-blue-700 border-blue-300" : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50")}>{item}</button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="space-y-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div><span className="text-[10px] text-gray-400 block">Condição</span><span className="text-sm font-medium text-gray-800">{property.condicao || "—"}</span></div>
+                  <div><span className="text-[10px] text-gray-400 block">Vista</span><span className="text-sm font-medium text-gray-800">{property.vista || "—"}</span></div>
+                  <div><span className="text-[10px] text-gray-400 block">Padrão</span><span className="text-sm font-medium text-gray-800">{property.padrao || "—"}</span></div>
+                  <div><span className="text-[10px] text-gray-400 block">Posição Prédio</span><span className="text-sm font-medium text-gray-800">{property.posicaoPredio || "—"}</span></div>
+                  <div><span className="text-[10px] text-gray-400 block">Posição Solar</span><span className="text-sm font-medium text-gray-800">{property.posicaoSolar || "—"}</span></div>
+                </div>
+                {property.infraestrutura && property.infraestrutura.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-1">
+                    {property.infraestrutura.map((i) => (
+                      <span key={i} className="px-2 py-1 rounded text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">{i}</span>
+                    ))}
+                  </div>
+                )}
+                {property.outrasCaracteristicas && property.outrasCaracteristicas.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-1">
+                    {property.outrasCaracteristicas.map((i) => (
+                      <span key={i} className="px-2 py-1 rounded text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">{i}</span>
+                    ))}
+                  </div>
+                )}
               </div>
-            </div>
+            )}
           </div>
 
           {/* Video section */}
