@@ -749,7 +749,7 @@ export default function Properties() {
 
         {/* Content */}
         {view === "grid" ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
             {sorted.map((property) => (
               <PropertyCard
                 key={property.id}
@@ -1690,6 +1690,13 @@ function PropertyRow({
             className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors" title="Duplicar imóvel"
           ><Copy className="w-3.5 h-3.5 text-foreground" /></button>
         </div>
+        {/* Ver dados completos */}
+        <button
+          onClick={() => onSelect?.(property)}
+          className="w-full mt-2 py-2 rounded-lg bg-primary/10 text-primary text-xs font-bold hover:bg-primary/20 transition-colors flex items-center justify-center gap-1.5"
+        >
+          <Eye className="w-3.5 h-3.5" /> Ver dados completos
+        </button>
       </div>
     </div>
   );
