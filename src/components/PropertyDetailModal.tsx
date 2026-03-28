@@ -868,7 +868,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
       </div>
 
         {/* Floating Action Buttons */}
-        <div className="sticky bottom-4 z-10 flex items-center justify-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center justify-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300">
           <button
             onClick={onClose}
             className="flex items-center gap-2 px-5 py-3 rounded-full bg-muted text-muted-foreground text-sm font-bold shadow-2xl hover:bg-muted/80 transition-all border border-border"
