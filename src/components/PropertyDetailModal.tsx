@@ -13,10 +13,6 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { DraggableFieldGrid, type FieldConfig } from "./DraggableFieldGrid";
-import { formatCurrency, type Property } from "@/data/mockData";
-import { cn } from "@/lib/utils";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 
 interface PropertyDetailModalProps {
   property: Property | null;
