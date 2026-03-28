@@ -39,6 +39,7 @@ export interface Property {
   posicaoSolar?: string;
   infraestrutura?: string[];
   vista?: string;
+  condicao?: "Mobiliado" | "Semi-mobiliado" | "Vazio" | "Decorado";
   ownerType?: "Construtora" | "Investidor" | "Particular" | "Adm Comercial";
   priceInstallment?: number;
   commission?: number;
@@ -106,6 +107,7 @@ export const properties: Property[] = [
     posicaoSolar: "Nascente",
     infraestrutura: ["Piscina", "Churrasqueira", "Salão de Festas", "Academia"],
     vista: "Mar",
+    condicao: "Decorado",
   },
   {
     id: "2",
@@ -152,6 +154,7 @@ export const properties: Property[] = [
     posicaoSolar: "Poente",
     infraestrutura: ["Piscina", "Sauna", "Espaço Gourmet", "Brinquedoteca"],
     vista: "Mar / Lago",
+    condicao: "Mobiliado",
   },
   {
     id: "3",

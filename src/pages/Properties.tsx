@@ -1286,8 +1286,8 @@ function PropertyRow({
             {property.privateArea && <span className="flex items-center gap-0.5 font-semibold whitespace-nowrap"><Ruler className="w-3 h-3" />{property.privateArea}m² priv.</span>}
           </div>
 
-          {/* Row 3b: Posição, Solar, Infra, Vista, Vista Mar, Decorado */}
-          {(property.posicaoPredio || property.posicaoSolar || property.vista || (property.infraestrutura && property.infraestrutura.length > 0) || property.seaView || property.decorated) && (
+          {/* Row 3b: Posição, Solar, Infra, Vista, Condição, Vista Mar, Decorado */}
+          {(property.posicaoPredio || property.posicaoSolar || property.vista || property.condicao || (property.infraestrutura && property.infraestrutura.length > 0) || property.seaView || property.decorated) && (
             <div className="flex items-center gap-2 text-[10px] text-muted-foreground flex-wrap">
               {property.posicaoPredio && (
                 <span className="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-muted font-semibold whitespace-nowrap">
@@ -1306,6 +1306,11 @@ function PropertyRow({
               )}
               {property.seaView && <span className="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 font-bold whitespace-nowrap">🌊 Vista Mar</span>}
               {property.decorated && <span className="px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 font-bold whitespace-nowrap">🎨 Decorado</span>}
+              {property.condicao && (
+                <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500 font-semibold whitespace-nowrap">
+                  🏠 {property.condicao}
+                </span>
+              )}
               {property.infraestrutura && property.infraestrutura.length > 0 && (
                 <span className="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-muted font-semibold whitespace-nowrap">
                   🏗️ {property.infraestrutura.join(", ")}
@@ -1443,7 +1448,7 @@ function PropertyRow({
           {/* Keys */}
           <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
             <Key className="w-3.5 h-3.5 flex-shrink-0 text-amber-400" />
-            <span className="truncate">{property.keysLocation || "Não informado"}</span>
+            <span className="truncate font-bold text-foreground">{property.keysLocation || "Não informado"}</span>
           </div>
           {/* Dates */}
           <div className="space-y-0.5 text-[10px] text-muted-foreground">

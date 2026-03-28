@@ -71,6 +71,11 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
         case "bathrooms": updated.bathrooms = Number(val) || 0; break;
         case "parking": updated.parking = Number(val) || 0; break;
         case "description": updated.description = val; break;
+        case "posicaoPredio": updated.posicaoPredio = val; break;
+        case "posicaoSolar": updated.posicaoSolar = val; break;
+        case "vista": updated.vista = val; break;
+        case "condicao": updated.condicao = val as Property["condicao"]; break;
+        case "infraestrutura": updated.infraestrutura = val.split(",").map(s => s.trim()).filter(Boolean); break;
       }
       onUpdateProperty(updated);
       toast.success("Informação atualizada!");
@@ -439,6 +444,138 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                 <Repeat className="w-3 h-3" /> Aceita Permuta
               </span>
             )}
+          </div>
+
+          {/* Características do Imóvel - Editable selects */}
+          <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+            <p className="text-xs font-bold text-gray-800 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+              <Building2 className="w-3.5 h-3.5 text-amber-500" /> Características do Imóvel
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {/* Posição no Prédio */}
+              <div>
+                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">Posição no Prédio</label>
+                <select
+                  value={property.posicaoPredio || ""}
+                  onChange={(e) => {
+                    if (onUpdateProperty) {
+                      onUpdateProperty({ ...property, posicaoPredio: e.target.value || undefined });
+                      toast.success("Posição atualizada!");
+                    }
+                  }}
+                  className="w-full px-2.5 py-2 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                >
+                  <option value="">Selecione</option>
+                  <option value="Frente">Frente</option>
+                  <option value="Fundos">Fundos</option>
+                  <option value="Lateral Esquerda">Lateral Esquerda</option>
+                  <option value="Lateral Direita">Lateral Direita</option>
+                  <option value="Frente/Lateral">Frente/Lateral</option>
+                  <option value="Fundos/Lateral">Fundos/Lateral</option>
+                </select>
+              </div>
+
+              {/* Posição Solar */}
+              <div>
+                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">Posição Solar</label>
+                <select
+                  value={property.posicaoSolar || ""}
+                  onChange={(e) => {
+                    if (onUpdateProperty) {
+                      onUpdateProperty({ ...property, posicaoSolar: e.target.value || undefined });
+                      toast.success("Posição solar atualizada!");
+                    }
+                  }}
+                  className="w-full px-2.5 py-2 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                >
+                  <option value="">Selecione</option>
+                  <option value="Nascente">Nascente (Sol da manhã)</option>
+                  <option value="Poente">Poente (Sol da tarde)</option>
+                  <option value="Norte">Norte</option>
+                  <option value="Sul">Sul</option>
+                  <option value="Nascente/Norte">Nascente/Norte</option>
+                  <option value="Poente/Sul">Poente/Sul</option>
+                </select>
+              </div>
+
+              {/* Vista */}
+              <div>
+                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">Vista</label>
+                <select
+                  value={property.vista || ""}
+                  onChange={(e) => {
+                    if (onUpdateProperty) {
+                      onUpdateProperty({ ...property, vista: e.target.value || undefined });
+                      toast.success("Vista atualizada!");
+                    }
+                  }}
+                  className="w-full px-2.5 py-2 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                >
+                  <option value="">Selecione</option>
+                  <option value="Mar">Mar</option>
+                  <option value="Lago">Lago</option>
+                  <option value="Mar / Lago">Mar / Lago</option>
+                  <option value="Cidade">Cidade</option>
+                  <option value="Parque">Parque</option>
+                  <option value="Piscina">Piscina</option>
+                  <option value="Rua">Rua</option>
+                  <option value="Interna">Interna</option>
+                </select>
+              </div>
+
+              {/* Condição */}
+              <div>
+                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">Condição</label>
+                <select
+                  value={property.condicao || ""}
+                  onChange={(e) => {
+                    if (onUpdateProperty) {
+                      onUpdateProperty({ ...property, condicao: (e.target.value || undefined) as Property["condicao"] });
+                      toast.success("Condição atualizada!");
+                    }
+                  }}
+                  className="w-full px-2.5 py-2 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                >
+                  <option value="">Selecione</option>
+                  <option value="Mobiliado">Mobiliado</option>
+                  <option value="Semi-mobiliado">Semi-mobiliado</option>
+                  <option value="Vazio">Vazio</option>
+                  <option value="Decorado">Decorado</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Infraestrutura */}
+            <div className="mt-3">
+              <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Infraestrutura</label>
+              <div className="flex flex-wrap gap-1.5">
+                {["Piscina", "Churrasqueira", "Salão de Festas", "Academia", "Sauna", "Espaço Gourmet", "Brinquedoteca", "Playground", "Quadra", "Portaria 24h", "Elevador", "Jardim"].map((item) => {
+                  const isActive = property.infraestrutura?.includes(item);
+                  return (
+                    <button
+                      key={item}
+                      onClick={() => {
+                        if (!onUpdateProperty) return;
+                        const current = property.infraestrutura || [];
+                        const updated = isActive
+                          ? current.filter(i => i !== item)
+                          : [...current, item];
+                        onUpdateProperty({ ...property, infraestrutura: updated });
+                        toast.success(isActive ? `"${item}" removido` : `"${item}" adicionado`);
+                      }}
+                      className={cn(
+                        "px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all",
+                        isActive
+                          ? "bg-amber-50 text-amber-700 border-amber-300"
+                          : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50"
+                      )}
+                    >
+                      {item}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
 
           {/* Deal Label Selector */}
