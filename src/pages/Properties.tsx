@@ -374,12 +374,12 @@ export default function Properties() {
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-500">Atualizados (30 dias)</p>
-                <p className="text-3xl font-black text-foreground mt-1">{freshnessStats.within30}</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">imóveis em dia</p>
+                <p className="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider text-emerald-500">Atualizados (30d)</p>
+                <p className="text-xl sm:text-3xl font-black text-foreground mt-0.5 sm:mt-1">{freshnessStats.within30}</p>
+                <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5 hidden sm:block">imóveis em dia</p>
               </div>
-              <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                <CalendarCheck className="w-5 h-5 text-emerald-500" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                <CalendarCheck className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500" />
               </div>
             </div>
           </button>
