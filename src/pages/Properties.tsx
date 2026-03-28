@@ -1067,7 +1067,7 @@ function PropertyRow({
               >{property.empreendimento}</Link>
             )}
             {unitParts.map((part) => (
-              <span key={part} className="text-muted-foreground bg-muted px-1.5 py-0.5 rounded font-medium">{part}</span>
+              <span key={part} className="font-black text-foreground uppercase text-[11px] tracking-wide px-2 py-0.5 rounded-md border border-border bg-background shadow-sm">{part}</span>
             ))}
             <span className="font-semibold text-primary">{property.type}</span>
           </div>
@@ -1105,7 +1105,7 @@ function PropertyRow({
 
         {/* ── COL 3: Financeiro ── */}
         <div className="w-[220px] flex-shrink-0 border-r border-border px-3 py-2 flex flex-col justify-center gap-0.5" onClick={(e) => e.stopPropagation()}>
-          {/* Main price - highlighted */}
+          {/* Main price */}
           <InlinePrice value={property.price} onChange={(v) => onPriceChange?.(property.id, "price", v)} className="text-[18px] font-black text-emerald-500" />
           <span className="text-[8px] text-muted-foreground uppercase font-semibold tracking-wider">Valor à vista</span>
 
@@ -1117,31 +1117,9 @@ function PropertyRow({
             </div>
           )}
 
-          {/* Commission + approximate value */}
-          {property.commission != null && (
-            <div className="flex items-center gap-1.5 mt-1">
-              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold bg-primary/10 text-primary">
-                <Percent className="w-2.5 h-2.5" /> {property.commission}%
-              </span>
-              <span className="text-[9px] text-muted-foreground font-medium">
-                ≈ {formatCurrency(Math.round(property.price * (property.commission / 100)))}
-              </span>
-            </div>
-          )}
-
-          {/* Bonus + validity */}
-          {property.bonus != null && (
-            <div className="flex items-center gap-1.5">
-              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-500/10 text-amber-400">
-                <Gift className="w-2.5 h-2.5" /> {formatCurrency(property.bonus)}
-              </span>
-              <span className="text-[8px] text-muted-foreground">válido</span>
-            </div>
-          )}
-
           {/* Payment conditions */}
           {property.paymentConditions && property.paymentConditions.length > 0 && (
-            <div className="flex flex-wrap gap-0.5 mt-0.5">
+            <div className="flex flex-wrap gap-0.5 mt-1">
               {property.paymentConditions.map((cond) => (
                 <button key={cond}
                   className="px-1.5 py-0.5 rounded text-[9px] font-black text-foreground bg-muted uppercase tracking-wide hover:bg-secondary transition-colors cursor-pointer"
@@ -1150,6 +1128,25 @@ function PropertyRow({
               ))}
             </div>
           )}
+
+          {/* Commission + Bonus */}
+          <div className="flex items-center gap-2 mt-1 flex-wrap">
+            {property.commission != null && (
+              <div className="flex items-center gap-1">
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold bg-primary/10 text-primary">
+                  <Percent className="w-2.5 h-2.5" /> {property.commission}%
+                </span>
+                <span className="text-[8px] text-muted-foreground font-medium">
+                  ≈ {formatCurrency(Math.round(property.price * (property.commission / 100)))}
+                </span>
+              </div>
+            )}
+            {property.bonus != null && (
+              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-500/10 text-amber-400">
+                <Gift className="w-2.5 h-2.5" /> {formatCurrency(property.bonus)}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* ── COL 4: Proprietário + Chaves + Datas + Status ── */}
