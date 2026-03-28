@@ -101,8 +101,14 @@ const categories: { key: Category; label: string; icon: typeof Home }[] = [
   { key: "vendidos", label: "Vendidos", icon: Trophy },
 ];
 
+// Auto-generate codes for properties that don't have one
+const propertiesWithCodes = initialProperties.map((p, i) => ({
+  ...p,
+  code: p.code || `MV${String(i + 1).padStart(2, "0")}`,
+}));
+
 export default function Properties() {
-  const [propertyList, setPropertyList] = useState<Property[]>(initialProperties);
+  const [propertyList, setPropertyList] = useState<Property[]>(propertiesWithCodes);
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<Category>("todos");
   const [view, setView] = useState<"grid" | "list" | "map">("grid");
@@ -118,6 +124,7 @@ export default function Properties() {
   const [filterOwner, setFilterOwner] = useState("");
   const [filterNeighborhood, setFilterNeighborhood] = useState("");
   const [filterStreet, setFilterStreet] = useState("");
+  const [filterCode, setFilterCode] = useState("");
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [viewingTerm, setViewingTerm] = useState<string | null>(null);
   const [favoriteIds, setFavoriteIds] = useState<string[]>(() => {
@@ -160,11 +167,12 @@ export default function Properties() {
     toast.success("Valor atualizado!");
   };
 
-  const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterCondition || filterEmpreendimento || filterType || filterOwner || filterNeighborhood || filterStreet;
+  const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterCondition || filterEmpreendimento || filterType || filterOwner || filterNeighborhood || filterStreet || filterCode;
 
   const clearFilters = () => {
     setFilterCity(""); setFilterBedrooms(""); setFilterPriceMin(""); setFilterPriceMax(""); setFilterCondition("");
-    setFilterEmpreendimento(""); setFilterType(""); setFilterOwner(""); setFilterNeighborhood(""); setFilterStreet(""); setSearch("");
+    setFilterEmpreendimento(""); setFilterType(""); setFilterOwner(""); setFilterNeighborhood(""); setFilterStreet(""); setFilterCode(""); setSearch("");
+    setShowInactive(false);
   };
 
   const cities = useMemo(() => [...new Set(propertyList.map(p => p.city))].sort(), [propertyList]);
@@ -216,10 +224,10 @@ export default function Properties() {
       if (activeCategory === "permuta" && !p.acceptsExchange) return false;
       if (activeCategory === "vendidos" && p.status !== "Vendido") return false;
 
-      // Search
+      // Search (includes code)
       if (search) {
         const s = search.toLowerCase();
-        if (!p.title.toLowerCase().includes(s) && !p.address.toLowerCase().includes(s) && !p.city.toLowerCase().includes(s) && !p.broker.toLowerCase().includes(s)) return false;
+        if (!p.title.toLowerCase().includes(s) && !p.address.toLowerCase().includes(s) && !p.city.toLowerCase().includes(s) && !p.broker.toLowerCase().includes(s) && !(p.code || "").toLowerCase().includes(s)) return false;
       }
 
       // Advanced filters
@@ -233,10 +241,11 @@ export default function Properties() {
       if (filterOwner && p.owner !== filterOwner) return false;
       if (filterNeighborhood && p.neighborhood !== filterNeighborhood) return false;
       if (filterStreet && p.address !== filterStreet) return false;
+      if (filterCode && !(p.code || "").toLowerCase().includes(filterCode.toLowerCase())) return false;
 
       return true;
     });
-  }, [propertyList, activeCategory, search, filterCity, filterBedrooms, filterPriceMin, filterPriceMax, filterCondition, filterFreshness, filterEmpreendimento, filterType, filterOwner, filterNeighborhood, filterStreet, showInactive]);
+  }, [propertyList, activeCategory, search, filterCity, filterBedrooms, filterPriceMin, filterPriceMax, filterCondition, filterFreshness, filterEmpreendimento, filterType, filterOwner, filterNeighborhood, filterStreet, filterCode, showInactive]);
 
   const favoritedProperties = propertyList.filter((p) => favoriteIds.includes(p.id));
 
@@ -451,7 +460,12 @@ export default function Properties() {
           {/* Advanced Filters Panel */}
           {showFilters && (
             <div className="bg-card border border-border rounded-xl p-4">
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-10 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 xl:grid-cols-12 gap-3">
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Código</label>
+                  <input type="text" value={filterCode} onChange={(e) => setFilterCode(e.target.value)} placeholder="MV01..."
+                    className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+                </div>
                 <div>
                   <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Empreendimento</label>
                   <select value={filterEmpreendimento} onChange={(e) => setFilterEmpreendimento(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
@@ -515,22 +529,22 @@ export default function Properties() {
                     <option value="500000">R$ 500 mil</option><option value="800000">R$ 800 mil</option><option value="1000000">R$ 1 milhão</option><option value="1500000">R$ 1,5 milhão</option><option value="2000000">R$ 2 milhões</option>
                   </select>
                 </div>
-                <div className="flex items-end gap-2">
-                  <div>
-                    <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Incluir inativos</label>
-                    <button
-                      onClick={() => setShowInactive(!showInactive)}
-                      className={`w-full px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
-                        showInactive
-                          ? "border-primary bg-primary/10 text-primary"
-                          : "border-input bg-background text-muted-foreground hover:bg-muted"
-                      }`}
-                    >
-                      {showInactive ? "✓ Vendidos/Alugados" : "Apenas ativos"}
-                    </button>
-                  </div>
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Incluir inativos</label>
+                  <button
+                    onClick={() => setShowInactive(!showInactive)}
+                    className={`w-full px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                      showInactive
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-input bg-background text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    {showInactive ? "✓ Inativos" : "Apenas ativos"}
+                  </button>
+                </div>
+                <div className="flex items-end">
                   {hasActiveFilters && (
-                    <button onClick={clearFilters} className="flex items-center gap-1 px-4 py-2 rounded-lg bg-muted text-muted-foreground text-sm font-medium hover:bg-destructive/10 hover:text-destructive transition-colors">
+                    <button onClick={clearFilters} className="flex items-center gap-1 px-4 py-2 rounded-lg bg-muted text-muted-foreground text-sm font-medium hover:bg-destructive/10 hover:text-destructive transition-colors w-full justify-center">
                       <X className="w-3.5 h-3.5" /> Limpar
                     </button>
                   )}
@@ -1050,12 +1064,17 @@ function PropertyRow({
 
         {/* ── COL 2: Identidade + Dados Técnicos ── */}
         <div className="flex-1 min-w-0 border-r border-border px-3 py-2 flex flex-col justify-center gap-1">
-          {/* Title */}
-          <h3
-            className="font-bold text-card-foreground text-sm truncate hover:text-primary cursor-pointer transition-colors leading-tight"
-            onClick={() => onFilterByTitle?.(property.title)}
-            title="Ver títulos semelhantes"
-          >{property.title}</h3>
+          {/* Title + Code */}
+          <div className="flex items-center gap-2">
+            {property.code && (
+              <span className="text-[10px] font-black text-primary bg-primary/10 px-1.5 py-0.5 rounded">{property.code}</span>
+            )}
+            <h3
+              className="font-bold text-card-foreground text-sm truncate hover:text-primary cursor-pointer transition-colors leading-tight"
+              onClick={() => onFilterByTitle?.(property.title)}
+              title="Ver títulos semelhantes"
+            >{property.title}</h3>
+          </div>
 
           {/* Empreendimento + Unit info row */}
           <div className="flex items-center gap-2 flex-wrap text-[10px]">
