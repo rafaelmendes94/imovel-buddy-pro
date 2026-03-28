@@ -727,12 +727,12 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
           </div>
         </div>
 
-        {/* Similar properties */}
-        {similar.length > 0 && (
+        {/* Outros imóveis do proprietário */}
+        {ownerProperties.length > 0 && (
           <div className="border-t border-gray-100 p-5 sm:p-6">
-            <h3 className="text-base font-bold text-gray-900 mb-4">Imóveis Similares</h3>
+            <h3 className="text-base font-bold text-gray-900 mb-4">Outros imóveis de {property.owner}</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {similar.map((sp) => (
+              {ownerProperties.map((sp) => (
                 <SimilarCard key={sp.id} property={sp} onSelect={() => { setCurrentImageIndex(0); setShowVideo(false); onSelectSimilar?.(sp); }} />
               ))}
             </div>
