@@ -253,7 +253,7 @@ export default function Properties() {
   const cities = useMemo(() => [...new Set(propertyList.map(p => p.city))].sort(), [propertyList]);
   const empreendimentos = useMemo(() => [...new Set(propertyList.map(p => p.empreendimento).filter(Boolean))].sort() as string[], [propertyList]);
   const owners = useMemo(() => [...new Set(propertyList.map(p => p.owner).filter(Boolean))].sort() as string[], [propertyList]);
-  const types = useMemo(() => [...new Set(propertyList.map(p => p.type))].sort(), [propertyList]);
+  const types = useMemo(() => [...new Set([...propertyList.map(p => p.type), "Apartamento", "Casa", "Comercial", "Terreno", "Lote", "Condomínio"])].sort(), [propertyList]);
   const neighborhoods = useMemo(() => [...new Set(propertyList.map(p => p.neighborhood).filter(Boolean))].sort() as string[], [propertyList]);
   const streets = useMemo(() => [...new Set(propertyList.map(p => p.address))].sort(), [propertyList]);
 
