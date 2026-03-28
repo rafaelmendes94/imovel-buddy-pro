@@ -32,6 +32,7 @@ export interface Property {
   keysLocation?: string;
   description?: string;
   updatedAt?: string;
+  ownerType?: "Construtora" | "Investidor" | "Particular" | "Adm Comercial";
 }
 
 export interface Broker {
