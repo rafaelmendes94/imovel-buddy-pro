@@ -129,6 +129,8 @@ export default function Properties() {
   const [filterNeighborhood, setFilterNeighborhood] = useState("");
   const [filterStreet, setFilterStreet] = useState("");
   const [filterCode, setFilterCode] = useState("");
+  const [filterParking, setFilterParking] = useState("");
+  const [sortBy, setSortBy] = useState<"default" | "price-asc" | "price-desc" | "name-asc" | "name-desc" | "updated" | "created">("default");
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [viewingTerm, setViewingTerm] = useState<string | null>(null);
   const [favoriteIds, setFavoriteIds] = useState<string[]>(() => {
@@ -205,12 +207,12 @@ export default function Properties() {
     navigate(`/contratos?${params.toString()}`);
   };
 
-  const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterCondition || filterEmpreendimento || filterType || filterOwner || filterNeighborhood || filterStreet || filterCode;
+  const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterCondition || filterEmpreendimento || filterType || filterOwner || filterNeighborhood || filterStreet || filterCode || filterParking;
 
   const clearFilters = () => {
     setFilterCity(""); setFilterBedrooms(""); setFilterPriceMin(""); setFilterPriceMax(""); setFilterCondition("");
-    setFilterEmpreendimento(""); setFilterType(""); setFilterOwner(""); setFilterNeighborhood(""); setFilterStreet(""); setFilterCode(""); setSearch("");
-    setShowInactive(false);
+    setFilterEmpreendimento(""); setFilterType(""); setFilterOwner(""); setFilterNeighborhood(""); setFilterStreet(""); setFilterCode(""); setFilterParking(""); setSearch("");
+    setShowInactive(false); setSortBy("default");
   };
 
   const cities = useMemo(() => [...new Set(propertyList.map(p => p.city))].sort(), [propertyList]);
@@ -280,10 +282,26 @@ export default function Properties() {
       if (filterNeighborhood && p.neighborhood !== filterNeighborhood) return false;
       if (filterStreet && p.address !== filterStreet) return false;
       if (filterCode && !(p.code || "").toLowerCase().includes(filterCode.toLowerCase())) return false;
+      if (filterParking && p.parking < parseInt(filterParking)) return false;
 
       return true;
     });
-  }, [propertyList, activeCategory, search, filterCity, filterBedrooms, filterPriceMin, filterPriceMax, filterCondition, filterFreshness, filterEmpreendimento, filterType, filterOwner, filterNeighborhood, filterStreet, filterCode, showInactive]);
+  }, [propertyList, activeCategory, search, filterCity, filterBedrooms, filterPriceMin, filterPriceMax, filterCondition, filterFreshness, filterEmpreendimento, filterType, filterOwner, filterNeighborhood, filterStreet, filterCode, filterParking, showInactive]);
+
+  const sorted = useMemo(() => {
+    if (sortBy === "default") return filtered;
+    return [...filtered].sort((a, b) => {
+      switch (sortBy) {
+        case "price-desc": return b.price - a.price;
+        case "price-asc": return a.price - b.price;
+        case "name-asc": return (a.empreendimento || a.title).localeCompare(b.empreendimento || b.title);
+        case "name-desc": return (b.empreendimento || b.title).localeCompare(a.empreendimento || a.title);
+        case "updated": return new Date(b.updatedAt || b.createdAt).getTime() - new Date(a.updatedAt || a.createdAt).getTime();
+        case "created": return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        default: return 0;
+      }
+    });
+  }, [filtered, sortBy]);
 
   const favoritedProperties = propertyList.filter((p) => favoriteIds.includes(p.id));
 
@@ -562,6 +580,13 @@ export default function Properties() {
                   </select>
                 </div>
                 <div>
+                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Vagas (mín.)</label>
+                  <select value={filterParking} onChange={(e) => setFilterParking(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+                    <option value="">Qualquer</option>
+                    <option value="1">1+</option><option value="2">2+</option><option value="3">3+</option>
+                   </select>
+                </div>
+                <div>
                   <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Preço mín.</label>
                   <select value={filterPriceMin} onChange={(e) => setFilterPriceMin(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
                     <option value="">Sem mínimo</option>
@@ -600,18 +625,41 @@ export default function Properties() {
           )}
         </div>
 
-        {/* Results info */}
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            {filtered.length} imóvel(is) encontrado(s)
-            {favoriteIds.length > 0 && <span className="ml-3 text-accent font-medium">♥ {favoriteIds.length} favorito(s)</span>}
-          </p>
+        {/* Quick Sort Bar */}
+        <div className="flex items-center gap-2 flex-wrap bg-card border border-border rounded-lg px-3 py-2">
+          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mr-1">Ordenar:</span>
+          {([
+            { key: "default", label: "Padrão" },
+            { key: "price-desc", label: "Maior Valor" },
+            { key: "price-asc", label: "Menor Valor" },
+            { key: "name-asc", label: "A → Z Edifício" },
+            { key: "name-desc", label: "Z → A Edifício" },
+            { key: "updated", label: "Últ. Atualizados" },
+            { key: "created", label: "Últ. Incluídos" },
+          ] as { key: typeof sortBy; label: string }[]).map((s) => (
+            <button
+              key={s.key}
+              onClick={() => setSortBy(s.key)}
+              className={cn(
+                "px-2.5 py-1 rounded-md text-[11px] font-semibold transition-colors",
+                sortBy === s.key
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground hover:bg-secondary"
+              )}
+            >
+              {s.label}
+            </button>
+          ))}
+          <span className="ml-auto text-sm text-muted-foreground">
+            {sorted.length} imóvel(is)
+            {favoriteIds.length > 0 && <span className="ml-3 text-accent font-medium">♥ {favoriteIds.length}</span>}
+          </span>
         </div>
 
         {/* Content */}
         {view === "grid" ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-5">
-            {filtered.map((property) => (
+            {sorted.map((property) => (
               <PropertyCard
                 key={property.id}
                 property={property}
@@ -628,7 +676,7 @@ export default function Properties() {
           </div>
         ) : view === "list" ? (
           <div className="space-y-3">
-            {filtered.map((property) => (
+            {sorted.map((property) => (
               <PropertyRow
                 key={property.id}
                 property={property}
@@ -648,7 +696,7 @@ export default function Properties() {
             ))}
           </div>
         ) : (
-          <PropertyMap properties={filtered} />
+          <PropertyMap properties={sorted} />
         )}
 
         {filtered.length === 0 && (
@@ -1423,11 +1471,12 @@ function PropertyRow({
         </div>
 
         {/* ── COL 4: Proprietário + Chaves + Datas + Status ── */}
-        <div className="w-[190px] flex-shrink-0 border-r border-border px-3 py-2 flex flex-col justify-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+        <div className="w-[190px] flex-shrink-0 border-r border-border px-3 py-2 flex flex-col justify-center gap-1" onClick={(e) => e.stopPropagation()}>
+          {/* Owner */}
           {property.owner ? (
-            <>
+            <div className="border-b border-border pb-1.5 mb-0.5">
               <button
-                className="text-[13px] font-bold text-foreground hover:text-primary transition-colors truncate text-left leading-tight"
+                className="text-[13px] font-bold text-foreground hover:text-primary transition-colors text-left leading-tight w-full"
                 onClick={() => onFilterByOwner?.(property.owner!)}
                 title={`Ver todos imóveis de ${property.owner}`}
               >{property.owner}</button>
@@ -1436,19 +1485,19 @@ function PropertyRow({
                   href={`https://wa.me/${property.ownerPhone}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-[11px] text-emerald-500 hover:text-emerald-400 transition-colors"
+                  className="flex items-center gap-1 text-[11px] text-emerald-500 hover:text-emerald-400 transition-colors mt-0.5"
                 >
                   <Phone className="w-3 h-3" /> {property.ownerPhone.replace(/^55/, "").replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3")}
                 </a>
               )}
-            </>
+            </div>
           ) : (
-            <span className="text-[11px] text-muted-foreground italic">Sem proprietário</span>
+            <span className="text-[11px] text-muted-foreground italic border-b border-border pb-1.5 mb-0.5">Sem proprietário</span>
           )}
           {/* Keys */}
-          <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+          <div className="flex items-center gap-1 text-[11px] text-muted-foreground border-b border-border pb-1.5 mb-0.5">
             <Key className="w-3.5 h-3.5 flex-shrink-0 text-amber-400" />
-            <span className="truncate font-bold text-foreground">{property.keysLocation || "Não informado"}</span>
+            <span className="font-bold text-foreground leading-tight">{property.keysLocation || "Não informado"}</span>
           </div>
           {/* Dates */}
           <div className="space-y-0.5 text-[10px] text-muted-foreground">
