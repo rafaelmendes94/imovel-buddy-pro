@@ -379,6 +379,33 @@ export default function Properties() {
           ))}
         </div>
 
+        {/* VGV Card + Relatórios */}
+        <div className="flex items-center gap-3">
+          <div className="flex-1 bg-gradient-to-r from-primary/10 to-primary/5 border-2 border-primary/30 rounded-xl p-3 sm:p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider text-primary">VGV Carteira Ativa</p>
+                <p className="text-2xl sm:text-4xl font-black text-foreground mt-1">
+                  {formatCurrency(propertyList.filter(p => p.status === "Disponível" || p.status === "Reservado").reduce((sum, p) => sum + p.price, 0))}
+                </p>
+                <p className="text-[9px] sm:text-[11px] text-muted-foreground mt-0.5">
+                  {propertyList.filter(p => p.status === "Disponível" || p.status === "Reservado").length} imóveis ativos
+                </p>
+              </div>
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+              </div>
+            </div>
+          </div>
+          <Link
+            to="/relatorios"
+            className="flex flex-col items-center justify-center gap-1.5 bg-primary text-primary-foreground rounded-xl px-5 py-4 sm:py-5 hover:bg-primary/90 transition-colors shadow-sm"
+          >
+            <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6" />
+            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Relatórios</span>
+          </Link>
+        </div>
+
         {/* Freshness Cards */}
         <div className="grid grid-cols-3 gap-2 sm:gap-3">
           <button
