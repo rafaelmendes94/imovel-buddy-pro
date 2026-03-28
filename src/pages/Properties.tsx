@@ -1127,7 +1127,7 @@ function DealThermometer({ dealScore, manualLabel }: { dealScore: DealScore; man
 
 // ---- PropertyRow (redesigned) ----
 function PropertyRow({
-  property, onStatusChange, onSelect, isFavorited, onToggleFavorite, onFilterByTitle, onFilterByCondition, onFilterByOwner, onPriceChange, allProperties, onDealLabelChange,
+  property, onStatusChange, onSelect, isFavorited, onToggleFavorite, onFilterByTitle, onFilterByCondition, onFilterByOwner, onPriceChange, allProperties, onDealLabelChange, onNavigateToValuation, onNavigateToContract,
 }: {
   property: Property;
   onStatusChange: (id: string, status: Property["status"]) => void;
@@ -1140,6 +1140,8 @@ function PropertyRow({
   onPriceChange?: (id: string, field: "price" | "priceInstallment", value: number) => void;
   allProperties?: Property[];
   onDealLabelChange?: (id: string, label: Property["dealLabel"]) => void;
+  onNavigateToValuation?: (p: Property) => void;
+  onNavigateToContract?: (p: Property) => void;
 }) {
   const dealScore = useMemo(() => analyzeDealScore(property, allProperties || []), [property, allProperties]);
   const [showCelebration, setShowCelebration] = useState(false);
