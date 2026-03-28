@@ -915,7 +915,7 @@ function PropertyCard({
 
 // ---- PropertyRow (redesigned) ----
 function PropertyRow({
-  property, onStatusChange, onSelect, isFavorited, onToggleFavorite, onFilterByTitle, onFilterByCondition, onFilterByOwner,
+  property, onStatusChange, onSelect, isFavorited, onToggleFavorite, onFilterByTitle, onFilterByCondition, onFilterByOwner, onPriceChange,
 }: {
   property: Property;
   onStatusChange: (id: string, status: Property["status"]) => void;
@@ -925,6 +925,7 @@ function PropertyRow({
   onFilterByTitle?: (title: string) => void;
   onFilterByCondition?: (cond: string) => void;
   onFilterByOwner?: (owner: string) => void;
+  onPriceChange?: (id: string, field: "price" | "priceInstallment", value: number) => void;
 }) {
   const [showCelebration, setShowCelebration] = useState(false);
   const [animatePulse, setAnimatePulse] = useState(false);
