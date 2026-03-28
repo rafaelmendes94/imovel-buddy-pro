@@ -1424,7 +1424,17 @@ function PropertyRow({
         {/* ── COL 3: Financeiro ── */}
         <div className="w-[220px] flex-shrink-0 border-r border-border px-3 py-2 flex flex-col justify-start gap-0.5" onClick={(e) => e.stopPropagation()}>
           {/* Main price */}
-          <InlinePrice value={property.price} onChange={(v) => onPriceChange?.(property.id, "price", v)} className="text-[22px] font-black text-emerald-500 drop-shadow-sm" />
+          <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Valor do Imóvel</span>
+          <div className="flex items-center gap-1">
+            <InlinePrice value={property.price} onChange={(v) => onPriceChange?.(property.id, "price", v)} className="text-[22px] font-black text-emerald-500 drop-shadow-sm" />
+            {(() => {
+              const original = initialProperties.find(p => p.id === property.id);
+              if (!original || original.price === property.price) return null;
+              return property.price > original.price
+                ? <ArrowUp className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                : <ArrowDown className="w-4 h-4 text-red-500 flex-shrink-0" />;
+            })()}
+          </div>
 
           {/* Promotional price */}
           {property.priceInstallment && (
