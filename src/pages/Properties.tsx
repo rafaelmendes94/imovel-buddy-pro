@@ -110,6 +110,7 @@ const propertiesWithCodes = initialProperties.map((p, i) => ({
 }));
 
 export default function Properties() {
+  const navigate = useNavigate();
   const [propertyList, setPropertyList] = useState<Property[]>(propertiesWithCodes);
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<Category>("todos");
