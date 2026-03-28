@@ -55,6 +55,111 @@ export type Database = {
           },
         ]
       }
+      plans: {
+        Row: {
+          billing_cycle: Database["public"]["Enums"]["billing_cycle"]
+          created_at: string
+          id: string
+          is_active: boolean
+          max_brokers: number
+          max_properties: number
+          modules: Json
+          name: string
+          price: number
+          trial_days: number
+        }
+        Insert: {
+          billing_cycle?: Database["public"]["Enums"]["billing_cycle"]
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          max_brokers?: number
+          max_properties?: number
+          modules?: Json
+          name: string
+          price?: number
+          trial_days?: number
+        }
+        Update: {
+          billing_cycle?: Database["public"]["Enums"]["billing_cycle"]
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          max_brokers?: number
+          max_properties?: number
+          modules?: Json
+          name?: string
+          price?: number
+          trial_days?: number
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string | null
+          full_name: string
+          id: string
+          phone: string | null
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          phone?: string | null
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          phone?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      staff_permissions: {
+        Row: {
+          can_manage_clients: boolean
+          can_manage_plans: boolean
+          can_manage_staff: boolean
+          can_view_corretores: boolean
+          can_view_financeiro: boolean
+          can_view_relatorios: boolean
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          can_manage_clients?: boolean
+          can_manage_plans?: boolean
+          can_manage_staff?: boolean
+          can_view_corretores?: boolean
+          can_view_financeiro?: boolean
+          can_view_relatorios?: boolean
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          can_manage_clients?: boolean
+          can_manage_plans?: boolean
+          can_manage_staff?: boolean
+          can_view_corretores?: boolean
+          can_view_financeiro?: boolean
+          can_view_relatorios?: boolean
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       subscriber_brokers: {
         Row: {
           created_at: string
@@ -135,15 +240,134 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          mercado_pago_payment_id: string | null
+          paid_at: string | null
+          reference_period: string | null
+          status: string
+          subscription_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          mercado_pago_payment_id?: string | null
+          paid_at?: string | null
+          reference_period?: string | null
+          status?: string
+          subscription_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          mercado_pago_payment_id?: string | null
+          paid_at?: string | null
+          reference_period?: string | null
+          status?: string
+          subscription_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_payments_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscriptions: {
+        Row: {
+          blocked_at: string | null
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          mercado_pago_subscription_id: string | null
+          plan_id: string
+          status: Database["public"]["Enums"]["subscription_status"]
+          trial_ends_at: string | null
+          user_id: string
+        }
+        Insert: {
+          blocked_at?: string | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          mercado_pago_subscription_id?: string | null
+          plan_id: string
+          status?: Database["public"]["Enums"]["subscription_status"]
+          trial_ends_at?: string | null
+          user_id: string
+        }
+        Update: {
+          blocked_at?: string | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          mercado_pago_subscription_id?: string | null
+          plan_id?: string
+          status?: Database["public"]["Enums"]["subscription_status"]
+          trial_ends_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "super_admin" | "admin_staff" | "broker"
+      billing_cycle: "monthly" | "quarterly" | "annual"
+      subscription_status:
+        | "trial"
+        | "active"
+        | "overdue"
+        | "blocked"
+        | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -270,6 +494,16 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["super_admin", "admin_staff", "broker"],
+      billing_cycle: ["monthly", "quarterly", "annual"],
+      subscription_status: [
+        "trial",
+        "active",
+        "overdue",
+        "blocked",
+        "cancelled",
+      ],
+    },
   },
 } as const
