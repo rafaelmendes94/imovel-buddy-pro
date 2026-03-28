@@ -285,7 +285,7 @@ export default function Properties() {
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
           {[
             { label: "Total", count: propertyList.length, icon: Star, onClick: () => setActiveCategory("todos") },
-            { label: "Disponíveis", count: propertyList.filter(p => p.status === "Disponível").length, icon: Home, onClick: () => setActiveCategory("todos") },
+            { label: "Ativos", count: propertyList.filter(p => p.status === "Disponível").length, icon: Home, onClick: () => setActiveCategory("todos") },
             { label: "Apartamentos", count: propertyList.filter(p => p.type === "Apartamento").length, icon: Building2, onClick: () => setActiveCategory("apartamentos") },
             { label: "Casas", count: propertyList.filter(p => p.type === "Casa").length, icon: Home, onClick: () => setActiveCategory("casas") },
             { label: "Terrenos", count: propertyList.filter(p => p.type === "Terreno").length, icon: TreePine, onClick: () => setActiveCategory("terrenos") },
