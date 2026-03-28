@@ -149,6 +149,23 @@ export default function Properties() {
   });
   const [filterFreshness, setFilterFreshness] = useState<"all" | "30" | "60" | "90">("all");
   const [showInactive, setShowInactive] = useState(false);
+  const [categories, setCategories] = useState(getSavedCategoryOrder);
+  const dragCatRef = useRef<number | null>(null);
+
+  const handleCatDragStart = (idx: number) => { dragCatRef.current = idx; };
+  const handleCatDragOver = (e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    if (dragCatRef.current === null || dragCatRef.current === idx) return;
+    setCategories(prev => {
+      const updated = [...prev];
+      const [moved] = updated.splice(dragCatRef.current!, 1);
+      updated.splice(idx, 0, moved);
+      dragCatRef.current = idx;
+      localStorage.setItem("mv-category-order", JSON.stringify(updated.map(c => c.key)));
+      return updated;
+    });
+  };
+  const handleCatDragEnd = () => { dragCatRef.current = null; };
 
   const xmlMenuRef = useRef<HTMLDivElement>(null);
 
