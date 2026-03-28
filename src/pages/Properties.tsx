@@ -688,7 +688,7 @@ function StatusBar({ currentStatus, onChangeStatus }: { currentStatus: Property[
         const isActive = status === currentStatus;
         return (
           <button key={status} onClick={(e) => { e.stopPropagation(); onChangeStatus(status); }} className={cn("flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-semibold border transition-all duration-200", isActive ? `${config.bg} ${config.color} ${config.border} shadow-sm` : "bg-muted/50 text-muted-foreground border-transparent hover:bg-muted")}>
-            <Icon className="w-3 h-3" /> {status}
+            <Icon className="w-3 h-3" /> {statusLabels[status]}
           </button>
         );
       })}
@@ -793,15 +793,6 @@ function PropertyCard({
 
       <div className="relative cursor-pointer" onClick={() => onSelect?.(property)}>
         <ImageCarousel images={property.images} alt={property.title} />
-
-        {/* Status badge */}
-        <span className={cn("absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide z-10",
-          property.status === "Vendido" ? "bg-red-500 text-white" :
-          property.status === "Reservado" ? "bg-amber-500 text-white" :
-          property.status === "Alugado" ? "bg-blue-500 text-white" :
-          "bg-emerald-500 text-white"
-        )}>
-          {property.status}
         </span>
 
         {/* Exclusivity badge */}
@@ -1028,13 +1019,6 @@ function PropertyRow({
               {ownerTypeInfo.label}
             </span>
           )}
-          {/* Status badge */}
-          <span className={cn("absolute bottom-2 left-2 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide shadow-sm",
-            property.status === "Vendido" ? "bg-red-500 text-white" :
-            property.status === "Reservado" ? "bg-amber-500 text-white" :
-            property.status === "Alugado" ? "bg-blue-500 text-white" :
-            "bg-emerald-500 text-white"
-          )}>{property.status}</span>
         </div>
 
         {/* ── COL 2: Identidade + Dados Técnicos ── */}
