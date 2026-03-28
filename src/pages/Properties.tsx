@@ -112,6 +112,8 @@ export default function Properties() {
   const [filterEmpreendimento, setFilterEmpreendimento] = useState("");
   const [filterType, setFilterType] = useState("");
   const [filterOwner, setFilterOwner] = useState("");
+  const [filterNeighborhood, setFilterNeighborhood] = useState("");
+  const [filterStreet, setFilterStreet] = useState("");
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [viewingTerm, setViewingTerm] = useState<string | null>(null);
   const [favoriteIds, setFavoriteIds] = useState<string[]>(() => {
@@ -149,17 +151,19 @@ export default function Properties() {
     setPropertyList((prev) => prev.map((p) => (p.id === propertyId ? { ...p, status: newStatus } : p)));
   };
 
-  const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterCondition || filterEmpreendimento || filterType || filterOwner;
+  const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterCondition || filterEmpreendimento || filterType || filterOwner || filterNeighborhood || filterStreet;
 
   const clearFilters = () => {
     setFilterCity(""); setFilterBedrooms(""); setFilterPriceMin(""); setFilterPriceMax(""); setFilterCondition("");
-    setFilterEmpreendimento(""); setFilterType(""); setFilterOwner(""); setSearch("");
+    setFilterEmpreendimento(""); setFilterType(""); setFilterOwner(""); setFilterNeighborhood(""); setFilterStreet(""); setSearch("");
   };
 
   const cities = useMemo(() => [...new Set(propertyList.map(p => p.city))].sort(), [propertyList]);
   const empreendimentos = useMemo(() => [...new Set(propertyList.map(p => p.empreendimento).filter(Boolean))].sort() as string[], [propertyList]);
   const owners = useMemo(() => [...new Set(propertyList.map(p => p.owner).filter(Boolean))].sort() as string[], [propertyList]);
   const types = useMemo(() => [...new Set(propertyList.map(p => p.type))].sort(), [propertyList]);
+  const neighborhoods = useMemo(() => [...new Set(propertyList.map(p => p.neighborhood).filter(Boolean))].sort() as string[], [propertyList]);
+  const streets = useMemo(() => [...new Set(propertyList.map(p => p.address))].sort(), [propertyList]);
 
   // Freshness helpers
   const now = new Date();
@@ -218,10 +222,12 @@ export default function Properties() {
       if (filterEmpreendimento && p.empreendimento !== filterEmpreendimento) return false;
       if (filterType && p.type !== filterType) return false;
       if (filterOwner && p.owner !== filterOwner) return false;
+      if (filterNeighborhood && p.neighborhood !== filterNeighborhood) return false;
+      if (filterStreet && p.address !== filterStreet) return false;
 
       return true;
     });
-  }, [propertyList, activeCategory, search, filterCity, filterBedrooms, filterPriceMin, filterPriceMax, filterCondition, filterFreshness, filterEmpreendimento, filterType, filterOwner, showInactive]);
+  }, [propertyList, activeCategory, search, filterCity, filterBedrooms, filterPriceMin, filterPriceMax, filterCondition, filterFreshness, filterEmpreendimento, filterType, filterOwner, filterNeighborhood, filterStreet, showInactive]);
 
   const favoritedProperties = propertyList.filter((p) => favoriteIds.includes(p.id));
 
@@ -436,7 +442,7 @@ export default function Properties() {
           {/* Advanced Filters Panel */}
           {showFilters && (
             <div className="bg-card border border-border rounded-xl p-4">
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-8 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-10 gap-3">
                 <div>
                   <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Empreendimento</label>
                   <select value={filterEmpreendimento} onChange={(e) => setFilterEmpreendimento(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
@@ -463,6 +469,20 @@ export default function Properties() {
                   <select value={filterCity} onChange={(e) => setFilterCity(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
                     <option value="">Todas</option>
                     {cities.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Bairro</label>
+                  <select value={filterNeighborhood} onChange={(e) => setFilterNeighborhood(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+                    <option value="">Todos</option>
+                    {neighborhoods.map(n => <option key={n} value={n}>{n}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Rua</label>
+                  <select value={filterStreet} onChange={(e) => setFilterStreet(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+                    <option value="">Todas</option>
+                    {streets.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </div>
                 <div>
