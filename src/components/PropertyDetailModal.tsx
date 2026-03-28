@@ -5,7 +5,8 @@ import {
   Building2, ChevronLeft, ChevronRight, ExternalLink, Play, Repeat,
   CreditCard, Navigation, Share2, Heart, Maximize2, Download, Key,
   Pencil, Check, HardDrive, Flame, TrendingUp, Eye, EyeOff, User,
-  Sparkles, Loader2, Target, Zap, FileText, MapPinned
+  Sparkles, Loader2, Target, Zap, FileText, MapPinned, DollarSign,
+  Gift, Percent, FileCheck, Hash
 } from "lucide-react";
 import { formatCurrency, type Property } from "@/data/mockData";
 import { cn } from "@/lib/utils";
