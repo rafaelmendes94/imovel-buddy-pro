@@ -76,12 +76,16 @@ function downloadXml(xml: string, portal: string) {
   URL.revokeObjectURL(url);
 }
 
-const allStatuses: Property["status"][] = ["Disponível", "Vendido", "Reservado", "Alugado"];
+const allStatuses: Property["status"][] = ["Disponível", "Vendido", "Reservado", "Alugado", "Suspenso"];
+const statusLabels: Record<Property["status"], string> = {
+  Disponível: "Ativo", Vendido: "Vendido", Reservado: "Reservado", Alugado: "Alugado", Suspenso: "Suspenso",
+};
 const statusConfig: Record<Property["status"], { color: string; bg: string; border: string; icon: typeof Home }> = {
   Disponível: { color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/30", icon: Home },
   Vendido: { color: "text-red-400", bg: "bg-red-500/10", border: "border-red-500/30", icon: CheckCircle2 },
   Reservado: { color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/30", icon: Clock },
   Alugado: { color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/30", icon: Key },
+  Suspenso: { color: "text-gray-400", bg: "bg-gray-500/10", border: "border-gray-500/30", icon: Ban },
 };
 
 type Category = "todos" | "apartamentos" | "casas" | "terrenos" | "decorados" | "vista-mar" | "permuta" | "vendidos";
@@ -281,7 +285,7 @@ export default function Properties() {
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
           {[
             { label: "Total", count: propertyList.length, icon: Star, onClick: () => setActiveCategory("todos") },
-            { label: "Disponíveis", count: propertyList.filter(p => p.status === "Disponível").length, icon: Home, onClick: () => setActiveCategory("todos") },
+            { label: "Ativos", count: propertyList.filter(p => p.status === "Disponível").length, icon: Home, onClick: () => setActiveCategory("todos") },
             { label: "Apartamentos", count: propertyList.filter(p => p.type === "Apartamento").length, icon: Building2, onClick: () => setActiveCategory("apartamentos") },
             { label: "Casas", count: propertyList.filter(p => p.type === "Casa").length, icon: Home, onClick: () => setActiveCategory("casas") },
             { label: "Terrenos", count: propertyList.filter(p => p.type === "Terreno").length, icon: TreePine, onClick: () => setActiveCategory("terrenos") },
@@ -684,7 +688,7 @@ function StatusBar({ currentStatus, onChangeStatus }: { currentStatus: Property[
         const isActive = status === currentStatus;
         return (
           <button key={status} onClick={(e) => { e.stopPropagation(); onChangeStatus(status); }} className={cn("flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-semibold border transition-all duration-200", isActive ? `${config.bg} ${config.color} ${config.border} shadow-sm` : "bg-muted/50 text-muted-foreground border-transparent hover:bg-muted")}>
-            <Icon className="w-3 h-3" /> {status}
+            <Icon className="w-3 h-3" /> {statusLabels[status]}
           </button>
         );
       })}
@@ -789,16 +793,6 @@ function PropertyCard({
 
       <div className="relative cursor-pointer" onClick={() => onSelect?.(property)}>
         <ImageCarousel images={property.images} alt={property.title} />
-
-        {/* Status badge */}
-        <span className={cn("absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide z-10",
-          property.status === "Vendido" ? "bg-red-500 text-white" :
-          property.status === "Reservado" ? "bg-amber-500 text-white" :
-          property.status === "Alugado" ? "bg-blue-500 text-white" :
-          "bg-emerald-500 text-white"
-        )}>
-          {property.status}
-        </span>
 
         {/* Exclusivity badge */}
         {property.exclusivityTerm && (
@@ -1024,17 +1018,24 @@ function PropertyRow({
               {ownerTypeInfo.label}
             </span>
           )}
-          {/* Status badge */}
-          <span className={cn("absolute bottom-2 left-2 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide shadow-sm",
-            property.status === "Vendido" ? "bg-red-500 text-white" :
-            property.status === "Reservado" ? "bg-amber-500 text-white" :
-            property.status === "Alugado" ? "bg-blue-500 text-white" :
-            "bg-emerald-500 text-white"
-          )}>{property.status}</span>
         </div>
 
         {/* ── COL 2: Identidade + Dados Técnicos ── */}
         <div className="flex-1 min-w-0 border-r border-border px-3 py-2 flex flex-col justify-center gap-1">
+          {/* Quick status selector */}
+          <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+            {allStatuses.map((s) => {
+              const cfg = statusConfig[s];
+              const active = s === property.status;
+              return (
+                <button key={s} onClick={() => handleStatusChange(s)}
+                  className={cn("px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wide transition-all",
+                    active ? `${cfg.bg} ${cfg.color} ${cfg.border} border` : "text-muted-foreground hover:bg-muted"
+                  )}
+                >{statusLabels[s]}</button>
+              );
+            })}
+          </div>
           {/* Title */}
           <h3
             className="font-bold text-card-foreground text-sm truncate hover:text-primary cursor-pointer transition-colors leading-tight"
