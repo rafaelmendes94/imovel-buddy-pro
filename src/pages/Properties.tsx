@@ -313,14 +313,60 @@ export default function Properties() {
         {/* Header */}
         <div className="flex flex-col gap-3">
           <BackButton />
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-foreground">Imóveis</h1>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                {propertyList.length} cadastrados
-              </p>
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
+              <div>
+                <h1 className="text-xl sm:text-2xl font-bold text-foreground">Imóveis</h1>
+                <p className="text-xs text-muted-foreground">{propertyList.length} cadastrados</p>
+              </div>
+              {/* VGV Badges inline */}
+              <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-primary/10 border border-primary/20">
+                <TrendingUp className="w-3.5 h-3.5 text-primary" />
+                <div>
+                  <p className="text-[8px] font-bold uppercase text-primary leading-none">VGV Ativo</p>
+                  <p className="text-sm font-black text-foreground leading-tight">
+                    {formatCurrency(propertyList.filter(p => p.status === "Disponível" || p.status === "Reservado").reduce((sum, p) => sum + p.price, 0))}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                <Trophy className="w-3.5 h-3.5 text-emerald-600" />
+                <div>
+                  <p className="text-[8px] font-bold uppercase text-emerald-600 leading-none">VGV Vendidos</p>
+                  <p className="text-sm font-black text-foreground leading-tight">
+                    {formatCurrency(salesRecords.reduce((sum, s) => sum + s.price, 0))}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                <DollarSign className="w-3.5 h-3.5 text-blue-600" />
+                <div>
+                  <p className="text-[8px] font-bold uppercase text-blue-600 leading-none">Comissão Estimada</p>
+                  <p className="text-sm font-black text-foreground leading-tight">
+                    {formatCurrency(propertyList.filter(p => p.status === "Disponível" || p.status === "Reservado").reduce((sum, p) => sum + (p.price * (p.commission || 0) / 100), 0))}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                <Wallet className="w-3.5 h-3.5 text-amber-600" />
+                <div>
+                  <p className="text-[8px] font-bold uppercase text-amber-600 leading-none">Comissões Pagas</p>
+                  <p className="text-sm font-black text-foreground leading-tight">
+                    {formatCurrency(salesRecords.reduce((sum, s) => {
+                      const prop = propertyList.find(p => p.id === s.propertyId);
+                      return sum + (s.price * ((prop?.commission) || 0) / 100);
+                    }, 0))}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => navigate("/relatorios")}
+                className="flex items-center gap-1.5 px-3 py-2.5 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-colors"
+              >
+                <BarChart3 className="w-3.5 h-3.5" /> Relatórios
+              </button>
             </div>
-            <div className="flex gap-2 flex-wrap">
+            <div className="flex gap-2 flex-wrap flex-shrink-0">
               <div className="relative" ref={xmlMenuRef}>
                 <button
                   onClick={() => setShowXmlMenu(!showXmlMenu)}
@@ -340,51 +386,9 @@ export default function Properties() {
                   </div>
                 )}
               </div>
-              <button
-                onClick={() => navigate("/relatorios")}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-card border border-input text-foreground text-xs font-medium hover:bg-muted transition-colors"
-              >
-                <BarChart3 className="w-3.5 h-3.5" /> Relatórios
-              </button>
               <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg gradient-gold text-primary text-xs font-semibold hover:opacity-90 transition-opacity">
                 <Plus className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Novo</span> Imóvel
               </button>
-            </div>
-          </div>
-        </div>
-
-        {/* VGV Cards */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-2 border-primary/30 rounded-xl p-3 sm:p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider text-primary">VGV Carteira Ativa</p>
-                <p className="text-2xl sm:text-4xl font-black text-foreground mt-1">
-                  {formatCurrency(propertyList.filter(p => p.status === "Disponível" || p.status === "Reservado").reduce((sum, p) => sum + p.price, 0))}
-                </p>
-                <p className="text-[9px] sm:text-[11px] text-muted-foreground mt-0.5">
-                  {propertyList.filter(p => p.status === "Disponível" || p.status === "Reservado").length} imóveis ativos
-                </p>
-              </div>
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-              </div>
-            </div>
-          </div>
-          <div className="bg-gradient-to-r from-emerald-500/10 to-emerald-500/5 border-2 border-emerald-500/30 rounded-xl p-3 sm:p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider text-emerald-600">VGV Vendidos</p>
-                <p className="text-2xl sm:text-4xl font-black text-foreground mt-1">
-                  {formatCurrency(salesRecords.reduce((sum, s) => sum + s.price, 0))}
-                </p>
-                <p className="text-[9px] sm:text-[11px] text-muted-foreground mt-0.5">
-                  {salesRecords.length} vendas realizadas
-                </p>
-              </div>
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-                <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600" />
-              </div>
             </div>
           </div>
         </div>
