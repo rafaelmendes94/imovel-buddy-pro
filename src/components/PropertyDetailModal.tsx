@@ -795,35 +795,41 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
             </p>
 
             {/* Proprietário */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 p-3 bg-white rounded-lg border border-gray-200">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4 p-3 bg-white rounded-lg border border-gray-200">
               <div>
                 <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">
                   <User className="w-3 h-3 inline mr-1" />Proprietário
                 </label>
-                <p className="text-sm font-bold text-gray-900">{property.owner || "Não informado"}</p>
+                <EditableField field="owner" value={property.owner || ""} label="proprietário" />
               </div>
               <div>
                 <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">
-                  <Phone className="w-3 h-3 inline mr-1" />Telefone do Proprietário
+                  <Phone className="w-3 h-3 inline mr-1" />Telefone
                 </label>
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-bold text-gray-900">
-                    {property.ownerPhone
-                      ? showOwnerPhone
-                        ? property.ownerPhone.replace(/(\d{2})(\d{2})(\d{5})(\d{4})/, "+$1 ($2) $3-$4")
-                        : "••••••••••••"
-                      : "Não informado"}
-                  </p>
-                  {property.ownerPhone && (
-                    <button
-                      onClick={() => setShowOwnerPhone(!showOwnerPhone)}
-                      className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-700"
-                      title={showOwnerPhone ? "Ocultar número" : "Mostrar número"}
-                    >
-                      {showOwnerPhone ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  )}
-                </div>
+                <EditableField field="ownerPhone" value={property.ownerPhone || ""} label="telefone" />
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Tipo Proprietário</label>
+                <select
+                  value={property.ownerType || ""}
+                  onChange={(e) => {
+                    if (onUpdateProperty) {
+                      updateProperty({ ...property, ownerType: (e.target.value || undefined) as Property["ownerType"] });
+                      toast.success("Tipo atualizado!");
+                    }
+                  }}
+                  className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                >
+                  <option value="">Selecione</option>
+                  <option value="Particular">Particular</option>
+                  <option value="Construtora">Construtora</option>
+                  <option value="Investidor">Investidor</option>
+                  <option value="Adm Comercial">Adm Comercial</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Corretor</label>
+                <EditableField field="broker" value={property.broker} label="corretor" />
               </div>
             </div>
 
