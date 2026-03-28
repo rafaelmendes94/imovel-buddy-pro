@@ -40,6 +40,7 @@ export interface Property {
   commission?: number;
   bonus?: number;
   bonusExpiry?: string;
+  dealLabel?: "Oferta" | "Bom Negócio" | "Normal" | "Acima da Média" | null;
 }
 
 export interface Broker {

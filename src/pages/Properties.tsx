@@ -1059,8 +1059,9 @@ function analyzeDealScore(property: Property, allProperties: Property[]): DealSc
 }
 
 // ---- Deal Thermometer Component ----
-function DealThermometer({ dealScore }: { dealScore: DealScore }) {
-  const { score, label, estimatedDays } = dealScore;
+function DealThermometer({ dealScore, manualLabel, onLabelChange }: { dealScore: DealScore; manualLabel?: Property["dealLabel"]; onLabelChange?: (label: Property["dealLabel"]) => void }) {
+  const effectiveLabel = manualLabel || dealScore.label;
+  const { score, estimatedDays } = dealScore;
 
   const getThermometerColor = () => {
     if (score >= 80) return "bg-emerald-500";
