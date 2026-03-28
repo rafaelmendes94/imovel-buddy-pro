@@ -1382,10 +1382,10 @@ function PropertyRow({
     <div className={cn("elevated-card rounded-xl relative overflow-hidden transition-all duration-300", animatePulse && "animate-sold-pulse")}>
       {showCelebration && <SoldCelebration />}
 
-      <div className="flex items-start overflow-x-auto">
+      <div className="flex flex-col md:flex-row md:items-start md:overflow-x-auto">
 
         {/* ── COL 1: Foto com carrossel ── */}
-        <div className="relative w-[200px] h-[200px] flex-shrink-0">
+        <div className="relative w-full md:w-[200px] h-[200px] flex-shrink-0">
           <RowCarousel images={property.images.length > 0 ? property.images : [property.image]} />
           {ownerTypeInfo && (
             <span className={cn("absolute top-2 left-2 z-10 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wide shadow-sm", ownerTypeInfo.color)}>
@@ -1404,7 +1404,7 @@ function PropertyRow({
         </div>
 
         {/* ── COL 2: Identidade + Dados Técnicos ── */}
-        <div className="flex-1 min-w-0 border-r border-border px-4 py-2 flex flex-col justify-start gap-1">
+        <div className="flex-1 min-w-0 md:border-r border-border px-4 py-2 flex flex-col justify-start gap-1">
           {/* Row 1: Title + Code */}
           <div className="flex items-center gap-2 min-w-0">
             <h3
@@ -1515,7 +1515,7 @@ function PropertyRow({
         </div>
 
         {/* ── COL 3: Financeiro ── */}
-        <div className="w-[220px] flex-shrink-0 border-r border-border px-3 py-2 flex flex-col justify-start gap-0.5" onClick={(e) => e.stopPropagation()}>
+        <div className="w-full md:w-[220px] flex-shrink-0 md:border-r border-border px-3 py-2 flex flex-col justify-start gap-0.5" onClick={(e) => e.stopPropagation()}>
           {/* Main price */}
           <div className="flex items-center gap-1.5 mb-0.5">
             <Banknote className="w-3.5 h-3.5 text-primary" />
@@ -1586,7 +1586,7 @@ function PropertyRow({
         </div>
 
         {/* ── COL 3.5: Analytics ── */}
-        <div className="w-[170px] flex-shrink-0 border-r border-border px-3 py-2 flex flex-col justify-start gap-1.5" onClick={(e) => e.stopPropagation()}>
+        <div className="w-full md:w-[170px] flex-shrink-0 md:border-r border-border px-3 py-2 flex flex-col justify-start gap-1.5" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center gap-1.5 mb-0.5">
             <BarChart3 className="w-3.5 h-3.5 text-primary" />
             <span className="text-[11px] font-black text-primary uppercase tracking-wider">Analytics</span>
@@ -1613,7 +1613,7 @@ function PropertyRow({
         </div>
 
         {/* ── COL 4: Proprietário + Chaves + Datas + Status ── */}
-        <div className="w-[190px] flex-shrink-0 border-r border-border px-3 py-2 flex flex-col justify-start gap-1" onClick={(e) => e.stopPropagation()}>
+        <div className="w-full md:w-[190px] flex-shrink-0 md:border-r border-border px-3 py-2 flex flex-col justify-start gap-1" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center gap-1.5 mb-0.5">
             <User className="w-3.5 h-3.5 text-primary" />
             <span className="text-[11px] font-black text-primary uppercase tracking-wider">Proprietário</span>
@@ -1682,7 +1682,7 @@ function PropertyRow({
         </div>
 
         {/* ── COL 5: Ações (ícones) ── */}
-        <div className="w-[52px] flex-shrink-0 flex flex-col items-center justify-start gap-1.5 py-2" onClick={(e) => e.stopPropagation()}>
+        <div className="w-full md:w-[52px] flex-shrink-0 flex flex-row md:flex-col items-center justify-start gap-1.5 py-2 px-3 md:px-0" onClick={(e) => e.stopPropagation()}>
           <button
             onClick={() => onSelect?.(property)}
             className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors" title="Editar"
