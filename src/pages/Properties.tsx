@@ -100,8 +100,6 @@ const categories: { key: Category; label: string; icon: typeof Home }[] = [
   { key: "terrenos", label: "Terrenos", icon: TreePine },
   { key: "decorados", label: "Decorados", icon: Paintbrush },
   { key: "vista-mar", label: "Vista Mar", icon: Waves },
-  { key: "permuta", label: "Permuta", icon: Repeat },
-  { key: "vendidos", label: "Vendidos", icon: Trophy },
 ];
 
 // Auto-generate codes for properties that don't have one
@@ -130,7 +128,7 @@ export default function Properties() {
   const [filterStreet, setFilterStreet] = useState("");
   const [filterCode, setFilterCode] = useState("");
   const [filterParking, setFilterParking] = useState("");
-  const [sortBy, setSortBy] = useState<"default" | "price-asc" | "price-desc" | "name-asc" | "name-desc" | "updated" | "created">("default");
+  const [sortBy, setSortBy] = useState<"default" | "price-asc" | "price-desc" | "name-asc" | "name-desc" | "updated" | "created" | "permuta" | "vendidos">("default");
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [viewingTerm, setViewingTerm] = useState<string | null>(null);
   const [favoriteIds, setFavoriteIds] = useState<string[]>(() => {
@@ -289,6 +287,8 @@ export default function Properties() {
   }, [propertyList, activeCategory, search, filterCity, filterBedrooms, filterPriceMin, filterPriceMax, filterCondition, filterFreshness, filterEmpreendimento, filterType, filterOwner, filterNeighborhood, filterStreet, filterCode, filterParking, showInactive]);
 
   const sorted = useMemo(() => {
+    if (sortBy === "permuta") return filtered.filter(p => p.acceptsExchange);
+    if (sortBy === "vendidos") return filtered.filter(p => p.status === "Vendido");
     if (sortBy === "default") return filtered;
     return [...filtered].sort((a, b) => {
       switch (sortBy) {
@@ -634,6 +634,8 @@ export default function Properties() {
             { key: "name-desc", label: "Z → A Edifício" },
             { key: "updated", label: "Últ. Atualizados" },
             { key: "created", label: "Últ. Incluídos" },
+            { key: "permuta", label: "Permuta" },
+            { key: "vendidos", label: "Vendidos" },
           ] as { key: typeof sortBy; label: string }[]).map((s) => (
             <button
               key={s.key}
