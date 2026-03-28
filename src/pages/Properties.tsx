@@ -1142,7 +1142,7 @@ function DealThermometer({ dealScore, manualLabel, onLabelChange }: { dealScore:
 
 // ---- PropertyRow (redesigned) ----
 function PropertyRow({
-  property, onStatusChange, onSelect, isFavorited, onToggleFavorite, onFilterByTitle, onFilterByCondition, onFilterByOwner, onPriceChange, allProperties,
+  property, onStatusChange, onSelect, isFavorited, onToggleFavorite, onFilterByTitle, onFilterByCondition, onFilterByOwner, onPriceChange, allProperties, onDealLabelChange,
 }: {
   property: Property;
   onStatusChange: (id: string, status: Property["status"]) => void;
@@ -1154,6 +1154,7 @@ function PropertyRow({
   onFilterByOwner?: (owner: string) => void;
   onPriceChange?: (id: string, field: "price" | "priceInstallment", value: number) => void;
   allProperties?: Property[];
+  onDealLabelChange?: (id: string, label: Property["dealLabel"]) => void;
 }) {
   const dealScore = useMemo(() => analyzeDealScore(property, allProperties || []), [property, allProperties]);
   const [showCelebration, setShowCelebration] = useState(false);
@@ -1310,7 +1311,7 @@ function PropertyRow({
           )}
 
           {/* Deal Thermometer */}
-          <DealThermometer dealScore={dealScore} />
+          <DealThermometer dealScore={dealScore} manualLabel={property.dealLabel} onLabelChange={(lbl) => onDealLabelChange?.(property.id, lbl)} />
         </div>
 
         {/* ── COL 4: Proprietário + Chaves + Datas + Status ── */}
