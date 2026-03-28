@@ -717,7 +717,7 @@ export default function Properties() {
             ))}
           </div>
         ) : (
-          <PropertyMap properties={sorted} />
+          <PropertyMap properties={sorted} onSelectProperty={(p) => setSelectedProperty(p)} />
         )}
 
         {filtered.length === 0 && (
