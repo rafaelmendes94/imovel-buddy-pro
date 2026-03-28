@@ -416,7 +416,7 @@ export default function Properties() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Buscar por nome, endereço, cidade ou corretor..."
+                placeholder="Buscar por nome, endereço, cidade, corretor ou código..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 bg-card border border-input rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
@@ -461,11 +461,6 @@ export default function Properties() {
           {showFilters && (
             <div className="bg-card border border-border rounded-xl p-4">
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 xl:grid-cols-12 gap-3">
-                <div>
-                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Código</label>
-                  <input type="text" value={filterCode} onChange={(e) => setFilterCode(e.target.value)} placeholder="MV01..."
-                    className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
-                </div>
                 <div>
                   <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Empreendimento</label>
                   <select value={filterEmpreendimento} onChange={(e) => setFilterEmpreendimento(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
@@ -1067,14 +1062,14 @@ function PropertyRow({
         <div className="flex-1 min-w-0 border-r border-border px-3 py-2 flex flex-col justify-center gap-1">
           {/* Title + Code */}
           <div className="flex items-center gap-2">
-            {property.code && (
-              <span className="text-[10px] font-black text-primary bg-primary/10 px-1.5 py-0.5 rounded">{property.code}</span>
-            )}
             <h3
               className="font-bold text-card-foreground text-sm truncate hover:text-primary cursor-pointer transition-colors leading-tight"
               onClick={() => onFilterByTitle?.(property.title)}
               title="Ver títulos semelhantes"
             >{property.title}</h3>
+            {property.code && (
+              <span className="text-[10px] font-black text-primary bg-primary/10 px-1.5 py-0.5 rounded">{property.code}</span>
+            )}
           </div>
 
           {/* Empreendimento + Unit info row */}
@@ -1128,13 +1123,12 @@ function PropertyRow({
         <div className="w-[220px] flex-shrink-0 border-r border-border px-3 py-2 flex flex-col justify-center gap-0.5" onClick={(e) => e.stopPropagation()}>
           {/* Main price */}
           <InlinePrice value={property.price} onChange={(v) => onPriceChange?.(property.id, "price", v)} className="text-[18px] font-black text-emerald-500" />
-          <span className="text-[8px] text-muted-foreground uppercase font-semibold tracking-wider">Valor à vista</span>
 
           {/* Promotional price */}
           {property.priceInstallment && (
             <div className="mt-0.5">
               <InlinePrice value={property.priceInstallment} onChange={(v) => onPriceChange?.(property.id, "priceInstallment", v)} className="text-[14px] font-bold text-red-500" />
-              <span className="text-[8px] text-muted-foreground uppercase font-semibold tracking-wider ml-1">Promocional</span>
+              <span className="text-[8px] text-muted-foreground uppercase font-semibold tracking-wider ml-1">Valor Promocional</span>
             </div>
           )}
 
@@ -1152,27 +1146,24 @@ function PropertyRow({
 
           {/* Commission */}
           {property.commission != null && (
-            <div className="flex items-center gap-1 mt-1">
-              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold bg-primary/10 text-primary">
-                <Percent className="w-2.5 h-2.5" /> Comissão {property.commission}%
-              </span>
-              <span className="text-[8px] text-muted-foreground font-medium">
-                ≈ {formatCurrency(Math.round(property.price * (property.commission / 100)))}
-              </span>
+            <div className="flex items-center gap-1.5 mt-1 px-2 py-1 rounded bg-primary/10 border border-primary/20">
+              <Percent className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+              <div className="flex flex-col">
+                <span className="text-[9px] font-bold text-primary uppercase tracking-wide">Comissão {property.commission}%</span>
+                <span className="text-[14px] font-black text-primary">{formatCurrency(Math.round(property.price * (property.commission / 100)))}</span>
+              </div>
             </div>
           )}
 
           {/* Bonus */}
           {property.bonus != null && (
-            <div className="flex items-center gap-1.5 mt-0.5 px-1.5 py-1 rounded bg-red-500/10 border border-red-500/20">
-              <Gift className="w-3 h-3 text-red-500 flex-shrink-0" />
-              <div className="flex flex-col">
-                <span className="text-[10px] font-black text-red-500 uppercase tracking-wide">Bônus</span>
-                <span className="text-[12px] font-black text-red-500">{formatCurrency(property.bonus)}</span>
-                {property.bonusExpiry && (
-                  <span className="text-[8px] font-bold text-red-400">Validade: {new Date(property.bonusExpiry).toLocaleDateString("pt-BR")}</span>
-                )}
-              </div>
+            <div className="flex items-center gap-1 mt-0.5">
+              <Gift className="w-2.5 h-2.5 text-red-500 flex-shrink-0" />
+              <span className="text-[8px] font-bold text-red-500 uppercase">Bônus</span>
+              <span className="text-[10px] font-black text-red-500">{formatCurrency(property.bonus)}</span>
+              {property.bonusExpiry && (
+                <span className="text-[8px] font-medium text-red-400">• Val. {new Date(property.bonusExpiry).toLocaleDateString("pt-BR")}</span>
+              )}
             </div>
           )}
         </div>
@@ -1208,11 +1199,11 @@ function PropertyRow({
           {/* Dates */}
           <div className="space-y-0.5 text-[9px] text-muted-foreground">
             <div className="flex items-center justify-between gap-1">
-              <span className="flex items-center gap-0.5"><CalendarCheck className="w-2.5 h-2.5" /> Incl.</span>
+              <span className="flex items-center gap-0.5"><CalendarCheck className="w-2.5 h-2.5" /> Inclusão</span>
               <span className="font-medium text-foreground">{createdFormatted}</span>
             </div>
             <div className="flex items-center justify-between gap-1">
-              <span className="flex items-center gap-0.5"><CalendarClock className="w-2.5 h-2.5" /> Atu.</span>
+              <span className="flex items-center gap-0.5"><CalendarClock className="w-2.5 h-2.5" /> Atualização</span>
               <span className={cn("font-semibold", updateColor)}>{updatedFormatted}</span>
             </div>
           </div>
