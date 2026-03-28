@@ -103,7 +103,7 @@ export default function Properties() {
   const [activeCategory, setActiveCategory] = useState<Category>("todos");
   const [view, setView] = useState<"grid" | "list" | "map">("grid");
   const [showXmlMenu, setShowXmlMenu] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
+  const [showFilters, setShowFilters] = useState(true);
   const [filterCity, setFilterCity] = useState("");
   const [filterBedrooms, setFilterBedrooms] = useState("");
   const [filterPriceMin, setFilterPriceMin] = useState("");
