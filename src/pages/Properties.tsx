@@ -100,8 +100,6 @@ const categories: { key: Category; label: string; icon: typeof Home }[] = [
   { key: "terrenos", label: "Terrenos", icon: TreePine },
   { key: "decorados", label: "Decorados", icon: Paintbrush },
   { key: "vista-mar", label: "Vista Mar", icon: Waves },
-  { key: "permuta", label: "Permuta", icon: Repeat },
-  { key: "vendidos", label: "Vendidos", icon: Trophy },
 ];
 
 // Auto-generate codes for properties that don't have one
