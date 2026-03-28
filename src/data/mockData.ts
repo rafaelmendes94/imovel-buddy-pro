@@ -38,6 +38,7 @@ export interface Property {
   posicaoPredio?: string;
   posicaoSolar?: string;
   infraestrutura?: string[];
+  elevadores?: number;
   vista?: string;
   condicao?: "Mobiliado" | "Semi-mobiliado" | "Vazio" | "Decorado";
   ownerType?: "Construtora" | "Investidor" | "Particular" | "Adm Comercial";

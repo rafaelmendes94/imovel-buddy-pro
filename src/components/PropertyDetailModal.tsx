@@ -610,6 +610,23 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                   );
                 })}
               </div>
+              {/* Quantidade de elevadores */}
+              {property.infraestrutura?.includes("Elevador") && (
+                <div className="flex items-center gap-2 mt-2">
+                  <label className="text-[11px] font-bold text-gray-500 whitespace-nowrap">Qtd. Elevadores:</label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={20}
+                    value={property.elevadores || 1}
+                    onChange={(e) => {
+                      if (!onUpdateProperty) return;
+                      onUpdateProperty({ ...property, elevadores: parseInt(e.target.value) || 1 });
+                    }}
+                    className="w-16 px-2 py-1 rounded border border-input text-xs bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                  />
+                </div>
+              )}
             </div>
           </div>
 
