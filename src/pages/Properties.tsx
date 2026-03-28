@@ -293,47 +293,50 @@ export default function Properties() {
   return (
     <AppLayout>
       <div className="p-6 lg:p-8 space-y-6">
+        <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Imóveis</h1>
-            <div className="flex items-center gap-4 mt-1">
-              <p className="text-sm text-muted-foreground">
-                {propertyList.length} imóveis cadastrados
-              </p>
-              <span className="text-sm font-semibold text-emerald-500">VGV {formatCurrency(totalVGV)}</span>
-              <span className="text-sm font-semibold text-primary">Vendas {formatCurrency(totalSold)}</span>
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h1 className="text-xl sm:text-2xl font-bold text-foreground">Imóveis</h1>
+              <div className="flex items-center gap-2 sm:gap-4 mt-1 flex-wrap">
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  {propertyList.length} cadastrados
+                </p>
+                <span className="text-xs sm:text-sm font-semibold text-emerald-500">VGV {formatCurrency(totalVGV)}</span>
+                <span className="text-xs sm:text-sm font-semibold text-primary">Vendas {formatCurrency(totalSold)}</span>
+              </div>
+            </div>
+            <div className="flex gap-2 flex-wrap">
               <button
                 onClick={() => navigate("/relatorios")}
-                className="flex items-center gap-1 text-[11px] font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-md hover:bg-primary/20 transition-colors"
+                className="flex items-center gap-1 text-[11px] font-bold text-primary bg-primary/10 px-2.5 py-1.5 rounded-md hover:bg-primary/20 transition-colors"
               >
-                <BarChart3 className="w-3 h-3" /> Relatório de Vendas
+                <BarChart3 className="w-3 h-3" /> Relatório
+              </button>
+              <div className="relative" ref={xmlMenuRef}>
+                <button
+                  onClick={() => setShowXmlMenu(!showXmlMenu)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-card border border-input text-foreground text-xs font-medium hover:bg-muted transition-colors"
+                >
+                  <FileCode className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Exportar</span> XML <ChevronDown className="w-3 h-3" />
+                </button>
+                {showXmlMenu && (
+                  <div className="absolute right-0 top-full mt-1 w-56 bg-card border border-border rounded-lg shadow-xl z-50 py-1 animate-scale-in">
+                    <p className="px-3 py-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Selecione o portal</p>
+                    {xmlPortals.map((portal) => (
+                      <button key={portal.name} onClick={() => handleExportXml(portal.name)} className="w-full text-left px-3 py-2 hover:bg-muted transition-colors">
+                        <span className="text-sm font-medium text-foreground block">{portal.name}</span>
+                        <span className="text-[11px] text-muted-foreground">{portal.description}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg gradient-gold text-primary text-xs font-semibold hover:opacity-90 transition-opacity">
+                <Plus className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Novo</span> Imóvel
               </button>
             </div>
-          </div>
-          <div className="flex gap-2 self-start">
-            <div className="relative" ref={xmlMenuRef}>
-              <button
-                onClick={() => setShowXmlMenu(!showXmlMenu)}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-card border border-input text-foreground text-sm font-medium hover:bg-muted transition-colors"
-              >
-                <FileCode className="w-4 h-4" /> Exportar XML <ChevronDown className="w-3.5 h-3.5" />
-              </button>
-              {showXmlMenu && (
-                <div className="absolute right-0 top-full mt-1 w-56 bg-card border border-border rounded-lg shadow-xl z-50 py-1 animate-scale-in">
-                  <p className="px-3 py-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Selecione o portal</p>
-                  {xmlPortals.map((portal) => (
-                    <button key={portal.name} onClick={() => handleExportXml(portal.name)} className="w-full text-left px-3 py-2 hover:bg-muted transition-colors">
-                      <span className="text-sm font-medium text-foreground block">{portal.name}</span>
-                      <span className="text-[11px] text-muted-foreground">{portal.description}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-            <button className="flex items-center gap-2 px-4 py-2.5 rounded-lg gradient-gold text-primary text-sm font-semibold hover:opacity-90 transition-opacity">
-              <Plus className="w-4 h-4" /> Novo Imóvel
-            </button>
           </div>
         </div>
 
