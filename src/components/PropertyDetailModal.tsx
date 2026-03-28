@@ -556,93 +556,44 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
             );
 
             if (blockId === "identificacao") {
+              const idFields: FieldConfig[] = [
+                { id: "tipo", label: "Tipo", render: () => editingBlock === "identificacao" ? (
+                  <select value={property.type} onChange={(e) => { if (onUpdateProperty) { updateProperty({ ...property, type: e.target.value as Property["type"] }); toast.success("Tipo atualizado!"); } }} className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+                    {(["Apartamento", "Casa", "Comercial", "Terreno", "Lote", "Condomínio"] as const).map(t => (<option key={t} value={t}>{t}</option>))}
+                  </select>
+                ) : <span className="text-sm font-medium text-foreground">{property.type}</span> },
+                { id: "empreendimento", label: "Empreendimento", render: () => editingBlock === "identificacao" ? (
+                  <div className="w-full space-y-1.5">
+                    <select value={property.empreendimento || ""} onChange={(e) => { if (!onUpdateProperty) return; const selected = e.target.value; if (!selected) { updateProperty({ ...property, empreendimento: undefined }); toast.success("Empreendimento removido"); return; } const ref = allProperties.find(p => p.empreendimento === selected && p.id !== property.id); if (ref) { updateProperty({ ...property, empreendimento: selected, address: ref.address || property.address, city: ref.city || property.city, neighborhood: ref.neighborhood || property.neighborhood, infraestrutura: ref.infraestrutura || property.infraestrutura, posicaoPredio: property.posicaoPredio || ref.posicaoPredio, posicaoSolar: property.posicaoSolar || ref.posicaoSolar }); toast.success(`Dados do empreendimento "${selected}" aplicados!`); } else { updateProperty({ ...property, empreendimento: selected }); toast.success("Empreendimento atualizado!"); } }} className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+                      <option value="">Selecione</option>
+                      {[...new Set(allProperties.map(p => p.empreendimento).filter(Boolean))].sort().map(emp => (<option key={emp} value={emp}>{emp}</option>))}
+                    </select>
+                    <input type="text" placeholder="Ou digite um novo..." className="w-full px-3 py-1.5 rounded-lg border border-input text-xs bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring" onKeyDown={(e) => { if (e.key === "Enter" && onUpdateProperty) { const val = (e.target as HTMLInputElement).value.trim(); if (val) { updateProperty({ ...property, empreendimento: val }); toast.success(`Empreendimento "${val}" definido!`); (e.target as HTMLInputElement).value = ""; } } }} />
+                  </div>
+                ) : <span className="text-sm font-medium text-foreground">{property.empreendimento || "—"}</span> },
+                { id: "bairro", label: "Bairro", render: () => editingBlock === "identificacao" ? <EditableField field="neighborhood" value={property.neighborhood || ""} label="bairro" /> : <span className="text-sm font-medium text-foreground">{property.neighborhood || "—"}</span> },
+                { id: "cidade", label: "Cidade", render: () => editingBlock === "identificacao" ? <EditableField field="city" value={property.city || ""} label="cidade" /> : <span className="text-sm font-medium text-foreground">{property.city || "—"}</span> },
+                { id: "endereco", label: "Endereço Completo", colSpan: 2, render: () => editingBlock === "identificacao" ? <EditableField field="address" value={property.address || ""} label="endereço" /> : <span className="text-sm font-medium text-foreground">{property.address || "—"}</span> },
+                { id: "areaTotal", label: "Área Total", render: () => editingBlock === "identificacao" ? <span className="flex items-center gap-1"><EditableField field="area" value={property.area || 0} label="área total" type="number" /><span className="text-[10px] text-muted-foreground">m²</span></span> : <span className="text-sm font-medium text-foreground">{property.area ? `${property.area}m²` : "—"}</span> },
+                { id: "areaPriv", label: "Área Privativa", render: () => editingBlock === "identificacao" ? <span className="flex items-center gap-1"><EditableField field="privateArea" value={property.privateArea || 0} label="área privativa" type="number" /><span className="text-[10px] text-muted-foreground">m²</span></span> : <span className="text-sm font-medium text-foreground">{property.privateArea ? `${property.privateArea}m²` : "—"}</span> },
+                { id: "unidade", label: "Unidade/Apt", render: () => editingBlock === "identificacao" ? <EditableField field="unitNumber" value={property.unitNumber || ""} label="unidade" /> : <span className="text-sm font-medium text-foreground">{property.unitNumber || "—"}</span> },
+                { id: "box", label: "Box", render: () => editingBlock === "identificacao" ? <EditableField field="boxNumber" value={property.boxNumber || ""} label="box" /> : <span className="text-sm font-medium text-foreground">{property.boxNumber || "—"}</span> },
+                { id: "quadra", label: "Quadra", render: () => editingBlock === "identificacao" ? <EditableField field="quadra" value={property.quadra || ""} label="quadra" /> : <span className="text-sm font-medium text-foreground">{property.quadra || "—"}</span> },
+                { id: "lote", label: "Lote", render: () => editingBlock === "identificacao" ? <EditableField field="lote" value={property.lote || ""} label="lote" /> : <span className="text-sm font-medium text-foreground">{property.lote || "—"}</span> },
+              ];
+
               return blockWrapper("identificacao",
-                <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
+                <div className="bg-muted/50 rounded-xl p-5 border border-border">
                   <div className="flex items-center justify-between mb-4">
-                    <p className="text-sm font-bold text-gray-800 uppercase tracking-wider flex items-center gap-1.5">
-                      <span className="cursor-grab active:cursor-grabbing mr-1 text-gray-300 hover:text-gray-500">⠿</span>
+                    <p className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                      <span className="cursor-grab active:cursor-grabbing mr-1 text-muted-foreground/50 hover:text-muted-foreground">⠿</span>
                       <Hash className="w-4 h-4 text-amber-500" /> Identificação
                     </p>
-                    <button onClick={() => setEditingBlock(editingBlock === "identificacao" ? null : "identificacao")} className={cn("p-1.5 rounded-lg transition-colors", editingBlock === "identificacao" ? "bg-amber-100 text-amber-600" : "hover:bg-gray-200 text-gray-400")}>
+                    <button onClick={() => setEditingBlock(editingBlock === "identificacao" ? null : "identificacao")} className={cn("p-1.5 rounded-lg transition-colors", editingBlock === "identificacao" ? "bg-amber-100 text-amber-600" : "hover:bg-muted text-muted-foreground")}>
                       <Pencil className="w-3.5 h-3.5" />
                     </button>
                   </div>
-                  {editingBlock === "identificacao" ? (
-                    <>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                        <div>
-                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Tipo</label>
-                          <select value={property.type} onChange={(e) => { if (onUpdateProperty) { updateProperty({ ...property, type: e.target.value as Property["type"] }); toast.success("Tipo atualizado!"); } }} className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400">
-                            {(["Apartamento", "Casa", "Comercial", "Terreno", "Lote", "Condomínio"] as const).map(t => (<option key={t} value={t}>{t}</option>))}
-                          </select>
-                        </div>
-                        <div>
-                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Empreendimento</label>
-                          <select value={property.empreendimento || ""} onChange={(e) => { if (!onUpdateProperty) return; const selected = e.target.value; if (!selected) { updateProperty({ ...property, empreendimento: undefined }); toast.success("Empreendimento removido"); return; } const ref = allProperties.find(p => p.empreendimento === selected && p.id !== property.id); if (ref) { updateProperty({ ...property, empreendimento: selected, address: ref.address || property.address, city: ref.city || property.city, neighborhood: ref.neighborhood || property.neighborhood, infraestrutura: ref.infraestrutura || property.infraestrutura, posicaoPredio: property.posicaoPredio || ref.posicaoPredio, posicaoSolar: property.posicaoSolar || ref.posicaoSolar }); toast.success(`Dados do empreendimento "${selected}" aplicados!`); } else { updateProperty({ ...property, empreendimento: selected }); toast.success("Empreendimento atualizado!"); } }} className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400">
-                            <option value="">Selecione ou digite novo</option>
-                            {[...new Set(allProperties.map(p => p.empreendimento).filter(Boolean))].sort().map(emp => (<option key={emp} value={emp}>{emp}</option>))}
-                          </select>
-                          <input type="text" placeholder="Ou digite um novo..." className="w-full mt-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400" onKeyDown={(e) => { if (e.key === "Enter" && onUpdateProperty) { const val = (e.target as HTMLInputElement).value.trim(); if (val) { updateProperty({ ...property, empreendimento: val }); toast.success(`Empreendimento "${val}" definido!`); (e.target as HTMLInputElement).value = ""; } } }} />
-                        </div>
-                        <div>
-                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Bairro</label>
-                          <EditableField field="neighborhood" value={property.neighborhood || ""} label="bairro" />
-                        </div>
-                        <div>
-                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Cidade</label>
-                          <EditableField field="city" value={property.city || ""} label="cidade" />
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
-                        <div className="col-span-2">
-                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Endereço Completo</label>
-                          <EditableField field="address" value={property.address || ""} label="endereço" />
-                        </div>
-                        <div>
-                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Área Total</label>
-                          <EditableField field="area" value={property.area || 0} label="área total" type="number" />
-                          <span className="text-[10px] text-gray-400">m²</span>
-                        </div>
-                        <div>
-                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Área Privativa</label>
-                          <EditableField field="privateArea" value={property.privateArea || 0} label="área privativa" type="number" />
-                          <span className="text-[10px] text-gray-400">m²</span>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
-                        <div>
-                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Unidade/Apt</label>
-                          <EditableField field="unitNumber" value={property.unitNumber || ""} label="unidade" />
-                        </div>
-                        <div>
-                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Box</label>
-                          <EditableField field="boxNumber" value={property.boxNumber || ""} label="box" />
-                        </div>
-                        <div>
-                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Quadra</label>
-                          <EditableField field="quadra" value={property.quadra || ""} label="quadra" />
-                        </div>
-                        <div>
-                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Lote</label>
-                          <EditableField field="lote" value={property.lote || ""} label="lote" />
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      <div><span className="text-[10px] text-gray-400 block">Tipo</span><span className="text-sm font-medium text-gray-800">{property.type}</span></div>
-                      <div><span className="text-[10px] text-gray-400 block">Empreendimento</span><span className="text-sm font-medium text-gray-800">{property.empreendimento || "—"}</span></div>
-                      <div><span className="text-[10px] text-gray-400 block">Bairro</span><span className="text-sm font-medium text-gray-800">{property.neighborhood || "—"}</span></div>
-                      <div><span className="text-[10px] text-gray-400 block">Cidade</span><span className="text-sm font-medium text-gray-800">{property.city || "—"}</span></div>
-                      <div className="col-span-2"><span className="text-[10px] text-gray-400 block">Endereço</span><span className="text-sm font-medium text-gray-800">{property.address || "—"}</span></div>
-                      <div><span className="text-[10px] text-gray-400 block">Área Total</span><span className="text-sm font-medium text-gray-800">{property.area ? `${property.area}m²` : "—"}</span></div>
-                      <div><span className="text-[10px] text-gray-400 block">Área Privativa</span><span className="text-sm font-medium text-gray-800">{property.privateArea ? `${property.privateArea}m²` : "—"}</span></div>
-                      <div><span className="text-[10px] text-gray-400 block">Unidade</span><span className="text-sm font-medium text-gray-800">{property.unitNumber || "—"}</span></div>
-                      <div><span className="text-[10px] text-gray-400 block">Box</span><span className="text-sm font-medium text-gray-800">{property.boxNumber || "—"}</span></div>
-                      <div><span className="text-[10px] text-gray-400 block">Quadra</span><span className="text-sm font-medium text-gray-800">{property.quadra || "—"}</span></div>
-                      <div><span className="text-[10px] text-gray-400 block">Lote</span><span className="text-sm font-medium text-gray-800">{property.lote || "—"}</span></div>
-                    </div>
-                  )}
+                  <DraggableFieldGrid storageKey="fields-identificacao" fields={idFields} editing={editingBlock === "identificacao"} />
                 </div>
               );
             }
