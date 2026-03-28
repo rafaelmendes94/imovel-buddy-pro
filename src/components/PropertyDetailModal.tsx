@@ -71,6 +71,11 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
         case "bathrooms": updated.bathrooms = Number(val) || 0; break;
         case "parking": updated.parking = Number(val) || 0; break;
         case "description": updated.description = val; break;
+        case "posicaoPredio": updated.posicaoPredio = val; break;
+        case "posicaoSolar": updated.posicaoSolar = val; break;
+        case "vista": updated.vista = val; break;
+        case "condicao": updated.condicao = val as Property["condicao"]; break;
+        case "infraestrutura": updated.infraestrutura = val.split(",").map(s => s.trim()).filter(Boolean); break;
       }
       onUpdateProperty(updated);
       toast.success("Informação atualizada!");
