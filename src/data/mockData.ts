@@ -28,6 +28,7 @@ export interface Property {
   lote?: string;
   exclusivityTerm?: string; // URL to PDF or image of the exclusivity term
   description?: string;
+  updatedAt?: string;
 }
 
 export interface Broker {
