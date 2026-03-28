@@ -92,6 +92,14 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
 
   const cancelEdit = () => setEditingField(null);
 
+  // Wrapper to track changes
+  const updateProperty = (updated: Property) => {
+    if (onUpdateProperty) {
+      onUpdateProperty(updated);
+      setHasChanges(true);
+    }
+  };
+
   // -- Confirm update (stamp updatedAt) --
   const handleConfirmUpdate = () => {
     if (onUpdateProperty && hasChanges) {
