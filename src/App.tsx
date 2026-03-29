@@ -66,6 +66,7 @@ const App = () => (
             <Route path="/corretor/:slug" element={<BrokerSite />} />
             <Route path="/empreendimento/:slug" element={<EmpreendimentoDetail />} />
             <Route path="/parceiro/:slug" element={<PartnerDetail />} />
+            <Route path="/parceiros" element={<Parceiros />} />
 
             {/* Admin routes */}
             <Route path="/admin/dashboard" element={<AuthGuard requiredRoles={["super_admin", "admin_staff"]}><AdminDashboard /></AuthGuard>} />
