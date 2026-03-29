@@ -1777,12 +1777,13 @@ function PropertyRow({
 }
 
 // ---- Site Toggle Button (ativo_site / destaque_home) ----
-function SiteToggleButton({ propertyId, field, icon: Icon, activeColor, title }: {
+function SiteToggleButton({ propertyId, field, icon: Icon, activeColor, title, showLabel }: {
   propertyId: string;
   field: "ativo_site" | "destaque_home";
   icon: typeof Globe;
   activeColor: string;
   title: string;
+  showLabel?: boolean;
 }) {
   const [active, setActive] = useState(false);
   const [loading, setLoading] = useState(true);
