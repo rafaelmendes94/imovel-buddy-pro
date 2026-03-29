@@ -1529,7 +1529,7 @@ function PropertyRow({
 
         {/* ── COL 2: Identidade + Dados Técnicos ── */}
         <div className="flex-1 min-w-0 md:border-r border-border px-4 py-2 flex flex-col justify-start gap-1">
-          {/* Row 1: Title + Code */}
+          {/* Row 1: Title + Code + Site/Destaque toggles */}
           <div className="flex items-center gap-2 min-w-0">
             <h3
               className="font-bold text-card-foreground text-base truncate hover:text-primary cursor-pointer transition-colors leading-tight uppercase"
@@ -1539,6 +1539,10 @@ function PropertyRow({
             {property.code && (
               <span className="text-[11px] font-black text-muted-foreground bg-muted px-2 py-0.5 rounded flex-shrink-0">{property.code}</span>
             )}
+            <div className="flex items-center gap-1 flex-shrink-0 ml-auto">
+              <SiteToggleButton propertyId={property.id} field="ativo_site" icon={Globe} activeColor="text-emerald-500 bg-emerald-500/10" title="Ativo no Site" showLabel={false} />
+              <DestaqueSelector propertyId={property.id} compact />
+            </div>
           </div>
 
           {/* Row 2: Empreendimento + Units */}
