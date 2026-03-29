@@ -133,6 +133,7 @@ export type Database = {
           can_view_financeiro: boolean
           can_view_relatorios: boolean
           created_at: string
+          function_title: string
           id: string
           permissions: Json
           user_id: string
@@ -145,6 +146,7 @@ export type Database = {
           can_view_financeiro?: boolean
           can_view_relatorios?: boolean
           created_at?: string
+          function_title?: string
           id?: string
           permissions?: Json
           user_id: string
@@ -157,6 +159,7 @@ export type Database = {
           can_view_financeiro?: boolean
           can_view_relatorios?: boolean
           created_at?: string
+          function_title?: string
           id?: string
           permissions?: Json
           user_id?: string

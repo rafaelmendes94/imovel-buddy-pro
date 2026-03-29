@@ -1,0 +1,1 @@
+ALTER TABLE public.staff_permissions ADD COLUMN IF NOT EXISTS function_title text NOT NULL DEFAULT '';
