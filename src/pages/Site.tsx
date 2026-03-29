@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { properties, formatCurrency, type Property } from "@/data/mockData";
+import { formatCurrency } from "@/data/mockData";
+import { supabase } from "@/integrations/supabase/client";
 import { PropertyDetailModal } from "@/components/PropertyDetailModal";
 import {
   Search,
