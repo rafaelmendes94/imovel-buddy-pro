@@ -47,10 +47,7 @@ export default function Registro() {
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
-          <div className="mx-auto w-14 h-14 rounded-2xl gradient-gold flex items-center justify-center mb-4">
-            <Home className="w-7 h-7 text-primary" />
-          </div>
-          <h1 className="text-2xl font-bold text-foreground">MV BROKER CONNECT</h1>
+          <img src={logoImg} alt="MV BROKER CONNECT" className="mx-auto w-32 h-32 object-contain mb-4" />
           <p className="text-muted-foreground text-sm mt-1">Crie sua conta de corretor</p>
         </div>
 
