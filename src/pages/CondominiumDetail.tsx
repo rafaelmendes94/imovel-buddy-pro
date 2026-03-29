@@ -329,29 +329,15 @@ export default function CondominiumDetail() {
             </div>
           ))}
         </div>
-        {/* Location Map */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-accent" /> Localização
-            </h3>
-            <a
-              href={`https://www.google.com/maps?q=${condo.lat},${condo.lng}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-info/10 text-info text-xs font-semibold hover:bg-info/20 transition-colors border border-info/20"
-            >
-              <ExternalLink className="w-3 h-3" /> Abrir no Google Maps
-            </a>
-          </div>
-          <MiniMap lat={condo.lat} lng={condo.lng} name={condo.name} height="200px" />
-        </div>
+
 
         <Tabs defaultValue="unidades" className="space-y-4">
           <TabsList className="bg-secondary">
             <TabsTrigger value="unidades">Imóveis à Venda</TabsTrigger>
             <TabsTrigger value="espelho">Espelho de Vendas</TabsTrigger>
-            <TabsTrigger value="infra">Infraestrutura</TabsTrigger>
+            <TabsTrigger value="infra">Mídia</TabsTrigger>
+            <TabsTrigger value="implantacao">Implantação</TabsTrigger>
+            <TabsTrigger value="localizacao">Localização</TabsTrigger>
           </TabsList>
 
           {/* Units for Sale (only available) */}
@@ -475,9 +461,8 @@ export default function CondominiumDetail() {
             </div>
           </TabsContent>
 
-          {/* Infrastructure + Gallery merged */}
+          {/* Mídia - Gallery + Video + Amenities + Infrastructure */}
           <TabsContent value="infra" className="space-y-5">
-            {/* Gallery on top */}
             <div>
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-bold text-foreground">Fotos da Infraestrutura</h3>
@@ -485,38 +470,6 @@ export default function CondominiumDetail() {
               </div>
               <InfraGallery photos={condo.infraPhotos} onSelect={setLightboxIdx} />
             </div>
-
-            {/* Mapa de Implantação */}
-            {condo.implantationMedia.length > 0 && (
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                    <MapPinned className="w-4 h-4 text-accent" /> Mapa de Implantação
-                  </h3>
-                  <span className="text-xs text-muted-foreground">{condo.implantationMedia.length} arquivo(s)</span>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {condo.implantationMedia.map((media, idx) => (
-                    media.type === "image" ? (
-                      <button key={idx} onClick={() => setImplantationLightbox(idx)} className="group relative rounded-xl overflow-hidden aspect-[3/2] border border-border hover:border-accent/50 transition-all">
-                        <img src={media.url} alt={media.label} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 to-transparent" />
-                        <span className="absolute bottom-2 left-2 text-xs font-semibold text-primary-foreground">{media.label}</span>
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Image className="w-6 h-6 text-primary-foreground drop-shadow-lg" />
-                        </div>
-                      </button>
-                    ) : (
-                      <a key={idx} href={media.url} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl border border-border bg-muted/50 hover:border-accent/40 transition-colors aspect-[3/2]">
-                        <FileText className="w-8 h-8 text-destructive" />
-                        <span className="text-xs font-medium text-foreground text-center">{media.label}</span>
-                        <span className="text-[10px] text-muted-foreground">Clique para abrir</span>
-                      </a>
-                    )
-                  ))}
-                </div>
-              </div>
-            )}
 
             {condo.videoUrl && (
               <a href={condo.videoUrl} target="_blank" rel="noopener noreferrer"
@@ -553,6 +506,72 @@ export default function CondominiumDetail() {
                     <Wrench className="w-4 h-4 text-accent" /><span className="text-sm text-foreground">{item}</span>
                   </div>
                 ))}
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Implantação */}
+          <TabsContent value="implantacao" className="space-y-5">
+            {condo.implantationMedia.length > 0 ? (
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                    <MapPinned className="w-4 h-4 text-accent" /> Implantação do Empreendimento
+                  </h3>
+                  <span className="text-xs text-muted-foreground">{condo.implantationMedia.length} arquivo(s)</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {condo.implantationMedia.map((media, idx) => (
+                    media.type === "image" ? (
+                      <button key={idx} onClick={() => setImplantationLightbox(idx)} className="group relative rounded-xl overflow-hidden aspect-[3/2] border border-border hover:border-accent/50 transition-all">
+                        <img src={media.url} alt={media.label} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 to-transparent" />
+                        <span className="absolute bottom-2 left-2 text-xs font-semibold text-primary-foreground">{media.label}</span>
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Image className="w-6 h-6 text-primary-foreground drop-shadow-lg" />
+                        </div>
+                      </button>
+                    ) : (
+                      <a key={idx} href={media.url} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center justify-center gap-3 p-6 rounded-xl border border-border bg-muted/50 hover:border-accent/40 transition-colors aspect-[3/2]">
+                        <FileText className="w-10 h-10 text-destructive" />
+                        <span className="text-sm font-medium text-foreground text-center">{media.label}</span>
+                        <span className="flex items-center gap-1 text-xs text-accent font-semibold">
+                          <Download className="w-3.5 h-3.5" /> Visualizar / Baixar
+                        </span>
+                      </a>
+                    )
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-12 text-muted-foreground">
+                <MapPinned className="w-12 h-12 mx-auto mb-3 opacity-40" />
+                <p className="text-sm">Nenhum arquivo de implantação disponível</p>
+                <p className="text-xs mt-1">Adicione fotos ou PDFs da implantação do empreendimento</p>
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Localização */}
+          <TabsContent value="localizacao" className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-accent" /> Localização
+              </h3>
+              <a
+                href={`https://www.google.com/maps?q=${condo.lat},${condo.lng}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-info/10 text-info text-xs font-semibold hover:bg-info/20 transition-colors border border-info/20"
+              >
+                <ExternalLink className="w-3 h-3" /> Abrir no Google Maps
+              </a>
+            </div>
+            <MiniMap lat={condo.lat} lng={condo.lng} name={condo.name} height="400px" />
+            <div className="p-4 rounded-xl bg-muted/50 border border-border">
+              <div className="flex items-center gap-2 text-sm text-foreground">
+                <MapPin className="w-4 h-4 text-accent" />
+                <span className="font-medium">{condo.address}, {condo.city}</span>
               </div>
             </div>
           </TabsContent>
