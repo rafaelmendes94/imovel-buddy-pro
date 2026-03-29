@@ -1529,7 +1529,7 @@ function PropertyRow({
 
         {/* ── COL 2: Identidade + Dados Técnicos ── */}
         <div className="flex-1 min-w-0 md:border-r border-border px-4 py-2 flex flex-col justify-start gap-1">
-          {/* Row 1: Title + Code */}
+          {/* Row 1: Title + Code + Site/Destaque toggles */}
           <div className="flex items-center gap-2 min-w-0">
             <h3
               className="font-bold text-card-foreground text-base truncate hover:text-primary cursor-pointer transition-colors leading-tight uppercase"
@@ -1539,6 +1539,10 @@ function PropertyRow({
             {property.code && (
               <span className="text-[11px] font-black text-muted-foreground bg-muted px-2 py-0.5 rounded flex-shrink-0">{property.code}</span>
             )}
+            <div className="flex items-center gap-1 flex-shrink-0 ml-auto">
+              <SiteToggleButton propertyId={property.id} field="ativo_site" icon={Globe} activeColor="text-emerald-500 bg-emerald-500/10" title="Ativo no Site" showLabel={false} />
+              <DestaqueSelector propertyId={property.id} compact />
+            </div>
           </div>
 
           {/* Row 2: Empreendimento + Units */}
@@ -1629,7 +1633,7 @@ function PropertyRow({
             <span className="truncate">{property.city}{property.neighborhood ? ` • ${property.neighborhood}` : ""} • {property.address}</span>
           </button>
 
-          {/* Ver dados completos + toggles */}
+          {/* Ver dados completos */}
           <div className="flex items-center gap-2 mt-1 flex-wrap">
             <button
               onClick={() => onSelect?.(property)}
@@ -1637,8 +1641,6 @@ function PropertyRow({
             >
               <Eye className="w-3.5 h-3.5" /> Ver dados completos
             </button>
-            <SiteToggleButton propertyId={property.id} field="ativo_site" icon={Globe} activeColor="text-emerald-500 bg-emerald-500/20" title="Ativo no Site" showLabel />
-            <DestaqueSelector propertyId={property.id} />
           </div>
         </div>
 
@@ -1892,9 +1894,10 @@ function SiteToggleButton({ propertyId, field, icon: Icon, activeColor, title, s
     }
   };
 
-  if (loading) return <div className="w-8 h-8 rounded-lg bg-muted animate-pulse" />;
+  if (loading) return <div className={cn(showLabel ? "w-8 h-8" : "w-6 h-6", "rounded bg-muted animate-pulse")} />;
 
   if (!existsInDb) {
+    if (!showLabel) return null;
     return (
       <button
         className="w-8 h-8 rounded-lg bg-muted/50 flex items-center justify-center opacity-40 cursor-not-allowed"
@@ -1910,14 +1913,14 @@ function SiteToggleButton({ propertyId, field, icon: Icon, activeColor, title, s
     <button
       onClick={toggle}
       className={cn(
-        "rounded-lg flex items-center justify-center gap-1.5 transition-all",
-        showLabel ? "h-8 px-3" : "w-8 h-8",
-        active ? activeColor : "bg-secondary text-muted-foreground hover:bg-muted"
+        "rounded flex items-center justify-center gap-1.5 transition-all",
+        showLabel ? "h-8 px-3 rounded-lg" : "w-6 h-6",
+        active ? activeColor : showLabel ? "bg-secondary text-muted-foreground hover:bg-muted" : "text-muted-foreground/40 hover:text-muted-foreground"
       )}
       title={`${title}: ${active ? "Ativo" : "Inativo"}`}
     >
-      <Icon className={cn("w-3.5 h-3.5", active && "fill-current")} />
-      {showLabel && <span className="text-[10px] font-bold uppercase tracking-wide">{active ? title : title}</span>}
+      <Icon className={cn(showLabel ? "w-3.5 h-3.5" : "w-3.5 h-3.5", active && "fill-current")} />
+      {showLabel && <span className="text-[10px] font-bold uppercase tracking-wide">{title}</span>}
     </button>
   );
 }
@@ -1934,7 +1937,7 @@ const DESTAQUE_OPTIONS = [
   { value: "vista-mar", label: "Vista Mar", icon: "🌊" },
 ];
 
-function DestaqueSelector({ propertyId }: { propertyId: string }) {
+function DestaqueSelector({ propertyId, compact }: { propertyId: string; compact?: boolean }) {
   const [value, setValue] = useState("");
   const [loading, setLoading] = useState(true);
   const [existsInDb, setExistsInDb] = useState(false);
@@ -1974,6 +1977,32 @@ function DestaqueSelector({ propertyId }: { propertyId: string }) {
       toast.success(newVal ? `Destaque: ${label}` : "Destaque removido");
     }
   };
+
+  if (compact) {
+    if (loading) return <div className="h-6 w-14 rounded bg-muted animate-pulse" />;
+    if (!existsInDb) return null;
+
+    return (
+      <div className="relative">
+        <select
+          value={value}
+          onChange={(e) => handleChange(e.target.value)}
+          className={cn(
+            "h-6 pl-5 pr-1 rounded text-[9px] font-bold border-0 cursor-pointer focus:outline-none focus:ring-1 focus:ring-amber-300 transition-all appearance-none bg-transparent",
+            value
+              ? "text-amber-600"
+              : "text-muted-foreground/50 hover:text-muted-foreground"
+          )}
+          title={value ? `Destaque: ${DESTAQUE_OPTIONS.find((o) => o.value === value)?.label}` : "Sem destaque"}
+        >
+          {DESTAQUE_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>{opt.icon} {opt.label}</option>
+          ))}
+        </select>
+        <Star className={cn("absolute left-1 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none", value ? "text-amber-500 fill-amber-500" : "text-muted-foreground/40")} />
+      </div>
+    );
+  }
 
   if (loading) return <div className="h-8 w-24 rounded-lg bg-muted animate-pulse" />;
 
