@@ -331,14 +331,17 @@ export default function CondominiumDetail() {
         </div>
 
 
+        {/* Navigation Tabs - prominent on cover */}
         <Tabs defaultValue="unidades" className="space-y-4">
-          <TabsList className="bg-secondary">
-            <TabsTrigger value="unidades">Imóveis à Venda</TabsTrigger>
-            <TabsTrigger value="espelho">Espelho de Vendas</TabsTrigger>
-            <TabsTrigger value="infra">Mídia</TabsTrigger>
-            <TabsTrigger value="implantacao">Implantação</TabsTrigger>
-            <TabsTrigger value="localizacao">Localização</TabsTrigger>
-          </TabsList>
+          <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-md -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-2 border-b border-border">
+            <TabsList className="bg-secondary w-full sm:w-auto">
+              <TabsTrigger value="unidades" className="flex-1 sm:flex-none">Imóveis à Venda</TabsTrigger>
+              <TabsTrigger value="espelho" className="flex-1 sm:flex-none">Espelho de Vendas</TabsTrigger>
+              <TabsTrigger value="infra" className="flex-1 sm:flex-none">Mídia</TabsTrigger>
+              <TabsTrigger value="implantacao" className="flex-1 sm:flex-none">Implantação</TabsTrigger>
+              <TabsTrigger value="localizacao" className="flex-1 sm:flex-none">Localização</TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* Units for Sale (only available) */}
           <TabsContent value="unidades" className="space-y-3">
