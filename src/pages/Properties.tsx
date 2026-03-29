@@ -1568,7 +1568,7 @@ function PropertyRow({
               <Eye className="w-3.5 h-3.5" /> Ver dados completos
             </button>
             <SiteToggleButton propertyId={property.id} field="ativo_site" icon={Globe} activeColor="text-emerald-500 bg-emerald-500/20" title="Ativo no Site" />
-            <SiteToggleButton propertyId={property.id} field="destaque_home" icon={Star} activeColor="text-amber-500 bg-amber-500/20" title="Destaque Home" />
+            <DestaqueSelector propertyId={property.id} />
           </div>
         </div>
 
