@@ -392,10 +392,6 @@ export default function Properties() {
           <BackButton />
           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
             <div className="flex items-center gap-3 flex-wrap">
-              <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-foreground">Imóveis</h1>
-                <p className="text-xs text-muted-foreground">{propertyList.length} cadastrados</p>
-              </div>
               {/* VGV Badges inline */}
               <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
                 <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
@@ -469,7 +465,18 @@ export default function Properties() {
 
 
         {/* Freshness Cards */}
-        <div className="grid grid-cols-3 gap-2 sm:gap-3">
+        <div className="grid grid-cols-4 gap-2 sm:gap-3">
+          {/* Imóveis total card */}
+          <div className="bg-card border border-primary/30 rounded-xl p-2 sm:p-4 text-left">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider text-primary">Imóveis</p>
+                <p className="text-xl sm:text-3xl font-black text-foreground mt-0.5 sm:mt-1">{propertyList.filter(p => p.status === "Disponível" || p.status === "Reservado").length}</p>
+                <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5 hidden sm:block">ativos no portfólio</p>
+              </div>
+              <Building2 className="w-6 h-6 sm:w-8 sm:h-8 text-primary/40 group-hover:text-primary/60 transition-colors" />
+            </div>
+          </div>
           <button
             onClick={() => setFilterFreshness(filterFreshness === "30" ? "all" : "30")}
             className={cn(
