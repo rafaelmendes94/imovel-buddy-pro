@@ -1079,7 +1079,7 @@ function PropertyCard({
           <div className="flex gap-1">
             {property.seaView && <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-blue-500/90 text-white backdrop-blur-sm flex items-center gap-0.5"><Waves className="w-2.5 h-2.5" /> Mar</span>}
             {property.decorated && <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-purple-500/90 text-white backdrop-blur-sm flex items-center gap-0.5"><Paintbrush className="w-2.5 h-2.5" /> Dec.</span>}
-            {property.acceptsExchange && <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/90 text-white backdrop-blur-sm flex items-center gap-0.5"><Repeat className="w-2.5 h-2.5" /> Permuta</span>}
+            
           </div>
         </div>
       </div>
