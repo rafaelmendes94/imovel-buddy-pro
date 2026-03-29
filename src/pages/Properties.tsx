@@ -1567,7 +1567,7 @@ function PropertyRow({
             >
               <Eye className="w-3.5 h-3.5" /> Ver dados completos
             </button>
-            <SiteToggleButton propertyId={property.id} field="ativo_site" icon={Globe} activeColor="text-emerald-500 bg-emerald-500/20" title="Ativo no Site" />
+            <SiteToggleButton propertyId={property.id} field="ativo_site" icon={Globe} activeColor="text-emerald-500 bg-emerald-500/20" title="Ativo no Site" showLabel />
             <DestaqueSelector propertyId={property.id} />
           </div>
         </div>
@@ -1777,12 +1777,13 @@ function PropertyRow({
 }
 
 // ---- Site Toggle Button (ativo_site / destaque_home) ----
-function SiteToggleButton({ propertyId, field, icon: Icon, activeColor, title }: {
+function SiteToggleButton({ propertyId, field, icon: Icon, activeColor, title, showLabel }: {
   propertyId: string;
   field: "ativo_site" | "destaque_home";
   icon: typeof Globe;
   activeColor: string;
   title: string;
+  showLabel?: boolean;
 }) {
   const [active, setActive] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -1839,12 +1840,14 @@ function SiteToggleButton({ propertyId, field, icon: Icon, activeColor, title }:
     <button
       onClick={toggle}
       className={cn(
-        "w-8 h-8 rounded-lg flex items-center justify-center transition-all",
+        "rounded-lg flex items-center justify-center gap-1.5 transition-all",
+        showLabel ? "h-8 px-3" : "w-8 h-8",
         active ? activeColor : "bg-secondary text-muted-foreground hover:bg-muted"
       )}
       title={`${title}: ${active ? "Ativo" : "Inativo"}`}
     >
       <Icon className={cn("w-3.5 h-3.5", active && "fill-current")} />
+      {showLabel && <span className="text-[10px] font-bold uppercase tracking-wide">{active ? title : title}</span>}
     </button>
   );
 }
