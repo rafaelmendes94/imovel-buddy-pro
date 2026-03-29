@@ -73,8 +73,8 @@ interface SiteProperty {
   quadra?: string;
   lote?: string;
   exclusivityTerm?: string;
+  paymentConditionsOther?: string;
 }
-
 // Broker info map
 const brokerInfo: Record<string, { photo: string; whatsapp: string }> = {
   "Corretor": {
@@ -516,7 +516,7 @@ export default function Site() {
   const [filterType, setFilterType] = useState("");
   const [filterCondition, setFilterCondition] = useState("");
   const [filterEmpreendimento, setFilterEmpreendimento] = useState("");
-  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  const [selectedProperty, setSelectedProperty] = useState<SiteProperty | null>(null);
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [priceSort, setPriceSort] = useState<"" | "asc" | "desc">("");
   const [showFullRanking, setShowFullRanking] = useState(false);
