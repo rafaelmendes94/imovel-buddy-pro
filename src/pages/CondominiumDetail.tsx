@@ -342,7 +342,6 @@ export default function CondominiumDetail() {
               <TabsTrigger value="localizacao" className="flex-1 sm:flex-none">Localização</TabsTrigger>
             </TabsList>
           </div>
-          </TabsList>
 
           {/* Units for Sale (only available) */}
           <TabsContent value="unidades" className="space-y-3">
