@@ -4,6 +4,8 @@ import { AppLayout } from "@/components/AppLayout";
 import { BackButton } from "@/components/BackButton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useQuickValues } from "@/hooks/useQuickValues";
+import { QuickSelect, QuickSelectDropdown } from "@/components/QuickSelect";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -59,6 +61,17 @@ export default function Construtoras() {
   const [activeTab, setActiveTab] = useState(0); // 0=dados, 1=contato, 2=cores
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { getValues } = useQuickValues([
+    { table: "construtoras", column: "cidade" },
+    { table: "construtoras", column: "estado" },
+    { table: "construtoras", column: "telefone" },
+    { table: "construtoras", column: "email" },
+    { table: "construtoras", column: "website" },
+    { table: "construtoras", column: "instagram" },
+    { table: "construtoras", column: "whatsapp" },
+    { table: "construtoras", column: "cnpj" },
+    { table: "construtoras", column: "ano_fundacao" },
+  ]);
 
   const fetchConstrutoras = async () => {
     const { data, error } = await supabase.from("construtoras").select("*").order("nome");
@@ -179,25 +192,10 @@ export default function Construtoras() {
                         <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Nome da Construtora *</label>
                         <input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} placeholder="Ex: Construtora ABC" className="w-full px-3 py-2.5 bg-background border border-input rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
                       </div>
-                      <div>
-                        <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">CNPJ</label>
-                        <input value={form.cnpj} onChange={(e) => setForm({ ...form, cnpj: e.target.value })} placeholder="00.000.000/0001-00" className="w-full px-3 py-2.5 bg-background border border-input rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
-                      </div>
-                      <div>
-                        <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Ano de Fundação</label>
-                        <input value={form.ano_fundacao} onChange={(e) => setForm({ ...form, ano_fundacao: e.target.value })} placeholder="Ex: 2005" className="w-full px-3 py-2.5 bg-background border border-input rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
-                      </div>
-                      <div>
-                        <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Cidade</label>
-                        <input value={form.cidade} onChange={(e) => setForm({ ...form, cidade: e.target.value })} placeholder="Ex: São Paulo" className="w-full px-3 py-2.5 bg-background border border-input rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
-                      </div>
-                      <div>
-                        <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Estado</label>
-                        <select value={form.estado} onChange={(e) => setForm({ ...form, estado: e.target.value })} className="w-full px-3 py-2.5 bg-background border border-input rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ring">
-                          <option value="">Selecione</option>
-                          {estadosBR.map(uf => <option key={uf} value={uf}>{uf}</option>)}
-                        </select>
-                      </div>
+                      <QuickSelect label="CNPJ" value={form.cnpj} onChange={(v) => setForm({ ...form, cnpj: v })} suggestions={getValues("construtoras", "cnpj")} placeholder="00.000.000/0001-00" icon={<FileText className="w-3 h-3" />} />
+                      <QuickSelect label="Ano de Fundação" value={form.ano_fundacao} onChange={(v) => setForm({ ...form, ano_fundacao: v })} suggestions={getValues("construtoras", "ano_fundacao")} placeholder="Ex: 2005" icon={<Calendar className="w-3 h-3" />} />
+                      <QuickSelect label="Cidade" value={form.cidade} onChange={(v) => setForm({ ...form, cidade: v })} suggestions={getValues("construtoras", "cidade")} placeholder="Ex: São Paulo" icon={<MapPin className="w-3 h-3" />} />
+                      <QuickSelectDropdown label="Estado" value={form.estado} onChange={(v) => setForm({ ...form, estado: v })} options={estadosBR} suggestions={getValues("construtoras", "estado")} placeholder="Selecione" />
                       <div>
                         <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Slug (URL)</label>
                         <input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} placeholder="auto-gerado" className="w-full px-3 py-2.5 bg-background border border-input rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
