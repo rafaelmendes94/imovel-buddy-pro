@@ -791,15 +791,8 @@ export default function Site() {
 
   const favoritedProperties = siteProperties.filter((p) => favoriteIds.includes(p.id));
 
-  // Auto-rotate sold carousel (scroll 1 card at a time, 4 visible)
+  // Continuous scroll uses CSS animation, no JS timer needed
   const maxIndex = Math.max(0, soldProperties.length - 4);
-  useEffect(() => {
-    if (soldProperties.length <= 4) return;
-    const timer = setInterval(() => {
-      setCarouselIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
-    }, 4000);
-    return () => clearInterval(timer);
-  }, [maxIndex]);
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     setShowScrollTop(e.currentTarget.scrollTop > 400);
   };
