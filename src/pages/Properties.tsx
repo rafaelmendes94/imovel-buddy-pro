@@ -456,9 +456,9 @@ export default function Properties() {
                   </div>
                 )}
               </div>
-              <Link to="/cadastro-imovel" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg gradient-gold text-primary text-xs font-semibold hover:opacity-90 transition-opacity">
+              <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg gradient-gold text-primary text-xs font-semibold hover:opacity-90 transition-opacity">
                 <Plus className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Novo</span> Imóvel
-              </Link>
+              </button>
             </div>
           </div>
         </div>

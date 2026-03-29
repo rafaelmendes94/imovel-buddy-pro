@@ -14,60 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      imoveis: {
-        Row: {
-          area: number
-          banheiros: number
-          cidade: string
-          created_at: string
-          descricao: string | null
-          endereco: string
-          id: string
-          imagens: string[] | null
-          preco: number
-          quartos: number
-          status: string
-          tipo: string
-          titulo: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          area?: number
-          banheiros?: number
-          cidade?: string
-          created_at?: string
-          descricao?: string | null
-          endereco?: string
-          id?: string
-          imagens?: string[] | null
-          preco?: number
-          quartos?: number
-          status?: string
-          tipo?: string
-          titulo: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          area?: number
-          banheiros?: number
-          cidade?: string
-          created_at?: string
-          descricao?: string | null
-          endereco?: string
-          id?: string
-          imagens?: string[] | null
-          preco?: number
-          quartos?: number
-          status?: string
-          tipo?: string
-          titulo?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       job_roles: {
         Row: {
           created_at: string

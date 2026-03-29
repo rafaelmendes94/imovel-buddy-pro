@@ -46,7 +46,6 @@ import Tabelas from "./pages/Tabelas";
 import Contratos from "./pages/Contratos";
 import VideoMaker from "./pages/VideoMaker";
 import Imobiliarias from "./pages/Imobiliarias";
-import CadastroImovel from "./pages/CadastroImovel";
 
 const queryClient = new QueryClient();
 
@@ -98,7 +97,6 @@ const App = () => (
             <Route path="/contratos" element={<AuthGuard><Contratos /></AuthGuard>} />
             <Route path="/videomaker" element={<AuthGuard><VideoMaker /></AuthGuard>} />
             <Route path="/imobiliarias" element={<AuthGuard><Imobiliarias /></AuthGuard>} />
-            <Route path="/cadastro-imovel" element={<AuthGuard><CadastroImovel /></AuthGuard>} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>
