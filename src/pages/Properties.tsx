@@ -1434,12 +1434,23 @@ function PropertyRow({
               {ownerTypeInfo.label}
             </span>
           )}
+          {/* Route selector on photo */}
+          <button
+            onClick={(e) => { e.stopPropagation(); onToggleRoute?.(property.id); }}
+            className={cn("absolute top-2 right-2 z-10 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all hover:scale-110",
+              isInRoute ? "bg-blue-600 text-white" : "bg-foreground/30 text-white hover:bg-blue-600"
+            )}
+            title={isInRoute ? "Remover da rota" : "Adicionar à rota"}
+          >
+            <Route className={cn("w-4 h-4", isInRoute && "fill-current")} />
+          </button>
           {/* Favorite heart on photo */}
           <button
             onClick={(e) => { e.stopPropagation(); onToggleFavorite?.(property.id); }}
-            className={cn("absolute top-2 right-2 z-10 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all hover:scale-110",
+            className={cn("absolute top-11 right-2 z-10 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all hover:scale-110",
               isFavorited ? "bg-red-500 text-white" : "bg-foreground/30 text-white hover:bg-red-500"
             )}
+            title={isFavorited ? "Remover dos favoritos" : "Favoritar"}
           >
             <Heart className={cn("w-4 h-4", isFavorited && "fill-current")} />
           </button>
