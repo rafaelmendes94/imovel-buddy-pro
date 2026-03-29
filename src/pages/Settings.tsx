@@ -1,8 +1,83 @@
 import { AppLayout } from "@/components/AppLayout";
 import { BackButton } from "@/components/BackButton";
-import { Building2, CreditCard, Bell, Shield } from "lucide-react";
+import { Building2, CreditCard, Bell, Shield, KeyRound } from "lucide-react";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function Settings() {
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [changing, setChanging] = useState(false);
+  const { toast } = useToast();
+
+  const handleChangePassword = async () => {
+    if (newPassword.length < 6) {
+      toast({ title: "Erro", description: "A senha deve ter pelo menos 6 caracteres", variant: "destructive" });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast({ title: "Erro", description: "As senhas não coincidem", variant: "destructive" });
+      return;
+    }
+    setChanging(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
+      setChanging(false);
+      return;
+    }
+    const res = await supabase.functions.invoke("reset-password", {
+      body: { target_user_id: user.id, new_password: newPassword },
+    });
+    if (res.error || res.data?.error) {
+      toast({ title: "Erro", description: res.data?.error || res.error?.message, variant: "destructive" });
+    } else {
+      toast({ title: "Senha alterada com sucesso!" });
+      setShowPasswordDialog(false);
+      setNewPassword("");
+      setConfirmPassword("");
+    }
+    setChanging(false);
+  };
+
+  const cards = [
+    {
+      icon: Building2,
+      title: "Dados da Imobiliária",
+      description: "Nome, CNPJ, endereço e informações de contato",
+      onClick: undefined,
+    },
+    {
+      icon: CreditCard,
+      title: "Plano e Assinatura",
+      description: "Gerencie seu plano, pagamentos e faturamento",
+      onClick: undefined,
+    },
+    {
+      icon: Bell,
+      title: "Notificações",
+      description: "Alertas de novos leads, vendas e atividades",
+      onClick: undefined,
+    },
+    {
+      icon: KeyRound,
+      title: "Alterar Senha",
+      description: "Troque sua senha de acesso ao sistema",
+      onClick: () => setShowPasswordDialog(true),
+    },
+    {
+      icon: Shield,
+      title: "Segurança",
+      description: "Autenticação e permissões de acesso",
+      onClick: undefined,
+    },
+  ];
+
   return (
     <AppLayout>
       <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
@@ -15,30 +90,10 @@ export default function Settings() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {[
-            {
-              icon: Building2,
-              title: "Dados da Imobiliária",
-              description: "Nome, CNPJ, endereço e informações de contato",
-            },
-            {
-              icon: CreditCard,
-              title: "Plano e Assinatura",
-              description: "Gerencie seu plano, pagamentos e faturamento",
-            },
-            {
-              icon: Bell,
-              title: "Notificações",
-              description: "Alertas de novos leads, vendas e atividades",
-            },
-            {
-              icon: Shield,
-              title: "Segurança",
-              description: "Senha, autenticação e permissões de acesso",
-            },
-          ].map((item) => (
+          {cards.map((item) => (
             <button
               key={item.title}
+              onClick={item.onClick}
               className="elevated-card rounded-xl p-5 text-left hover:border-accent/50 transition-colors"
             >
               <div className="flex items-start gap-4">
@@ -57,6 +112,29 @@ export default function Settings() {
             </button>
           ))}
         </div>
+
+        <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
+          <DialogContent className="sm:max-w-sm">
+            <DialogHeader><DialogTitle>Alterar Minha Senha</DialogTitle></DialogHeader>
+            <div className="space-y-3">
+              <Input
+                type="password"
+                placeholder="Nova senha (mín. 6 caracteres)"
+                value={newPassword}
+                onChange={e => setNewPassword(e.target.value)}
+              />
+              <Input
+                type="password"
+                placeholder="Confirmar nova senha"
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+              />
+              <Button onClick={handleChangePassword} disabled={changing} className="w-full">
+                {changing ? "Alterando..." : "Alterar Senha"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </AppLayout>
   );
