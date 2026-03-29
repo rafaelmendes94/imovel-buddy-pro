@@ -75,30 +75,64 @@ function AnimatedCounter({ target, duration = 2000, prefix = "" }: { target: num
   return <span>{prefix}{count.toLocaleString("pt-BR")}</span>;
 }
 
-function Particle({ delay, x }: { delay: number; x: number }) {
+const symbols = ["$", "R$", "%", "↗", "◆", "⬡"];
+
+function FloatingSymbol({ delay, x }: { delay: number; x: number }) {
+  const symbol = symbols[Math.floor(Math.random() * symbols.length)];
+  const size = 10 + Math.random() * 16;
+  const startY = Math.random() * 100;
+
   return (
     <motion.div
-      className="absolute w-2 h-2 rounded-full"
+      className="absolute font-mono font-bold select-none pointer-events-none"
       style={{
         left: `${x}%`,
-        top: "-10px",
-        background: ["#f59e0b", "#ef4444", "#3b82f6", "#10b981", "#8b5cf6"][Math.floor(Math.random() * 5)],
+        top: `${startY}%`,
+        fontSize: size,
+        color: ["#f59e0b", "#10b981", "#3b82f6", "#a855f7", "#14b8a6"][Math.floor(Math.random() * 5)],
+        opacity: 0,
       }}
-      initial={{ y: 0, opacity: 1, scale: 1 }}
       animate={{
-        y: [0, 400, 800],
-        opacity: [1, 0.8, 0],
-        scale: [1, 0.8, 0.3],
-        x: [0, (Math.random() - 0.5) * 100],
-        rotate: [0, 360, 720],
+        y: [0, -60, -120],
+        opacity: [0, 0.25, 0],
+        scale: [0.6, 1, 0.6],
       }}
       transition={{
-        duration: 3 + Math.random() * 2,
+        duration: 4 + Math.random() * 3,
         delay,
         repeat: Infinity,
-        repeatDelay: Math.random() * 3,
+        repeatDelay: Math.random() * 5,
+        ease: "easeInOut",
       }}
-    />
+    >
+      {symbol}
+    </motion.div>
+  );
+}
+
+function ConnectionLine({ delay }: { delay: number }) {
+  const x1 = 10 + Math.random() * 80;
+  const y1 = 10 + Math.random() * 80;
+  const x2 = 10 + Math.random() * 80;
+  const y2 = 10 + Math.random() * 80;
+
+  return (
+    <motion.svg
+      className="absolute inset-0 w-full h-full pointer-events-none"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: [0, 0.08, 0] }}
+      transition={{ duration: 3, delay, repeat: Infinity, repeatDelay: Math.random() * 4 }}
+    >
+      <line
+        x1={`${x1}%`} y1={`${y1}%`}
+        x2={`${x2}%`} y2={`${y2}%`}
+        stroke="#f59e0b"
+        strokeWidth="1"
+        strokeDasharray="6 4"
+      />
+      <circle cx={`${x1}%`} cy={`${y1}%`} r="2" fill="#f59e0b" opacity="0.4" />
+      <circle cx={`${x2}%`} cy={`${y2}%`} r="2" fill="#10b981" opacity="0.4" />
+    </motion.svg>
   );
 }
 
@@ -135,10 +169,13 @@ export default function RankingPage() {
 
   return (
     <div className="min-h-screen bg-gray-950 font-sans overflow-hidden">
-      {/* Floating particles */}
+      {/* Floating symbols & connection lines */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        {Array.from({ length: 30 }).map((_, i) => (
-          <Particle key={i} delay={i * 0.3} x={Math.random() * 100} />
+        {Array.from({ length: 20 }).map((_, i) => (
+          <FloatingSymbol key={`s-${i}`} delay={i * 0.5} x={Math.random() * 100} />
+        ))}
+        {Array.from({ length: 8 }).map((_, i) => (
+          <ConnectionLine key={`c-${i}`} delay={i * 1.2} />
         ))}
       </div>
 
