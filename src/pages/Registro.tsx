@@ -36,7 +36,7 @@ export default function Registro() {
 
     toast({
       title: "Conta criada!",
-      description: "Verifique seu e-mail para confirmar o cadastro.",
+      description: "Você já pode fazer login.",
     });
     navigate("/login");
     setLoading(false);
