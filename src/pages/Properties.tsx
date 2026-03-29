@@ -166,6 +166,9 @@ export default function Properties() {
   const [favoriteIds, setFavoriteIds] = useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem("mv-favorites") || "[]"); } catch { return []; }
   });
+  const [routeIds, setRouteIds] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem("mv-route-ids") || "[]"); } catch { return []; }
+  });
   const [filterFreshness, setFilterFreshness] = useState<"all" | "30" | "60" | "90">("all");
   const [showInactive, setShowInactive] = useState(false);
   const [categories, setCategories] = useState(getSavedCategoryOrder);
@@ -200,6 +203,14 @@ export default function Properties() {
     setFavoriteIds((prev) => {
       const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
       localStorage.setItem("mv-favorites", JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const toggleRoute = (id: string) => {
+    setRouteIds((prev) => {
+      const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
+      localStorage.setItem("mv-route-ids", JSON.stringify(next));
       return next;
     });
   };
