@@ -1633,7 +1633,7 @@ function PropertyRow({
             <span className="truncate">{property.city}{property.neighborhood ? ` • ${property.neighborhood}` : ""} • {property.address}</span>
           </button>
 
-          {/* Ver dados completos + toggles */}
+          {/* Ver dados completos */}
           <div className="flex items-center gap-2 mt-1 flex-wrap">
             <button
               onClick={() => onSelect?.(property)}
@@ -1641,8 +1641,6 @@ function PropertyRow({
             >
               <Eye className="w-3.5 h-3.5" /> Ver dados completos
             </button>
-            <SiteToggleButton propertyId={property.id} field="ativo_site" icon={Globe} activeColor="text-emerald-500 bg-emerald-500/20" title="Ativo no Site" showLabel />
-            <DestaqueSelector propertyId={property.id} />
           </div>
         </div>
 
@@ -1938,7 +1936,7 @@ const DESTAQUE_OPTIONS = [
   { value: "vista-mar", label: "Vista Mar", icon: "🌊" },
 ];
 
-function DestaqueSelector({ propertyId }: { propertyId: string }) {
+function DestaqueSelector({ propertyId, compact }: { propertyId: string; compact?: boolean }) {
   const [value, setValue] = useState("");
   const [loading, setLoading] = useState(true);
   const [existsInDb, setExistsInDb] = useState(false);
@@ -1978,6 +1976,30 @@ function DestaqueSelector({ propertyId }: { propertyId: string }) {
       toast.success(newVal ? `Destaque: ${label}` : "Destaque removido");
     }
   };
+
+  if (compact) {
+    if (loading) return <div className="h-6 w-6 rounded bg-muted animate-pulse" />;
+    if (!existsInDb) return null;
+
+    return (
+      <select
+        value={value}
+        onChange={(e) => handleChange(e.target.value)}
+        className={cn(
+          "h-6 w-6 rounded cursor-pointer text-[0px] appearance-none border-0 focus:outline-none focus:ring-1 focus:ring-amber-300 transition-all",
+          value
+            ? "bg-amber-500/20"
+            : "bg-muted/50 hover:bg-muted"
+        )}
+        title={value ? `Destaque: ${DESTAQUE_OPTIONS.find((o) => o.value === value)?.label}` : "Sem destaque — clique para selecionar"}
+        style={{ backgroundImage: 'none', padding: '0', textIndent: '-9999px' }}
+      >
+        {DESTAQUE_OPTIONS.map((opt) => (
+          <option key={opt.value} value={opt.value}>{opt.icon} {opt.label}</option>
+        ))}
+      </select>
+    );
+  }
 
   if (loading) return <div className="h-8 w-24 rounded-lg bg-muted animate-pulse" />;
 
