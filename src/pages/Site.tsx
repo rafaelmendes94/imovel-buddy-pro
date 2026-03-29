@@ -856,7 +856,7 @@ export default function Site() {
             <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-500 to-amber-400 flex items-center justify-center">
               <Home className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-extrabold text-gray-900">MV <span className="text-amber-500">Connect</span></span>
+            <span className="text-xl font-extrabold text-gray-900">MV <span className="text-amber-500">CONNECT</span></span>
           </div>
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
             {categories.slice(1).map((cat) => (
@@ -903,7 +903,7 @@ export default function Site() {
             {/* Title */}
             <div className="max-w-2xl space-y-4">
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight">
-                MV <span className="text-amber-400">Connect</span>
+                MV <span className="text-amber-400">CONNECT</span>
               </h1>
               <p className="text-lg text-gray-300 leading-relaxed">
                 Conectando corretores a corretores e imóveis a clientes.
@@ -1448,7 +1448,7 @@ export default function Site() {
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-amber-400 flex items-center justify-center">
                   <Home className="w-4 h-4 text-white" />
                 </div>
-                <span className="text-lg font-extrabold text-white">MV <span className="text-amber-400">Connect</span></span>
+                <span className="text-lg font-extrabold text-white">MV <span className="text-amber-400">CONNECT</span></span>
               </div>
               <p className="text-sm leading-relaxed">
                 Conectando corretores a corretores e imóveis a clientes. Sua plataforma de confiança no litoral.
