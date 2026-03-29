@@ -209,26 +209,11 @@ export default function Construtoras() {
 
                   {activeTab === 1 && (
                     <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="text-xs font-semibold text-muted-foreground mb-1.5 block flex items-center gap-1"><Phone className="w-3 h-3" /> Telefone</label>
-                        <input value={form.telefone} onChange={(e) => setForm({ ...form, telefone: e.target.value })} placeholder="(11) 99999-9999" className="w-full px-3 py-2.5 bg-background border border-input rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
-                      </div>
-                      <div>
-                        <label className="text-xs font-semibold text-muted-foreground mb-1.5 block flex items-center gap-1"><Mail className="w-3 h-3" /> E-mail</label>
-                        <input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="contato@construtora.com" className="w-full px-3 py-2.5 bg-background border border-input rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
-                      </div>
-                      <div>
-                        <label className="text-xs font-semibold text-muted-foreground mb-1.5 block flex items-center gap-1"><MessageCircle className="w-3 h-3" /> WhatsApp</label>
-                        <input value={form.whatsapp} onChange={(e) => setForm({ ...form, whatsapp: e.target.value })} placeholder="5511999999999" className="w-full px-3 py-2.5 bg-background border border-input rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
-                      </div>
-                      <div>
-                        <label className="text-xs font-semibold text-muted-foreground mb-1.5 block flex items-center gap-1"><Instagram className="w-3 h-3" /> Instagram</label>
-                        <input value={form.instagram} onChange={(e) => setForm({ ...form, instagram: e.target.value })} placeholder="@construtora" className="w-full px-3 py-2.5 bg-background border border-input rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
-                      </div>
-                      <div className="col-span-2">
-                        <label className="text-xs font-semibold text-muted-foreground mb-1.5 block flex items-center gap-1"><Globe className="w-3 h-3" /> Website</label>
-                        <input value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} placeholder="https://www.construtora.com.br" className="w-full px-3 py-2.5 bg-background border border-input rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
-                      </div>
+                      <QuickSelect label="Telefone" value={form.telefone} onChange={(v) => setForm({ ...form, telefone: v })} suggestions={getValues("construtoras", "telefone")} placeholder="(11) 99999-9999" icon={<Phone className="w-3 h-3" />} />
+                      <QuickSelect label="E-mail" value={form.email} onChange={(v) => setForm({ ...form, email: v })} suggestions={getValues("construtoras", "email")} placeholder="contato@construtora.com" icon={<Mail className="w-3 h-3" />} />
+                      <QuickSelect label="WhatsApp" value={form.whatsapp} onChange={(v) => setForm({ ...form, whatsapp: v })} suggestions={getValues("construtoras", "whatsapp")} placeholder="5511999999999" icon={<MessageCircle className="w-3 h-3" />} />
+                      <QuickSelect label="Instagram" value={form.instagram} onChange={(v) => setForm({ ...form, instagram: v })} suggestions={getValues("construtoras", "instagram")} placeholder="@construtora" icon={<Instagram className="w-3 h-3" />} />
+                      <QuickSelect label="Website" value={form.website} onChange={(v) => setForm({ ...form, website: v })} suggestions={getValues("construtoras", "website")} placeholder="https://www.construtora.com.br" icon={<Globe className="w-3 h-3" />} className="col-span-2" />
                     </div>
                   )}
 
