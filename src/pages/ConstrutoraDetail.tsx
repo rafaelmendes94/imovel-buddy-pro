@@ -4,6 +4,8 @@ import { AppLayout } from "@/components/AppLayout";
 import { BackButton } from "@/components/BackButton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useQuickValues } from "@/hooks/useQuickValues";
+import { QuickSelect, QuickSelectDropdown } from "@/components/QuickSelect";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -60,6 +62,14 @@ const formatCurrency = (v: number) => v.toLocaleString("pt-BR", { style: "curren
 const fadeUp = { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.4 } };
 
 export default function ConstrutoraDetail() {
+  const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
+  const { getValues } = useQuickValues([
+    { table: "construtora_empreendimentos", column: "cidade" },
+    { table: "construtora_empreendimentos", column: "endereco" },
+    { table: "construtora_empreendimentos", column: "tipo" },
+    { table: "construtora_empreendimentos", column: "previsao_entrega" },
+  ]);
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const [construtora, setConstrutora] = useState<Construtora | null>(null);
