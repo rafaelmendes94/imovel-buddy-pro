@@ -807,7 +807,19 @@ export default function Site() {
     });
   };
 
+  const [routeIds, setRouteIds] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem("mv-route-ids") || "[]"); } catch { return []; }
+  });
+  const toggleRoute = (id: string) => {
+    setRouteIds((prev) => {
+      const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
+      localStorage.setItem("mv-route-ids", JSON.stringify(next));
+      return next;
+    });
+  };
+
   const favoritedProperties = siteProperties.filter((p) => favoriteIds.includes(p.id));
+  const routeProperties = siteProperties.filter((p) => routeIds.includes(p.id));
 
   // Continuous scroll uses CSS animation, no JS timer needed
   const maxIndex = Math.max(0, soldProperties.length - 4);
