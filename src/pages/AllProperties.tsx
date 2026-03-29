@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { properties, formatCurrency, type Property } from "@/data/mockData";
+import { formatCurrency } from "@/data/mockData";
+import { supabase } from "@/integrations/supabase/client";
 import { PropertyDetailModal } from "@/components/PropertyDetailModal";
 import {
   Search, MapPin, BedDouble, Bath, Car, Ruler, Phone,
@@ -11,71 +12,42 @@ import {
 import { cn } from "@/lib/utils";
 
 const brokerInfo: Record<string, { photo: string; whatsapp: string }> = {
-  "Carlos Silva": {
-    photo: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&h=100&fit=crop&crop=face",
-    whatsapp: "5511999990001",
-  },
-  "Ana Rodrigues": {
-    photo: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&h=100&fit=crop&crop=face",
-    whatsapp: "5511999990002",
-  },
-  "Marcos Oliveira": {
-    photo: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
-    whatsapp: "5511999990003",
+  "Corretor": {
+    photo: "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=100&h=100&fit=crop&crop=face",
+    whatsapp: "5511999999999",
   },
 };
 
-const allSiteProperties = [
-  ...properties,
-  {
-    id: "site-1", code: "MV07", title: "Apartamento Beira Mar Navegantes", address: "Av. Beira Mar, 1800", city: "Capão da Canoa",
-    type: "Apartamento" as const, status: "Disponível" as const, price: 780000, area: 95, bedrooms: 2, bathrooms: 2, parking: 1,
-    broker: "Ana Rodrigues", image: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&h=400&fit=crop",
-    images: [], createdAt: "2024-03-20", lat: -29.743, lng: -50.098, decorated: false, seaView: true, acceptsExchange: true,
-    paymentConditions: ["48x", "Permuta"], empreendimento: "Ed. Navegantes", unitNumber: "Ap 501", boxNumber: "Box 15",
-  },
-  {
-    id: "site-2", code: "MV08", title: "Lote Condomínio Reserva do Litoral", address: "Rua dos Pescadores, 500", city: "Xangri-lá",
-    type: "Terreno" as const, status: "Disponível" as const, price: 280000, area: 400, bedrooms: 0, bathrooms: 0, parking: 0,
-    broker: "Carlos Silva", image: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600&h=400&fit=crop",
-    images: [], createdAt: "2024-03-18", lat: -29.802, lng: -50.048, decorated: false, seaView: false, acceptsExchange: true,
-    paymentConditions: ["24x", "Permuta"], empreendimento: "Cond. Reserva do Litoral", quadra: "Q-08", lote: "L-22",
-  },
-  {
-    id: "site-3", code: "MV09", title: "Casa de Praia Xangri-lá", address: "Rua das Dunas, 120", city: "Xangri-lá",
-    type: "Casa" as const, status: "Disponível" as const, price: 1350000, area: 280, bedrooms: 4, bathrooms: 3, parking: 2,
-    broker: "Marcos Oliveira", image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&h=400&fit=crop",
-    images: [], createdAt: "2024-03-15", lat: -29.795, lng: -50.058, decorated: true, seaView: true, acceptsExchange: false,
-    paymentConditions: ["72x"], empreendimento: "Cond. Praia das Dunas", quadra: "Q-02", lote: "L-11",
-  },
-  {
-    id: "site-4", code: "MV10", title: "Lote Residencial Capão Novo", address: "Rua das Gaivotas, 80", city: "Capão da Canoa",
-    type: "Terreno" as const, status: "Disponível" as const, price: 190000, area: 360, bedrooms: 0, bathrooms: 0, parking: 0,
-    broker: "Ana Rodrigues", image: "https://images.unsplash.com/photo-1500076656116-558758c991c1?w=600&h=400&fit=crop",
-    images: [], createdAt: "2024-03-10", lat: -29.76, lng: -50.09, decorated: false, seaView: false, acceptsExchange: false,
-    paymentConditions: ["36x"], empreendimento: "Loteamento Capão Novo", quadra: "Q-14", lote: "L-03",
-  },
-  {
-    id: "site-5", code: "MV11", title: "Sobrado Praia de Arroio Teixeira", address: "Rua Marítima, 350", city: "Capão da Canoa",
-    type: "Casa" as const, status: "Disponível" as const, price: 850000, area: 180, bedrooms: 3, bathrooms: 2, parking: 2,
-    broker: "Carlos Silva", image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&h=400&fit=crop",
-    images: [], createdAt: "2024-03-08", lat: -29.735, lng: -50.115, decorated: true, seaView: false, acceptsExchange: true,
-    paymentConditions: ["36x", "Carro"], empreendimento: "Cond. Arroio Teixeira", quadra: "Q-03", lote: "L-09",
-  },
-  {
-    id: "site-6", code: "MV12", title: "Apartamento Alto Padrão Atlântida", address: "Av. Atlântida, 600", city: "Xangri-lá",
-    type: "Apartamento" as const, status: "Disponível" as const, price: 1100000, area: 150, bedrooms: 3, bathrooms: 3, parking: 2,
-    broker: "Marcos Oliveira", image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=600&h=400&fit=crop",
-    images: [], createdAt: "2024-03-01", lat: -29.785, lng: -50.07, decorated: true, seaView: true, acceptsExchange: true,
-    paymentConditions: ["60x", "Permuta"], empreendimento: "Ed. Alto Padrão Atlântida", unitNumber: "Ap 801", boxNumber: "Box 25, 26",
-  },
-];
+interface SiteProperty {
+  id: string;
+  title: string;
+  address: string;
+  city: string;
+  type: string;
+  status: string;
+  price: number;
+  area: number;
+  bedrooms: number;
+  bathrooms: number;
+  parking: number;
+  broker: string;
+  image: string;
+  images: string[];
+  createdAt: string;
+  decorated?: boolean;
+  seaView?: boolean;
+  acceptsExchange?: boolean;
+  paymentConditions?: string[];
+  empreendimento?: string;
+  unitNumber?: string;
+  boxNumber?: string;
+  quadra?: string;
+  lote?: string;
+}
 
-const available = allSiteProperties.filter((p) => p.status === "Disponível");
-
-function PropertyCard({ property, onSelect }: { property: typeof allSiteProperties[0]; onSelect?: (p: typeof allSiteProperties[0]) => void }) {
+function PropertyCard({ property, onSelect }: { property: SiteProperty; onSelect?: (p: SiteProperty) => void }) {
   const [imgIndex, setImgIndex] = useState(0);
-  const broker = brokerInfo[property.broker] || { photo: "", whatsapp: "5511999999999" };
+  const broker = brokerInfo[property.broker] || { photo: "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=100&h=100&fit=crop&crop=face", whatsapp: "5511999999999" };
   const whatsappMessage = encodeURIComponent(`Olá! Tenho interesse no imóvel: ${property.title} - ${formatCurrency(property.price)}`);
   const unitParts = [property.unitNumber, property.boxNumber, property.quadra, property.lote].filter(Boolean);
   const imgs = property.images && property.images.length > 0 ? property.images : [property.image];
@@ -158,13 +130,13 @@ function PropertyCard({ property, onSelect }: { property: typeof allSiteProperti
           </div>
         )}
         <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-          <Link to={`/corretor/${property.broker.toLowerCase().replace(/\s+/g, "-")}`} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <div className="flex items-center gap-2">
             {broker.photo && <img src={broker.photo} alt={property.broker} className="w-8 h-8 rounded-full object-cover border-2 border-amber-400" />}
             <div>
-              <p className="text-xs font-semibold text-amber-700 leading-tight hover:underline">{property.broker}</p>
+              <p className="text-xs font-semibold text-amber-700 leading-tight">{property.broker}</p>
               <p className="text-[10px] text-gray-400">Corretor(a)</p>
             </div>
-          </Link>
+          </div>
           <a href={`https://wa.me/${broker.whatsapp}?text=${whatsappMessage}`} target="_blank" rel="noopener noreferrer"
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500 text-white text-xs font-bold hover:bg-emerald-600 transition-colors shadow-sm">
             <Phone className="w-3.5 h-3.5" /> WhatsApp
@@ -176,6 +148,8 @@ function PropertyCard({ property, onSelect }: { property: typeof allSiteProperti
 }
 
 export default function AllProperties() {
+  const [allProperties, setAllProperties] = useState<SiteProperty[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [filterCity, setFilterCity] = useState("");
@@ -185,7 +159,51 @@ export default function AllProperties() {
   const [filterType, setFilterType] = useState("");
   const [filterCondition, setFilterCondition] = useState("");
   const [priceSort, setPriceSort] = useState<"" | "asc" | "desc">("");
-  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  const [selectedProperty, setSelectedProperty] = useState<SiteProperty | null>(null);
+
+  useEffect(() => {
+    const fetchProperties = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('imoveis')
+        .select('*')
+        .eq('ativo_site', true);
+
+      if (!error && data) {
+        const mapped: SiteProperty[] = data
+          .filter((row) => row.status === "Disponível")
+          .map((row) => ({
+            id: row.id,
+            title: row.titulo,
+            address: row.endereco,
+            city: row.cidade,
+            type: row.tipo,
+            status: row.status,
+            price: Number(row.preco),
+            area: Number(row.area),
+            bedrooms: row.quartos,
+            bathrooms: row.banheiros,
+            parking: row.vagas,
+            broker: "Corretor",
+            image: row.imagens?.[0] || "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&h=400&fit=crop",
+            images: row.imagens || [],
+            createdAt: row.created_at,
+            decorated: row.decorado,
+            seaView: row.vista_mar,
+            acceptsExchange: row.aceita_permuta,
+            paymentConditions: row.condicoes_pagamento || [],
+            empreendimento: row.empreendimento || '',
+            unitNumber: row.unidade || '',
+            boxNumber: row.box || '',
+            quadra: row.quadra || '',
+            lote: row.lote || '',
+          }));
+        setAllProperties(mapped);
+      }
+      setLoading(false);
+    };
+    fetchProperties();
+  }, []);
 
   const clearFilters = () => {
     setFilterCity(""); setFilterBedrooms(""); setFilterPriceMin(""); setFilterPriceMax("");
@@ -194,7 +212,7 @@ export default function AllProperties() {
 
   const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterType || filterCondition;
 
-  let filtered = available.filter((p) => {
+  let filtered = allProperties.filter((p) => {
     const matchSearch = !searchTerm ||
       p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -220,14 +238,14 @@ export default function AllProperties() {
       {/* Navbar */}
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
-          <Link to="/site" className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2">
             <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-500 to-amber-400 flex items-center justify-center">
               <Home className="w-5 h-5 text-white" />
             </div>
             <span className="text-xl font-extrabold text-gray-900">MV <span className="text-amber-500">Broker</span> <span className="text-gray-500 text-sm font-bold">Conect</span></span>
           </Link>
           <div className="flex items-center gap-3">
-            <Link to="/site" className="text-sm font-semibold text-gray-600 hover:text-amber-600 transition-colors">
+            <Link to="/" className="text-sm font-semibold text-gray-600 hover:text-amber-600 transition-colors">
               ← Voltar ao Site
             </Link>
             <a href="https://wa.me/5511999999999" target="_blank" rel="noopener noreferrer"
@@ -242,7 +260,9 @@ export default function AllProperties() {
       <div className="bg-gradient-to-r from-gray-900 to-gray-800 py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-3xl font-extrabold text-white mb-2">Todos os Imóveis</h1>
-          <p className="text-gray-400 text-sm">{available.length} imóveis disponíveis</p>
+          <p className="text-gray-400 text-sm">
+            {loading ? "Carregando..." : `${allProperties.length} imóveis disponíveis`}
+          </p>
 
           {/* Search + Sort */}
           <div className="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
@@ -389,7 +409,11 @@ export default function AllProperties() {
           )}
         </div>
 
-        {filtered.length > 0 ? (
+        {loading ? (
+          <div className="text-center py-20">
+            <p className="text-lg font-bold text-gray-400">Carregando imóveis...</p>
+          </div>
+        ) : filtered.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {filtered.map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} />)}
           </div>
@@ -406,11 +430,11 @@ export default function AllProperties() {
       </main>
 
       <PropertyDetailModal
-        property={selectedProperty}
+        property={selectedProperty as any}
         onClose={() => setSelectedProperty(null)}
-        allProperties={allSiteProperties}
+        allProperties={allProperties as any}
         brokerInfo={brokerInfo}
-        onSelectSimilar={(p) => setSelectedProperty(p)}
+        onSelectSimilar={(p: any) => setSelectedProperty(p)}
       />
     </div>
   );
