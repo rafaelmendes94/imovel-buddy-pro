@@ -515,6 +515,14 @@ export default function PartnerDetail() {
           </div>
         </div>
       )}
+      <SiteConfigDialog
+        open={showConfig}
+        onOpenChange={setShowConfig}
+        configType="partner_page"
+        ownerId={slug}
+        showProfilePhoto
+        title="Configuração da Página do Parceiro"
+      />
     </div>
   );
 }
