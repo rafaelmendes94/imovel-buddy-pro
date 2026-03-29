@@ -390,6 +390,7 @@ export default function Properties() {
   }, [filtered, sortBy]);
 
   const favoritedProperties = propertyList.filter((p) => favoriteIds.includes(p.id));
+  const routeProperties = propertyList.filter((p) => routeIds.includes(p.id));
 
   // Stats
   const totalVGV = propertyList.filter(p => p.status === "Disponível").reduce((s, p) => s + p.price, 0);
