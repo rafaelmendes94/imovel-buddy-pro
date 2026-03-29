@@ -224,17 +224,8 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, 
       </div>
       <div className="p-4 space-y-3">
         <h3 className="font-bold text-gray-900 text-base leading-tight cursor-pointer hover:text-amber-700 transition-colors" onClick={() => onSelect?.(property)}>{property.title}</h3>
-        {(property.empreendimento || unitParts.length > 0) && (
+        {unitParts.length > 0 && (
           <div className="flex flex-wrap items-center gap-1.5">
-            {property.empreendimento && (
-              <Link
-                to={`/empreendimento/${property.empreendimento.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`}
-                className="text-[11px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md hover:bg-amber-100 transition-colors"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {property.empreendimento}
-              </Link>
-            )}
             {unitParts.map((part) => (
               <span key={part} className="text-[11px] font-semibold text-gray-600 bg-gray-100 px-2 py-0.5 rounded-md">
                 {part}
