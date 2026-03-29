@@ -2,9 +2,10 @@ import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
   ArrowLeft, Building2, Star, Phone, MapPin, Globe, Mail,
-  MessageSquare, Send, ThumbsUp, Clock, Users, X
+  MessageSquare, Send, ThumbsUp, Clock, Users, X, Settings as SettingsIcon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SiteConfigDialog } from "@/components/SiteConfigDialog";
 
 const partnersData: Record<string, {
   name: string;
@@ -226,6 +227,7 @@ export default function PartnerDetail() {
   const [authorName, setAuthorName] = useState("");
   const [localComments, setLocalComments] = useState<typeof partnersData[string]["comments"]>([]);
   const [submitted, setSubmitted] = useState(false);
+  const [showConfig, setShowConfig] = useState(false);
 
   if (!partner) {
     return (
@@ -268,12 +270,21 @@ export default function PartnerDetail() {
             <ArrowLeft className="w-4 h-4" />
             <span className="text-lg font-extrabold text-gray-900">MV <span className="text-amber-500">Broker</span></span>
           </Link>
-          <button
-            onClick={() => setShowRatingModal(true)}
-            className="px-5 py-2 rounded-xl bg-amber-500 text-white text-sm font-bold hover:bg-amber-600 transition-colors shadow-sm flex items-center gap-2"
-          >
-            <Star className="w-4 h-4" /> Avaliar
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowConfig(true)}
+              className="p-2 rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+              title="Configurações da página"
+            >
+              <SettingsIcon className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setShowRatingModal(true)}
+              className="px-5 py-2 rounded-xl bg-amber-500 text-white text-sm font-bold hover:bg-amber-600 transition-colors shadow-sm flex items-center gap-2"
+            >
+              <Star className="w-4 h-4" /> Avaliar
+            </button>
+          </div>
         </div>
       </header>
 
@@ -504,6 +515,14 @@ export default function PartnerDetail() {
           </div>
         </div>
       )}
+      <SiteConfigDialog
+        open={showConfig}
+        onOpenChange={setShowConfig}
+        configType="partner_page"
+        ownerId={slug}
+        showProfilePhoto
+        title="Configuração da Página do Parceiro"
+      />
     </div>
   );
 }

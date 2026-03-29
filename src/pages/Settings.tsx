@@ -1,15 +1,17 @@
 import { AppLayout } from "@/components/AppLayout";
 import { BackButton } from "@/components/BackButton";
-import { Building2, CreditCard, Bell, Shield, KeyRound } from "lucide-react";
+import { Building2, CreditCard, Bell, Shield, KeyRound, Palette } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { SiteConfigDialog } from "@/components/SiteConfigDialog";
 
 export default function Settings() {
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+  const [showSiteConfig, setShowSiteConfig] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [changing, setChanging] = useState(false);
@@ -76,6 +78,12 @@ export default function Settings() {
       description: "Autenticação e permissões de acesso",
       onClick: undefined,
     },
+    {
+      icon: Palette,
+      title: "Aparência do Site",
+      description: "Cores do cabeçalho, rodapé e foto de capa do site público",
+      onClick: () => setShowSiteConfig(true),
+    },
   ];
 
   return (
@@ -135,6 +143,13 @@ export default function Settings() {
             </div>
           </DialogContent>
         </Dialog>
+
+        <SiteConfigDialog
+          open={showSiteConfig}
+          onOpenChange={setShowSiteConfig}
+          configType="main_site"
+          title="Aparência do Site Público"
+        />
       </div>
     </AppLayout>
   );

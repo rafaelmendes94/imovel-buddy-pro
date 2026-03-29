@@ -31,8 +31,10 @@ import {
   MessageSquare,
   Send,
   ThumbsUp,
+  Settings as SettingsIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SiteConfigDialog } from "@/components/SiteConfigDialog";
 
 const brokerInfo: Record<string, { photo: string; whatsapp: string; creci: string; bio: string; totalSold: number; totalSoldValue: number; avgDaysToSell: number; rating: number; totalRatings: number; comments: { author: string; avatar: string; rating: number; text: string; date: string }[] }> = {
   "Carlos Silva": {
@@ -480,6 +482,7 @@ export default function BrokerSite() {
   const [authorName, setAuthorName] = useState("");
   const [localComments, setLocalComments] = useState<{ author: string; avatar: string; rating: number; text: string; date: string }[]>([]);
   const [submitted, setSubmitted] = useState(false);
+  const [showConfig, setShowConfig] = useState(false);
   const carouselRef = useRef<HTMLDivElement>(null);
   const [carouselIndex, setCarouselIndex] = useState(0);
 
@@ -598,14 +601,23 @@ export default function BrokerSite() {
               </button>
             ))}
           </nav>
-          <a
-            href={`https://wa.me/${info.whatsapp}?text=${whatsappGeneral}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-5 py-2 rounded-xl bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-colors shadow-sm"
-          >
-            <span className="flex items-center gap-2"><Phone className="w-4 h-4" /> Fale Comigo</span>
-          </a>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowConfig(true)}
+              className="p-2 rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+              title="Configurações da página"
+            >
+              <SettingsIcon className="w-4 h-4" />
+            </button>
+            <a
+              href={`https://wa.me/${info.whatsapp}?text=${whatsappGeneral}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-5 py-2 rounded-xl bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-colors shadow-sm"
+            >
+              <span className="flex items-center gap-2"><Phone className="w-4 h-4" /> Fale Comigo</span>
+            </a>
+          </div>
         </div>
       </header>
 
@@ -1247,6 +1259,14 @@ export default function BrokerSite() {
           </div>
         </div>
       )}
+      <SiteConfigDialog
+        open={showConfig}
+        onOpenChange={setShowConfig}
+        configType="broker_page"
+        ownerId={slug}
+        showProfilePhoto
+        title="Configuração da Página"
+      />
     </div>
   );
 }

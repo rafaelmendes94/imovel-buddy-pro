@@ -145,6 +145,45 @@ export type Database = {
         }
         Relationships: []
       }
+      site_config: {
+        Row: {
+          accent_color: string
+          config_type: string
+          cover_photo_url: string | null
+          created_at: string
+          footer_color: string
+          header_color: string
+          id: string
+          owner_id: string | null
+          profile_photo_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          accent_color?: string
+          config_type?: string
+          cover_photo_url?: string | null
+          created_at?: string
+          footer_color?: string
+          header_color?: string
+          id?: string
+          owner_id?: string | null
+          profile_photo_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          accent_color?: string
+          config_type?: string
+          cover_photo_url?: string | null
+          created_at?: string
+          footer_color?: string
+          header_color?: string
+          id?: string
+          owner_id?: string | null
+          profile_photo_url?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       staff_permissions: {
         Row: {
           can_manage_clients: boolean
