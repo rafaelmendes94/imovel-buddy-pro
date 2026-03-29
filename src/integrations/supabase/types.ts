@@ -14,6 +14,202 @@ export type Database = {
   }
   public: {
     Tables: {
+      construtora_empreendimentos: {
+        Row: {
+          cidade: string | null
+          construtora_id: string
+          created_at: string
+          descricao: string | null
+          endereco: string | null
+          id: string
+          imagem_url: string | null
+          nome: string
+          previsao_entrega: string | null
+          status: string
+          tipo: string | null
+          total_unidades: number | null
+          unidades_vendidas: number | null
+          updated_at: string
+        }
+        Insert: {
+          cidade?: string | null
+          construtora_id: string
+          created_at?: string
+          descricao?: string | null
+          endereco?: string | null
+          id?: string
+          imagem_url?: string | null
+          nome: string
+          previsao_entrega?: string | null
+          status?: string
+          tipo?: string | null
+          total_unidades?: number | null
+          unidades_vendidas?: number | null
+          updated_at?: string
+        }
+        Update: {
+          cidade?: string | null
+          construtora_id?: string
+          created_at?: string
+          descricao?: string | null
+          endereco?: string | null
+          id?: string
+          imagem_url?: string | null
+          nome?: string
+          previsao_entrega?: string | null
+          status?: string
+          tipo?: string | null
+          total_unidades?: number | null
+          unidades_vendidas?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "construtora_empreendimentos_construtora_id_fkey"
+            columns: ["construtora_id"]
+            isOneToOne: false
+            referencedRelation: "construtoras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      construtora_unidades: {
+        Row: {
+          andar: string | null
+          area: number | null
+          created_at: string
+          empreendimento_id: string
+          id: string
+          numero: string
+          observacao: string | null
+          preco: number | null
+          quartos: number | null
+          status: string
+          tipo: string | null
+        }
+        Insert: {
+          andar?: string | null
+          area?: number | null
+          created_at?: string
+          empreendimento_id: string
+          id?: string
+          numero: string
+          observacao?: string | null
+          preco?: number | null
+          quartos?: number | null
+          status?: string
+          tipo?: string | null
+        }
+        Update: {
+          andar?: string | null
+          area?: number | null
+          created_at?: string
+          empreendimento_id?: string
+          id?: string
+          numero?: string
+          observacao?: string | null
+          preco?: number | null
+          quartos?: number | null
+          status?: string
+          tipo?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "construtora_unidades_empreendimento_id_fkey"
+            columns: ["empreendimento_id"]
+            isOneToOne: false
+            referencedRelation: "construtora_empreendimentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      construtoras: {
+        Row: {
+          ano_fundacao: string | null
+          avaliacao: number | null
+          cidade: string | null
+          cnpj: string | null
+          cor_fundo: string | null
+          cor_primaria: string | null
+          cor_secundaria: string | null
+          cor_texto: string | null
+          cover_url: string | null
+          created_at: string
+          descricao: string | null
+          email: string | null
+          estado: string | null
+          id: string
+          instagram: string | null
+          logo_url: string | null
+          nome: string
+          perfil_url: string | null
+          slug: string
+          status: string
+          telefone: string | null
+          total_avaliacoes: number | null
+          updated_at: string
+          user_id: string
+          website: string | null
+          whatsapp: string | null
+        }
+        Insert: {
+          ano_fundacao?: string | null
+          avaliacao?: number | null
+          cidade?: string | null
+          cnpj?: string | null
+          cor_fundo?: string | null
+          cor_primaria?: string | null
+          cor_secundaria?: string | null
+          cor_texto?: string | null
+          cover_url?: string | null
+          created_at?: string
+          descricao?: string | null
+          email?: string | null
+          estado?: string | null
+          id?: string
+          instagram?: string | null
+          logo_url?: string | null
+          nome: string
+          perfil_url?: string | null
+          slug: string
+          status?: string
+          telefone?: string | null
+          total_avaliacoes?: number | null
+          updated_at?: string
+          user_id: string
+          website?: string | null
+          whatsapp?: string | null
+        }
+        Update: {
+          ano_fundacao?: string | null
+          avaliacao?: number | null
+          cidade?: string | null
+          cnpj?: string | null
+          cor_fundo?: string | null
+          cor_primaria?: string | null
+          cor_secundaria?: string | null
+          cor_texto?: string | null
+          cover_url?: string | null
+          created_at?: string
+          descricao?: string | null
+          email?: string | null
+          estado?: string | null
+          id?: string
+          instagram?: string | null
+          logo_url?: string | null
+          nome?: string
+          perfil_url?: string | null
+          slug?: string
+          status?: string
+          telefone?: string | null
+          total_avaliacoes?: number | null
+          updated_at?: string
+          user_id?: string
+          website?: string | null
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
       imoveis: {
         Row: {
           aceita_permuta: boolean
