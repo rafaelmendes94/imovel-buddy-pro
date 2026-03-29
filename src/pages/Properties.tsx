@@ -1979,26 +1979,28 @@ function DestaqueSelector({ propertyId, compact }: { propertyId: string; compact
   };
 
   if (compact) {
-    if (loading) return <div className="h-6 w-6 rounded bg-muted animate-pulse" />;
+    if (loading) return <div className="h-6 w-14 rounded bg-muted animate-pulse" />;
     if (!existsInDb) return null;
 
     return (
-      <select
-        value={value}
-        onChange={(e) => handleChange(e.target.value)}
-        className={cn(
-          "h-6 w-6 rounded cursor-pointer text-[0px] appearance-none border-0 focus:outline-none focus:ring-1 focus:ring-amber-300 transition-all",
-          value
-            ? "bg-amber-500/20"
-            : "bg-muted/50 hover:bg-muted"
-        )}
-        title={value ? `Destaque: ${DESTAQUE_OPTIONS.find((o) => o.value === value)?.label}` : "Sem destaque — clique para selecionar"}
-        style={{ backgroundImage: 'none', padding: '0', textIndent: '-9999px' }}
-      >
-        {DESTAQUE_OPTIONS.map((opt) => (
-          <option key={opt.value} value={opt.value}>{opt.icon} {opt.label}</option>
-        ))}
-      </select>
+      <div className="relative">
+        <select
+          value={value}
+          onChange={(e) => handleChange(e.target.value)}
+          className={cn(
+            "h-6 pl-5 pr-1 rounded text-[9px] font-bold border-0 cursor-pointer focus:outline-none focus:ring-1 focus:ring-amber-300 transition-all appearance-none bg-transparent",
+            value
+              ? "text-amber-600"
+              : "text-muted-foreground/50 hover:text-muted-foreground"
+          )}
+          title={value ? `Destaque: ${DESTAQUE_OPTIONS.find((o) => o.value === value)?.label}` : "Sem destaque"}
+        >
+          {DESTAQUE_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>{opt.icon} {opt.label}</option>
+          ))}
+        </select>
+        <Star className={cn("absolute left-1 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none", value ? "text-amber-500 fill-amber-500" : "text-muted-foreground/40")} />
+      </div>
     );
   }
 
