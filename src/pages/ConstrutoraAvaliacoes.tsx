@@ -390,7 +390,7 @@ export default function ConstrutoraAvaliacoes() {
       <div className="p-4 md:p-6 space-y-6 max-w-[1400px] mx-auto">
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-          <BackButton to={`/construtoras/${id}`} />
+          <BackButton />
           <div className="flex items-center gap-4 flex-1">
             {construtora.logo_url ? (
               <img src={construtora.logo_url} alt={construtora.nome} className="h-14 w-14 rounded-xl object-cover border-2 border-primary/20" />
