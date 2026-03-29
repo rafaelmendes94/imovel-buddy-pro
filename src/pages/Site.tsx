@@ -119,7 +119,16 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, 
           alt={property.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+        {/* Empreendimento badge on cover */}
+        {property.empreendimento && (
+          <div className="absolute top-3 left-3 z-20">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[11px] font-extrabold uppercase tracking-wider bg-amber-500/90 text-white backdrop-blur-sm shadow-md">
+              <Building2 className="w-3.5 h-3.5" />
+              {property.empreendimento}
+            </span>
+          </div>
+        )}
         {/* Sold stamp - only outside carousel */}
         {(property.status === "Vendido" && !hideStamp) && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
@@ -152,7 +161,8 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, 
         )}
         {property.status !== "Disponível" && (
           <span className={cn(
-            "absolute top-3 left-3 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide",
+            "absolute px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide z-20",
+            property.empreendimento ? "top-12 left-3" : "top-3 left-3",
             property.status === "Vendido" ? "bg-red-500 text-white" :
             "bg-amber-500 text-white"
           )}>
@@ -214,17 +224,8 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, 
       </div>
       <div className="p-4 space-y-3">
         <h3 className="font-bold text-gray-900 text-base leading-tight cursor-pointer hover:text-amber-700 transition-colors" onClick={() => onSelect?.(property)}>{property.title}</h3>
-        {(property.empreendimento || unitParts.length > 0) && (
+        {unitParts.length > 0 && (
           <div className="flex flex-wrap items-center gap-1.5">
-            {property.empreendimento && (
-              <Link
-                to={`/empreendimento/${property.empreendimento.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`}
-                className="text-[11px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md hover:bg-amber-100 transition-colors"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {property.empreendimento}
-              </Link>
-            )}
             {unitParts.map((part) => (
               <span key={part} className="text-[11px] font-semibold text-gray-600 bg-gray-100 px-2 py-0.5 rounded-md">
                 {part}
