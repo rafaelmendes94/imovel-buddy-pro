@@ -13,6 +13,7 @@ import NotFound from "./pages/NotFound";
 import BrokerSite from "./pages/BrokerSite";
 import EmpreendimentoDetail from "./pages/EmpreendimentoDetail";
 import PartnerDetail from "./pages/PartnerDetail";
+import ConstrutoraSite from "./pages/ConstrutoraSite";
 
 // Admin pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -70,6 +71,7 @@ const App = () => (
             <Route path="/empreendimento/:slug" element={<EmpreendimentoDetail />} />
             <Route path="/parceiro/:slug" element={<PartnerDetail />} />
             <Route path="/parceiros" element={<Parceiros />} />
+            <Route path="/construtora/:slug" element={<ConstrutoraSite />} />
 
             {/* Admin routes */}
             <Route path="/admin/dashboard" element={<AuthGuard requiredRoles={["super_admin", "admin_staff"]}><AdminDashboard /></AuthGuard>} />
