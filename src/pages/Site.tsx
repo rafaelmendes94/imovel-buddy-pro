@@ -529,35 +529,6 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, 
     </div>
   );
 }
-
-function CondoCard({ condo }: { condo: typeof condoProperties[0] }) {
-  return (
-    <div className="group rounded-2xl overflow-hidden bg-white shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100">
-      <div className="relative h-48 overflow-hidden">
-        <img src={condo.image} alt={condo.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-        <span className="absolute top-3 left-3 px-3 py-1 rounded-full text-[11px] font-bold bg-indigo-500 text-white">{condo.type}</span>
-        <div className="absolute bottom-3 left-3">
-          <p className="text-lg font-bold text-white drop-shadow-lg">{condo.name}</p>
-          <p className="text-xs text-white/80">{condo.city}</p>
-        </div>
-      </div>
-      <div className="p-4 space-y-3">
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-600">{condo.units} unidades</span>
-          <span className="font-bold text-emerald-600">{condo.available} disponíveis</span>
-        </div>
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-500">Condomínio</span>
-          <span className="font-bold text-gray-900">{formatCurrency(condo.monthlyFee)}/mês</span>
-        </div>
-        <button className="w-full py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 text-white text-sm font-bold hover:from-indigo-700 hover:to-indigo-600 transition-all shadow-sm">
-          Ver Unidades
-        </button>
-      </div>
-    </div>
-  );
-}
 function SiteMap({ properties: mapProperties }: { properties: typeof siteProperties }) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
