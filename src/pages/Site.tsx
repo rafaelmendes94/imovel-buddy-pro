@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { properties, formatCurrency, type Property } from "@/data/mockData";
 import { PropertyDetailModal } from "@/components/PropertyDetailModal";
