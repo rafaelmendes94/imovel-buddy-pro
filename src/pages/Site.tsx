@@ -502,6 +502,7 @@ export default function Site() {
   const [priceSort, setPriceSort] = useState<"" | "asc" | "desc">("");
   const [showFullRanking, setShowFullRanking] = useState(false);
   const [viewingTerm, setViewingTerm] = useState<string | null>(null);
+  const [showFavorites, setShowFavorites] = useState(false);
   const [favoriteIds, setFavoriteIds] = useState<string[]>(() => {
     try {
       return JSON.parse(localStorage.getItem("mv-favorites") || "[]");
@@ -669,6 +670,18 @@ export default function Site() {
             ))}
           </nav>
           <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowFavorites(true)}
+              className="relative flex items-center gap-1.5 text-sm font-semibold text-gray-700 hover:text-red-500 transition-colors"
+              title="Meus Favoritos"
+            >
+              <Heart className={cn("w-5 h-5", favoriteIds.length > 0 && "fill-red-500 text-red-500")} />
+              {favoriteIds.length > 0 && (
+                <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
+                  {favoriteIds.length}
+                </span>
+              )}
+            </button>
             <a href="tel:+5511999999999" className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-gray-700 hover:text-amber-600 transition-colors">
               <Phone className="w-4 h-4" /> (11) 99999-9999
             </a>
@@ -1331,6 +1344,171 @@ export default function Site() {
           </div>
         </div>
       )}
+
+      {/* Favorites Page Overlay */}
+      {showFavorites && (
+        <FavoritesPage
+          allProperties={siteProperties}
+          favoriteIds={favoriteIds}
+          onToggleFavorite={toggleFavorite}
+          onSelectProperty={setSelectedProperty}
+          onClose={() => setShowFavorites(false)}
+          routeIds={routeIds}
+          onToggleRoute={toggleRoute}
+          onViewTerm={setViewingTerm}
+        />
+      )}
+    </div>
+  );
+}
+
+/* =================== FAVORITES PAGE =================== */
+function FavoritesPage({
+  allProperties,
+  favoriteIds,
+  onToggleFavorite,
+  onSelectProperty,
+  onClose,
+  routeIds,
+  onToggleRoute,
+  onViewTerm,
+}: {
+  allProperties: SiteProperty[];
+  favoriteIds: string[];
+  onToggleFavorite: (id: string) => void;
+  onSelectProperty: (p: SiteProperty) => void;
+  onClose: () => void;
+  routeIds: string[];
+  onToggleRoute: (id: string) => void;
+  onViewTerm: (url: string) => void;
+}) {
+  const [sortBy, setSortBy] = useState<"recent" | "price-asc" | "price-desc" | "area-desc">("recent");
+  const [filterType, setFilterType] = useState("");
+  const [filterCity, setFilterCity] = useState("");
+  const [filterBedrooms, setFilterBedrooms] = useState("");
+
+  const favorites = allProperties.filter((p) => favoriteIds.includes(p.id));
+
+  const uniqueTypes = [...new Set(favorites.map((p) => p.type))].sort();
+  const uniqueCities = [...new Set(favorites.map((p) => p.city))].sort();
+
+  let filtered = [...favorites];
+  if (filterType) filtered = filtered.filter((p) => p.type === filterType);
+  if (filterCity) filtered = filtered.filter((p) => p.city === filterCity);
+  if (filterBedrooms) filtered = filtered.filter((p) => p.bedrooms >= parseInt(filterBedrooms));
+
+  switch (sortBy) {
+    case "price-asc": filtered.sort((a, b) => a.price - b.price); break;
+    case "price-desc": filtered.sort((a, b) => b.price - a.price); break;
+    case "area-desc": filtered.sort((a, b) => b.area - a.area); break;
+    default: break;
+  }
+
+  const clearFilters = () => { setFilterType(""); setFilterCity(""); setFilterBedrooms(""); };
+  const hasFilters = filterType || filterCity || filterBedrooms;
+
+  return (
+    <div className="fixed inset-0 z-[60] bg-gray-50 overflow-auto">
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+          <div className="flex items-center gap-3">
+            <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+              <ChevronLeft className="w-5 h-5 text-gray-700" />
+            </button>
+            <Heart className="w-5 h-5 text-red-500 fill-red-500" />
+            <h1 className="text-lg font-bold text-gray-900">Meus Favoritos</h1>
+            <span className="text-sm text-gray-500">({favorites.length} imóveis)</span>
+          </div>
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+            <X className="w-5 h-5 text-gray-500" />
+          </button>
+        </div>
+      </header>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {favorites.length === 0 ? (
+          <div className="text-center py-20 space-y-4">
+            <Heart className="w-16 h-16 text-gray-300 mx-auto" />
+            <h2 className="text-xl font-bold text-gray-700">Nenhum favorito ainda</h2>
+            <p className="text-gray-500">Clique no coração dos imóveis para adicioná-los aqui.</p>
+            <button onClick={onClose} className="mt-4 px-6 py-2.5 rounded-xl bg-amber-500 text-white font-bold hover:bg-amber-600 transition-colors">
+              Voltar ao site
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* Filters & Sort Bar */}
+            <div className="flex flex-wrap items-center gap-3 mb-6 p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
+              <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+                <SlidersHorizontal className="w-4 h-4" /> Filtros:
+              </div>
+              <select
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value)}
+                className="px-3 py-2 rounded-lg border border-gray-200 text-sm bg-white hover:border-amber-300 focus:ring-2 focus:ring-amber-200 focus:outline-none"
+              >
+                <option value="">Todos os tipos</option>
+                {uniqueTypes.map((t) => <option key={t} value={t}>{t}</option>)}
+              </select>
+              <select
+                value={filterCity}
+                onChange={(e) => setFilterCity(e.target.value)}
+                className="px-3 py-2 rounded-lg border border-gray-200 text-sm bg-white hover:border-amber-300 focus:ring-2 focus:ring-amber-200 focus:outline-none"
+              >
+                <option value="">Todas as cidades</option>
+                {uniqueCities.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+              <select
+                value={filterBedrooms}
+                onChange={(e) => setFilterBedrooms(e.target.value)}
+                className="px-3 py-2 rounded-lg border border-gray-200 text-sm bg-white hover:border-amber-300 focus:ring-2 focus:ring-amber-200 focus:outline-none"
+              >
+                <option value="">Quartos</option>
+                <option value="1">1+</option>
+                <option value="2">2+</option>
+                <option value="3">3+</option>
+                <option value="4">4+</option>
+              </select>
+              {hasFilters && (
+                <button onClick={clearFilters} className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors">
+                  <X className="w-3.5 h-3.5" /> Limpar
+                </button>
+              )}
+              <div className="ml-auto flex items-center gap-2">
+                <span className="text-xs text-gray-500">Ordenar:</span>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                  className="px-3 py-2 rounded-lg border border-gray-200 text-sm bg-white hover:border-amber-300 focus:ring-2 focus:ring-amber-200 focus:outline-none"
+                >
+                  <option value="recent">Mais recentes</option>
+                  <option value="price-asc">Menor preço</option>
+                  <option value="price-desc">Maior preço</option>
+                  <option value="area-desc">Maior área</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Results */}
+            <p className="text-sm text-gray-500 mb-4">{filtered.length} imóvel(is) encontrado(s)</p>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filtered.map((property) => (
+                <PropertyCard
+                  key={property.id}
+                  property={property}
+                  onSelect={() => { onSelectProperty(property); onClose(); }}
+                  isFavorited={true}
+                  onToggleFavorite={onToggleFavorite}
+                  isInRoute={routeIds.includes(property.id)}
+                  onToggleRoute={onToggleRoute}
+                  onViewTerm={onViewTerm}
+                />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }
