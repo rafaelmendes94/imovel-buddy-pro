@@ -67,6 +67,7 @@ export interface FormData {
   aceitaPermuta: boolean;
   destaqueHome: boolean;
   ativoSite: boolean;
+  destaqueCategoria: string;
   condicoesPagemento: string[];
   infraestrutura: string[];
   outrasCaracteristicas: string[];
