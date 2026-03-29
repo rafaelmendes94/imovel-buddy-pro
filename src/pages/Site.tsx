@@ -791,15 +791,8 @@ export default function Site() {
 
   const favoritedProperties = siteProperties.filter((p) => favoriteIds.includes(p.id));
 
-  // Auto-rotate sold carousel (scroll 1 card at a time, 4 visible)
+  // Continuous scroll uses CSS animation, no JS timer needed
   const maxIndex = Math.max(0, soldProperties.length - 4);
-  useEffect(() => {
-    if (soldProperties.length <= 4) return;
-    const timer = setInterval(() => {
-      setCarouselIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
-    }, 4000);
-    return () => clearInterval(timer);
-  }, [maxIndex]);
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     setShowScrollTop(e.currentTarget.scrollTop > 400);
   };
@@ -1187,30 +1180,15 @@ export default function Site() {
             />
             <div className="relative overflow-hidden">
               <div
-                className="flex transition-transform duration-700 ease-in-out gap-6"
-                style={{ transform: `translateX(-${carouselIndex * (100 / 4 + 1.5)}%)` }}
+                className="flex gap-6 animate-scroll"
+                style={{ width: `${soldProperties.length * 2 * (25 + 1.5)}%` }}
               >
-                {soldProperties.map((p) => (
-                  <div key={p.id} className="min-w-[calc(25%-18px)] flex-shrink-0">
+                {[...soldProperties, ...soldProperties].map((p, idx) => (
+                  <div key={`${p.id}-${idx}`} className="min-w-[calc(25%-18px)] flex-shrink-0" style={{ width: `calc(${100 / (soldProperties.length * 2)}% - 18px)` }}>
                     <PropertyCard property={{ ...p, status: "Vendido" as const }} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} hideStamp isFavorited={favoriteIds.includes(p.id)} onToggleFavorite={toggleFavorite} />
                   </div>
                 ))}
               </div>
-              {/* Dots */}
-              {soldProperties.length > 4 && (
-                <div className="flex items-center justify-center gap-2 mt-4">
-                  {Array.from({ length: maxIndex + 1 }).map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setCarouselIndex(i)}
-                      className={cn(
-                        "w-2.5 h-2.5 rounded-full transition-all",
-                        i === carouselIndex ? "bg-amber-500 w-6" : "bg-gray-300 hover:bg-gray-400"
-                      )}
-                    />
-                  ))}
-                </div>
-              )}
             </div>
           </section>
         )}
