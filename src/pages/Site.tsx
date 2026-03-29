@@ -1379,11 +1379,11 @@ export default function Site() {
         )}
 
         {/* Condomínios */}
-        {!searchTerm && !hasActiveFilters && (activeCategory === "todos" || activeCategory === "condominios") && (
+        {!searchTerm && !hasActiveFilters && (activeCategory === "todos" || activeCategory === "condominios") && condoHouses.length > 0 && (
           <section>
-            <SectionHeader title="Condomínios" subtitle={`${condoProperties.length} condomínios com unidades disponíveis`} icon={Fence} />
+            <SectionHeader title="Condomínios" subtitle={`${condoHouses.length} imóveis em condomínios`} icon={Fence} />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {condoProperties.slice(0, 4).map((c) => <CondoCard key={c.id} condo={c} />)}
+              {sortByPrice(condoHouses).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} isFavorited={favoriteIds.includes(p.id)} onToggleFavorite={toggleFavorite} isInRoute={routeIds.includes(p.id)} onToggleRoute={toggleRoute} />)}
             </div>
           </section>
         )}
