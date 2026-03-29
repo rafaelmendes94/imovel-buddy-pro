@@ -14,6 +14,88 @@ export type Database = {
   }
   public: {
     Tables: {
+      avaliacao_utils: {
+        Row: {
+          avaliacao_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          avaliacao_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          avaliacao_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "avaliacao_utils_avaliacao_id_fkey"
+            columns: ["avaliacao_id"]
+            isOneToOne: false
+            referencedRelation: "construtora_avaliacoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      construtora_avaliacoes: {
+        Row: {
+          comentario: string | null
+          condicoes_propostas: number
+          construtora_id: string
+          created_at: string
+          cumprimento_prazos: number
+          facilidade_aquisicao: number
+          id: string
+          qualidade_construcao: number
+          reputacao: number
+          suporte_corretor: number
+          user_id: string
+          util_count: number
+        }
+        Insert: {
+          comentario?: string | null
+          condicoes_propostas?: number
+          construtora_id: string
+          created_at?: string
+          cumprimento_prazos?: number
+          facilidade_aquisicao?: number
+          id?: string
+          qualidade_construcao?: number
+          reputacao?: number
+          suporte_corretor?: number
+          user_id: string
+          util_count?: number
+        }
+        Update: {
+          comentario?: string | null
+          condicoes_propostas?: number
+          construtora_id?: string
+          created_at?: string
+          cumprimento_prazos?: number
+          facilidade_aquisicao?: number
+          id?: string
+          qualidade_construcao?: number
+          reputacao?: number
+          suporte_corretor?: number
+          user_id?: string
+          util_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "construtora_avaliacoes_construtora_id_fkey"
+            columns: ["construtora_id"]
+            isOneToOne: false
+            referencedRelation: "construtoras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       construtora_empreendimentos: {
         Row: {
           cidade: string | null

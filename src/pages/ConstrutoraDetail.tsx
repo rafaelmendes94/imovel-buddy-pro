@@ -488,6 +488,9 @@ export default function ConstrutoraDetail() {
                 </div>
                 <p className="text-4xl font-bold text-foreground">{construtora.avaliacao > 0 ? Number(construtora.avaliacao).toFixed(1) : "Sem avaliação"}</p>
                 <p className="text-sm text-muted-foreground">{construtora.total_avaliacoes} avaliações recebidas</p>
+                <Link to={`/construtoras/${construtora.id}/avaliacoes`} className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors mt-4">
+                  <Star className="w-4 h-4" /> Avaliar / Ver Avaliações Detalhadas
+                </Link>
               </motion.div>
             </TabsContent>
           </Tabs>
