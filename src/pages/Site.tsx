@@ -75,6 +75,7 @@ interface SiteProperty {
   exclusivityTerm?: string;
   paymentConditionsOther?: string;
   destaqueCategoria?: string;
+  destaqueHome?: boolean;
 }
 // Broker info map
 const brokerInfo: Record<string, { photo: string; whatsapp: string }> = {
@@ -569,6 +570,7 @@ export default function Site() {
           lote: row.lote || '',
           exclusivityTerm: row.termo_exclusividade || '',
           destaqueCategoria: (row as any).destaque_categoria || '',
+          destaqueHome: row.destaque_home,
         }));
         setSiteProperties(mapped);
       }
