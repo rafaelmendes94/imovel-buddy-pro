@@ -119,7 +119,16 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, 
           alt={property.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+        {/* Empreendimento badge on cover */}
+        {property.empreendimento && (
+          <div className="absolute top-3 left-3 z-20">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[11px] font-extrabold uppercase tracking-wider bg-amber-500/90 text-white backdrop-blur-sm shadow-md">
+              <Building2 className="w-3.5 h-3.5" />
+              {property.empreendimento}
+            </span>
+          </div>
+        )}
         {/* Sold stamp - only outside carousel */}
         {(property.status === "Vendido" && !hideStamp) && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
