@@ -744,36 +744,36 @@ export default function Site() {
               </button>
 
               <button
-                onClick={() => setActiveCategory("casas")}
+                onClick={() => setActiveCategory("condominios")}
                 className="group bg-white/10 hover:bg-emerald-500/90 backdrop-blur-md rounded-2xl p-4 border border-white/20 hover:border-emerald-400 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-emerald-500/20 text-left"
               >
                 <div className="w-10 h-10 rounded-xl bg-emerald-400/20 group-hover:bg-white/20 flex items-center justify-center mb-3 transition-colors">
-                  <Home className="w-5 h-5 text-emerald-400 group-hover:text-white transition-colors" />
+                  <Fence className="w-5 h-5 text-emerald-400 group-hover:text-white transition-colors" />
                 </div>
-                <p className="text-2xl font-black text-white">{houses.length}</p>
-                <p className="text-[11px] font-semibold text-gray-300 group-hover:text-emerald-100 uppercase tracking-wider">Casas</p>
+                <p className="text-2xl font-black text-white">{condoHouses.length}</p>
+                <p className="text-[11px] font-semibold text-gray-300 group-hover:text-emerald-100 uppercase tracking-wider">Condomínios</p>
               </button>
 
               <button
-                onClick={() => setActiveCategory("lotes-cond")}
-                className="group bg-white/10 hover:bg-green-500/90 backdrop-blur-md rounded-2xl p-4 border border-white/20 hover:border-green-400 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-green-500/20 text-left"
-              >
-                <div className="w-10 h-10 rounded-xl bg-green-400/20 group-hover:bg-white/20 flex items-center justify-center mb-3 transition-colors">
-                  <TreePine className="w-5 h-5 text-green-400 group-hover:text-white transition-colors" />
-                </div>
-                <p className="text-2xl font-black text-white">{lots.length}</p>
-                <p className="text-[11px] font-semibold text-gray-300 group-hover:text-green-100 uppercase tracking-wider">Lotes</p>
-              </button>
-
-              <button
-                onClick={() => setActiveCategory("vista-mar")}
+                onClick={() => { setFilterCity("Capão da Canoa"); setActiveCategory("todos"); }}
                 className="group bg-white/10 hover:bg-cyan-500/90 backdrop-blur-md rounded-2xl p-4 border border-white/20 hover:border-cyan-400 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-cyan-500/20 text-left"
               >
                 <div className="w-10 h-10 rounded-xl bg-cyan-400/20 group-hover:bg-white/20 flex items-center justify-center mb-3 transition-colors">
-                  <Waves className="w-5 h-5 text-cyan-400 group-hover:text-white transition-colors" />
+                  <MapPin className="w-5 h-5 text-cyan-400 group-hover:text-white transition-colors" />
                 </div>
-                <p className="text-2xl font-black text-white">{seaViewProperties.length}</p>
-                <p className="text-[11px] font-semibold text-gray-300 group-hover:text-cyan-100 uppercase tracking-wider">Vista Mar</p>
+                <p className="text-2xl font-black text-white">{available.filter((p) => p.city.toLowerCase().includes("capão")).length}</p>
+                <p className="text-[11px] font-semibold text-gray-300 group-hover:text-cyan-100 uppercase tracking-wider">Capão da Canoa</p>
+              </button>
+
+              <button
+                onClick={() => { setFilterCity("Xangri-lá"); setActiveCategory("todos"); }}
+                className="group bg-white/10 hover:bg-violet-500/90 backdrop-blur-md rounded-2xl p-4 border border-white/20 hover:border-violet-400 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-violet-500/20 text-left"
+              >
+                <div className="w-10 h-10 rounded-xl bg-violet-400/20 group-hover:bg-white/20 flex items-center justify-center mb-3 transition-colors">
+                  <MapPin className="w-5 h-5 text-violet-400 group-hover:text-white transition-colors" />
+                </div>
+                <p className="text-2xl font-black text-white">{available.filter((p) => p.city.toLowerCase().includes("xangri")).length}</p>
+                <p className="text-[11px] font-semibold text-gray-300 group-hover:text-violet-100 uppercase tracking-wider">Xangri-lá</p>
               </button>
 
               <div className="bg-gradient-to-br from-amber-500/30 to-amber-600/30 backdrop-blur-md rounded-2xl p-4 border border-amber-400/40">
@@ -781,7 +781,7 @@ export default function Site() {
                   <DollarSign className="w-5 h-5 text-amber-300" />
                 </div>
                 <p className="text-lg font-black text-amber-300 leading-tight">{formatCurrency(totalVGV)}</p>
-                <p className="text-[11px] font-semibold text-amber-200/80 uppercase tracking-wider">VGV em Carteira</p>
+                <p className="text-[11px] font-semibold text-amber-200/80 uppercase tracking-wider">VGV Cadastrado</p>
               </div>
             </div>
 
