@@ -44,263 +44,47 @@ import { cn } from "@/lib/utils";
 import { RoutePlanner } from "@/components/RoutePlanner";
 import { SharkAI } from "@/components/SharkAI";
 
+// Site property type mapped from DB
+interface SiteProperty {
+  id: string;
+  title: string;
+  address: string;
+  city: string;
+  type: string;
+  status: string;
+  price: number;
+  area: number;
+  bedrooms: number;
+  bathrooms: number;
+  parking: number;
+  broker: string;
+  image: string;
+  images: string[];
+  createdAt: string;
+  lat: number;
+  lng: number;
+  decorated?: boolean;
+  seaView?: boolean;
+  acceptsExchange?: boolean;
+  paymentConditions?: string[];
+  empreendimento?: string;
+  unitNumber?: string;
+  boxNumber?: string;
+  quadra?: string;
+  lote?: string;
+  exclusivityTerm?: string;
+}
+
 // Broker info map
 const brokerInfo: Record<string, { photo: string; whatsapp: string }> = {
-  "Carlos Silva": {
-    photo: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&h=100&fit=crop&crop=face",
-    whatsapp: "5511999990001",
-  },
-  "Ana Rodrigues": {
-    photo: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&h=100&fit=crop&crop=face",
-    whatsapp: "5511999990002",
-  },
-  "Marcos Oliveira": {
-    photo: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
-    whatsapp: "5511999990003",
+  "Corretor": {
+    photo: "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=100&h=100&fit=crop&crop=face",
+    whatsapp: "5511999999999",
   },
 };
 
-// Extended mock data for the public site
-const siteProperties = [
-  ...properties,
-  {
-    id: "site-1",
-    title: "Apartamento Beira Mar Navegantes",
-    address: "Av. Beira Mar, 1800",
-    city: "Capão da Canoa",
-    type: "Apartamento" as const,
-    status: "Disponível" as const,
-    price: 780000,
-    area: 95,
-    bedrooms: 2,
-    bathrooms: 2,
-    parking: 1,
-    broker: "Ana Rodrigues",
-    image: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&h=400&fit=crop",
-    images: [],
-    createdAt: "2024-03-20",
-    lat: -29.7430,
-    lng: -50.0980,
-    decorated: false,
-    seaView: true,
-    acceptsExchange: true,
-    paymentConditions: ["48x", "Permuta"],
-    empreendimento: "Ed. Navegantes",
-    unitNumber: "Ap 501",
-    boxNumber: "Box 15",
-    exclusivityTerm: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&h=1100&fit=crop",
-  },
-  {
-    id: "site-2",
-    title: "Lote Condomínio Reserva do Litoral",
-    address: "Rua dos Pescadores, 500",
-    city: "Xangri-lá",
-    type: "Terreno" as const,
-    status: "Disponível" as const,
-    price: 280000,
-    area: 400,
-    bedrooms: 0,
-    bathrooms: 0,
-    parking: 0,
-    broker: "Carlos Silva",
-    image: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600&h=400&fit=crop",
-    images: [],
-    createdAt: "2024-03-18",
-    lat: -29.8020,
-    lng: -50.0480,
-    decorated: false,
-    seaView: false,
-    acceptsExchange: true,
-    paymentConditions: ["24x", "Permuta"],
-    empreendimento: "Cond. Reserva do Litoral",
-    quadra: "Q-08",
-    lote: "L-22",
-  },
-  {
-    id: "site-3",
-    title: "Casa de Praia Xangri-lá",
-    address: "Rua das Dunas, 120",
-    city: "Xangri-lá",
-    type: "Casa" as const,
-    status: "Disponível" as const,
-    price: 1350000,
-    area: 280,
-    bedrooms: 4,
-    bathrooms: 3,
-    parking: 2,
-    broker: "Marcos Oliveira",
-    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&h=400&fit=crop",
-    images: [],
-    createdAt: "2024-03-15",
-    lat: -29.7950,
-    lng: -50.0580,
-    decorated: true,
-    seaView: true,
-    acceptsExchange: false,
-    paymentConditions: ["72x"],
-    empreendimento: "Cond. Praia das Dunas",
-    quadra: "Q-02",
-    lote: "L-11",
-    exclusivityTerm: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&h=1100&fit=crop",
-  },
-  {
-    id: "site-4",
-    title: "Lote Residencial Capão Novo",
-    address: "Rua das Gaivotas, 80",
-    city: "Capão da Canoa",
-    type: "Terreno" as const,
-    status: "Disponível" as const,
-    price: 190000,
-    area: 360,
-    bedrooms: 0,
-    bathrooms: 0,
-    parking: 0,
-    broker: "Ana Rodrigues",
-    image: "https://images.unsplash.com/photo-1500076656116-558758c991c1?w=600&h=400&fit=crop",
-    images: [],
-    createdAt: "2024-03-10",
-    lat: -29.7600,
-    lng: -50.0900,
-    decorated: false,
-    seaView: false,
-    acceptsExchange: false,
-    paymentConditions: ["36x"],
-    empreendimento: "Loteamento Capão Novo",
-    quadra: "Q-14",
-    lote: "L-03",
-  },
-  {
-    id: "site-5",
-    title: "Sobrado Praia de Arroio Teixeira",
-    address: "Rua Marítima, 350",
-    city: "Capão da Canoa",
-    type: "Casa" as const,
-    status: "Disponível" as const,
-    price: 850000,
-    area: 180,
-    bedrooms: 3,
-    bathrooms: 2,
-    parking: 2,
-    broker: "Carlos Silva",
-    image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&h=400&fit=crop",
-    images: [],
-    createdAt: "2024-03-08",
-    lat: -29.7350,
-    lng: -50.1150,
-    decorated: true,
-    seaView: false,
-    acceptsExchange: true,
-    paymentConditions: ["36x", "Carro"],
-    empreendimento: "Cond. Arroio Teixeira",
-    quadra: "Q-03",
-    lote: "L-09",
-    exclusivityTerm: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&h=1100&fit=crop",
-  },
-  {
-    id: "site-6",
-    title: "Apartamento Alto Padrão Atlântida",
-    address: "Av. Atlântida, 600",
-    city: "Xangri-lá",
-    type: "Apartamento" as const,
-    status: "Disponível" as const,
-    price: 1100000,
-    area: 150,
-    bedrooms: 3,
-    bathrooms: 3,
-    parking: 2,
-    broker: "Marcos Oliveira",
-    image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=600&h=400&fit=crop",
-    images: [],
-    createdAt: "2024-03-01",
-    lat: -29.7850,
-    lng: -50.0700,
-    decorated: true,
-    seaView: true,
-    acceptsExchange: true,
-    paymentConditions: ["60x", "Permuta"],
-    empreendimento: "Ed. Alto Padrão Atlântida",
-    unitNumber: "Ap 801",
-    boxNumber: "Box 25, 26",
-  },
-  {
-    id: "site-7",
-    title: "Cobertura Triplex Vista Mar",
-    address: "Av. Beira Mar, 2200",
-    city: "Capão da Canoa",
-    type: "Apartamento" as const,
-    status: "Vendido" as const,
-    price: 2200000,
-    area: 320,
-    bedrooms: 4,
-    bathrooms: 4,
-    parking: 3,
-    broker: "Carlos Silva",
-    image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600&h=400&fit=crop",
-    images: [],
-    createdAt: "2024-02-20",
-    lat: -29.7440,
-    lng: -50.1010,
-    decorated: true,
-    seaView: true,
-    acceptsExchange: false,
-    paymentConditions: ["84x"],
-    empreendimento: "Ed. Grand Atlantique",
-    unitNumber: "Cobertura 01",
-    boxNumber: "Box 01, 02, 03",
-  },
-  {
-    id: "site-8",
-    title: "Casa em Condomínio Fechado",
-    address: "Rua das Palmeiras, 450",
-    city: "Xangri-lá",
-    type: "Casa" as const,
-    status: "Vendido" as const,
-    price: 1650000,
-    area: 400,
-    bedrooms: 5,
-    bathrooms: 4,
-    parking: 3,
-    broker: "Marcos Oliveira",
-    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&h=400&fit=crop",
-    images: [],
-    createdAt: "2024-01-15",
-    lat: -29.8000,
-    lng: -50.0550,
-    decorated: true,
-    seaView: false,
-    acceptsExchange: false,
-    paymentConditions: ["60x"],
-    empreendimento: "Cond. Jardim do Litoral",
-    quadra: "Q-01",
-    lote: "L-15",
-  },
-  {
-    id: "site-9",
-    title: "Apartamento Frente Mar Mobiliado",
-    address: "Av. Paraguassú, 1500",
-    city: "Capão da Canoa",
-    type: "Apartamento" as const,
-    status: "Vendido" as const,
-    price: 920000,
-    area: 110,
-    bedrooms: 3,
-    bathrooms: 2,
-    parking: 2,
-    broker: "Ana Rodrigues",
-    image: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=600&h=400&fit=crop",
-    images: [],
-    createdAt: "2024-03-01",
-    lat: -29.7500,
-    lng: -50.1050,
-    decorated: true,
-    seaView: true,
-    acceptsExchange: false,
-    paymentConditions: ["72x"],
-    empreendimento: "Ed. Mar Azul",
-    unitNumber: "Ap 702",
-    boxNumber: "Box 18",
-  },
-];
+// Will be populated from DB
+let siteProperties: SiteProperty[] = [];
 
 const available = siteProperties.filter((p) => p.status === "Disponível");
 const soldProperties = siteProperties.filter((p) => p.status === "Vendido" || p.status === "Reservado");
