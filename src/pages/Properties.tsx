@@ -15,7 +15,7 @@ import {
   Phone, Heart, FileCheck, Eye, Repeat, CreditCard, DollarSign, Ban,
   Share2, CalendarCheck, CalendarClock, AlertTriangle, Pencil, Image,
   FolderDown, User, ShieldCheck, Percent, Gift, BarChart3, FileSignature,
-  TrendingUp, Wallet, RefreshCw, ArrowUp, ArrowDown, Banknote, Copy, Maximize2, Scan,
+  TrendingUp, Wallet, RefreshCw, ArrowUp, ArrowDown, Banknote, Copy, Maximize2, Scan, Route,
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -1059,7 +1059,7 @@ function PropertyCard({
           )}
           title={isInRoute ? "Remover da rota" : "Adicionar à rota"}
         >
-          <Navigation className={cn("w-4 h-4", isInRoute && "fill-current")} />
+          <Route className={cn("w-4 h-4", isInRoute && "fill-current")} />
         </button>
 
         {/* Favorite */}
