@@ -1259,6 +1259,14 @@ export default function BrokerSite() {
           </div>
         </div>
       )}
+      <SiteConfigDialog
+        open={showConfig}
+        onOpenChange={setShowConfig}
+        configType="broker_page"
+        ownerId={slug}
+        showProfilePhoto
+        title="Configuração da Página"
+      />
     </div>
   );
 }
