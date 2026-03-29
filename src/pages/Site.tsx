@@ -769,6 +769,7 @@ export default function Site() {
   const [filterPriceMax, setFilterPriceMax] = useState("");
   const [filterType, setFilterType] = useState("");
   const [filterCondition, setFilterCondition] = useState("");
+  const [filterEmpreendimento, setFilterEmpreendimento] = useState("");
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [priceSort, setPriceSort] = useState<"" | "asc" | "desc">("");
@@ -814,10 +815,13 @@ export default function Site() {
     setFilterPriceMax("");
     setFilterType("");
     setFilterCondition("");
+    setFilterEmpreendimento("");
     setSearchTerm("");
   };
 
-  const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterType || filterCondition;
+  const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterType || filterCondition || filterEmpreendimento;
+
+  const uniqueEmpreendimentos = [...new Set(available.map((p) => p.empreendimento).filter(Boolean))].sort();
 
   const filteredAll = available.filter((p) => {
     const matchSearch = !searchTerm ||
@@ -832,7 +836,8 @@ export default function Site() {
     const matchCondition = !filterCondition || (
       Array.isArray(p.paymentConditions) && p.paymentConditions.some(c => c.toLowerCase().includes(filterCondition.toLowerCase()))
     );
-    return matchSearch && matchCity && matchBedrooms && matchPriceMin && matchPriceMax && matchType && matchCondition;
+    const matchEmpreendimento = !filterEmpreendimento || p.empreendimento === filterEmpreendimento;
+    return matchSearch && matchCity && matchBedrooms && matchPriceMin && matchPriceMax && matchType && matchCondition && matchEmpreendimento;
   });
 
   const sortByPrice = <T extends { price: number }>(arr: T[]): T[] => {
@@ -1092,6 +1097,19 @@ export default function Site() {
                   <option value="100x">100x</option>
                   <option value="Permuta">Permuta</option>
                   <option value="Carro">Carro</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">Empreendimento</label>
+                <select
+                  value={filterEmpreendimento}
+                  onChange={(e) => setFilterEmpreendimento(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                >
+                  <option value="">Todos</option>
+                  {uniqueEmpreendimentos.map((emp) => (
+                    <option key={emp} value={emp}>{emp}</option>
+                  ))}
                 </select>
               </div>
               <div className="flex items-end gap-2">
