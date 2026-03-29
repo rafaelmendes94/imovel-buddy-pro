@@ -4,10 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, ShieldCheck, ChevronDown, ChevronRight } from "lucide-react";
+import { Plus, Trash2, ShieldCheck, ChevronDown, ChevronRight, Pencil, Save, X, Briefcase } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const DEFAULT_PERMISSIONS = {
   dashboard_admin: { view: false, create: false, edit: false, delete: false },
@@ -34,6 +36,17 @@ const DEFAULT_PERMISSIONS = {
 type ModuleKey = keyof typeof DEFAULT_PERMISSIONS;
 type ActionKey = "view" | "create" | "edit" | "delete";
 type PermissionsMap = Record<ModuleKey, Record<ActionKey, boolean>>;
+
+const FUNCTION_TITLES = [
+  "Gerente Administrativo",
+  "Coordenador de Vendas",
+  "Analista Financeiro",
+  "Assistente Administrativo",
+  "Gerente Comercial",
+  "Suporte Técnico",
+  "Marketing",
+  "Outro",
+];
 
 const ADMIN_MODULES: { key: ModuleKey; label: string }[] = [
   { key: "dashboard_admin", label: "Dashboard Admin" },
@@ -72,6 +85,7 @@ interface StaffMember {
   profile: { full_name: string; email: string | null } | null;
   permissions: PermissionsMap;
   permRowId: string | null;
+  function_title: string;
 }
 
 export default function AdminFuncionarios() {
@@ -80,9 +94,13 @@ export default function AdminFuncionarios() {
   const [newEmail, setNewEmail] = useState("");
   const [newName, setNewName] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [newFunction, setNewFunction] = useState("");
+  const [newCustomFunction, setNewCustomFunction] = useState("");
   const [creating, setCreating] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [expandedUser, setExpandedUser] = useState<string | null>(null);
+  const [editingFunction, setEditingFunction] = useState<string | null>(null);
+  const [editFunctionValue, setEditFunctionValue] = useState("");
   const { toast } = useToast();
 
   const fetchStaff = async () => {
@@ -102,6 +120,7 @@ export default function AdminFuncionarios() {
         profile: profilesRes.data?.find(p => p.user_id === uid) || null,
         permissions: (permRow as any)?.permissions || { ...DEFAULT_PERMISSIONS },
         permRowId: permRow?.id || null,
+        function_title: (permRow as any)?.function_title || "",
       };
     });
 
@@ -114,6 +133,8 @@ export default function AdminFuncionarios() {
   const handleCreate = async () => {
     if (!newEmail || !newName || !newPassword) return;
     setCreating(true);
+
+    const finalFunction = newFunction === "Outro" ? newCustomFunction : newFunction;
 
     const { data, error } = await supabase.auth.signUp({
       email: newEmail,
@@ -129,13 +150,24 @@ export default function AdminFuncionarios() {
 
     if (data.user) {
       await supabase.from("user_roles").update({ role: "admin_staff" as any }).eq("user_id", data.user.id);
-      await supabase.from("staff_permissions").insert({ user_id: data.user.id, permissions: DEFAULT_PERMISSIONS } as any);
+      await supabase.from("staff_permissions").insert({
+        user_id: data.user.id,
+        permissions: DEFAULT_PERMISSIONS,
+        function_title: finalFunction,
+      } as any);
     }
 
     toast({ title: "Funcionário criado!" });
-    setNewEmail(""); setNewName(""); setNewPassword("");
+    setNewEmail(""); setNewName(""); setNewPassword(""); setNewFunction(""); setNewCustomFunction("");
     setDialogOpen(false); setCreating(false);
     fetchStaff();
+  };
+
+  const updateFunctionTitle = async (userId: string, title: string) => {
+    setStaff(prev => prev.map(s => s.user_id === userId ? { ...s, function_title: title } : s));
+    await supabase.from("staff_permissions").update({ function_title: title } as any).eq("user_id", userId);
+    setEditingFunction(null);
+    toast({ title: "Função atualizada!" });
   };
 
   const updatePermission = async (userId: string, moduleKey: ModuleKey, action: ActionKey, value: boolean) => {
@@ -146,7 +178,6 @@ export default function AdminFuncionarios() {
     updated[moduleKey] = { ...updated[moduleKey], [action]: value };
 
     setStaff(prev => prev.map(s => s.user_id === userId ? { ...s, permissions: updated } : s));
-
     await supabase.from("staff_permissions").update({ permissions: updated } as any).eq("user_id", userId);
   };
 
@@ -190,6 +221,14 @@ export default function AdminFuncionarios() {
     await supabase.from("user_roles").delete().eq("user_id", userId);
     toast({ title: "Funcionário removido" });
     fetchStaff();
+  };
+
+  const countActivePerms = (perms: PermissionsMap) => {
+    let total = 0;
+    Object.values(perms).forEach(mod => {
+      Object.values(mod).forEach(v => { if (v) total++; });
+    });
+    return total;
   };
 
   const renderPermissionTable = (modules: { key: ModuleKey; label: string }[], member: StaffMember) => (
@@ -243,14 +282,36 @@ export default function AdminFuncionarios() {
             <DialogTrigger asChild>
               <Button><Plus className="w-4 h-4 mr-2" />Novo Funcionário</Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="sm:max-w-md">
               <DialogHeader><DialogTitle>Criar Funcionário</DialogTitle></DialogHeader>
               <div className="space-y-3">
-                <Input placeholder="Nome" value={newName} onChange={e => setNewName(e.target.value)} />
+                <Input placeholder="Nome completo" value={newName} onChange={e => setNewName(e.target.value)} />
                 <Input type="email" placeholder="E-mail" value={newEmail} onChange={e => setNewEmail(e.target.value)} />
                 <Input type="password" placeholder="Senha" value={newPassword} onChange={e => setNewPassword(e.target.value)} />
+                
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-foreground">Função</label>
+                  <Select value={newFunction} onValueChange={setNewFunction}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione a função" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {FUNCTION_TITLES.map(f => (
+                        <SelectItem key={f} value={f}>{f}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {newFunction === "Outro" && (
+                    <Input
+                      placeholder="Digite a função"
+                      value={newCustomFunction}
+                      onChange={e => setNewCustomFunction(e.target.value)}
+                    />
+                  )}
+                </div>
+
                 <Button onClick={handleCreate} disabled={creating} className="w-full">
-                  {creating ? "Criando..." : "Criar"}
+                  {creating ? "Criando..." : "Criar Funcionário"}
                 </Button>
               </div>
             </DialogContent>
@@ -260,11 +321,18 @@ export default function AdminFuncionarios() {
         {loading ? (
           <div className="text-muted-foreground">Carregando...</div>
         ) : staff.length === 0 ? (
-          <div className="text-muted-foreground">Nenhum funcionário cadastrado.</div>
+          <div className="text-center py-12 text-muted-foreground">
+            <Briefcase className="w-12 h-12 mx-auto mb-3 opacity-40" />
+            <p className="text-lg font-medium">Nenhum funcionário cadastrado</p>
+            <p className="text-sm">Clique em "Novo Funcionário" para adicionar.</p>
+          </div>
         ) : (
           <div className="space-y-4">
             {staff.map(s => {
               const isExpanded = expandedUser === s.user_id;
+              const activePerms = countActivePerms(s.permissions);
+              const isEditingFn = editingFunction === s.user_id;
+
               return (
                 <div key={s.user_id} className="bg-card border border-border rounded-xl overflow-hidden">
                   <div
@@ -273,9 +341,29 @@ export default function AdminFuncionarios() {
                   >
                     <div className="flex items-center gap-3">
                       {isExpanded ? <ChevronDown className="w-5 h-5 text-muted-foreground" /> : <ChevronRight className="w-5 h-5 text-muted-foreground" />}
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-primary font-bold text-sm">
+                          {(s.profile?.full_name || "?").charAt(0).toUpperCase()}
+                        </span>
+                      </div>
                       <div>
                         <h3 className="font-semibold text-foreground">{s.profile?.full_name || "Sem nome"}</h3>
                         <p className="text-sm text-muted-foreground">{s.profile?.email}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          {s.function_title ? (
+                            <Badge variant="secondary" className="text-xs">
+                              <Briefcase className="w-3 h-3 mr-1" />
+                              {s.function_title}
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-xs text-muted-foreground">
+                              Sem função definida
+                            </Badge>
+                          )}
+                          <Badge variant="outline" className="text-xs">
+                            {activePerms} permissões ativas
+                          </Badge>
+                        </div>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -300,16 +388,75 @@ export default function AdminFuncionarios() {
                   </div>
 
                   {isExpanded && (
-                    <div className="px-5 pb-5 space-y-4">
+                    <div className="px-5 pb-5 space-y-5">
+                      {/* Function Title Section */}
+                      <div className="bg-muted/30 rounded-lg p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Briefcase className="w-4 h-4 text-primary" />
+                            <span className="text-sm font-semibold text-foreground">Função / Cargo</span>
+                          </div>
+                          {!isEditingFn && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => { setEditingFunction(s.user_id); setEditFunctionValue(s.function_title); }}
+                            >
+                              <Pencil className="w-3.5 h-3.5 mr-1" />
+                              Editar
+                            </Button>
+                          )}
+                        </div>
+                        {isEditingFn ? (
+                          <div className="mt-3 flex items-center gap-2">
+                            <Select value={FUNCTION_TITLES.includes(editFunctionValue) ? editFunctionValue : "Outro"} onValueChange={(v) => {
+                              if (v !== "Outro") setEditFunctionValue(v);
+                              else setEditFunctionValue("");
+                            }}>
+                              <SelectTrigger className="flex-1">
+                                <SelectValue placeholder="Selecione a função" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {FUNCTION_TITLES.map(f => (
+                                  <SelectItem key={f} value={f}>{f}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            {(!FUNCTION_TITLES.includes(editFunctionValue) || editFunctionValue === "") && (
+                              <Input
+                                className="flex-1"
+                                placeholder="Digite a função"
+                                value={editFunctionValue}
+                                onChange={e => setEditFunctionValue(e.target.value)}
+                              />
+                            )}
+                            <Button size="sm" onClick={() => updateFunctionTitle(s.user_id, editFunctionValue)}>
+                              <Save className="w-3.5 h-3.5" />
+                            </Button>
+                            <Button size="sm" variant="ghost" onClick={() => setEditingFunction(null)}>
+                              <X className="w-3.5 h-3.5" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            {s.function_title || "Nenhuma função definida — clique em editar para definir."}
+                          </p>
+                        )}
+                      </div>
+
                       {/* Admin Section */}
                       <div>
-                        <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Administração</h4>
+                        <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                          Módulos de Administração
+                        </h4>
                         {renderPermissionTable(ADMIN_MODULES, s)}
                       </div>
 
                       {/* Operational Section */}
                       <div>
-                        <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Operacional</h4>
+                        <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                          Módulos Operacionais
+                        </h4>
                         {renderPermissionTable(OPERATIONAL_MODULES, s)}
                       </div>
                     </div>
