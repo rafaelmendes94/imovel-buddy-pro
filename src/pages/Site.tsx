@@ -219,10 +219,10 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, 
             {property.empreendimento && (
               <Link
                 to={`/empreendimento/${property.empreendimento.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`}
-                className="text-[12px] font-bold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-md hover:bg-blue-100 transition-colors"
+                className="text-[11px] font-bold text-black uppercase tracking-wide bg-white px-2.5 py-0.5 rounded-md border border-black hover:bg-gray-100 transition-colors"
                 onClick={(e) => e.stopPropagation()}
               >
-                🏢 {property.empreendimento}
+                {property.empreendimento}
               </Link>
             )}
             {unitParts.map((part) => (
