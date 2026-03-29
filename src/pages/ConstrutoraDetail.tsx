@@ -4,6 +4,8 @@ import { AppLayout } from "@/components/AppLayout";
 import { BackButton } from "@/components/BackButton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useQuickValues } from "@/hooks/useQuickValues";
+import { QuickSelect, QuickSelectDropdown } from "@/components/QuickSelect";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -62,6 +64,12 @@ const fadeUp = { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, 
 export default function ConstrutoraDetail() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const { getValues } = useQuickValues([
+    { table: "construtora_empreendimentos", column: "cidade" },
+    { table: "construtora_empreendimentos", column: "endereco" },
+    { table: "construtora_empreendimentos", column: "tipo" },
+    { table: "construtora_empreendimentos", column: "previsao_entrega" },
+  ]);
   const [construtora, setConstrutora] = useState<Construtora | null>(null);
   const [empreendimentos, setEmpreendimentos] = useState<Empreendimento[]>([]);
   const [unidades, setUnidades] = useState<Record<string, Unidade[]>>({});
@@ -496,12 +504,12 @@ export default function ConstrutoraDetail() {
                 </div>
                 <div className="p-5 grid grid-cols-2 gap-4">
                   <div className="col-span-2"><label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Nome *</label><input value={empForm.nome} onChange={e => setEmpForm({ ...empForm, nome: e.target.value })} className="w-full px-3 py-2.5 bg-background border border-input rounded-xl text-sm focus:ring-2 focus:ring-ring" /></div>
-                  <div className="col-span-2"><label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Endereço</label><input value={empForm.endereco} onChange={e => setEmpForm({ ...empForm, endereco: e.target.value })} className="w-full px-3 py-2.5 bg-background border border-input rounded-xl text-sm focus:ring-2 focus:ring-ring" /></div>
-                  <div><label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Cidade</label><input value={empForm.cidade} onChange={e => setEmpForm({ ...empForm, cidade: e.target.value })} className="w-full px-3 py-2.5 bg-background border border-input rounded-xl text-sm focus:ring-2 focus:ring-ring" /></div>
-                  <div><label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Tipo</label><select value={empForm.tipo} onChange={e => setEmpForm({ ...empForm, tipo: e.target.value })} className="w-full px-3 py-2.5 bg-background border border-input rounded-xl text-sm"><option>Residencial</option><option>Comercial</option><option>Misto</option><option>Loteamento</option></select></div>
-                  <div><label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Status</label><select value={empForm.status} onChange={e => setEmpForm({ ...empForm, status: e.target.value })} className="w-full px-3 py-2.5 bg-background border border-input rounded-xl text-sm"><option>Lançamento</option><option>Em construção</option><option>Pronto</option><option>Entregue</option></select></div>
+                  <QuickSelect label="Endereço" value={empForm.endereco} onChange={(v) => setEmpForm({ ...empForm, endereco: v })} suggestions={getValues("construtora_empreendimentos", "endereco")} placeholder="Rua, número..." icon={<MapPin className="w-3 h-3" />} className="col-span-2" />
+                  <QuickSelect label="Cidade" value={empForm.cidade} onChange={(v) => setEmpForm({ ...empForm, cidade: v })} suggestions={getValues("construtora_empreendimentos", "cidade")} placeholder="Ex: Capão da Canoa" icon={<MapPin className="w-3 h-3" />} />
+                  <QuickSelectDropdown label="Tipo" value={empForm.tipo} onChange={(v) => setEmpForm({ ...empForm, tipo: v })} options={["Residencial", "Comercial", "Misto", "Loteamento"]} suggestions={getValues("construtora_empreendimentos", "tipo")} />
+                  <QuickSelectDropdown label="Status" value={empForm.status} onChange={(v) => setEmpForm({ ...empForm, status: v })} options={["Lançamento", "Em construção", "Pronto", "Entregue"]} />
                   <div><label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Total Unidades</label><input type="number" value={empForm.total_unidades} onChange={e => setEmpForm({ ...empForm, total_unidades: +e.target.value })} className="w-full px-3 py-2.5 bg-background border border-input rounded-xl text-sm focus:ring-2 focus:ring-ring" /></div>
-                  <div className="col-span-2"><label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Previsão de Entrega</label><input value={empForm.previsao_entrega} onChange={e => setEmpForm({ ...empForm, previsao_entrega: e.target.value })} placeholder="Ex: Dezembro/2027" className="w-full px-3 py-2.5 bg-background border border-input rounded-xl text-sm focus:ring-2 focus:ring-ring" /></div>
+                  <QuickSelect label="Previsão de Entrega" value={empForm.previsao_entrega} onChange={(v) => setEmpForm({ ...empForm, previsao_entrega: v })} suggestions={getValues("construtora_empreendimentos", "previsao_entrega")} placeholder="Ex: Dezembro/2027" icon={<Calendar className="w-3 h-3" />} className="col-span-2" />
                   <div className="col-span-2"><label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Descrição</label><textarea value={empForm.descricao} onChange={e => setEmpForm({ ...empForm, descricao: e.target.value })} rows={3} placeholder="Descreva o empreendimento, diferenciais, localização..." className="w-full px-3 py-2.5 bg-background border border-input rounded-xl text-sm resize-none focus:ring-2 focus:ring-ring" /></div>
                 </div>
                 <div className="flex justify-end gap-3 p-5 border-t border-border">
