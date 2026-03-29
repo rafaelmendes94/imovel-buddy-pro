@@ -205,36 +205,60 @@ export type Database = {
           config_type: string
           cover_photo_url: string | null
           created_at: string
+          email_contact: string | null
           footer_color: string
+          footer_text: string
           header_color: string
           id: string
+          instagram: string | null
+          logo_url: string | null
           owner_id: string | null
           profile_photo_url: string | null
+          site_title: string
+          slogan: string
+          title_color: string
           updated_at: string
+          whatsapp: string | null
         }
         Insert: {
           accent_color?: string
           config_type?: string
           cover_photo_url?: string | null
           created_at?: string
+          email_contact?: string | null
           footer_color?: string
+          footer_text?: string
           header_color?: string
           id?: string
+          instagram?: string | null
+          logo_url?: string | null
           owner_id?: string | null
           profile_photo_url?: string | null
+          site_title?: string
+          slogan?: string
+          title_color?: string
           updated_at?: string
+          whatsapp?: string | null
         }
         Update: {
           accent_color?: string
           config_type?: string
           cover_photo_url?: string | null
           created_at?: string
+          email_contact?: string | null
           footer_color?: string
+          footer_text?: string
           header_color?: string
           id?: string
+          instagram?: string | null
+          logo_url?: string | null
           owner_id?: string | null
           profile_photo_url?: string | null
+          site_title?: string
+          slogan?: string
+          title_color?: string
           updated_at?: string
+          whatsapp?: string | null
         }
         Relationships: []
       }
