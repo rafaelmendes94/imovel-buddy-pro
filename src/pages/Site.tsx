@@ -1317,6 +1317,16 @@ export default function Site() {
                 ))}
               </div>
             </div>
+            <div className="flex justify-center mt-4">
+              <Link
+                to="/parceiros"
+                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gray-900 text-white text-sm font-bold hover:bg-gray-800 transition-colors shadow-md hover:shadow-lg"
+              >
+                <Building2 className="w-4 h-4 text-amber-400" />
+                Ver Todos os Parceiros
+                <ChevronRight className="w-4 h-4" />
+              </Link>
+            </div>
           </section>
         )}
 
