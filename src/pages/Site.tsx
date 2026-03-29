@@ -1213,57 +1213,167 @@ export default function Site() {
 
           return (
             <section>
-              <SectionHeader title="Ranking de Corretores" subtitle="Os corretores que mais venderam" icon={Trophy} />
-              <div className="space-y-3">
+              <SectionHeader title="🏆 Ranking de Corretores" subtitle="Batalha de vendas — quem lidera?" icon={Trophy} />
+              
+              {/* Podium for top 3 */}
+              {ranking.length >= 3 && (
+                <div className="flex items-end justify-center gap-3 mb-8">
+                  {/* 2nd place */}
+                  <motion.div
+                    initial={{ y: 60, opacity: 0 }}
+                    whileInView={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.3, duration: 0.6, type: "spring" }}
+                    viewport={{ once: true }}
+                    className="flex flex-col items-center"
+                  >
+                    <img src={ranking[1].photo} alt={ranking[1].name} className="w-16 h-16 rounded-full object-cover border-4 border-gray-300 shadow-lg mb-2" />
+                    <p className="text-xs font-bold text-foreground truncate max-w-[100px]">{ranking[1].name}</p>
+                    <p className="text-[10px] text-muted-foreground">{ranking[1].count} vendas</p>
+                    <div className="w-24 bg-gradient-to-t from-gray-300 to-gray-200 rounded-t-xl mt-2 flex flex-col items-center justify-end shadow-inner" style={{ height: 100 }}>
+                      <Award className="w-6 h-6 text-gray-500 mb-1" />
+                      <span className="text-2xl font-black text-gray-600">2º</span>
+                      <p className="text-[9px] font-bold text-gray-500 mb-2">{formatCurrency(ranking[1].value)}</p>
+                    </div>
+                  </motion.div>
+
+                  {/* 1st place */}
+                  <motion.div
+                    initial={{ y: 80, opacity: 0 }}
+                    whileInView={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.1, duration: 0.7, type: "spring" }}
+                    viewport={{ once: true }}
+                    className="flex flex-col items-center relative"
+                  >
+                    <motion.div
+                      animate={{ rotate: [0, -5, 5, -5, 0], scale: [1, 1.05, 1] }}
+                      transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+                      className="absolute -top-3 z-10"
+                    >
+                      <span className="text-3xl">👑</span>
+                    </motion.div>
+                    <img src={ranking[0].photo} alt={ranking[0].name} className="w-20 h-20 rounded-full object-cover border-4 border-amber-400 shadow-xl mb-2 mt-6 ring-4 ring-amber-200/50" />
+                    <p className="text-sm font-extrabold text-foreground truncate max-w-[120px]">{ranking[0].name}</p>
+                    <p className="text-[10px] text-muted-foreground">{ranking[0].count} vendas</p>
+                    <div className="w-28 bg-gradient-to-t from-amber-400 to-yellow-300 rounded-t-xl mt-2 flex flex-col items-center justify-end shadow-lg relative overflow-hidden" style={{ height: 140 }}>
+                      <motion.div
+                        className="absolute inset-0 bg-gradient-to-t from-amber-500/30 to-transparent"
+                        animate={{ opacity: [0.3, 0.7, 0.3] }}
+                        transition={{ repeat: Infinity, duration: 2 }}
+                      />
+                      <Trophy className="w-8 h-8 text-amber-700 mb-1 relative z-10" />
+                      <span className="text-3xl font-black text-amber-800 relative z-10">1º</span>
+                      <p className="text-[10px] font-bold text-amber-700 mb-2 relative z-10">{formatCurrency(ranking[0].value)}</p>
+                    </div>
+                  </motion.div>
+
+                  {/* 3rd place */}
+                  <motion.div
+                    initial={{ y: 60, opacity: 0 }}
+                    whileInView={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.5, duration: 0.6, type: "spring" }}
+                    viewport={{ once: true }}
+                    className="flex flex-col items-center"
+                  >
+                    <img src={ranking[2].photo} alt={ranking[2].name} className="w-16 h-16 rounded-full object-cover border-4 border-orange-300 shadow-lg mb-2" />
+                    <p className="text-xs font-bold text-foreground truncate max-w-[100px]">{ranking[2].name}</p>
+                    <p className="text-[10px] text-muted-foreground">{ranking[2].count} vendas</p>
+                    <div className="w-24 bg-gradient-to-t from-orange-300 to-orange-200 rounded-t-xl mt-2 flex flex-col items-center justify-end shadow-inner" style={{ height: 80 }}>
+                      <Medal className="w-6 h-6 text-orange-600 mb-1" />
+                      <span className="text-2xl font-black text-orange-700">3º</span>
+                      <p className="text-[9px] font-bold text-orange-600 mb-2">{formatCurrency(ranking[2].value)}</p>
+                    </div>
+                  </motion.div>
+                </div>
+              )}
+
+              {/* Leaderboard with progress bars */}
+              <div className="space-y-2">
                 {displayRanking.map((broker, i) => {
                   const MedalIcon = medalIcons[i] || Star;
                   const slug = broker.name.toLowerCase().replace(/\s+/g, "-");
+                  const maxValue = ranking[0]?.value || 1;
+                  const percentage = Math.round((broker.value / maxValue) * 100);
+
                   return (
-                    <Link
+                    <motion.div
                       key={broker.name}
-                      to={`/corretor/${slug}`}
-                      className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg hover:border-amber-200 transition-all group"
+                      initial={{ x: -40, opacity: 0 }}
+                      whileInView={{ x: 0, opacity: 1 }}
+                      transition={{ delay: i * 0.08, duration: 0.4 }}
+                      viewport={{ once: true }}
                     >
-                      {/* Position */}
-                      <div className={cn(
-                        "w-12 h-12 rounded-xl flex items-center justify-center shadow-md flex-shrink-0",
-                        i < 3 ? `bg-gradient-to-br ${medalColors[i]} text-white` : "bg-gray-100 text-gray-500"
-                      )}>
-                        {i < 3 ? (
-                          <MedalIcon className="w-6 h-6" />
-                        ) : (
-                          <span className="text-lg font-extrabold">{i + 1}º</span>
-                        )}
-                      </div>
+                      <Link
+                        to={`/corretor/${slug}`}
+                        className="flex items-center gap-3 p-3 bg-card rounded-xl border border-border hover:shadow-lg hover:border-accent/50 transition-all group relative overflow-hidden"
+                      >
+                        {/* Animated progress bar background */}
+                        <motion.div
+                          className="absolute inset-y-0 left-0 rounded-xl"
+                          initial={{ width: 0 }}
+                          whileInView={{ width: `${percentage}%` }}
+                          transition={{ delay: 0.3 + i * 0.08, duration: 0.8, ease: "easeOut" }}
+                          viewport={{ once: true }}
+                          style={{
+                            background: i === 0 ? "linear-gradient(90deg, hsla(38, 92%, 50%, 0.12), hsla(45, 100%, 60%, 0.08))" :
+                                       i === 1 ? "linear-gradient(90deg, hsla(0, 0%, 75%, 0.1), transparent)" :
+                                       i === 2 ? "linear-gradient(90deg, hsla(25, 80%, 55%, 0.1), transparent)" :
+                                       "linear-gradient(90deg, hsla(220, 14%, 92%, 0.5), transparent)"
+                          }}
+                        />
 
-                      {/* Photo */}
-                      <img
-                        src={broker.photo}
-                        alt={broker.name}
-                        className="w-12 h-12 rounded-full object-cover border-2 border-gray-200 group-hover:border-amber-400 transition-colors flex-shrink-0"
-                      />
+                        {/* Position badge */}
+                        <div className={cn(
+                          "w-10 h-10 rounded-lg flex items-center justify-center shadow-sm flex-shrink-0 relative z-10",
+                          i === 0 ? "bg-gradient-to-br from-amber-400 to-yellow-500 text-white" :
+                          i === 1 ? "bg-gradient-to-br from-gray-300 to-gray-400 text-white" :
+                          i === 2 ? "bg-gradient-to-br from-orange-400 to-orange-500 text-white" :
+                          "bg-muted text-muted-foreground"
+                        )}>
+                          {i < 3 ? <MedalIcon className="w-5 h-5" /> : <span className="text-sm font-black">{i + 1}º</span>}
+                        </div>
 
-                      {/* Info */}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-gray-900 group-hover:text-amber-700 transition-colors">{broker.name}</p>
-                        <p className="text-xs text-gray-500">{broker.count} {broker.count === 1 ? "venda" : "vendas"}</p>
-                      </div>
+                        {/* Photo */}
+                        <img
+                          src={broker.photo}
+                          alt={broker.name}
+                          className={cn(
+                            "w-10 h-10 rounded-full object-cover flex-shrink-0 relative z-10 transition-all",
+                            i === 0 ? "border-2 border-amber-400 ring-2 ring-amber-200/50 group-hover:ring-amber-300/70" :
+                            "border-2 border-border group-hover:border-accent/50"
+                          )}
+                        />
 
-                      {/* Value */}
-                      <div className="text-right flex-shrink-0">
-                        <p className="text-lg font-extrabold text-emerald-600">{formatCurrency(broker.value)}</p>
-                        <p className="text-[10px] text-gray-400 uppercase tracking-wider">VGV vendido</p>
-                      </div>
+                        {/* Info */}
+                        <div className="flex-1 min-w-0 relative z-10">
+                          <div className="flex items-center gap-1.5">
+                            <p className="text-sm font-bold text-card-foreground group-hover:text-accent transition-colors truncate">{broker.name}</p>
+                            {i === 0 && <span className="text-xs">🔥</span>}
+                          </div>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-[10px] text-muted-foreground">{broker.count} {broker.count === 1 ? "venda" : "vendas"}</span>
+                            <span className="text-[10px] text-muted-foreground">•</span>
+                            <span className="text-[10px] font-semibold text-accent">{percentage}%</span>
+                          </div>
+                        </div>
 
-                      <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-amber-500 transition-colors flex-shrink-0" />
-                    </Link>
+                        {/* Value */}
+                        <div className="text-right flex-shrink-0 relative z-10">
+                          <p className={cn(
+                            "text-base font-extrabold",
+                            i === 0 ? "text-amber-600" : "text-emerald-600"
+                          )}>{formatCurrency(broker.value)}</p>
+                        </div>
+
+                        <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-accent transition-colors flex-shrink-0 relative z-10" />
+                      </Link>
+                    </motion.div>
                   );
                 })}
               </div>
-              <div className="flex justify-center mt-4">
+              <div className="flex justify-center mt-6">
                 <Link
                   to="/ranking"
-                  className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gray-900 text-white text-sm font-bold hover:bg-gray-800 transition-colors shadow-md hover:shadow-lg"
+                  className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-gray-900 to-gray-800 text-white text-sm font-bold hover:from-gray-800 hover:to-gray-700 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02]"
                 >
                   <Trophy className="w-4 h-4 text-amber-400" />
                   Ver Ranking Completo
