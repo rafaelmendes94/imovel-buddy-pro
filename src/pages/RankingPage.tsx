@@ -191,7 +191,7 @@ export default function RankingPage() {
             transition={{ delay: 0.6 }}
             className="text-gray-400 text-lg mb-10"
           >
-            Os melhores profissionais da MV Broker Conect
+            Os melhores profissionais da MV Connect
           </motion.p>
 
           {/* Stats */}
@@ -447,7 +447,7 @@ export default function RankingPage() {
       {/* Footer */}
       <footer className="bg-gray-900/50 border-t border-gray-800 py-8 relative z-10">
         <div className="max-w-5xl mx-auto px-4 text-center">
-          <p className="text-sm text-gray-500">© 2024 MV Broker Conect. Todos os direitos reservados.</p>
+          <p className="text-sm text-gray-500">© 2024 MV Connect. Todos os direitos reservados.</p>
         </div>
       </footer>
     </div>
