@@ -1790,15 +1790,30 @@ function SiteToggleButton({ propertyId, field, icon: Icon, activeColor, title }:
 }) {
   const [active, setActive] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [existsInDb, setExistsInDb] = useState(false);
 
   useEffect(() => {
+    // Check if UUID format first
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(propertyId);
+    if (!isUuid) {
+      setLoading(false);
+      setExistsInDb(false);
+      return;
+    }
     supabase.from("imoveis").select(field).eq("id", propertyId).maybeSingle().then(({ data }) => {
-      if (data) setActive(!!(data as any)[field]);
+      if (data) {
+        setExistsInDb(true);
+        setActive(!!(data as any)[field]);
+      }
       setLoading(false);
     });
   }, [propertyId, field]);
 
   const toggle = async () => {
+    if (!existsInDb) {
+      toast.error("Imóvel não cadastrado no banco de dados");
+      return;
+    }
     const newVal = !active;
     setActive(newVal);
     const { error } = await supabase.from("imoveis").update({ [field]: newVal } as any).eq("id", propertyId);
@@ -1811,6 +1826,18 @@ function SiteToggleButton({ propertyId, field, icon: Icon, activeColor, title }:
   };
 
   if (loading) return <div className="w-8 h-8 rounded-lg bg-muted animate-pulse" />;
+
+  if (!existsInDb) {
+    return (
+      <button
+        className="w-8 h-8 rounded-lg bg-muted/50 flex items-center justify-center opacity-40 cursor-not-allowed"
+        title={`${title}: Cadastre no banco primeiro`}
+        disabled
+      >
+        <Icon className="w-3.5 h-3.5 text-muted-foreground" />
+      </button>
+    );
+  }
 
   return (
     <button
@@ -1841,15 +1868,29 @@ const DESTAQUE_OPTIONS = [
 function DestaqueSelector({ propertyId }: { propertyId: string }) {
   const [value, setValue] = useState("");
   const [loading, setLoading] = useState(true);
+  const [existsInDb, setExistsInDb] = useState(false);
 
   useEffect(() => {
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(propertyId);
+    if (!isUuid) {
+      setLoading(false);
+      setExistsInDb(false);
+      return;
+    }
     supabase.from("imoveis").select("destaque_categoria").eq("id", propertyId).maybeSingle().then(({ data }) => {
-      if (data) setValue((data as any).destaque_categoria || "");
+      if (data) {
+        setExistsInDb(true);
+        setValue((data as any).destaque_categoria || "");
+      }
       setLoading(false);
     });
   }, [propertyId]);
 
   const handleChange = async (newVal: string) => {
+    if (!existsInDb) {
+      toast.error("Imóvel não cadastrado no banco de dados");
+      return;
+    }
     const prev = value;
     setValue(newVal);
     const { error } = await supabase.from("imoveis").update({
@@ -1867,7 +1908,17 @@ function DestaqueSelector({ propertyId }: { propertyId: string }) {
 
   if (loading) return <div className="h-8 w-24 rounded-lg bg-muted animate-pulse" />;
 
-  const current = DESTAQUE_OPTIONS.find((o) => o.value === value);
+  if (!existsInDb) {
+    return (
+      <select
+        disabled
+        className="h-8 px-2 rounded-lg text-[10px] font-bold uppercase tracking-wide border bg-muted/50 text-muted-foreground border-border opacity-40 cursor-not-allowed"
+        title="Cadastre no banco primeiro"
+      >
+        <option>— Sem banco</option>
+      </select>
+    );
+  }
 
   return (
     <select
