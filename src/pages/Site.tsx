@@ -112,15 +112,19 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, 
   const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${property.address}, ${property.city}`)}`;
 
   return (
-    <div className="group rounded-2xl overflow-hidden bg-white shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100">
-      <div className="relative h-52 overflow-hidden cursor-pointer" onClick={() => onSelect?.(property)}>
-        <img
-          src={imgs[imgIndex]}
-          alt={property.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-        {/* Sold stamp - only outside carousel */}
+    <div className="group rounded-xl overflow-hidden bg-card shadow-md hover:shadow-xl transition-all duration-300 border border-border">
+      {/* Image area */}
+      <div className="relative cursor-pointer" onClick={() => onSelect?.(property)}>
+        <div className="relative h-52 overflow-hidden">
+          <img
+            src={imgs[imgIndex]}
+            alt={property.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+        </div>
+
+        {/* Sold stamp */}
         {(property.status === "Vendido" && !hideStamp) && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
             <div className="bg-red-600/90 text-white text-2xl font-black uppercase tracking-[0.2em] px-8 py-3 -rotate-12 shadow-2xl border-4 border-red-400/50 rounded-sm" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.4)' }}>
@@ -128,20 +132,67 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, 
             </div>
           </div>
         )}
+
+        {/* Status badge */}
+        {property.status !== "Disponível" && (
+          <span className={cn(
+            "absolute top-3 left-3 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide z-20",
+            property.status === "Vendido" ? "bg-red-500 text-white" : "bg-amber-500 text-white"
+          )}>
+            {property.status}
+          </span>
+        )}
+
+        {/* Exclusivity badge */}
+        {property.exclusivityTerm && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onViewTerm?.(property.exclusivityTerm!); }}
+            className="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-amber-500/90 text-white backdrop-blur-sm hover:bg-amber-600 transition-colors z-20 shadow-md"
+          >
+            <FileCheck className="w-3 h-3" /> Ex.Assinada
+          </button>
+        )}
+
+        {/* Route selector */}
+        <button
+          onClick={(e) => { e.stopPropagation(); onToggleRoute?.(property.id); }}
+          className={cn(
+            "absolute z-20 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all hover:scale-110",
+            property.exclusivityTerm ? "top-12 right-3" : "top-3 right-3",
+            isInRoute ? "bg-blue-600 text-white" : "bg-foreground/30 text-white hover:bg-blue-600"
+          )}
+          title={isInRoute ? "Remover da rota" : "Adicionar à rota"}
+        >
+          <Route className={cn("w-4 h-4", isInRoute && "fill-current")} />
+        </button>
+
+        {/* Favorite */}
+        <button
+          onClick={(e) => { e.stopPropagation(); onToggleFavorite?.(property.id); }}
+          className={cn(
+            "absolute z-20 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all hover:scale-110",
+            property.exclusivityTerm ? "top-[5.5rem] right-3" : "top-12 right-3",
+            isFavorited ? "bg-red-500 text-white" : "bg-foreground/30 text-white hover:bg-red-500"
+          )}
+          title={isFavorited ? "Remover dos favoritos" : "Favoritar"}
+        >
+          <Heart className={cn("w-4 h-4", isFavorited && "fill-current")} />
+        </button>
+
         {/* Arrow navigation */}
         {imgs.length > 1 && (
           <>
             <button
               onClick={(e) => { e.stopPropagation(); setImgIndex((prev) => (prev > 0 ? prev - 1 : imgs.length - 1)); }}
-              className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/80 hover:bg-white flex items-center justify-center shadow opacity-0 group-hover:opacity-100 transition-opacity z-20"
+              className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-foreground/50 backdrop-blur-sm hover:bg-foreground/70 flex items-center justify-center shadow opacity-0 group-hover:opacity-100 transition-opacity z-20"
             >
-              <ChevronLeft className="w-4 h-4 text-gray-800" />
+              <ChevronLeft className="w-4 h-4 text-white" />
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); setImgIndex((prev) => (prev < imgs.length - 1 ? prev + 1 : 0)); }}
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/80 hover:bg-white flex items-center justify-center shadow opacity-0 group-hover:opacity-100 transition-opacity z-20"
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-foreground/50 backdrop-blur-sm hover:bg-foreground/70 flex items-center justify-center shadow opacity-0 group-hover:opacity-100 transition-opacity z-20"
             >
-              <ChevronRight className="w-4 h-4 text-gray-800" />
+              <ChevronRight className="w-4 h-4 text-white" />
             </button>
             <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex gap-1">
               {imgs.map((_, i) => (
@@ -150,122 +201,72 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, 
             </div>
           </>
         )}
-        {property.status !== "Disponível" && (
-          <span className={cn(
-            "absolute top-3 left-3 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide z-20",
-            property.status === "Vendido" ? "bg-red-500 text-white" :
-            "bg-amber-500 text-white"
-          )}>
-            {property.status}
-          </span>
-        )}
-        {property.exclusivityTerm && (
-          <button
-            onClick={(e) => { e.stopPropagation(); onViewTerm?.(property.exclusivityTerm!); }}
-            className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/90 text-white backdrop-blur-sm hover:bg-amber-600 transition-colors z-20 shadow-md"
-            title="Ver termo de exclusividade"
-          >
-            <FileCheck className="w-3 h-3" /> Ex.Assinada
-          </button>
-        )}
-        {/* Route selector button */}
-        <button
-          onClick={(e) => { e.stopPropagation(); onToggleRoute?.(property.id); }}
-          className={cn(
-            "absolute z-20 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all hover:scale-110",
-            property.exclusivityTerm ? "top-12 right-3" : "top-3 right-3",
-            isInRoute
-              ? "bg-blue-600 text-white"
-              : "bg-white/80 text-gray-600 hover:bg-white hover:text-blue-600"
-          )}
-          title={isInRoute ? "Remover da rota" : "Adicionar à rota"}
-        >
-          <Route className={cn("w-4 h-4", isInRoute && "fill-current")} />
-        </button>
-        {/* Favorite heart button */}
-        <button
-          onClick={(e) => { e.stopPropagation(); onToggleFavorite?.(property.id); }}
-          className={cn(
-            "absolute z-20 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all hover:scale-110",
-            property.exclusivityTerm ? "top-[5.5rem] right-3" : "top-12 right-3",
-            isFavorited
-              ? "bg-red-500 text-white"
-              : "bg-white/80 text-gray-600 hover:bg-white hover:text-red-500"
-          )}
-          title={isFavorited ? "Remover dos favoritos" : "Favoritar"}
-        >
-          <Heart className={cn("w-4 h-4", isFavorited && "fill-current")} />
-        </button>
+
+        {/* Price + badges */}
         <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
           <p className="text-xl font-bold text-white drop-shadow-lg">{formatCurrency(property.price)}</p>
-          <div className="flex gap-1.5">
-            {property.seaView && (
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/90 text-white backdrop-blur-sm flex items-center gap-1">
-                <Waves className="w-3 h-3" /> Mar
-              </span>
-            )}
-            {property.decorated && (
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/90 text-white backdrop-blur-sm flex items-center gap-1">
-                <Paintbrush className="w-3 h-3" /> Dec.
-              </span>
-            )}
+          <div className="flex gap-1">
+            {property.seaView && <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-blue-500/90 text-white backdrop-blur-sm flex items-center gap-0.5"><Waves className="w-2.5 h-2.5" /> Mar</span>}
+            {property.decorated && <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-purple-500/90 text-white backdrop-blur-sm flex items-center gap-0.5"><Paintbrush className="w-2.5 h-2.5" /> Dec.</span>}
           </div>
         </div>
       </div>
+
+      {/* Content area */}
       <div className="p-4 space-y-3">
-        <h3 className="font-bold text-gray-900 text-base leading-tight cursor-pointer hover:text-amber-700 transition-colors" onClick={() => onSelect?.(property)}>{property.title}</h3>
-        {(property.empreendimento || unitParts.length > 0) && (
-          <div className="flex flex-wrap items-center gap-1.5">
-            {property.empreendimento && (
-              <Link
-                to={`/empreendimento/${property.empreendimento.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`}
-                className="text-[13px] font-bold text-black uppercase tracking-wide bg-white px-2.5 py-0.5 rounded-md border border-black hover:bg-gray-100 transition-colors"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {property.empreendimento}
-              </Link>
-            )}
-            {unitParts.map((part) => (
-              <span key={part} className="text-[11px] font-semibold text-gray-600 bg-gray-100 px-2 py-0.5 rounded-md">
-                {part}
-              </span>
-            ))}
-          </div>
-        )}
-        <a
-          href={googleMapsUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-1 text-gray-500 text-xs hover:text-amber-600 transition-colors"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <MapPin className="w-3.5 h-3.5" />
-          <span>{property.address}, {property.city}</span>
-        </a>
-        {(property.bedrooms > 0 || property.area > 0) && (
-          <div className="flex items-center gap-4 pt-2 border-t border-gray-100 text-xs text-gray-600">
-            <span className="flex items-center gap-1"><Ruler className="w-3.5 h-3.5" />{property.area}m²</span>
-            {property.bedrooms > 0 && <span className="flex items-center gap-1"><BedDouble className="w-3.5 h-3.5" />{property.bedrooms} quartos</span>}
-            {property.bathrooms > 0 && <span className="flex items-center gap-1"><Bath className="w-3.5 h-3.5" />{property.bathrooms} ban.</span>}
-            {property.parking > 0 && <span className="flex items-center gap-1"><Car className="w-3.5 h-3.5" />{property.parking} vagas</span>}
-          </div>
-        )}
+        <div>
+          <h3 className="font-semibold text-card-foreground text-sm cursor-pointer hover:text-primary transition-colors uppercase"
+            onClick={() => onSelect?.(property)}
+          >{property.title}</h3>
+          {(property.empreendimento || unitParts.length > 0) && (
+            <div className="flex flex-wrap items-center gap-1 mt-1">
+              {property.empreendimento && (
+                <Link
+                  to={`/empreendimento/${property.empreendimento.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`}
+                  className="text-[13px] font-bold text-foreground uppercase tracking-wide bg-white px-2.5 py-0.5 rounded-md border border-foreground/20 hover:bg-muted transition-colors"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {property.empreendimento}
+                </Link>
+              )}
+              {unitParts.map((part) => (
+                <span key={part} className="text-[10px] font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">{part}</span>
+              ))}
+            </div>
+          )}
+          <a
+            href={googleMapsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 mt-1 text-muted-foreground text-xs hover:text-primary transition-colors"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <MapPin className="w-3 h-3" />
+            <span>{property.address}, {property.city}</span>
+          </a>
+        </div>
+
+        {/* Specs row */}
+        <div className="flex items-center gap-4 text-xs text-muted-foreground py-2 border-y border-border">
+          {property.area > 0 && <span className="flex items-center gap-1"><Ruler className="w-3.5 h-3.5" /> {property.area}m²</span>}
+          {property.bedrooms > 0 && <span className="flex items-center gap-1"><BedDouble className="w-3.5 h-3.5" /> {property.bedrooms}</span>}
+          {property.bathrooms > 0 && <span className="flex items-center gap-1"><Bath className="w-3.5 h-3.5" /> {property.bathrooms}</span>}
+          {property.parking > 0 && <span className="flex items-center gap-1"><Car className="w-3.5 h-3.5" /> {property.parking}</span>}
+        </div>
+
+        {/* Payment conditions */}
         {property.paymentConditions && property.paymentConditions.length > 0 && (
-          <div className="flex flex-wrap items-center gap-1.5">
+          <div className="flex flex-wrap gap-1">
             {property.paymentConditions.map((cond) => (
-              <span key={cond} className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-700">
+              <span key={cond} className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-600">
                 {cond}
               </span>
             ))}
-            {property.paymentConditionsOther && (
-              <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-gray-100 text-gray-600">
-                {property.paymentConditionsOther}
-              </span>
-            )}
           </div>
         )}
 
-        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+        {/* Broker + WhatsApp */}
+        <div className="flex items-center justify-between pt-2 border-t border-border">
           <Link
             to={`/corretor/${property.broker.toLowerCase().replace(/\s+/g, "-")}`}
             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
@@ -273,21 +274,21 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, 
             <img
               src={broker.photo}
               alt={property.broker}
-              className="w-8 h-8 rounded-full object-cover border-2 border-amber-400"
+              className="w-7 h-7 rounded-full object-cover border-2 border-accent"
             />
             <div>
-              <p className="text-xs font-semibold text-amber-700 leading-tight hover:underline">{property.broker}</p>
-              <p className="text-[10px] text-gray-400">Corretor(a)</p>
+              <p className="text-[11px] font-semibold text-foreground">{property.broker}</p>
+              <p className="text-[9px] text-muted-foreground">Corretor(a)</p>
             </div>
           </Link>
           <a
             href={`https://wa.me/${broker.whatsapp}?text=${whatsappMessage}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500 text-white text-xs font-bold hover:bg-emerald-600 transition-colors shadow-sm"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-600 text-white text-[11px] font-bold hover:bg-emerald-700 transition-colors shadow-sm"
+            onClick={(e) => e.stopPropagation()}
           >
-            <Phone className="w-3.5 h-3.5" />
-            WhatsApp
+            <Phone className="w-3 h-3" /> WhatsApp
           </a>
         </div>
       </div>
