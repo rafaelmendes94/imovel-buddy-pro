@@ -1559,13 +1559,17 @@ function PropertyRow({
             <span className="truncate">{property.city}{property.neighborhood ? ` • ${property.neighborhood}` : ""} • {property.address}</span>
           </button>
 
-          {/* Ver dados completos */}
-          <button
-            onClick={() => onSelect?.(property)}
-            className="mt-1 py-1.5 px-3 rounded-lg bg-primary/10 text-primary text-[11px] font-bold hover:bg-primary/20 transition-colors flex items-center justify-center gap-1.5 w-fit"
-          >
-            <Eye className="w-3.5 h-3.5" /> Ver dados completos
-          </button>
+          {/* Ver dados completos + toggles */}
+          <div className="flex items-center gap-2 mt-1 flex-wrap">
+            <button
+              onClick={() => onSelect?.(property)}
+              className="py-1.5 px-3 rounded-lg bg-primary/10 text-primary text-[11px] font-bold hover:bg-primary/20 transition-colors flex items-center justify-center gap-1.5"
+            >
+              <Eye className="w-3.5 h-3.5" /> Ver dados completos
+            </button>
+            <SiteToggleButton propertyId={property.id} field="ativo_site" icon={Globe} activeColor="text-emerald-500 bg-emerald-500/20" title="Ativo no Site" />
+            <SiteToggleButton propertyId={property.id} field="destaque_home" icon={Star} activeColor="text-amber-500 bg-amber-500/20" title="Destaque Home" />
+          </div>
         </div>
 
         {/* ── COL 3: Financeiro ── */}
@@ -1737,8 +1741,10 @@ function PropertyRow({
 
         {/* ── COL 5: Ações (ícones) ── */}
         <div className="w-full md:w-[52px] flex-shrink-0 flex flex-row md:flex-col items-center justify-start gap-1.5 py-2 px-3 md:px-0" onClick={(e) => e.stopPropagation()}>
-          <SiteToggleButton propertyId={property.id} field="ativo_site" icon={Globe} activeColor="text-emerald-500 bg-emerald-500/20" title="Ativo no Site" />
-          <SiteToggleButton propertyId={property.id} field="destaque_home" icon={Star} activeColor="text-amber-500 bg-amber-500/20" title="Destaque Home" />
+          <button
+            onClick={() => onSelect?.(property)}
+            className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors" title="Editar"
+          ><Pencil className="w-3.5 h-3.5 text-primary" /></button>
           <button
             onClick={() => onSelect?.(property)}
             className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors" title="Editar"
