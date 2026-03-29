@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { BackButton } from "@/components/BackButton";
@@ -15,7 +16,7 @@ import {
   Phone, Heart, FileCheck, Eye, Repeat, CreditCard, DollarSign, Ban,
   Share2, CalendarCheck, CalendarClock, AlertTriangle, Pencil, Image,
   FolderDown, User, ShieldCheck, Percent, Gift, BarChart3, FileSignature,
-  TrendingUp, Wallet, RefreshCw, ArrowUp, ArrowDown, Banknote, Copy, Maximize2, Scan, Route,
+  TrendingUp, Wallet, RefreshCw, ArrowUp, ArrowDown, Banknote, Copy, Maximize2, Scan, Route, Globe,
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -1736,6 +1737,8 @@ function PropertyRow({
 
         {/* ── COL 5: Ações (ícones) ── */}
         <div className="w-full md:w-[52px] flex-shrink-0 flex flex-row md:flex-col items-center justify-start gap-1.5 py-2 px-3 md:px-0" onClick={(e) => e.stopPropagation()}>
+          <SiteToggleButton propertyId={property.id} field="ativo_site" icon={Globe} activeColor="text-emerald-500 bg-emerald-500/20" title="Ativo no Site" />
+          <SiteToggleButton propertyId={property.id} field="destaque_home" icon={Star} activeColor="text-amber-500 bg-amber-500/20" title="Destaque Home" />
           <button
             onClick={() => onSelect?.(property)}
             className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors" title="Editar"
