@@ -1293,10 +1293,10 @@ export default function Site() {
           );
         })()}
 
-        {/* Parceiros MV CONNECT */}
+        {/* Parceiros MV BROKER CONNECT */}
         {!searchTerm && !hasActiveFilters && activeCategory === "todos" && (
           <section>
-            <SectionHeader title="Parceiros MV CONNECT" subtitle="Empresas que confiam na nossa rede" icon={Building2} />
+            <SectionHeader title="Parceiros MV BROKER CONNECT" subtitle="Empresas que confiam na nossa rede" icon={Building2} />
             <div className="relative overflow-hidden">
               <div className="flex animate-scroll gap-8 items-center">
                 {[
@@ -1480,7 +1480,7 @@ export default function Site() {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-xs text-gray-500">
-            © 2024 MV CONNECT. Todos os direitos reservados.
+            © 2024 MV BROKER CONNECT. Todos os direitos reservados.
           </div>
         </div>
       </footer>

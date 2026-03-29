@@ -106,7 +106,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
         {!collapsed && (
           <div className="overflow-hidden">
             <h1 className="text-sm font-bold text-sidebar-accent-foreground tracking-tight">
-              MV CONNECT
+              MV BROKER CONNECT
             </h1>
             <p className="text-[10px] text-sidebar-foreground">
               Gestão Imobiliária

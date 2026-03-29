@@ -1117,7 +1117,7 @@ export default function BrokerSite() {
               <Phone className="w-4 h-4" /> WhatsApp
             </a>
           </div>
-          <p className="text-xs text-gray-600 pt-4">© 2024 MV CONNECT. Todos os direitos reservados.</p>
+          <p className="text-xs text-gray-600 pt-4">© 2024 MV BROKER CONNECT. Todos os direitos reservados.</p>
         </div>
       </footer>
       <PropertyDetailModal

@@ -68,7 +68,7 @@ export function AdminSidebar() {
           <Crown className="w-5 h-5 text-primary" />
         </div>
         <div className="overflow-hidden">
-          <h1 className="text-sm font-bold text-sidebar-accent-foreground tracking-tight">MV CONNECT</h1>
+          <h1 className="text-sm font-bold text-sidebar-accent-foreground tracking-tight">MV BROKER CONNECT</h1>
           <p className="text-[10px] text-sidebar-foreground truncate">{profile?.full_name || "Super Admin"}</p>
         </div>
       </div>

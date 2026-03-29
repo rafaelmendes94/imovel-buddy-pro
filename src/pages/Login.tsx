@@ -50,7 +50,7 @@ export default function Login() {
           <div className="mx-auto w-14 h-14 rounded-2xl gradient-gold flex items-center justify-center mb-4">
             <Home className="w-7 h-7 text-primary" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">MV CONNECT</h1>
+          <h1 className="text-2xl font-bold text-foreground">MV BROKER CONNECT</h1>
           <p className="text-muted-foreground text-sm mt-1">Entre na sua conta</p>
         </div>
 
