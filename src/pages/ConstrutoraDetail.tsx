@@ -70,8 +70,6 @@ export default function ConstrutoraDetail() {
     { table: "construtora_empreendimentos", column: "tipo" },
     { table: "construtora_empreendimentos", column: "previsao_entrega" },
   ]);
-  const { id } = useParams<{ id: string }>();
-  const { user } = useAuth();
   const [construtora, setConstrutora] = useState<Construtora | null>(null);
   const [empreendimentos, setEmpreendimentos] = useState<Empreendimento[]>([]);
   const [unidades, setUnidades] = useState<Record<string, Unidade[]>>({});
