@@ -125,7 +125,7 @@ const propertiesWithCodes = initialProperties.map((p, i) => ({
 export default function Properties() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [propertyList, setPropertyList] = useState<Property[]>(propertiesWithCodes);
+  const [propertyList, setPropertyList] = useState<Property[]>([]);
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<Category>("todos");
   const [view, setView] = useState<"grid" | "list" | "map">("grid");
@@ -144,15 +144,10 @@ export default function Properties() {
   const [filterCode, setFilterCode] = useState("");
   const [filterParking, setFilterParking] = useState("");
   const [sortBy, setSortBy] = useState<"default" | "price-asc" | "price-desc" | "name-asc" | "name-desc" | "updated" | "created">("default");
-  
+
   // Restore selected property from URL param
   const propertyIdFromUrl = searchParams.get("property");
-  const [selectedProperty, setSelectedPropertyState] = useState<Property | null>(() => {
-    if (propertyIdFromUrl) {
-      return propertiesWithCodes.find(p => p.id === propertyIdFromUrl) || null;
-    }
-    return null;
-  });
+  const [selectedProperty, setSelectedPropertyState] = useState<Property | null>(null);
 
   const setSelectedProperty = (p: Property | null) => {
     setSelectedPropertyState(p);
