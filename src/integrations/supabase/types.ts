@@ -21,6 +21,7 @@ export type Database = {
           cidade: string
           created_at: string
           descricao: string | null
+          destaque_home: boolean
           endereco: string
           id: string
           imagens: string[] | null
@@ -38,6 +39,7 @@ export type Database = {
           cidade?: string
           created_at?: string
           descricao?: string | null
+          destaque_home?: boolean
           endereco?: string
           id?: string
           imagens?: string[] | null
@@ -55,6 +57,7 @@ export type Database = {
           cidade?: string
           created_at?: string
           descricao?: string | null
+          destaque_home?: boolean
           endereco?: string
           id?: string
           imagens?: string[] | null
