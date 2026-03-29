@@ -227,6 +227,7 @@ export default function PartnerDetail() {
   const [authorName, setAuthorName] = useState("");
   const [localComments, setLocalComments] = useState<typeof partnersData[string]["comments"]>([]);
   const [submitted, setSubmitted] = useState(false);
+  const [showConfig, setShowConfig] = useState(false);
 
   if (!partner) {
     return (
