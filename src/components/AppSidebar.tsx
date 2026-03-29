@@ -7,6 +7,7 @@ import {
   Clapperboard, GripVertical, Landmark,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import logoImg from "@/assets/logo.png";
 
 interface NavItem {
   icon: React.ComponentType<{ className?: string }>;

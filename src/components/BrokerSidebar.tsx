@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
+import logoImg from "@/assets/logo.png";
 
 const allModules: Record<string, { icon: React.ComponentType<{ className?: string }>; label: string; path: string }> = {
   imoveis: { icon: Building2, label: "Imóveis", path: "/painel/imoveis" },
