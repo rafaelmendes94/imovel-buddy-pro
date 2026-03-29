@@ -410,14 +410,15 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, 
             </div>
           </>
         )}
-        <span className={cn(
-          "absolute top-3 left-3 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide",
-          property.status === "Vendido" ? "bg-red-500 text-white" :
-          property.status === "Reservado" ? "bg-amber-500 text-white" :
-          "bg-emerald-500 text-white"
-        )}>
-          {property.status}
-        </span>
+        {property.status !== "Disponível" && (
+          <span className={cn(
+            "absolute top-3 left-3 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide",
+            property.status === "Vendido" ? "bg-red-500 text-white" :
+            "bg-amber-500 text-white"
+          )}>
+            {property.status}
+          </span>
+        )}
         {property.exclusivityTerm && (
           <button
             onClick={(e) => { e.stopPropagation(); onViewTerm?.(property.exclusivityTerm!); }}
