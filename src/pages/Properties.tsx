@@ -1840,12 +1840,14 @@ function SiteToggleButton({ propertyId, field, icon: Icon, activeColor, title, s
     <button
       onClick={toggle}
       className={cn(
-        "w-8 h-8 rounded-lg flex items-center justify-center transition-all",
+        "rounded-lg flex items-center justify-center gap-1.5 transition-all",
+        showLabel ? "h-8 px-3" : "w-8 h-8",
         active ? activeColor : "bg-secondary text-muted-foreground hover:bg-muted"
       )}
       title={`${title}: ${active ? "Ativo" : "Inativo"}`}
     >
       <Icon className={cn("w-3.5 h-3.5", active && "fill-current")} />
+      {showLabel && <span className="text-[10px] font-bold uppercase tracking-wide">{active ? title : title}</span>}
     </button>
   );
 }
