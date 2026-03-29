@@ -65,6 +65,7 @@ interface FormData {
   vistaMar: boolean;
   decorado: boolean;
   aceitaPermuta: boolean;
+  destaqueHome: boolean;
   condicoesPagemento: string[];
   infraestrutura: string[];
   outrasCaracteristicas: string[];
@@ -78,7 +79,7 @@ const initialForm: FormData = {
   descricao: '', proprietario: '', proprietarioTelefone: '', proprietarioTipo: '',
   condicao: '', padrao: '', posicaoPredio: '', posicaoSolar: '', vista: '',
   localChaves: '', termoExclusividade: '',
-  vistaMar: false, decorado: false, aceitaPermuta: false,
+  vistaMar: false, decorado: false, aceitaPermuta: false, destaqueHome: false,
   condicoesPagemento: [], infraestrutura: [], outrasCaracteristicas: [],
 };
 

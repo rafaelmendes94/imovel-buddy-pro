@@ -301,39 +301,6 @@ const siteProperties = [
   },
 ];
 
-const condoProperties = [
-  {
-    id: "condo-1",
-    name: "Condomínio Praia Dourada",
-    image: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=600&h=400&fit=crop",
-    city: "Capão da Canoa",
-    units: 120,
-    available: 18,
-    monthlyFee: 800,
-    type: "Horizontal",
-  },
-  {
-    id: "condo-2",
-    name: "Residencial Atlântida Sul",
-    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&h=400&fit=crop",
-    city: "Xangri-lá",
-    units: 80,
-    available: 12,
-    monthlyFee: 1200,
-    type: "Vertical",
-  },
-  {
-    id: "condo-3",
-    name: "Village das Dunas",
-    image: "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?w=600&h=400&fit=crop",
-    city: "Xangri-lá",
-    units: 60,
-    available: 22,
-    monthlyFee: 650,
-    type: "Horizontal",
-  },
-];
-
 const available = siteProperties.filter((p) => p.status === "Disponível");
 const soldProperties = siteProperties.filter((p) => p.status === "Vendido" || p.status === "Reservado");
 const soldValue = soldProperties.reduce((sum, p) => sum + p.price, 0);
@@ -347,6 +314,11 @@ const decorated = available.filter((p) => p.decorated);
 const seaViewProperties = available.filter((p) => p.seaView);
 const exchangeProperties = available.filter((p) => p.acceptsExchange);
 const withPaymentConditions = available.filter((p) => p.paymentConditions);
+// Condominium houses: houses/properties in condominiums
+const condoHouses = available.filter((p) =>
+  (p.type === "Casa" || p.type === "Condomínio") &&
+  p.empreendimento && p.empreendimento.toLowerCase().includes("cond")
+);
 
 // Separate lots into condo lots vs neighborhood lots
 const condoLots = lots.filter((l) => l.title.toLowerCase().includes("condomínio") || l.title.toLowerCase().includes("reserva"));
