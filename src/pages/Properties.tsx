@@ -15,7 +15,7 @@ import {
   Phone, Heart, FileCheck, Eye, Repeat, CreditCard, DollarSign, Ban,
   Share2, CalendarCheck, CalendarClock, AlertTriangle, Pencil, Image,
   FolderDown, User, ShieldCheck, Percent, Gift, BarChart3, FileSignature,
-  TrendingUp, Wallet, RefreshCw, ArrowUp, ArrowDown, Banknote, Copy, Maximize2, Scan,
+  TrendingUp, Wallet, RefreshCw, ArrowUp, ArrowDown, Banknote, Copy, Maximize2, Scan, Route,
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -166,6 +166,9 @@ export default function Properties() {
   const [favoriteIds, setFavoriteIds] = useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem("mv-favorites") || "[]"); } catch { return []; }
   });
+  const [routeIds, setRouteIds] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem("mv-route-ids") || "[]"); } catch { return []; }
+  });
   const [filterFreshness, setFilterFreshness] = useState<"all" | "30" | "60" | "90">("all");
   const [showInactive, setShowInactive] = useState(false);
   const [categories, setCategories] = useState(getSavedCategoryOrder);
@@ -200,6 +203,14 @@ export default function Properties() {
     setFavoriteIds((prev) => {
       const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
       localStorage.setItem("mv-favorites", JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const toggleRoute = (id: string) => {
+    setRouteIds((prev) => {
+      const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
+      localStorage.setItem("mv-route-ids", JSON.stringify(next));
       return next;
     });
   };
@@ -379,6 +390,7 @@ export default function Properties() {
   }, [filtered, sortBy]);
 
   const favoritedProperties = propertyList.filter((p) => favoriteIds.includes(p.id));
+  const routeProperties = propertyList.filter((p) => routeIds.includes(p.id));
 
   // Stats
   const totalVGV = propertyList.filter(p => p.status === "Disponível").reduce((s, p) => s + p.price, 0);
@@ -769,6 +781,8 @@ export default function Properties() {
                 onViewTerm={setViewingTerm}
                 isFavorited={favoriteIds.includes(property.id)}
                 onToggleFavorite={toggleFavorite}
+                isInRoute={routeIds.includes(property.id)}
+                onToggleRoute={toggleRoute}
                 onFilterByTitle={(title) => { setSearch(title.split(" ").slice(0, 2).join(" ")); setActiveCategory("todos"); }}
                 onFilterByCondition={(cond) => { setFilterCondition(cond); setShowFilters(true); setActiveCategory("todos"); }}
                 onFilterByOwner={(owner) => { setFilterOwner(owner); setShowFilters(true); setActiveCategory("todos"); }}
@@ -785,6 +799,8 @@ export default function Properties() {
                 onSelect={setSelectedProperty}
                 isFavorited={favoriteIds.includes(property.id)}
                 onToggleFavorite={toggleFavorite}
+                isInRoute={routeIds.includes(property.id)}
+                onToggleRoute={toggleRoute}
                 onFilterByTitle={(title) => { setSearch(title.split(" ").slice(0, 2).join(" ")); setActiveCategory("todos"); }}
                 onFilterByCondition={(cond) => { setFilterCondition(cond); setShowFilters(true); setActiveCategory("todos"); }}
                 onFilterByOwner={(owner) => { setFilterOwner(owner); setShowFilters(true); setActiveCategory("todos"); }}
@@ -814,7 +830,7 @@ export default function Properties() {
       </div>
 
       {/* Floating tools */}
-      <RoutePlanner properties={favoritedProperties} />
+      <RoutePlanner properties={routeProperties} />
       <SharkAI properties={propertyList} onSelectProperty={setSelectedProperty} />
 
       {/* Property Detail Modal */}
@@ -975,7 +991,7 @@ function SoldCelebration() {
 
 // ---- PropertyCard (enhanced) ----
 function PropertyCard({
-  property, onStatusChange, onSelect, onViewTerm, isFavorited, onToggleFavorite, onFilterByTitle, onFilterByCondition,
+  property, onStatusChange, onSelect, onViewTerm, isFavorited, onToggleFavorite, isInRoute, onToggleRoute, onFilterByTitle, onFilterByCondition,
 }: {
   property: Property;
   onStatusChange: (id: string, status: Property["status"]) => void;
@@ -983,6 +999,8 @@ function PropertyCard({
   onViewTerm?: (url: string) => void;
   isFavorited?: boolean;
   onToggleFavorite?: (id: string) => void;
+  isInRoute?: boolean;
+  onToggleRoute?: (id: string) => void;
   onFilterByTitle?: (title: string) => void;
   onFilterByCondition?: (cond: string) => void;
   onFilterByOwner?: (owner: string) => void;
@@ -1033,12 +1051,24 @@ function PropertyCard({
           </button>
         )}
 
+        {/* Route selector */}
+        <button onClick={(e) => { e.stopPropagation(); onToggleRoute?.(property.id); }}
+          className={cn("absolute z-20 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all hover:scale-110",
+            property.exclusivityTerm ? "top-12 right-3" : "top-3 right-3",
+            isInRoute ? "bg-blue-600 text-white" : "bg-foreground/30 text-white hover:bg-blue-600"
+          )}
+          title={isInRoute ? "Remover da rota" : "Adicionar à rota"}
+        >
+          <Route className={cn("w-4 h-4", isInRoute && "fill-current")} />
+        </button>
+
         {/* Favorite */}
         <button onClick={(e) => { e.stopPropagation(); onToggleFavorite?.(property.id); }}
           className={cn("absolute z-20 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all hover:scale-110",
-            property.exclusivityTerm ? "top-12 right-3" : "top-3 right-3",
+            property.exclusivityTerm ? "top-[5.5rem] right-3" : "top-12 right-3",
             isFavorited ? "bg-red-500 text-white" : "bg-foreground/30 text-white hover:bg-red-500"
           )}
+          title={isFavorited ? "Remover dos favoritos" : "Favoritar"}
         >
           <Heart className={cn("w-4 h-4", isFavorited && "fill-current")} />
         </button>
@@ -1341,13 +1371,15 @@ const cleanEmpreendimentoName = (name: string) => name.replace(/^(Ed\.\s*|Cond\.
 
 // ---- PropertyRow (redesigned) ----
 function PropertyRow({
-  property, onStatusChange, onSelect, isFavorited, onToggleFavorite, onFilterByTitle, onFilterByCondition, onFilterByOwner, onPriceChange, allProperties, onDealLabelChange, onNavigateToValuation, onNavigateToContract, onQuickUpdate, onDuplicate,
+  property, onStatusChange, onSelect, isFavorited, onToggleFavorite, isInRoute, onToggleRoute, onFilterByTitle, onFilterByCondition, onFilterByOwner, onPriceChange, allProperties, onDealLabelChange, onNavigateToValuation, onNavigateToContract, onQuickUpdate, onDuplicate,
 }: {
   property: Property;
   onStatusChange: (id: string, status: Property["status"]) => void;
   onSelect?: (p: Property) => void;
   isFavorited?: boolean;
   onToggleFavorite?: (id: string) => void;
+  isInRoute?: boolean;
+  onToggleRoute?: (id: string) => void;
   onFilterByTitle?: (title: string) => void;
   onFilterByCondition?: (cond: string) => void;
   onFilterByOwner?: (owner: string) => void;
@@ -1402,12 +1434,23 @@ function PropertyRow({
               {ownerTypeInfo.label}
             </span>
           )}
+          {/* Route selector on photo */}
+          <button
+            onClick={(e) => { e.stopPropagation(); onToggleRoute?.(property.id); }}
+            className={cn("absolute top-2 right-2 z-10 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all hover:scale-110",
+              isInRoute ? "bg-blue-600 text-white" : "bg-foreground/30 text-white hover:bg-blue-600"
+            )}
+            title={isInRoute ? "Remover da rota" : "Adicionar à rota"}
+          >
+            <Route className={cn("w-4 h-4", isInRoute && "fill-current")} />
+          </button>
           {/* Favorite heart on photo */}
           <button
             onClick={(e) => { e.stopPropagation(); onToggleFavorite?.(property.id); }}
-            className={cn("absolute top-2 right-2 z-10 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all hover:scale-110",
+            className={cn("absolute top-11 right-2 z-10 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all hover:scale-110",
               isFavorited ? "bg-red-500 text-white" : "bg-foreground/30 text-white hover:bg-red-500"
             )}
+            title={isFavorited ? "Remover dos favoritos" : "Favoritar"}
           >
             <Heart className={cn("w-4 h-4", isFavorited && "fill-current")} />
           </button>

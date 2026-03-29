@@ -37,6 +37,7 @@ import {
   Eye,
   Heart,
   Handshake,
+  Route,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { RoutePlanner } from "@/components/RoutePlanner";
@@ -365,7 +366,7 @@ const categories: { key: Category; label: string; icon: typeof Home }[] = [
   { key: "lotes-bairro", label: "Lotes Bairro", icon: MapPin },
 ];
 
-function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, onToggleFavorite }: { property: typeof siteProperties[0]; onSelect?: (p: typeof siteProperties[0]) => void; hideStamp?: boolean; onViewTerm?: (url: string) => void; isFavorited?: boolean; onToggleFavorite?: (id: string) => void }) {
+function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, onToggleFavorite, isInRoute, onToggleRoute }: { property: typeof siteProperties[0]; onSelect?: (p: typeof siteProperties[0]) => void; hideStamp?: boolean; onViewTerm?: (url: string) => void; isFavorited?: boolean; onToggleFavorite?: (id: string) => void; isInRoute?: boolean; onToggleRoute?: (id: string) => void }) {
   const [imgIndex, setImgIndex] = useState(0);
   const broker = brokerInfo[property.broker] || { photo: "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=100&h=100&fit=crop&crop=face", whatsapp: "5511999999999" };
   const whatsappMessage = encodeURIComponent(`Olá! Tenho interesse no imóvel: ${property.title} - ${formatCurrency(property.price)}`);
@@ -430,17 +431,31 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, 
             <FileCheck className="w-3 h-3" /> Ex.Assinada
           </button>
         )}
+        {/* Route selector button */}
+        <button
+          onClick={(e) => { e.stopPropagation(); onToggleRoute?.(property.id); }}
+          className={cn(
+            "absolute z-20 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all hover:scale-110",
+            property.exclusivityTerm ? "top-12 right-3" : "top-3 right-3",
+            isInRoute
+              ? "bg-blue-600 text-white"
+              : "bg-white/80 text-gray-600 hover:bg-white hover:text-blue-600"
+          )}
+          title={isInRoute ? "Remover da rota" : "Adicionar à rota"}
+        >
+          <Route className={cn("w-4 h-4", isInRoute && "fill-current")} />
+        </button>
         {/* Favorite heart button */}
         <button
           onClick={(e) => { e.stopPropagation(); onToggleFavorite?.(property.id); }}
           className={cn(
             "absolute z-20 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all hover:scale-110",
-            property.exclusivityTerm ? "top-12 right-3" : "top-3 right-3",
+            property.exclusivityTerm ? "top-[5.5rem] right-3" : "top-12 right-3",
             isFavorited
               ? "bg-red-500 text-white"
               : "bg-white/80 text-gray-600 hover:bg-white hover:text-red-500"
           )}
-          title={isFavorited ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+          title={isFavorited ? "Remover dos favoritos" : "Favoritar"}
         >
           <Heart className={cn("w-4 h-4", isFavorited && "fill-current")} />
         </button>
@@ -792,7 +807,19 @@ export default function Site() {
     });
   };
 
+  const [routeIds, setRouteIds] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem("mv-route-ids") || "[]"); } catch { return []; }
+  });
+  const toggleRoute = (id: string) => {
+    setRouteIds((prev) => {
+      const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
+      localStorage.setItem("mv-route-ids", JSON.stringify(next));
+      return next;
+    });
+  };
+
   const favoritedProperties = siteProperties.filter((p) => favoriteIds.includes(p.id));
+  const routeProperties = siteProperties.filter((p) => routeIds.includes(p.id));
 
   // Continuous scroll uses CSS animation, no JS timer needed
   const maxIndex = Math.max(0, soldProperties.length - 4);
@@ -1165,7 +1192,7 @@ export default function Site() {
             />
             {filteredAll.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {filteredAll.map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} isFavorited={favoriteIds.includes(p.id)} onToggleFavorite={toggleFavorite} />)}
+                {filteredAll.map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} isFavorited={favoriteIds.includes(p.id)} onToggleFavorite={toggleFavorite} isInRoute={routeIds.includes(p.id)} onToggleRoute={toggleRoute} />)}
               </div>
             ) : (
               <p className="text-center py-12 text-gray-400">Nenhum imóvel encontrado com os filtros selecionados.</p>
@@ -1190,7 +1217,7 @@ export default function Site() {
               >
                 {[...soldProperties, ...soldProperties].map((p, idx) => (
                   <div key={`${p.id}-${idx}`} className="w-[calc(25%-18px)] flex-shrink-0">
-                    <PropertyCard property={{ ...p, status: "Vendido" as const }} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} hideStamp isFavorited={favoriteIds.includes(p.id)} onToggleFavorite={toggleFavorite} />
+                    <PropertyCard property={{ ...p, status: "Vendido" as const }} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} hideStamp isFavorited={favoriteIds.includes(p.id)} onToggleFavorite={toggleFavorite} isInRoute={routeIds.includes(p.id)} onToggleRoute={toggleRoute} />
                   </div>
                 ))}
               </div>
@@ -1336,7 +1363,7 @@ export default function Site() {
           <section>
             <SectionHeader title="Imóveis em Destaque" subtitle="Seleção especial dos melhores imóveis" icon={Star} />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {sortByPrice(featured).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} isFavorited={favoriteIds.includes(p.id)} onToggleFavorite={toggleFavorite} />)}
+              {sortByPrice(featured).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} isFavorited={favoriteIds.includes(p.id)} onToggleFavorite={toggleFavorite} isInRoute={routeIds.includes(p.id)} onToggleRoute={toggleRoute} />)}
             </div>
           </section>
         )}
@@ -1346,7 +1373,7 @@ export default function Site() {
           <section>
             <SectionHeader title="Apartamentos" subtitle={`${apartments.length} apartamentos disponíveis`} icon={Building2} />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {sortByPrice(apartments).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} isFavorited={favoriteIds.includes(p.id)} onToggleFavorite={toggleFavorite} />)}
+              {sortByPrice(apartments).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} isFavorited={favoriteIds.includes(p.id)} onToggleFavorite={toggleFavorite} isInRoute={routeIds.includes(p.id)} onToggleRoute={toggleRoute} />)}
             </div>
           </section>
         )}
@@ -1366,7 +1393,7 @@ export default function Site() {
           <section>
             <SectionHeader title="Casas" subtitle={`${houses.length} casas disponíveis`} icon={Home} />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {sortByPrice(houses).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} isFavorited={favoriteIds.includes(p.id)} onToggleFavorite={toggleFavorite} />)}
+              {sortByPrice(houses).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} isFavorited={favoriteIds.includes(p.id)} onToggleFavorite={toggleFavorite} isInRoute={routeIds.includes(p.id)} onToggleRoute={toggleRoute} />)}
             </div>
           </section>
         )}
@@ -1376,7 +1403,7 @@ export default function Site() {
           <section>
             <SectionHeader title="Decorados" subtitle={`${decorated.length} imóveis com decoração inclusa`} icon={Paintbrush} />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {sortByPrice(decorated).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} isFavorited={favoriteIds.includes(p.id)} onToggleFavorite={toggleFavorite} />)}
+              {sortByPrice(decorated).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} isFavorited={favoriteIds.includes(p.id)} onToggleFavorite={toggleFavorite} isInRoute={routeIds.includes(p.id)} onToggleRoute={toggleRoute} />)}
             </div>
           </section>
         )}
@@ -1386,7 +1413,7 @@ export default function Site() {
           <section>
             <SectionHeader title="Vista para o Mar" subtitle={`${seaViewProperties.length} imóveis com vista mar`} icon={Waves} />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {sortByPrice(seaViewProperties).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} isFavorited={favoriteIds.includes(p.id)} onToggleFavorite={toggleFavorite} />)}
+              {sortByPrice(seaViewProperties).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} isFavorited={favoriteIds.includes(p.id)} onToggleFavorite={toggleFavorite} isInRoute={routeIds.includes(p.id)} onToggleRoute={toggleRoute} />)}
             </div>
           </section>
         )}
@@ -1397,7 +1424,7 @@ export default function Site() {
           <section>
             <SectionHeader title="Lotes em Condomínio" subtitle={`${condoLots.length} lotes em condomínios fechados`} icon={TreePine} />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {sortByPrice(condoLots).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} isFavorited={favoriteIds.includes(p.id)} onToggleFavorite={toggleFavorite} />)}
+              {sortByPrice(condoLots).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} isFavorited={favoriteIds.includes(p.id)} onToggleFavorite={toggleFavorite} isInRoute={routeIds.includes(p.id)} onToggleRoute={toggleRoute} />)}
             </div>
           </section>
         )}
@@ -1407,7 +1434,7 @@ export default function Site() {
           <section>
             <SectionHeader title="Lotes em Bairro" subtitle={`${neighborhoodLots.length} lotes em bairros abertos`} icon={MapPin} />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {sortByPrice(neighborhoodLots).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} isFavorited={favoriteIds.includes(p.id)} onToggleFavorite={toggleFavorite} />)}
+              {sortByPrice(neighborhoodLots).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} isFavorited={favoriteIds.includes(p.id)} onToggleFavorite={toggleFavorite} isInRoute={routeIds.includes(p.id)} onToggleRoute={toggleRoute} />)}
             </div>
           </section>
         )}
@@ -1488,7 +1515,7 @@ export default function Site() {
       >
         <ArrowUp className="w-5 h-5" />
       </button>
-      <RoutePlanner properties={favoritedProperties} />
+      <RoutePlanner properties={routeProperties} />
       <SharkAI properties={siteProperties} onSelectProperty={setSelectedProperty} />
       <PropertyDetailModal
         property={selectedProperty}
