@@ -22,6 +22,16 @@ const statusOptions = ["Disponível", "Vendido", "Reservado", "Alugado", "Suspen
 const condicaoOptions = ["Mobiliado", "Semi-mobiliado", "Vazio", "Decorado"];
 const ownerTypeOptions = ["Construtora", "Investidor", "Particular", "Adm Comercial", "Exclusividade"];
 const padraoOptions = ["Econômico", "Médio Padrão", "Alto Padrão", "Luxo"];
+const destaqueCategoriaOptions = [
+  { value: "none", label: "Sem destaque" },
+  { value: "apartamentos", label: "Apartamentos" },
+  { value: "condominios", label: "Condomínios" },
+  { value: "casas", label: "Casas" },
+  { value: "lotes-cond", label: "Lotes Condomínio" },
+  { value: "lotes-bairro", label: "Lotes Bairro" },
+  { value: "decorados", label: "Decorados" },
+  { value: "vista-mar", label: "Vista Mar" },
+];
 const paymentConditionOptions = [
   "À Vista", "Parcelamento 12x", "Parcelamento 24x", "Parcelamento 36x",
   "Parcelamento 48x", "Parcelamento 60x", "Parcelamento 120x",
@@ -82,6 +92,7 @@ export const initialForm: FormData = {
   condicao: '', padrao: '', posicaoPredio: '', posicaoSolar: '', vista: '',
   localChaves: '', termoExclusividade: '',
   vistaMar: false, decorado: false, aceitaPermuta: false, destaqueHome: false, ativoSite: false,
+  destaqueCategoria: 'none',
   condicoesPagemento: [], infraestrutura: [], outrasCaracteristicas: [],
 };
 
