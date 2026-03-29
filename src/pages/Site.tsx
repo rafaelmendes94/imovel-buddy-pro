@@ -86,28 +86,7 @@ const brokerInfo: Record<string, { photo: string; whatsapp: string }> = {
 // Will be populated from DB
 let siteProperties: SiteProperty[] = [];
 
-const available = siteProperties.filter((p) => p.status === "Disponível");
-const soldProperties = siteProperties.filter((p) => p.status === "Vendido" || p.status === "Reservado");
-const soldValue = soldProperties.reduce((sum, p) => sum + p.price, 0);
-const totalVGV = available.reduce((sum, p) => sum + p.price, 0);
-const commercial = available.filter((p) => p.type === "Comercial");
-const featured = available.slice(0, 3);
-const apartments = available.filter((p) => p.type === "Apartamento");
-const houses = available.filter((p) => p.type === "Casa");
-const lots = available.filter((p) => p.type === "Terreno");
-const decorated = available.filter((p) => p.decorated);
-const seaViewProperties = available.filter((p) => p.seaView);
-const exchangeProperties = available.filter((p) => p.acceptsExchange);
-const withPaymentConditions = available.filter((p) => p.paymentConditions);
-// Condominium houses: houses/properties in condominiums
-const condoHouses = available.filter((p) =>
-  (p.type === "Casa" || p.type === "Condomínio") &&
-  p.empreendimento && p.empreendimento.toLowerCase().includes("cond")
-);
-
-// Separate lots into condo lots vs neighborhood lots
-const condoLots = lots.filter((l) => l.title.toLowerCase().includes("condomínio") || l.title.toLowerCase().includes("reserva"));
-const neighborhoodLots = lots.filter((l) => !l.title.toLowerCase().includes("condomínio") && !l.title.toLowerCase().includes("reserva"));
+// These will be computed inside the component from fetched data
 
 type Category = "todos" | "destaque" | "apartamentos" | "condominios" | "casas" | "lotes-cond" | "lotes-bairro" | "decorados" | "vista-mar";
 
@@ -505,6 +484,8 @@ function SectionHeader({ title, subtitle, icon: Icon }: { title: string; subtitl
 }
 
 export default function Site() {
+  const [siteProperties, setSiteProperties] = useState<SiteProperty[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<Category>("todos");
   const [searchTerm, setSearchTerm] = useState("");
   const [showScrollTop, setShowScrollTop] = useState(false);
