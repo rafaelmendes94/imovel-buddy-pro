@@ -1894,9 +1894,10 @@ function SiteToggleButton({ propertyId, field, icon: Icon, activeColor, title, s
     }
   };
 
-  if (loading) return <div className="w-8 h-8 rounded-lg bg-muted animate-pulse" />;
+  if (loading) return <div className={cn(showLabel ? "w-8 h-8" : "w-6 h-6", "rounded bg-muted animate-pulse")} />;
 
   if (!existsInDb) {
+    if (!showLabel) return null;
     return (
       <button
         className="w-8 h-8 rounded-lg bg-muted/50 flex items-center justify-center opacity-40 cursor-not-allowed"
@@ -1912,14 +1913,14 @@ function SiteToggleButton({ propertyId, field, icon: Icon, activeColor, title, s
     <button
       onClick={toggle}
       className={cn(
-        "rounded-lg flex items-center justify-center gap-1.5 transition-all",
-        showLabel ? "h-8 px-3" : "w-8 h-8",
-        active ? activeColor : "bg-secondary text-muted-foreground hover:bg-muted"
+        "rounded flex items-center justify-center gap-1.5 transition-all",
+        showLabel ? "h-8 px-3 rounded-lg" : "w-6 h-6",
+        active ? activeColor : showLabel ? "bg-secondary text-muted-foreground hover:bg-muted" : "text-muted-foreground/40 hover:text-muted-foreground"
       )}
       title={`${title}: ${active ? "Ativo" : "Inativo"}`}
     >
-      <Icon className={cn("w-3.5 h-3.5", active && "fill-current")} />
-      {showLabel && <span className="text-[10px] font-bold uppercase tracking-wide">{active ? title : title}</span>}
+      <Icon className={cn(showLabel ? "w-3.5 h-3.5" : "w-3.5 h-3.5", active && "fill-current")} />
+      {showLabel && <span className="text-[10px] font-bold uppercase tracking-wide">{title}</span>}
     </button>
   );
 }
