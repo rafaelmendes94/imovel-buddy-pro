@@ -487,8 +487,12 @@ function CadastroImovelForm() {
             <Label className="text-xs">Aceita Permuta</Label>
           </div>
           <div className="flex items-center gap-2 border-l border-border pl-6">
+            <Switch checked={form.ativoSite} onCheckedChange={(v) => set('ativoSite', v)} />
+            <Label className="text-xs font-semibold text-emerald-600">🌐 Ativo no Site</Label>
+          </div>
+          <div className="flex items-center gap-2">
             <Switch checked={form.destaqueHome} onCheckedChange={(v) => set('destaqueHome', v)} />
-            <Label className="text-xs font-semibold text-amber-600">⭐ Exibir na Página Inicial</Label>
+            <Label className="text-xs font-semibold text-amber-600">⭐ Destaque na Home</Label>
           </div>
         </div>
 
