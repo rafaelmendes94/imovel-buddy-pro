@@ -125,7 +125,7 @@ const propertiesWithCodes = initialProperties.map((p, i) => ({
 export default function Properties() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [propertyList, setPropertyList] = useState<Property[]>(propertiesWithCodes);
+  const [propertyList, setPropertyList] = useState<Property[]>([]);
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<Category>("todos");
   const [view, setView] = useState<"grid" | "list" | "map">("grid");
@@ -144,15 +144,10 @@ export default function Properties() {
   const [filterCode, setFilterCode] = useState("");
   const [filterParking, setFilterParking] = useState("");
   const [sortBy, setSortBy] = useState<"default" | "price-asc" | "price-desc" | "name-asc" | "name-desc" | "updated" | "created">("default");
-  
+
   // Restore selected property from URL param
   const propertyIdFromUrl = searchParams.get("property");
-  const [selectedProperty, setSelectedPropertyState] = useState<Property | null>(() => {
-    if (propertyIdFromUrl) {
-      return propertiesWithCodes.find(p => p.id === propertyIdFromUrl) || null;
-    }
-    return null;
-  });
+  const [selectedProperty, setSelectedPropertyState] = useState<Property | null>(null);
 
   const setSelectedProperty = (p: Property | null) => {
     setSelectedPropertyState(p);
@@ -191,6 +186,81 @@ export default function Properties() {
   const handleCatDragEnd = () => { dragCatRef.current = null; };
 
   const xmlMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const fetchProperties = async () => {
+      const { data, error } = await supabase
+        .from("imoveis")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        toast.error("Erro ao carregar imóveis");
+        setPropertyList(propertiesWithCodes);
+        return;
+      }
+
+      const mapped: Property[] = (data || []).map((row, index) => ({
+        id: row.id,
+        code: `MV${String(index + 1).padStart(2, "0")}`,
+        title: row.titulo || "Imóvel",
+        address: row.endereco || "",
+        neighborhood: row.bairro || "",
+        city: row.cidade || "",
+        type: (row.tipo as Property["type"]) || "Casa",
+        status: (row.status as Property["status"]) || "Disponível",
+        price: Number(row.preco || 0),
+        area: Number(row.area || 0),
+        privateArea: Number(row.area_privativa || 0),
+        bedrooms: row.quartos || 0,
+        bathrooms: row.banheiros || 0,
+        parking: row.vagas || 0,
+        broker: "Corretor",
+        owner: row.proprietario || "",
+        ownerPhone: row.proprietario_telefone || "",
+        image: row.imagens?.[0] || "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=300&fit=crop",
+        images: row.imagens || [],
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+        lat: 0,
+        lng: 0,
+        decorated: row.decorado || false,
+        seaView: row.vista_mar || false,
+        acceptsExchange: row.aceita_permuta || false,
+        paymentConditions: row.condicoes_pagamento || [],
+        empreendimento: row.empreendimento || "",
+        unitNumber: row.unidade || "",
+        boxNumber: row.box || "",
+        quadra: row.quadra || "",
+        lote: row.lote || "",
+        exclusivityTerm: row.termo_exclusividade || "",
+        description: row.descricao || "",
+        posicaoPredio: row.posicao_predio || "",
+        posicaoSolar: row.posicao_solar || "",
+        infraestrutura: row.infraestrutura || [],
+        elevadores: row.elevadores || 0,
+        vista: row.vista || "",
+        condicao: (row.condicao as Property["condicao"]) || undefined,
+        ownerType: (row.proprietario_tipo as Property["ownerType"]) || undefined,
+        priceInstallment: Number(row.preco_parcelado || 0),
+        commission: Number(row.comissao || 0),
+        bonus: Number(row.bonus || 0),
+        bonusExpiry: row.bonus_validade || "",
+        padrao: (row.padrao as Property["padrao"]) || undefined,
+        outrasCaracteristicas: row.outras_caracteristicas || [],
+      }));
+
+      setPropertyList(mapped);
+    };
+
+    fetchProperties();
+  }, []);
+
+  useEffect(() => {
+    if (!propertyIdFromUrl || propertyList.length === 0) return;
+    const found = propertyList.find((p) => p.id === propertyIdFromUrl) || null;
+    setSelectedPropertyState(found);
+  }, [propertyIdFromUrl, propertyList]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {

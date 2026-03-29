@@ -22,6 +22,16 @@ const statusOptions = ["Disponível", "Vendido", "Reservado", "Alugado", "Suspen
 const condicaoOptions = ["Mobiliado", "Semi-mobiliado", "Vazio", "Decorado"];
 const ownerTypeOptions = ["Construtora", "Investidor", "Particular", "Adm Comercial", "Exclusividade"];
 const padraoOptions = ["Econômico", "Médio Padrão", "Alto Padrão", "Luxo"];
+const destaqueCategoriaOptions = [
+  { value: "none", label: "Sem destaque" },
+  { value: "apartamentos", label: "Apartamentos" },
+  { value: "condominios", label: "Condomínios" },
+  { value: "casas", label: "Casas" },
+  { value: "lotes-cond", label: "Lotes Condomínio" },
+  { value: "lotes-bairro", label: "Lotes Bairro" },
+  { value: "decorados", label: "Decorados" },
+  { value: "vista-mar", label: "Vista Mar" },
+];
 const paymentConditionOptions = [
   "À Vista", "Parcelamento 12x", "Parcelamento 24x", "Parcelamento 36x",
   "Parcelamento 48x", "Parcelamento 60x", "Parcelamento 120x",
@@ -67,6 +77,7 @@ export interface FormData {
   aceitaPermuta: boolean;
   destaqueHome: boolean;
   ativoSite: boolean;
+  destaqueCategoria: string;
   condicoesPagemento: string[];
   infraestrutura: string[];
   outrasCaracteristicas: string[];
@@ -81,6 +92,7 @@ export const initialForm: FormData = {
   condicao: '', padrao: '', posicaoPredio: '', posicaoSolar: '', vista: '',
   localChaves: '', termoExclusividade: '',
   vistaMar: false, decorado: false, aceitaPermuta: false, destaqueHome: false, ativoSite: false,
+  destaqueCategoria: 'none',
   condicoesPagemento: [], infraestrutura: [], outrasCaracteristicas: [],
 };
 
@@ -160,6 +172,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         aceitaPermuta: data.aceita_permuta || false,
         destaqueHome: data.destaque_home || false,
         ativoSite: data.ativo_site || false,
+        destaqueCategoria: data.destaque_categoria || 'none',
         condicoesPagemento: data.condicoes_pagamento || [],
         infraestrutura: data.infraestrutura || [],
         outrasCaracteristicas: data.outras_caracteristicas || [],
@@ -279,9 +292,9 @@ export function ImovelForm({ editId }: { editId?: string }) {
         vista_mar: form.vistaMar,
         decorado: form.decorado,
         aceita_permuta: form.aceitaPermuta,
-        destaque_home: form.destaqueHome,
+        destaque_categoria: form.destaqueCategoria === 'none' ? '' : form.destaqueCategoria,
+        destaque_home: form.destaqueHome || form.destaqueCategoria !== 'none',
         ativo_site: form.ativoSite,
-        condicoes_pagamento: form.condicoesPagemento,
         infraestrutura: form.infraestrutura,
         outras_caracteristicas: form.outrasCaracteristicas,
         imagens: allImages.length > 0 ? allImages : null,
@@ -576,11 +589,36 @@ export function ImovelForm({ editId }: { editId?: string }) {
           </div>
           <div className="flex items-center gap-2 border-l border-border pl-6">
             <Switch checked={form.ativoSite} onCheckedChange={(v) => set('ativoSite', v)} />
-            <Label className="text-xs font-semibold text-emerald-600">🌐 Ativo no Site</Label>
+            <Label className="text-xs font-semibold">🌐 Ativo no Site</Label>
           </div>
           <div className="flex items-center gap-2">
-            <Switch checked={form.destaqueHome} onCheckedChange={(v) => set('destaqueHome', v)} />
-            <Label className="text-xs font-semibold text-amber-600">⭐ Destaque na Home</Label>
+            <Switch
+              checked={form.destaqueHome}
+              onCheckedChange={(v) => {
+                set('destaqueHome', v);
+                if (!v) set('destaqueCategoria', 'none');
+              }}
+            />
+            <Label className="text-xs font-semibold">⭐ Destaque na Home</Label>
+          </div>
+          <div className="min-w-[220px] space-y-1.5">
+            <Label className="text-xs">Tipo de Destaque</Label>
+            <Select
+              value={form.destaqueCategoria}
+              onValueChange={(v) => {
+                set('destaqueCategoria', v);
+                if (v !== 'none') set('destaqueHome', true);
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione o destaque" />
+              </SelectTrigger>
+              <SelectContent>
+                {destaqueCategoriaOptions.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
