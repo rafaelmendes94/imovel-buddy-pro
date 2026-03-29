@@ -1096,7 +1096,7 @@ function PropertyCard({
               {property.empreendimento && (
                 <Link
                   to={`/empreendimento/${property.empreendimento.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`}
-                  className="text-[10px] font-semibold text-accent bg-accent/10 px-1.5 py-0.5 rounded hover:bg-accent/20 transition-colors"
+                  className="text-[12px] font-bold text-foreground uppercase tracking-wide bg-accent/10 px-1.5 py-0.5 rounded hover:bg-accent/20 transition-colors"
                   onClick={(e) => e.stopPropagation()}
                   title="Abrir página do empreendimento"
                 >
