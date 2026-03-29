@@ -98,6 +98,7 @@ const App = () => (
             <Route path="/contratos" element={<AuthGuard><Contratos /></AuthGuard>} />
             <Route path="/videomaker" element={<AuthGuard><VideoMaker /></AuthGuard>} />
             <Route path="/imobiliarias" element={<AuthGuard><Imobiliarias /></AuthGuard>} />
+            <Route path="/cadastro-imovel" element={<AuthGuard><CadastroImovel /></AuthGuard>} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>
