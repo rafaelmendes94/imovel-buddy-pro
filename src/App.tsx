@@ -49,6 +49,8 @@ import Imobiliarias from "./pages/Imobiliarias";
 import CadastroImovel from "./pages/CadastroImovel";
 import EditarImovel from "./pages/EditarImovel";
 import Parceiros from "./pages/Parceiros";
+import Construtoras from "./pages/Construtoras";
+import ConstrutoraDetail from "./pages/ConstrutoraDetail";
 
 const queryClient = new QueryClient();
 
@@ -103,6 +105,8 @@ const App = () => (
             <Route path="/imobiliarias" element={<AuthGuard><Imobiliarias /></AuthGuard>} />
             <Route path="/cadastro-imovel" element={<AuthGuard><CadastroImovel /></AuthGuard>} />
             <Route path="/editar-imovel/:id" element={<AuthGuard><EditarImovel /></AuthGuard>} />
+            <Route path="/construtoras" element={<AuthGuard><Construtoras /></AuthGuard>} />
+            <Route path="/construtoras/:id" element={<AuthGuard><ConstrutoraDetail /></AuthGuard>} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>
