@@ -351,7 +351,9 @@ export default function CondominiumDetail() {
           <TabsList className="bg-secondary">
             <TabsTrigger value="unidades">Imóveis à Venda</TabsTrigger>
             <TabsTrigger value="espelho">Espelho de Vendas</TabsTrigger>
-            <TabsTrigger value="infra">Infraestrutura</TabsTrigger>
+            <TabsTrigger value="infra">Mídia</TabsTrigger>
+            <TabsTrigger value="implantacao">Implantação</TabsTrigger>
+            <TabsTrigger value="localizacao">Localização</TabsTrigger>
           </TabsList>
 
           {/* Units for Sale (only available) */}
