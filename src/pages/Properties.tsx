@@ -781,6 +781,8 @@ export default function Properties() {
                 onViewTerm={setViewingTerm}
                 isFavorited={favoriteIds.includes(property.id)}
                 onToggleFavorite={toggleFavorite}
+                isInRoute={routeIds.includes(property.id)}
+                onToggleRoute={toggleRoute}
                 onFilterByTitle={(title) => { setSearch(title.split(" ").slice(0, 2).join(" ")); setActiveCategory("todos"); }}
                 onFilterByCondition={(cond) => { setFilterCondition(cond); setShowFilters(true); setActiveCategory("todos"); }}
                 onFilterByOwner={(owner) => { setFilterOwner(owner); setShowFilters(true); setActiveCategory("todos"); }}
@@ -797,6 +799,8 @@ export default function Properties() {
                 onSelect={setSelectedProperty}
                 isFavorited={favoriteIds.includes(property.id)}
                 onToggleFavorite={toggleFavorite}
+                isInRoute={routeIds.includes(property.id)}
+                onToggleRoute={toggleRoute}
                 onFilterByTitle={(title) => { setSearch(title.split(" ").slice(0, 2).join(" ")); setActiveCategory("todos"); }}
                 onFilterByCondition={(cond) => { setFilterCondition(cond); setShowFilters(true); setActiveCategory("todos"); }}
                 onFilterByOwner={(owner) => { setFilterOwner(owner); setShowFilters(true); setActiveCategory("todos"); }}
@@ -826,7 +830,7 @@ export default function Properties() {
       </div>
 
       {/* Floating tools */}
-      <RoutePlanner properties={favoritedProperties} />
+      <RoutePlanner properties={routeProperties} />
       <SharkAI properties={propertyList} onSelectProperty={setSelectedProperty} />
 
       {/* Property Detail Modal */}
