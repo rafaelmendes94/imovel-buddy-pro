@@ -991,7 +991,7 @@ function SoldCelebration() {
 
 // ---- PropertyCard (enhanced) ----
 function PropertyCard({
-  property, onStatusChange, onSelect, onViewTerm, isFavorited, onToggleFavorite, onFilterByTitle, onFilterByCondition,
+  property, onStatusChange, onSelect, onViewTerm, isFavorited, onToggleFavorite, isInRoute, onToggleRoute, onFilterByTitle, onFilterByCondition,
 }: {
   property: Property;
   onStatusChange: (id: string, status: Property["status"]) => void;
@@ -999,6 +999,8 @@ function PropertyCard({
   onViewTerm?: (url: string) => void;
   isFavorited?: boolean;
   onToggleFavorite?: (id: string) => void;
+  isInRoute?: boolean;
+  onToggleRoute?: (id: string) => void;
   onFilterByTitle?: (title: string) => void;
   onFilterByCondition?: (cond: string) => void;
   onFilterByOwner?: (owner: string) => void;
@@ -1049,12 +1051,24 @@ function PropertyCard({
           </button>
         )}
 
+        {/* Route selector */}
+        <button onClick={(e) => { e.stopPropagation(); onToggleRoute?.(property.id); }}
+          className={cn("absolute z-20 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all hover:scale-110",
+            property.exclusivityTerm ? "top-12 right-3" : "top-3 right-3",
+            isInRoute ? "bg-blue-600 text-white" : "bg-foreground/30 text-white hover:bg-blue-600"
+          )}
+          title={isInRoute ? "Remover da rota" : "Adicionar à rota"}
+        >
+          <Navigation className={cn("w-4 h-4", isInRoute && "fill-current")} />
+        </button>
+
         {/* Favorite */}
         <button onClick={(e) => { e.stopPropagation(); onToggleFavorite?.(property.id); }}
           className={cn("absolute z-20 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all hover:scale-110",
-            property.exclusivityTerm ? "top-12 right-3" : "top-3 right-3",
+            property.exclusivityTerm ? "top-[5.5rem] right-3" : "top-12 right-3",
             isFavorited ? "bg-red-500 text-white" : "bg-foreground/30 text-white hover:bg-red-500"
           )}
+          title={isFavorited ? "Remover dos favoritos" : "Favoritar"}
         >
           <Heart className={cn("w-4 h-4", isFavorited && "fill-current")} />
         </button>
