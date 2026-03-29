@@ -589,11 +589,36 @@ export function ImovelForm({ editId }: { editId?: string }) {
           </div>
           <div className="flex items-center gap-2 border-l border-border pl-6">
             <Switch checked={form.ativoSite} onCheckedChange={(v) => set('ativoSite', v)} />
-            <Label className="text-xs font-semibold text-emerald-600">🌐 Ativo no Site</Label>
+            <Label className="text-xs font-semibold">🌐 Ativo no Site</Label>
           </div>
           <div className="flex items-center gap-2">
-            <Switch checked={form.destaqueHome} onCheckedChange={(v) => set('destaqueHome', v)} />
-            <Label className="text-xs font-semibold text-amber-600">⭐ Destaque na Home</Label>
+            <Switch
+              checked={form.destaqueHome}
+              onCheckedChange={(v) => {
+                set('destaqueHome', v);
+                if (!v) set('destaqueCategoria', 'none');
+              }}
+            />
+            <Label className="text-xs font-semibold">⭐ Destaque na Home</Label>
+          </div>
+          <div className="min-w-[220px] space-y-1.5">
+            <Label className="text-xs">Tipo de Destaque</Label>
+            <Select
+              value={form.destaqueCategoria}
+              onValueChange={(v) => {
+                set('destaqueCategoria', v);
+                if (v !== 'none') set('destaqueHome', true);
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione o destaque" />
+              </SelectTrigger>
+              <SelectContent>
+                {destaqueCategoriaOptions.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
