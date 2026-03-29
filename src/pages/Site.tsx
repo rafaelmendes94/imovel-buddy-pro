@@ -1182,10 +1182,12 @@ export default function Site() {
             <div className="relative overflow-hidden">
               <div
                 className="flex gap-6 animate-scroll"
-                style={{ width: `${soldProperties.length * 2 * (25 + 1.5)}%` }}
+                style={{
+                  animationDuration: `${soldProperties.length * 5}s`,
+                }}
               >
                 {[...soldProperties, ...soldProperties].map((p, idx) => (
-                  <div key={`${p.id}-${idx}`} className="min-w-[calc(25%-18px)] flex-shrink-0" style={{ width: `calc(${100 / (soldProperties.length * 2)}% - 18px)` }}>
+                  <div key={`${p.id}-${idx}`} className="w-[calc(25%-18px)] flex-shrink-0">
                     <PropertyCard property={{ ...p, status: "Vendido" as const }} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} hideStamp isFavorited={favoriteIds.includes(p.id)} onToggleFavorite={toggleFavorite} />
                   </div>
                 ))}
