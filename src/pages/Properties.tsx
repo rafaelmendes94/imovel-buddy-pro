@@ -1773,3 +1773,49 @@ function PropertyRow({
     </div>
   );
 }
+
+// ---- Site Toggle Button (ativo_site / destaque_home) ----
+function SiteToggleButton({ propertyId, field, icon: Icon, activeColor, title }: {
+  propertyId: string;
+  field: "ativo_site" | "destaque_home";
+  icon: typeof Globe;
+  activeColor: string;
+  title: string;
+}) {
+  const [active, setActive] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.from("imoveis").select(field).eq("id", propertyId).maybeSingle().then(({ data }) => {
+      if (data) setActive(!!(data as any)[field]);
+      setLoading(false);
+    });
+  }, [propertyId, field]);
+
+  const toggle = async () => {
+    const newVal = !active;
+    setActive(newVal);
+    const { error } = await supabase.from("imoveis").update({ [field]: newVal } as any).eq("id", propertyId);
+    if (error) {
+      setActive(!newVal);
+      toast.error("Erro ao atualizar");
+    } else {
+      toast.success(newVal ? `${title} ativado` : `${title} desativado`);
+    }
+  };
+
+  if (loading) return <div className="w-8 h-8 rounded-lg bg-muted animate-pulse" />;
+
+  return (
+    <button
+      onClick={toggle}
+      className={cn(
+        "w-8 h-8 rounded-lg flex items-center justify-center transition-all",
+        active ? activeColor : "bg-secondary text-muted-foreground hover:bg-muted"
+      )}
+      title={`${title}: ${active ? "Ativo" : "Inativo"}`}
+    >
+      <Icon className={cn("w-3.5 h-3.5", active && "fill-current")} />
+    </button>
+  );
+}
