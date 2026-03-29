@@ -161,7 +161,8 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, 
         )}
         {property.status !== "Disponível" && (
           <span className={cn(
-            "absolute top-3 left-3 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide",
+            "absolute px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide z-20",
+            property.empreendimento ? "top-12 left-3" : "top-3 left-3",
             property.status === "Vendido" ? "bg-red-500 text-white" :
             "bg-amber-500 text-white"
           )}>
