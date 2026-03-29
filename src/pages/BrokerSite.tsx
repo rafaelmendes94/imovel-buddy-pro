@@ -601,14 +601,23 @@ export default function BrokerSite() {
               </button>
             ))}
           </nav>
-          <a
-            href={`https://wa.me/${info.whatsapp}?text=${whatsappGeneral}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-5 py-2 rounded-xl bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-colors shadow-sm"
-          >
-            <span className="flex items-center gap-2"><Phone className="w-4 h-4" /> Fale Comigo</span>
-          </a>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowConfig(true)}
+              className="p-2 rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+              title="Configurações da página"
+            >
+              <SettingsIcon className="w-4 h-4" />
+            </button>
+            <a
+              href={`https://wa.me/${info.whatsapp}?text=${whatsappGeneral}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-5 py-2 rounded-xl bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-colors shadow-sm"
+            >
+              <span className="flex items-center gap-2"><Phone className="w-4 h-4" /> Fale Comigo</span>
+            </a>
+          </div>
         </div>
       </header>
 
