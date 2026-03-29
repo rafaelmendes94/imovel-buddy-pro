@@ -36,6 +36,7 @@ import {
   FileCheck,
   Eye,
   Heart,
+  Handshake,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { RoutePlanner } from "@/components/RoutePlanner";
@@ -1278,7 +1279,7 @@ export default function Site() {
         {/* Parceiros MV BROKER CONNECT */}
         {!searchTerm && !hasActiveFilters && activeCategory === "todos" && (
           <section>
-            <SectionHeader title="Parceiros MV BROKER CONNECT" subtitle="Empresas que confiam na nossa rede" icon={Building2} />
+            <SectionHeader title="Parceiros MV BROKER CONNECT" subtitle="Empresas que confiam na nossa rede" icon={Handshake} />
             <div className="relative overflow-hidden">
               <div className="flex animate-scroll gap-8 items-center">
                 {[
@@ -1320,9 +1321,9 @@ export default function Site() {
             <div className="flex justify-center mt-4">
               <Link
                 to="/parceiros"
-                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gray-900 text-white text-sm font-bold hover:bg-gray-800 transition-colors shadow-md hover:shadow-lg"
+                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-colors shadow-md hover:shadow-lg"
               >
-                <Building2 className="w-4 h-4 text-amber-400" />
+                <Handshake className="w-4 h-4 text-info" />
                 Ver Todos os Parceiros
                 <ChevronRight className="w-4 h-4" />
               </Link>
