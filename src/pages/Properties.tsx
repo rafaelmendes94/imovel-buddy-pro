@@ -1825,3 +1825,65 @@ function SiteToggleButton({ propertyId, field, icon: Icon, activeColor, title }:
     </button>
   );
 }
+
+// ---- Destaque Category Selector ----
+const DESTAQUE_OPTIONS = [
+  { value: "", label: "Sem destaque", icon: "—" },
+  { value: "apartamentos", label: "Apartamentos", icon: "🏢" },
+  { value: "condominios", label: "Condomínios", icon: "🏘️" },
+  { value: "casas", label: "Casas", icon: "🏠" },
+  { value: "lotes-cond", label: "Lotes Condomínio", icon: "🌲" },
+  { value: "lotes-bairro", label: "Lotes Bairro", icon: "📍" },
+  { value: "decorados", label: "Decorados", icon: "🎨" },
+  { value: "vista-mar", label: "Vista Mar", icon: "🌊" },
+];
+
+function DestaqueSelector({ propertyId }: { propertyId: string }) {
+  const [value, setValue] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.from("imoveis").select("destaque_categoria").eq("id", propertyId).maybeSingle().then(({ data }) => {
+      if (data) setValue((data as any).destaque_categoria || "");
+      setLoading(false);
+    });
+  }, [propertyId]);
+
+  const handleChange = async (newVal: string) => {
+    const prev = value;
+    setValue(newVal);
+    const { error } = await supabase.from("imoveis").update({
+      destaque_categoria: newVal,
+      destaque_home: !!newVal,
+    } as any).eq("id", propertyId);
+    if (error) {
+      setValue(prev);
+      toast.error("Erro ao atualizar destaque");
+    } else {
+      const label = DESTAQUE_OPTIONS.find((o) => o.value === newVal)?.label || "Sem destaque";
+      toast.success(newVal ? `Destaque: ${label}` : "Destaque removido");
+    }
+  };
+
+  if (loading) return <div className="h-8 w-24 rounded-lg bg-muted animate-pulse" />;
+
+  const current = DESTAQUE_OPTIONS.find((o) => o.value === value);
+
+  return (
+    <select
+      value={value}
+      onChange={(e) => handleChange(e.target.value)}
+      className={cn(
+        "h-8 px-2 rounded-lg text-[10px] font-bold uppercase tracking-wide border transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-300",
+        value
+          ? "bg-amber-500/20 text-amber-600 border-amber-400/50"
+          : "bg-secondary text-muted-foreground border-border hover:bg-muted"
+      )}
+      title="Selecionar destaque no site"
+    >
+      {DESTAQUE_OPTIONS.map((opt) => (
+        <option key={opt.value} value={opt.value}>{opt.icon} {opt.label}</option>
+      ))}
+    </select>
+  );
+}
