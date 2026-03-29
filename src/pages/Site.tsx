@@ -527,8 +527,72 @@ export default function Site() {
     });
   };
 
+  // Fetch properties from DB
+  useEffect(() => {
+    const fetchProperties = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('imoveis')
+        .select('*')
+        .eq('ativo_site', true);
+      
+      if (!error && data) {
+        const mapped: SiteProperty[] = data.map((row) => ({
+          id: row.id,
+          title: row.titulo,
+          address: row.endereco,
+          city: row.cidade,
+          type: row.tipo,
+          status: row.status,
+          price: Number(row.preco),
+          area: Number(row.area),
+          bedrooms: row.quartos,
+          bathrooms: row.banheiros,
+          parking: row.vagas,
+          broker: "Corretor",
+          image: row.imagens?.[0] || "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&h=400&fit=crop",
+          images: row.imagens || [],
+          createdAt: row.created_at,
+          lat: 0,
+          lng: 0,
+          decorated: row.decorado,
+          seaView: row.vista_mar,
+          acceptsExchange: row.aceita_permuta,
+          paymentConditions: row.condicoes_pagamento || [],
+          empreendimento: row.empreendimento || '',
+          unitNumber: row.unidade || '',
+          boxNumber: row.box || '',
+          quadra: row.quadra || '',
+          lote: row.lote || '',
+          exclusivityTerm: row.termo_exclusividade || '',
+        }));
+        setSiteProperties(mapped);
+      }
+      setLoading(false);
+    };
+    fetchProperties();
+  }, []);
+
   const favoritedProperties = siteProperties.filter((p) => favoriteIds.includes(p.id));
   const routeProperties = siteProperties.filter((p) => routeIds.includes(p.id));
+
+  // Computed arrays
+  const available = siteProperties.filter((p) => p.status === "Disponível");
+  const soldProperties = siteProperties.filter((p) => p.status === "Vendido" || p.status === "Reservado");
+  const soldValue = soldProperties.reduce((sum, p) => sum + p.price, 0);
+  const totalVGV = available.reduce((sum, p) => sum + p.price, 0);
+  const featured = available.filter((p) => p.type === "Apartamento" || p.type === "Casa").slice(0, 4);
+  const apartments = available.filter((p) => p.type === "Apartamento");
+  const houses = available.filter((p) => p.type === "Casa");
+  const lots = available.filter((p) => p.type === "Terreno");
+  const decorated = available.filter((p) => p.decorated);
+  const seaViewProperties = available.filter((p) => p.seaView);
+  const condoHouses = available.filter((p) =>
+    (p.type === "Casa" || p.type === "Condomínio") &&
+    p.empreendimento && p.empreendimento.toLowerCase().includes("cond")
+  );
+  const condoLots = lots.filter((l) => l.title.toLowerCase().includes("condomínio") || l.title.toLowerCase().includes("reserva"));
+  const neighborhoodLots = lots.filter((l) => !l.title.toLowerCase().includes("condomínio") && !l.title.toLowerCase().includes("reserva"));
 
   // Continuous scroll uses CSS animation, no JS timer needed
   const maxIndex = Math.max(0, soldProperties.length - 4);
