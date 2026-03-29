@@ -47,6 +47,7 @@ import Contratos from "./pages/Contratos";
 import VideoMaker from "./pages/VideoMaker";
 import Imobiliarias from "./pages/Imobiliarias";
 import CadastroImovel from "./pages/CadastroImovel";
+import EditarImovel from "./pages/EditarImovel";
 import Parceiros from "./pages/Parceiros";
 
 const queryClient = new QueryClient();
@@ -101,6 +102,7 @@ const App = () => (
             <Route path="/videomaker" element={<AuthGuard><VideoMaker /></AuthGuard>} />
             <Route path="/imobiliarias" element={<AuthGuard><Imobiliarias /></AuthGuard>} />
             <Route path="/cadastro-imovel" element={<AuthGuard><CadastroImovel /></AuthGuard>} />
+            <Route path="/editar-imovel/:id" element={<AuthGuard><EditarImovel /></AuthGuard>} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>

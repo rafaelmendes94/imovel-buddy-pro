@@ -1742,11 +1742,7 @@ function PropertyRow({
         {/* ── COL 5: Ações (ícones) ── */}
         <div className="w-full md:w-[52px] flex-shrink-0 flex flex-row md:flex-col items-center justify-start gap-1.5 py-2 px-3 md:px-0" onClick={(e) => e.stopPropagation()}>
           <button
-            onClick={() => onSelect?.(property)}
-            className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors" title="Editar"
-          ><Pencil className="w-3.5 h-3.5 text-primary" /></button>
-          <button
-            onClick={() => onSelect?.(property)}
+            onClick={() => window.location.href = `/editar-imovel/${property.id}`}
             className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors" title="Editar"
           ><Pencil className="w-3.5 h-3.5 text-primary" /></button>
           <button

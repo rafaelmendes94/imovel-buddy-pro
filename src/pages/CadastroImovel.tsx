@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -28,7 +28,7 @@ const paymentConditionOptions = [
   "Financiamento Bancário", "FGTS", "Dação", "Permuta", "Consórcio"
 ];
 
-interface FormData {
+export interface FormData {
   titulo: string;
   tipo: string;
   status: string;
@@ -72,7 +72,7 @@ interface FormData {
   outrasCaracteristicas: string[];
 }
 
-const initialForm: FormData = {
+export const initialForm: FormData = {
   titulo: '', tipo: '', status: 'Disponível', endereco: '', bairro: '', cidade: '',
   empreendimento: '', unidade: '', box: '', quadra: '', lote: '',
   preco: '', precoParcelado: '', comissao: '', bonus: '', bonusValidade: '',
@@ -93,18 +93,82 @@ function SectionHeader({ icon: Icon, title }: { icon: any; title: string }) {
   );
 }
 
-function CadastroImovelForm() {
+export function ImovelForm({ editId }: { editId?: string }) {
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [loadingData, setLoadingData] = useState(!!editId);
   const [form, setForm] = useState<FormData>(initialForm);
   const [newInfra, setNewInfra] = useState('');
   const [newCaract, setNewCaract] = useState('');
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [existingImages, setExistingImages] = useState<string[]>([]);
+
+  const isEdit = !!editId;
 
   const set = (field: keyof FormData, value: any) => setForm(prev => ({ ...prev, [field]: value }));
+
+  // Load existing data for edit mode
+  useEffect(() => {
+    if (!editId) return;
+    const load = async () => {
+      setLoadingData(true);
+      const { data, error } = await supabase.from('imoveis').select('*').eq('id', editId).maybeSingle();
+      if (error || !data) {
+        toast({ title: "Erro", description: "Imóvel não encontrado.", variant: "destructive" });
+        navigate('/imoveis');
+        return;
+      }
+      setForm({
+        titulo: data.titulo || '',
+        tipo: data.tipo || '',
+        status: data.status || 'Disponível',
+        endereco: data.endereco || '',
+        bairro: data.bairro || '',
+        cidade: data.cidade || '',
+        empreendimento: data.empreendimento || '',
+        unidade: data.unidade || '',
+        box: data.box || '',
+        quadra: data.quadra || '',
+        lote: data.lote || '',
+        preco: data.preco ? String(data.preco) : '',
+        precoParcelado: data.preco_parcelado ? String(data.preco_parcelado) : '',
+        comissao: data.comissao ? String(data.comissao) : '',
+        bonus: data.bonus ? String(data.bonus) : '',
+        bonusValidade: data.bonus_validade || '',
+        area: data.area ? String(data.area) : '',
+        areaPrivativa: data.area_privativa ? String(data.area_privativa) : '',
+        quartos: data.quartos || 0,
+        banheiros: data.banheiros || 0,
+        vagas: data.vagas || 0,
+        elevadores: data.elevadores || 0,
+        descricao: data.descricao || '',
+        proprietario: data.proprietario || '',
+        proprietarioTelefone: data.proprietario_telefone || '',
+        proprietarioTipo: data.proprietario_tipo || '',
+        condicao: data.condicao || '',
+        padrao: data.padrao || '',
+        posicaoPredio: data.posicao_predio || '',
+        posicaoSolar: data.posicao_solar || '',
+        vista: data.vista || '',
+        localChaves: data.local_chaves || '',
+        termoExclusividade: data.termo_exclusividade || '',
+        vistaMar: data.vista_mar || false,
+        decorado: data.decorado || false,
+        aceitaPermuta: data.aceita_permuta || false,
+        destaqueHome: data.destaque_home || false,
+        ativoSite: data.ativo_site || false,
+        condicoesPagemento: data.condicoes_pagamento || [],
+        infraestrutura: data.infraestrutura || [],
+        outrasCaracteristicas: data.outras_caracteristicas || [],
+      });
+      setExistingImages(data.imagens || []);
+      setLoadingData(false);
+    };
+    load();
+  }, [editId]);
 
   const togglePayment = (cond: string) => {
     setForm(prev => ({
@@ -146,6 +210,10 @@ function CadastroImovelForm() {
     setImagePreviews(prev => prev.filter((_, i) => i !== idx));
   };
 
+  const removeExistingImage = (idx: number) => {
+    setExistingImages(prev => prev.filter((_, i) => i !== idx));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
@@ -159,7 +227,7 @@ function CadastroImovelForm() {
     setLoading(true);
 
     try {
-      // Upload images
+      // Upload new images
       const uploadedUrls: string[] = [];
       for (const file of images) {
         const ext = file.name.split('.').pop();
@@ -172,61 +240,72 @@ function CadastroImovelForm() {
         uploadedUrls.push(urlData.publicUrl);
       }
 
-      const { error } = await supabase
-        .from('imoveis')
-        .insert([{
-          titulo: form.titulo,
-          tipo: form.tipo || 'Casa',
-          status: form.status || 'Disponível',
-          endereco: form.endereco,
-          cidade: form.cidade,
-          bairro: form.bairro || '',
-          empreendimento: form.empreendimento || '',
-          unidade: form.unidade || '',
-          box: form.box || '',
-          quadra: form.quadra || '',
-          lote: form.lote || '',
-          preco: parseFloat(form.preco) || 0,
-          preco_parcelado: parseFloat(form.precoParcelado) || 0,
-          comissao: parseFloat(form.comissao) || 0,
-          bonus: parseFloat(form.bonus) || 0,
-          bonus_validade: form.bonusValidade || '',
-          area: parseFloat(form.area) || 0,
-          area_privativa: parseFloat(form.areaPrivativa) || 0,
-          quartos: form.quartos,
-          banheiros: form.banheiros,
-          vagas: form.vagas,
-          elevadores: form.elevadores,
-          descricao: form.descricao || null,
-          proprietario: form.proprietario || '',
-          proprietario_telefone: form.proprietarioTelefone || '',
-          proprietario_tipo: form.proprietarioTipo || '',
-          condicao: form.condicao || '',
-          padrao: form.padrao || '',
-          posicao_predio: form.posicaoPredio || '',
-          posicao_solar: form.posicaoSolar || '',
-          vista: form.vista || '',
-          local_chaves: form.localChaves || '',
-          termo_exclusividade: form.termoExclusividade || '',
-          vista_mar: form.vistaMar,
-          decorado: form.decorado,
-          aceita_permuta: form.aceitaPermuta,
-          destaque_home: form.destaqueHome,
-          ativo_site: form.ativoSite,
-          condicoes_pagamento: form.condicoesPagemento,
-          infraestrutura: form.infraestrutura,
-          outras_caracteristicas: form.outrasCaracteristicas,
-          imagens: uploadedUrls.length > 0 ? uploadedUrls : null,
-          user_id: user.id,
-        }])
-        .select();
+      const allImages = [...existingImages, ...uploadedUrls];
 
-      if (error) throw error;
+      const payload = {
+        titulo: form.titulo,
+        tipo: form.tipo || 'Casa',
+        status: form.status || 'Disponível',
+        endereco: form.endereco,
+        cidade: form.cidade,
+        bairro: form.bairro || '',
+        empreendimento: form.empreendimento || '',
+        unidade: form.unidade || '',
+        box: form.box || '',
+        quadra: form.quadra || '',
+        lote: form.lote || '',
+        preco: parseFloat(form.preco) || 0,
+        preco_parcelado: parseFloat(form.precoParcelado) || 0,
+        comissao: parseFloat(form.comissao) || 0,
+        bonus: parseFloat(form.bonus) || 0,
+        bonus_validade: form.bonusValidade || '',
+        area: parseFloat(form.area) || 0,
+        area_privativa: parseFloat(form.areaPrivativa) || 0,
+        quartos: form.quartos,
+        banheiros: form.banheiros,
+        vagas: form.vagas,
+        elevadores: form.elevadores,
+        descricao: form.descricao || null,
+        proprietario: form.proprietario || '',
+        proprietario_telefone: form.proprietarioTelefone || '',
+        proprietario_tipo: form.proprietarioTipo || '',
+        condicao: form.condicao || '',
+        padrao: form.padrao || '',
+        posicao_predio: form.posicaoPredio || '',
+        posicao_solar: form.posicaoSolar || '',
+        vista: form.vista || '',
+        local_chaves: form.localChaves || '',
+        termo_exclusividade: form.termoExclusividade || '',
+        vista_mar: form.vistaMar,
+        decorado: form.decorado,
+        aceita_permuta: form.aceitaPermuta,
+        destaque_home: form.destaqueHome,
+        ativo_site: form.ativoSite,
+        condicoes_pagamento: form.condicoesPagemento,
+        infraestrutura: form.infraestrutura,
+        outras_caracteristicas: form.outrasCaracteristicas,
+        imagens: allImages.length > 0 ? allImages : null,
+      };
 
-      toast({ title: "Sucesso! ✅", description: "Imóvel cadastrado com sucesso!" });
+      if (isEdit) {
+        const { error } = await supabase
+          .from('imoveis')
+          .update(payload)
+          .eq('id', editId);
+        if (error) throw error;
+        toast({ title: "Sucesso! ✅", description: "Imóvel atualizado com sucesso!" });
+      } else {
+        const { error } = await supabase
+          .from('imoveis')
+          .insert([{ ...payload, user_id: user.id }])
+          .select();
+        if (error) throw error;
+        toast({ title: "Sucesso! ✅", description: "Imóvel cadastrado com sucesso!" });
+      }
+
       navigate('/imoveis');
     } catch (error: any) {
-      toast({ title: "Erro ao cadastrar", description: error.message, variant: "destructive" });
+      toast({ title: isEdit ? "Erro ao atualizar" : "Erro ao cadastrar", description: error.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -234,17 +313,32 @@ function CadastroImovelForm() {
 
   const comissaoValor = (parseFloat(form.preco) || 0) * (parseFloat(form.comissao) || 0) / 100;
 
+  if (loadingData) {
+    return (
+      <div className="max-w-5xl mx-auto p-6 flex items-center justify-center min-h-[400px]">
+        <div className="flex items-center gap-3 text-muted-foreground">
+          <Loader2 className="w-6 h-6 animate-spin" />
+          <span>Carregando dados do imóvel...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <form onSubmit={handleSubmit} className="max-w-5xl mx-auto space-y-6 p-4 sm:p-6">
       <div className="flex items-center justify-between">
         <div>
           <BackButton />
-          <h1 className="text-2xl font-black text-foreground mt-2">Cadastrar Novo Imóvel</h1>
-          <p className="text-sm text-muted-foreground">Preencha os dados completos do imóvel</p>
+          <h1 className="text-2xl font-black text-foreground mt-2">
+            {isEdit ? 'Editar Imóvel' : 'Cadastrar Novo Imóvel'}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            {isEdit ? 'Atualize os dados do imóvel' : 'Preencha os dados completos do imóvel'}
+          </p>
         </div>
         <Button type="submit" disabled={loading} className="gap-2">
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-          {loading ? 'Salvando...' : 'Cadastrar Imóvel'}
+          {loading ? 'Salvando...' : isEdit ? 'Salvar Alterações' : 'Cadastrar Imóvel'}
         </Button>
       </div>
 
@@ -252,7 +346,6 @@ function CadastroImovelForm() {
       <div className="bg-card border border-border rounded-xl p-5">
         <SectionHeader icon={Building2} title="Identificação" />
 
-        {/* Linha 1: Tipo, Empreendimento, Unidade/Quadra, Box/Lote */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
           <div className="space-y-1.5">
             <Label className="text-xs">Tipo do Imóvel *</Label>
@@ -283,7 +376,6 @@ function CadastroImovelForm() {
           </div>
         </div>
 
-        {/* Linha 2: Dormitórios, Banheiros, Área Privativa, Área Total */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><BedDouble className="w-3.5 h-3.5" /> Dormitórios</Label>
@@ -303,7 +395,6 @@ function CadastroImovelForm() {
           </div>
         </div>
 
-        {/* Linha 3: Título, Status, Vagas, Elevadores */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
           <div className="space-y-1.5 sm:col-span-2">
             <Label className="text-xs">Título do Imóvel *</Label>
@@ -324,7 +415,6 @@ function CadastroImovelForm() {
           </div>
         </div>
 
-        {/* Linha 4: Cidade, Bairro, Endereço */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> Cidade *</Label>
@@ -386,7 +476,6 @@ function CadastroImovelForm() {
           </div>
         </div>
 
-        {/* Condições de pagamento */}
         <div className="space-y-2">
           <Label className="text-xs font-semibold">Condições de Pagamento</Label>
           <div className="flex flex-wrap gap-2">
@@ -472,7 +561,6 @@ function CadastroImovelForm() {
           </div>
         </div>
 
-        {/* Toggles */}
         <div className="flex flex-wrap gap-6 mb-4 py-3 px-4 bg-muted/50 rounded-lg">
           <div className="flex items-center gap-2">
             <Switch checked={form.vistaMar} onCheckedChange={(v) => set('vistaMar', v)} />
@@ -496,7 +584,6 @@ function CadastroImovelForm() {
           </div>
         </div>
 
-        {/* Infraestrutura */}
         <div className="mb-4">
           <Label className="text-xs font-semibold mb-2 block">Infraestrutura</Label>
           <div className="flex flex-wrap gap-1.5 mb-2">
@@ -515,7 +602,6 @@ function CadastroImovelForm() {
           </div>
         </div>
 
-        {/* Outras Características */}
         <div>
           <Label className="text-xs font-semibold mb-2 block">Outras Características</Label>
           <div className="flex flex-wrap gap-1.5 mb-2">
@@ -552,8 +638,22 @@ function CadastroImovelForm() {
         <SectionHeader icon={Image} title="Fotos do Imóvel" />
 
         <div className="flex flex-wrap gap-3 mb-4">
+          {/* Existing images (from DB) */}
+          {existingImages.map((src, i) => (
+            <div key={`existing-${i}`} className="relative w-24 h-24 rounded-lg overflow-hidden border border-border group">
+              <img src={src} alt="" className="w-full h-full object-cover" />
+              <button
+                type="button"
+                onClick={() => removeExistingImage(i)}
+                className="absolute top-1 right-1 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          ))}
+          {/* New images (not yet uploaded) */}
           {imagePreviews.map((src, i) => (
-            <div key={i} className="relative w-24 h-24 rounded-lg overflow-hidden border border-border group">
+            <div key={`new-${i}`} className="relative w-24 h-24 rounded-lg overflow-hidden border border-primary/30 group">
               <img src={src} alt="" className="w-full h-full object-cover" />
               <button
                 type="button"
@@ -562,6 +662,7 @@ function CadastroImovelForm() {
               >
                 <X className="w-3 h-3" />
               </button>
+              <span className="absolute bottom-1 left-1 text-[8px] bg-primary text-primary-foreground px-1 rounded">Nova</span>
             </div>
           ))}
           <label className="w-24 h-24 rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors">
@@ -578,7 +679,7 @@ function CadastroImovelForm() {
         <Button type="button" variant="outline" onClick={() => navigate('/imoveis')}>Cancelar</Button>
         <Button type="submit" disabled={loading} className="gap-2 px-8">
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-          {loading ? 'Salvando...' : 'Cadastrar Imóvel'}
+          {loading ? 'Salvando...' : isEdit ? 'Salvar Alterações' : 'Cadastrar Imóvel'}
         </Button>
       </div>
     </form>
@@ -588,7 +689,7 @@ function CadastroImovelForm() {
 export default function CadastroImovel() {
   return (
     <AppLayout>
-      <CadastroImovelForm />
+      <ImovelForm />
     </AppLayout>
   );
 }
