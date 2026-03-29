@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Users, UserCog, CreditCard, LogOut, Crown,
   Building2, Building, Fence, Camera, ClipboardCheck, Wallet,
   Table2, FileSignature, Clapperboard, Globe, Landmark, Settings,
-  FileText, Map,
+  FileText, Map, Briefcase,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator";
 const adminItems = [
   { icon: LayoutDashboard, label: "Dashboard Admin", path: "/admin/dashboard", moduleKey: "dashboard_admin" },
   { icon: UserCog, label: "Funcionários", path: "/admin/funcionarios", moduleKey: "funcionarios" },
+  { icon: Briefcase, label: "Cargos e Funções", path: "/admin/cargos", moduleKey: "funcionarios" },
   { icon: Users, label: "Clientes", path: "/admin/clientes", moduleKey: "clientes" },
   { icon: CreditCard, label: "Planos", path: "/admin/planos", moduleKey: "planos" },
 ];
