@@ -37,6 +37,7 @@ import {
   Eye,
   Heart,
   Handshake,
+  Route,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { RoutePlanner } from "@/components/RoutePlanner";
@@ -365,7 +366,7 @@ const categories: { key: Category; label: string; icon: typeof Home }[] = [
   { key: "lotes-bairro", label: "Lotes Bairro", icon: MapPin },
 ];
 
-function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, onToggleFavorite }: { property: typeof siteProperties[0]; onSelect?: (p: typeof siteProperties[0]) => void; hideStamp?: boolean; onViewTerm?: (url: string) => void; isFavorited?: boolean; onToggleFavorite?: (id: string) => void }) {
+function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, onToggleFavorite, isInRoute, onToggleRoute }: { property: typeof siteProperties[0]; onSelect?: (p: typeof siteProperties[0]) => void; hideStamp?: boolean; onViewTerm?: (url: string) => void; isFavorited?: boolean; onToggleFavorite?: (id: string) => void; isInRoute?: boolean; onToggleRoute?: (id: string) => void }) {
   const [imgIndex, setImgIndex] = useState(0);
   const broker = brokerInfo[property.broker] || { photo: "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=100&h=100&fit=crop&crop=face", whatsapp: "5511999999999" };
   const whatsappMessage = encodeURIComponent(`Olá! Tenho interesse no imóvel: ${property.title} - ${formatCurrency(property.price)}`);
@@ -430,17 +431,31 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, 
             <FileCheck className="w-3 h-3" /> Ex.Assinada
           </button>
         )}
+        {/* Route selector button */}
+        <button
+          onClick={(e) => { e.stopPropagation(); onToggleRoute?.(property.id); }}
+          className={cn(
+            "absolute z-20 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all hover:scale-110",
+            property.exclusivityTerm ? "top-12 right-3" : "top-3 right-3",
+            isInRoute
+              ? "bg-blue-600 text-white"
+              : "bg-white/80 text-gray-600 hover:bg-white hover:text-blue-600"
+          )}
+          title={isInRoute ? "Remover da rota" : "Adicionar à rota"}
+        >
+          <Route className={cn("w-4 h-4", isInRoute && "fill-current")} />
+        </button>
         {/* Favorite heart button */}
         <button
           onClick={(e) => { e.stopPropagation(); onToggleFavorite?.(property.id); }}
           className={cn(
             "absolute z-20 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all hover:scale-110",
-            property.exclusivityTerm ? "top-12 right-3" : "top-3 right-3",
+            property.exclusivityTerm ? "top-[5.5rem] right-3" : "top-12 right-3",
             isFavorited
               ? "bg-red-500 text-white"
               : "bg-white/80 text-gray-600 hover:bg-white hover:text-red-500"
           )}
-          title={isFavorited ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+          title={isFavorited ? "Remover dos favoritos" : "Favoritar"}
         >
           <Heart className={cn("w-4 h-4", isFavorited && "fill-current")} />
         </button>
