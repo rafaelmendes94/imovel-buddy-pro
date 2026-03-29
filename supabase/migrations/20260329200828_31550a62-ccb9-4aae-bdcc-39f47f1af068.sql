@@ -1,0 +1,1 @@
+ALTER TABLE public.imoveis ADD COLUMN destaque_home boolean NOT NULL DEFAULT false;

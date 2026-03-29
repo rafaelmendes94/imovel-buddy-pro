@@ -301,39 +301,6 @@ const siteProperties = [
   },
 ];
 
-const condoProperties = [
-  {
-    id: "condo-1",
-    name: "Condomínio Praia Dourada",
-    image: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=600&h=400&fit=crop",
-    city: "Capão da Canoa",
-    units: 120,
-    available: 18,
-    monthlyFee: 800,
-    type: "Horizontal",
-  },
-  {
-    id: "condo-2",
-    name: "Residencial Atlântida Sul",
-    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&h=400&fit=crop",
-    city: "Xangri-lá",
-    units: 80,
-    available: 12,
-    monthlyFee: 1200,
-    type: "Vertical",
-  },
-  {
-    id: "condo-3",
-    name: "Village das Dunas",
-    image: "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?w=600&h=400&fit=crop",
-    city: "Xangri-lá",
-    units: 60,
-    available: 22,
-    monthlyFee: 650,
-    type: "Horizontal",
-  },
-];
-
 const available = siteProperties.filter((p) => p.status === "Disponível");
 const soldProperties = siteProperties.filter((p) => p.status === "Vendido" || p.status === "Reservado");
 const soldValue = soldProperties.reduce((sum, p) => sum + p.price, 0);
@@ -347,6 +314,11 @@ const decorated = available.filter((p) => p.decorated);
 const seaViewProperties = available.filter((p) => p.seaView);
 const exchangeProperties = available.filter((p) => p.acceptsExchange);
 const withPaymentConditions = available.filter((p) => p.paymentConditions);
+// Condominium houses: houses/properties in condominiums
+const condoHouses = available.filter((p) =>
+  (p.type === "Casa" || p.type === "Condomínio") &&
+  p.empreendimento && p.empreendimento.toLowerCase().includes("cond")
+);
 
 // Separate lots into condo lots vs neighborhood lots
 const condoLots = lots.filter((l) => l.title.toLowerCase().includes("condomínio") || l.title.toLowerCase().includes("reserva"));
@@ -553,35 +525,6 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, 
             WhatsApp
           </a>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function CondoCard({ condo }: { condo: typeof condoProperties[0] }) {
-  return (
-    <div className="group rounded-2xl overflow-hidden bg-white shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100">
-      <div className="relative h-48 overflow-hidden">
-        <img src={condo.image} alt={condo.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-        <span className="absolute top-3 left-3 px-3 py-1 rounded-full text-[11px] font-bold bg-indigo-500 text-white">{condo.type}</span>
-        <div className="absolute bottom-3 left-3">
-          <p className="text-lg font-bold text-white drop-shadow-lg">{condo.name}</p>
-          <p className="text-xs text-white/80">{condo.city}</p>
-        </div>
-      </div>
-      <div className="p-4 space-y-3">
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-600">{condo.units} unidades</span>
-          <span className="font-bold text-emerald-600">{condo.available} disponíveis</span>
-        </div>
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-500">Condomínio</span>
-          <span className="font-bold text-gray-900">{formatCurrency(condo.monthlyFee)}/mês</span>
-        </div>
-        <button className="w-full py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 text-white text-sm font-bold hover:from-indigo-700 hover:to-indigo-600 transition-all shadow-sm">
-          Ver Unidades
-        </button>
       </div>
     </div>
   );
@@ -1379,11 +1322,11 @@ export default function Site() {
         )}
 
         {/* Condomínios */}
-        {!searchTerm && !hasActiveFilters && (activeCategory === "todos" || activeCategory === "condominios") && (
+        {!searchTerm && !hasActiveFilters && (activeCategory === "todos" || activeCategory === "condominios") && condoHouses.length > 0 && (
           <section>
-            <SectionHeader title="Condomínios" subtitle={`${condoProperties.length} condomínios com unidades disponíveis`} icon={Fence} />
+            <SectionHeader title="Condomínios" subtitle={`${condoHouses.length} imóveis em condomínios`} icon={Fence} />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {condoProperties.slice(0, 4).map((c) => <CondoCard key={c.id} condo={c} />)}
+              {sortByPrice(condoHouses).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} isFavorited={favoriteIds.includes(p.id)} onToggleFavorite={toggleFavorite} isInRoute={routeIds.includes(p.id)} onToggleRoute={toggleRoute} />)}
             </div>
           </section>
         )}
