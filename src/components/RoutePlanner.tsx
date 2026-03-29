@@ -262,7 +262,7 @@ export function RoutePlanner({ properties }: RoutePlannerProps) {
                   <Navigation className="w-5 h-5" />
                   {orderedProperties.length > 0
                     ? `Iniciar Rota (${orderedProperties.length} ${orderedProperties.length === 1 ? "imóvel" : "imóveis"})`
-                    : "Favorite imóveis para traçar rota"}
+                    : "Selecione imóveis para traçar rota"}
                 </button>
               )}
             </div>
