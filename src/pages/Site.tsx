@@ -1515,7 +1515,7 @@ export default function Site() {
       >
         <ArrowUp className="w-5 h-5" />
       </button>
-      <RoutePlanner properties={favoritedProperties} />
+      <RoutePlanner properties={routeProperties} />
       <SharkAI properties={siteProperties} onSelectProperty={setSelectedProperty} />
       <PropertyDetailModal
         property={selectedProperty}
