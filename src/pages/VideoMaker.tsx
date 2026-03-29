@@ -36,7 +36,7 @@ const clientTypes = [
   { value: "assinante", label: "Assinante" },
   { value: "construtor", label: "Construtor" },
   { value: "particular", label: "Particular" },
-  { value: "mv_broker", label: "MV Connect" },
+  { value: "mv_broker", label: "MV CONNECT" },
 ] as const;
 type ClientType = typeof clientTypes[number]["value"];
 

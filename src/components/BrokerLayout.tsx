@@ -29,7 +29,7 @@ export function BrokerLayout({ children }: { children: React.ReactNode }) {
           <button onClick={() => setMobileOpen(true)} className="p-2 rounded-lg hover:bg-muted transition-colors -ml-2">
             <Menu className="w-5 h-5 text-foreground" />
           </button>
-          <span className="text-sm font-bold text-foreground">MV Connect</span>
+          <span className="text-sm font-bold text-foreground">MV CONNECT</span>
         </div>
         <SubscriptionBanner />
         {children}

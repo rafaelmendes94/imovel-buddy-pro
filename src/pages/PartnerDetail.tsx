@@ -438,7 +438,7 @@ export default function PartnerDetail() {
       {/* Footer */}
       <footer className="bg-gray-900 text-gray-400 py-8">
         <div className="max-w-6xl mx-auto px-4 text-center">
-          <p className="text-sm">© 2024 MV Connect. Todos os direitos reservados.</p>
+          <p className="text-sm">© 2024 MV CONNECT. Todos os direitos reservados.</p>
         </div>
       </footer>
 
