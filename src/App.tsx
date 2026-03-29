@@ -46,6 +46,7 @@ import Tabelas from "./pages/Tabelas";
 import Contratos from "./pages/Contratos";
 import VideoMaker from "./pages/VideoMaker";
 import Imobiliarias from "./pages/Imobiliarias";
+import CadastroImovel from "./pages/CadastroImovel";
 
 const queryClient = new QueryClient();
 
