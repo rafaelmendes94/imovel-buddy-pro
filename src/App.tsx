@@ -52,6 +52,7 @@ import EditarImovel from "./pages/EditarImovel";
 import Parceiros from "./pages/Parceiros";
 import Construtoras from "./pages/Construtoras";
 import ConstrutoraDetail from "./pages/ConstrutoraDetail";
+import ConstrutoraAvaliacoes from "./pages/ConstrutoraAvaliacoes";
 
 const queryClient = new QueryClient();
 
@@ -109,6 +110,7 @@ const App = () => (
             <Route path="/editar-imovel/:id" element={<AuthGuard><EditarImovel /></AuthGuard>} />
             <Route path="/construtoras" element={<AuthGuard><Construtoras /></AuthGuard>} />
             <Route path="/construtoras/:id" element={<AuthGuard><ConstrutoraDetail /></AuthGuard>} />
+            <Route path="/construtoras/:id/avaliacoes" element={<AuthGuard><ConstrutoraAvaliacoes /></AuthGuard>} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>
