@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, ShieldCheck, ChevronDown, ChevronRight, Pencil, Save, X, Briefcase } from "lucide-react";
+import { Plus, Trash2, ShieldCheck, ChevronDown, ChevronRight, Pencil, Save, X, Briefcase, KeyRound } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
@@ -101,7 +101,30 @@ export default function AdminFuncionarios() {
   const [expandedUser, setExpandedUser] = useState<string | null>(null);
   const [editingFunction, setEditingFunction] = useState<string | null>(null);
   const [editFunctionValue, setEditFunctionValue] = useState("");
+  const [resetPasswordUser, setResetPasswordUser] = useState<string | null>(null);
+  const [resetPassword, setResetPassword] = useState("");
+  const [resettingPassword, setResettingPassword] = useState(false);
   const { toast } = useToast();
+
+  const handleResetPassword = async () => {
+    if (!resetPasswordUser || !resetPassword || resetPassword.length < 6) {
+      toast({ title: "Erro", description: "A senha deve ter pelo menos 6 caracteres", variant: "destructive" });
+      return;
+    }
+    setResettingPassword(true);
+    const { data: { session } } = await supabase.auth.getSession();
+    const res = await supabase.functions.invoke("reset-password", {
+      body: { target_user_id: resetPasswordUser, new_password: resetPassword },
+    });
+    if (res.error || res.data?.error) {
+      toast({ title: "Erro", description: res.data?.error || res.error?.message, variant: "destructive" });
+    } else {
+      toast({ title: "Senha alterada com sucesso!" });
+      setResetPasswordUser(null);
+      setResetPassword("");
+    }
+    setResettingPassword(false);
+  };
 
   const fetchStaff = async () => {
     const { data: roles } = await supabase.from("user_roles").select("user_id").eq("role", "admin_staff");
@@ -379,6 +402,14 @@ export default function AdminFuncionarios() {
                       <Button
                         variant="ghost"
                         size="icon"
+                        onClick={(e) => { e.stopPropagation(); setResetPasswordUser(s.user_id); setResetPassword(""); }}
+                        title="Alterar senha"
+                      >
+                        <KeyRound className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={(e) => { e.stopPropagation(); deleteStaff(s.user_id); }}
                         className="text-destructive hover:text-destructive"
                       >
@@ -466,6 +497,24 @@ export default function AdminFuncionarios() {
             })}
           </div>
         )}
+
+        {/* Reset Password Dialog */}
+        <Dialog open={!!resetPasswordUser} onOpenChange={(open) => { if (!open) setResetPasswordUser(null); }}>
+          <DialogContent className="sm:max-w-sm">
+            <DialogHeader><DialogTitle>Alterar Senha do Funcionário</DialogTitle></DialogHeader>
+            <div className="space-y-3">
+              <Input
+                type="password"
+                placeholder="Nova senha (mín. 6 caracteres)"
+                value={resetPassword}
+                onChange={e => setResetPassword(e.target.value)}
+              />
+              <Button onClick={handleResetPassword} disabled={resettingPassword} className="w-full">
+                {resettingPassword ? "Alterando..." : "Alterar Senha"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </AdminLayout>
   );
