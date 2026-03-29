@@ -31,8 +31,10 @@ import {
   MessageSquare,
   Send,
   ThumbsUp,
+  Settings as SettingsIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SiteConfigDialog } from "@/components/SiteConfigDialog";
 
 const brokerInfo: Record<string, { photo: string; whatsapp: string; creci: string; bio: string; totalSold: number; totalSoldValue: number; avgDaysToSell: number; rating: number; totalRatings: number; comments: { author: string; avatar: string; rating: number; text: string; date: string }[] }> = {
   "Carlos Silva": {

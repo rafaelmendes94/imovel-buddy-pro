@@ -2,9 +2,10 @@ import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
   ArrowLeft, Building2, Star, Phone, MapPin, Globe, Mail,
-  MessageSquare, Send, ThumbsUp, Clock, Users, X
+  MessageSquare, Send, ThumbsUp, Clock, Users, X, Settings as SettingsIcon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SiteConfigDialog } from "@/components/SiteConfigDialog";
 
 const partnersData: Record<string, {
   name: string;
