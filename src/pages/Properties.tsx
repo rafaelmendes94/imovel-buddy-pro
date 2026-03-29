@@ -1371,13 +1371,15 @@ const cleanEmpreendimentoName = (name: string) => name.replace(/^(Ed\.\s*|Cond\.
 
 // ---- PropertyRow (redesigned) ----
 function PropertyRow({
-  property, onStatusChange, onSelect, isFavorited, onToggleFavorite, onFilterByTitle, onFilterByCondition, onFilterByOwner, onPriceChange, allProperties, onDealLabelChange, onNavigateToValuation, onNavigateToContract, onQuickUpdate, onDuplicate,
+  property, onStatusChange, onSelect, isFavorited, onToggleFavorite, isInRoute, onToggleRoute, onFilterByTitle, onFilterByCondition, onFilterByOwner, onPriceChange, allProperties, onDealLabelChange, onNavigateToValuation, onNavigateToContract, onQuickUpdate, onDuplicate,
 }: {
   property: Property;
   onStatusChange: (id: string, status: Property["status"]) => void;
   onSelect?: (p: Property) => void;
   isFavorited?: boolean;
   onToggleFavorite?: (id: string) => void;
+  isInRoute?: boolean;
+  onToggleRoute?: (id: string) => void;
   onFilterByTitle?: (title: string) => void;
   onFilterByCondition?: (cond: string) => void;
   onFilterByOwner?: (owner: string) => void;
