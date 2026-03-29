@@ -74,6 +74,7 @@ interface SiteProperty {
   lote?: string;
   exclusivityTerm?: string;
   paymentConditionsOther?: string;
+  destaqueCategoria?: string;
 }
 // Broker info map
 const brokerInfo: Record<string, { photo: string; whatsapp: string }> = {
@@ -566,6 +567,7 @@ export default function Site() {
           quadra: row.quadra || '',
           lote: row.lote || '',
           exclusivityTerm: row.termo_exclusividade || '',
+          destaqueCategoria: (row as any).destaque_categoria || '',
         }));
         setSiteProperties(mapped);
       }
@@ -577,23 +579,20 @@ export default function Site() {
   const favoritedProperties = siteProperties.filter((p) => favoriteIds.includes(p.id));
   const routeProperties = siteProperties.filter((p) => routeIds.includes(p.id));
 
-  // Computed arrays
+  // Computed arrays - use destaque_categoria to place properties in sections
   const available = siteProperties.filter((p) => p.status === "Disponível");
   const soldProperties = siteProperties.filter((p) => p.status === "Vendido" || p.status === "Reservado");
   const soldValue = soldProperties.reduce((sum, p) => sum + p.price, 0);
   const totalVGV = available.reduce((sum, p) => sum + p.price, 0);
-  const featured = available.filter((p) => p.type === "Apartamento" || p.type === "Casa").slice(0, 4);
-  const apartments = available.filter((p) => p.type === "Apartamento");
-  const houses = available.filter((p) => p.type === "Casa");
-  const lots = available.filter((p) => p.type === "Terreno");
-  const decorated = available.filter((p) => p.decorated);
-  const seaViewProperties = available.filter((p) => p.seaView);
-  const condoHouses = available.filter((p) =>
-    (p.type === "Casa" || p.type === "Condomínio") &&
-    p.empreendimento && p.empreendimento.toLowerCase().includes("cond")
-  );
-  const condoLots = lots.filter((l) => l.title.toLowerCase().includes("condomínio") || l.title.toLowerCase().includes("reserva"));
-  const neighborhoodLots = lots.filter((l) => !l.title.toLowerCase().includes("condomínio") && !l.title.toLowerCase().includes("reserva"));
+  const featured = available.filter((p) => p.destaqueCategoria).slice(0, 4);
+  const apartments = available.filter((p) => p.destaqueCategoria === "apartamentos" || (!p.destaqueCategoria && p.type === "Apartamento"));
+  const houses = available.filter((p) => p.destaqueCategoria === "casas" || (!p.destaqueCategoria && p.type === "Casa"));
+  const lots = available.filter((p) => p.destaqueCategoria === "lotes-cond" || p.destaqueCategoria === "lotes-bairro" || (!p.destaqueCategoria && p.type === "Terreno"));
+  const decorated = available.filter((p) => p.destaqueCategoria === "decorados" || (!p.destaqueCategoria && p.decorated));
+  const seaViewProperties = available.filter((p) => p.destaqueCategoria === "vista-mar" || (!p.destaqueCategoria && p.seaView));
+  const condoHouses = available.filter((p) => p.destaqueCategoria === "condominios" || (!p.destaqueCategoria && (p.type === "Casa" || p.type === "Condomínio") && p.empreendimento && p.empreendimento.toLowerCase().includes("cond")));
+  const condoLots = lots.filter((l) => l.destaqueCategoria === "lotes-cond" || l.title.toLowerCase().includes("condomínio") || l.title.toLowerCase().includes("reserva"));
+  const neighborhoodLots = lots.filter((l) => l.destaqueCategoria === "lotes-bairro" || (!l.destaqueCategoria && !l.title.toLowerCase().includes("condomínio") && !l.title.toLowerCase().includes("reserva")));
 
   // Continuous scroll uses CSS animation, no JS timer needed
   const maxIndex = Math.max(0, soldProperties.length - 4);

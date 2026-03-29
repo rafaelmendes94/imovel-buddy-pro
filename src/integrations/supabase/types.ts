@@ -32,6 +32,7 @@ export type Database = {
           created_at: string
           decorado: boolean
           descricao: string | null
+          destaque_categoria: string | null
           destaque_home: boolean
           elevadores: number | null
           empreendimento: string | null
@@ -80,6 +81,7 @@ export type Database = {
           created_at?: string
           decorado?: boolean
           descricao?: string | null
+          destaque_categoria?: string | null
           destaque_home?: boolean
           elevadores?: number | null
           empreendimento?: string | null
@@ -128,6 +130,7 @@ export type Database = {
           created_at?: string
           decorado?: boolean
           descricao?: string | null
+          destaque_categoria?: string | null
           destaque_home?: boolean
           elevadores?: number | null
           empreendimento?: string | null
