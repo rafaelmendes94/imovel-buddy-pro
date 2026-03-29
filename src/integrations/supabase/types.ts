@@ -16,58 +16,148 @@ export type Database = {
     Tables: {
       imoveis: {
         Row: {
+          aceita_permuta: boolean
           area: number
+          area_privativa: number
+          ativo_site: boolean
+          bairro: string | null
           banheiros: number
+          bonus: number | null
+          bonus_validade: string | null
+          box: string | null
           cidade: string
+          comissao: number | null
+          condicao: string | null
+          condicoes_pagamento: string[] | null
           created_at: string
+          decorado: boolean
           descricao: string | null
           destaque_home: boolean
+          elevadores: number | null
+          empreendimento: string | null
           endereco: string
           id: string
           imagens: string[] | null
+          infraestrutura: string[] | null
+          local_chaves: string | null
+          lote: string | null
+          outras_caracteristicas: string[] | null
+          padrao: string | null
+          posicao_predio: string | null
+          posicao_solar: string | null
           preco: number
+          preco_parcelado: number | null
+          proprietario: string | null
+          proprietario_telefone: string | null
+          proprietario_tipo: string | null
+          quadra: string | null
           quartos: number
           status: string
+          termo_exclusividade: string | null
           tipo: string
           titulo: string
+          unidade: string | null
           updated_at: string
           user_id: string
+          vagas: number
+          vista: string | null
+          vista_mar: boolean
         }
         Insert: {
+          aceita_permuta?: boolean
           area?: number
+          area_privativa?: number
+          ativo_site?: boolean
+          bairro?: string | null
           banheiros?: number
+          bonus?: number | null
+          bonus_validade?: string | null
+          box?: string | null
           cidade?: string
+          comissao?: number | null
+          condicao?: string | null
+          condicoes_pagamento?: string[] | null
           created_at?: string
+          decorado?: boolean
           descricao?: string | null
           destaque_home?: boolean
+          elevadores?: number | null
+          empreendimento?: string | null
           endereco?: string
           id?: string
           imagens?: string[] | null
+          infraestrutura?: string[] | null
+          local_chaves?: string | null
+          lote?: string | null
+          outras_caracteristicas?: string[] | null
+          padrao?: string | null
+          posicao_predio?: string | null
+          posicao_solar?: string | null
           preco?: number
+          preco_parcelado?: number | null
+          proprietario?: string | null
+          proprietario_telefone?: string | null
+          proprietario_tipo?: string | null
+          quadra?: string | null
           quartos?: number
           status?: string
+          termo_exclusividade?: string | null
           tipo?: string
           titulo: string
+          unidade?: string | null
           updated_at?: string
           user_id: string
+          vagas?: number
+          vista?: string | null
+          vista_mar?: boolean
         }
         Update: {
+          aceita_permuta?: boolean
           area?: number
+          area_privativa?: number
+          ativo_site?: boolean
+          bairro?: string | null
           banheiros?: number
+          bonus?: number | null
+          bonus_validade?: string | null
+          box?: string | null
           cidade?: string
+          comissao?: number | null
+          condicao?: string | null
+          condicoes_pagamento?: string[] | null
           created_at?: string
+          decorado?: boolean
           descricao?: string | null
           destaque_home?: boolean
+          elevadores?: number | null
+          empreendimento?: string | null
           endereco?: string
           id?: string
           imagens?: string[] | null
+          infraestrutura?: string[] | null
+          local_chaves?: string | null
+          lote?: string | null
+          outras_caracteristicas?: string[] | null
+          padrao?: string | null
+          posicao_predio?: string | null
+          posicao_solar?: string | null
           preco?: number
+          preco_parcelado?: number | null
+          proprietario?: string | null
+          proprietario_telefone?: string | null
+          proprietario_tipo?: string | null
+          quadra?: string | null
           quartos?: number
           status?: string
+          termo_exclusividade?: string | null
           tipo?: string
           titulo?: string
+          unidade?: string | null
           updated_at?: string
           user_id?: string
+          vagas?: number
+          vista?: string | null
+          vista_mar?: boolean
         }
         Relationships: []
       }

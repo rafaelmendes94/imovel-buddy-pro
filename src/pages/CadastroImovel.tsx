@@ -66,6 +66,7 @@ interface FormData {
   decorado: boolean;
   aceitaPermuta: boolean;
   destaqueHome: boolean;
+  ativoSite: boolean;
   condicoesPagemento: string[];
   infraestrutura: string[];
   outrasCaracteristicas: string[];
@@ -79,7 +80,7 @@ const initialForm: FormData = {
   descricao: '', proprietario: '', proprietarioTelefone: '', proprietarioTipo: '',
   condicao: '', padrao: '', posicaoPredio: '', posicaoSolar: '', vista: '',
   localChaves: '', termoExclusividade: '',
-  vistaMar: false, decorado: false, aceitaPermuta: false, destaqueHome: false,
+  vistaMar: false, decorado: false, aceitaPermuta: false, destaqueHome: false, ativoSite: false,
   condicoesPagemento: [], infraestrutura: [], outrasCaracteristicas: [],
 };
 
@@ -179,11 +180,42 @@ function CadastroImovelForm() {
           status: form.status || 'Disponível',
           endereco: form.endereco,
           cidade: form.cidade,
+          bairro: form.bairro || '',
+          empreendimento: form.empreendimento || '',
+          unidade: form.unidade || '',
+          box: form.box || '',
+          quadra: form.quadra || '',
+          lote: form.lote || '',
           preco: parseFloat(form.preco) || 0,
+          preco_parcelado: parseFloat(form.precoParcelado) || 0,
+          comissao: parseFloat(form.comissao) || 0,
+          bonus: parseFloat(form.bonus) || 0,
+          bonus_validade: form.bonusValidade || '',
           area: parseFloat(form.area) || 0,
+          area_privativa: parseFloat(form.areaPrivativa) || 0,
           quartos: form.quartos,
           banheiros: form.banheiros,
+          vagas: form.vagas,
+          elevadores: form.elevadores,
           descricao: form.descricao || null,
+          proprietario: form.proprietario || '',
+          proprietario_telefone: form.proprietarioTelefone || '',
+          proprietario_tipo: form.proprietarioTipo || '',
+          condicao: form.condicao || '',
+          padrao: form.padrao || '',
+          posicao_predio: form.posicaoPredio || '',
+          posicao_solar: form.posicaoSolar || '',
+          vista: form.vista || '',
+          local_chaves: form.localChaves || '',
+          termo_exclusividade: form.termoExclusividade || '',
+          vista_mar: form.vistaMar,
+          decorado: form.decorado,
+          aceita_permuta: form.aceitaPermuta,
+          destaque_home: form.destaqueHome,
+          ativo_site: form.ativoSite,
+          condicoes_pagamento: form.condicoesPagemento,
+          infraestrutura: form.infraestrutura,
+          outras_caracteristicas: form.outrasCaracteristicas,
           imagens: uploadedUrls.length > 0 ? uploadedUrls : null,
           user_id: user.id,
         }])
@@ -455,8 +487,12 @@ function CadastroImovelForm() {
             <Label className="text-xs">Aceita Permuta</Label>
           </div>
           <div className="flex items-center gap-2 border-l border-border pl-6">
+            <Switch checked={form.ativoSite} onCheckedChange={(v) => set('ativoSite', v)} />
+            <Label className="text-xs font-semibold text-emerald-600">🌐 Ativo no Site</Label>
+          </div>
+          <div className="flex items-center gap-2">
             <Switch checked={form.destaqueHome} onCheckedChange={(v) => set('destaqueHome', v)} />
-            <Label className="text-xs font-semibold text-amber-600">⭐ Exibir na Página Inicial</Label>
+            <Label className="text-xs font-semibold text-amber-600">⭐ Destaque na Home</Label>
           </div>
         </div>
 
