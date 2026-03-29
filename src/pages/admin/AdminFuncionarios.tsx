@@ -497,7 +497,7 @@ export default function AdminFuncionarios() {
             })}
           </div>
         )}
-      </div>
+
         {/* Reset Password Dialog */}
         <Dialog open={!!resetPasswordUser} onOpenChange={(open) => { if (!open) setResetPasswordUser(null); }}>
           <DialogContent className="sm:max-w-sm">
