@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
+import logoImg from "@/assets/logo.png";
 
 const allModules: Record<string, { icon: React.ComponentType<{ className?: string }>; label: string; path: string }> = {
   imoveis: { icon: Building2, label: "Imóveis", path: "/painel/imoveis" },
@@ -37,11 +38,9 @@ export function BrokerSidebar() {
   return (
     <aside className="flex flex-col h-screen w-[260px] bg-sidebar border-r border-sidebar-border sticky top-0">
       <div className="flex items-center gap-3 px-4 h-16 border-b border-sidebar-border flex-shrink-0">
-        <div className="w-9 h-9 rounded-lg gradient-gold flex items-center justify-center flex-shrink-0">
-          <Home className="w-5 h-5 text-primary" />
-        </div>
+        <img src={logoImg} alt="MV BROKER CONNECT" className="w-9 h-9 object-contain flex-shrink-0" />
         <div className="overflow-hidden">
-          <h1 className="text-sm font-bold text-sidebar-accent-foreground tracking-tight">MV CONNECT</h1>
+          <h1 className="text-sm font-bold text-sidebar-accent-foreground tracking-tight">MV BROKER CONNECT</h1>
           <p className="text-[10px] text-sidebar-foreground truncate">{profile?.full_name || "Corretor"}</p>
         </div>
       </div>

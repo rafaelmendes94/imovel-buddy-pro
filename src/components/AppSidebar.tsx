@@ -7,6 +7,7 @@ import {
   Clapperboard, GripVertical, Landmark,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import logoImg from "@/assets/logo.png";
 
 interface NavItem {
   icon: React.ComponentType<{ className?: string }>;
@@ -100,13 +101,11 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
     >
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 h-16 border-b border-sidebar-border flex-shrink-0">
-        <div className="w-9 h-9 rounded-lg gradient-gold flex items-center justify-center flex-shrink-0">
-          <Home className="w-5 h-5 text-primary" />
-        </div>
+        <img src={logoImg} alt="MV BROKER CONNECT" className="w-9 h-9 object-contain flex-shrink-0" />
         {!collapsed && (
           <div className="overflow-hidden">
             <h1 className="text-sm font-bold text-sidebar-accent-foreground tracking-tight">
-              MV CONNECT
+              MV BROKER CONNECT
             </h1>
             <p className="text-[10px] text-sidebar-foreground">
               Gestão Imobiliária
