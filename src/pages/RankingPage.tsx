@@ -169,10 +169,13 @@ export default function RankingPage() {
 
   return (
     <div className="min-h-screen bg-gray-950 font-sans overflow-hidden">
-      {/* Floating particles */}
+      {/* Floating symbols & connection lines */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        {Array.from({ length: 30 }).map((_, i) => (
-          <Particle key={i} delay={i * 0.3} x={Math.random() * 100} />
+        {Array.from({ length: 20 }).map((_, i) => (
+          <FloatingSymbol key={`s-${i}`} delay={i * 0.5} x={Math.random() * 100} />
+        ))}
+        {Array.from({ length: 8 }).map((_, i) => (
+          <ConnectionLine key={`c-${i}`} delay={i * 1.2} />
         ))}
       </div>
 
