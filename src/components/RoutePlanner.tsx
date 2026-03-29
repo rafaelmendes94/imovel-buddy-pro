@@ -90,11 +90,11 @@ export function RoutePlanner({ properties }: RoutePlannerProps) {
         className={cn(
           "fixed bottom-6 left-6 z-50 flex items-center gap-2 px-5 py-3 rounded-full shadow-2xl font-bold text-sm transition-all hover:scale-105",
           properties.length > 0
-            ? "bg-gradient-to-r from-red-500 to-rose-500 text-white"
-            : "bg-white text-gray-800 border border-gray-200 hover:border-red-300"
+            ? "bg-gradient-to-r from-blue-600 to-sky-500 text-white"
+            : "bg-white text-gray-800 border border-gray-200 hover:border-blue-300"
         )}
       >
-        <Heart className={cn("w-5 h-5", properties.length > 0 && "fill-current")} />
+        <Route className={cn("w-5 h-5", properties.length > 0 && "fill-current")} />
         Traçar Rota
         {properties.length > 0 && (
           <span className="ml-1 w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs font-black">
@@ -110,7 +110,7 @@ export function RoutePlanner({ properties }: RoutePlannerProps) {
             {/* Header */}
             <div className="flex items-center justify-between p-5 border-b border-gray-100">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-rose-500 flex items-center justify-center shadow-md">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-sky-500 flex items-center justify-center shadow-md">
                   <Route className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -118,7 +118,7 @@ export function RoutePlanner({ properties }: RoutePlannerProps) {
                     Rota de Visitas
                   </h2>
                   <p className="text-xs text-gray-500">
-                    Imóveis favoritados com ❤️
+                    Imóveis selecionados para rota 📍
                   </p>
                 </div>
               </div>
@@ -133,12 +133,12 @@ export function RoutePlanner({ properties }: RoutePlannerProps) {
             <div className="flex-1 overflow-y-auto">
               {orderedProperties.length === 0 ? (
                 <div className="p-8 text-center">
-                  <Heart className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                  <Route className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                   <p className="text-sm font-bold text-gray-700 mb-1">
-                    Nenhum imóvel favoritado
+                    Nenhum imóvel na rota
                   </p>
                   <p className="text-xs text-gray-400">
-                    Clique no ❤️ dos imóveis para adicioná-los à rota de visitas
+                    Clique no 📍 dos imóveis para adicioná-los à rota de visitas
                   </p>
                 </div>
               ) : (
