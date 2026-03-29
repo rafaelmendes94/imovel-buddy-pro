@@ -1,44 +1,147 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { AppLayout } from '@/components/AppLayout';
+import { BackButton } from '@/components/BackButton';
+import {
+  Building2, MapPin, BedDouble, Bath, Car, Ruler, User, Phone, DollarSign,
+  Percent, Gift, Home, Sparkles, Save, Image, Plus, X, Loader2,
+  Hash, FileText, Eye, Key, Calendar
+} from 'lucide-react';
 
-interface Imovel {
+const tiposImovel = ["Apartamento", "Casa", "Comercial", "Terreno", "Lote", "Condomínio"];
+const statusOptions = ["Disponível", "Vendido", "Reservado", "Alugado", "Suspenso"];
+const condicaoOptions = ["Mobiliado", "Semi-mobiliado", "Vazio", "Decorado"];
+const ownerTypeOptions = ["Construtora", "Investidor", "Particular", "Adm Comercial", "Exclusividade"];
+const padraoOptions = ["Econômico", "Médio Padrão", "Alto Padrão", "Luxo"];
+const paymentConditionOptions = [
+  "À Vista", "Parcelamento 12x", "Parcelamento 24x", "Parcelamento 36x",
+  "Parcelamento 48x", "Parcelamento 60x", "Parcelamento 120x",
+  "Financiamento Bancário", "FGTS", "Dação", "Permuta", "Consórcio"
+];
+
+interface FormData {
   titulo: string;
-  endereco: string;
-  cidade: string;
   tipo: string;
-  preco: number;
+  status: string;
+  endereco: string;
+  bairro: string;
+  cidade: string;
+  empreendimento: string;
+  unidade: string;
+  box: string;
+  quadra: string;
+  lote: string;
+  preco: string;
+  precoParcelado: string;
+  comissao: string;
+  bonus: string;
+  bonusValidade: string;
+  area: string;
+  areaPrivativa: string;
   quartos: number;
   banheiros: number;
-  area: number;
+  vagas: number;
+  elevadores: number;
   descricao: string;
+  proprietario: string;
+  proprietarioTelefone: string;
+  proprietarioTipo: string;
+  condicao: string;
+  padrao: string;
+  posicaoPredio: string;
+  posicaoSolar: string;
+  vista: string;
+  localChaves: string;
+  termoExclusividade: string;
+  vistaMar: boolean;
+  decorado: boolean;
+  aceitaPermuta: boolean;
+  condicoesPagemento: string[];
+  infraestrutura: string[];
+  outrasCaracteristicas: string[];
+}
+
+const initialForm: FormData = {
+  titulo: '', tipo: '', status: 'Disponível', endereco: '', bairro: '', cidade: '',
+  empreendimento: '', unidade: '', box: '', quadra: '', lote: '',
+  preco: '', precoParcelado: '', comissao: '', bonus: '', bonusValidade: '',
+  area: '', areaPrivativa: '', quartos: 0, banheiros: 0, vagas: 0, elevadores: 0,
+  descricao: '', proprietario: '', proprietarioTelefone: '', proprietarioTipo: '',
+  condicao: '', padrao: '', posicaoPredio: '', posicaoSolar: '', vista: '',
+  localChaves: '', termoExclusividade: '',
+  vistaMar: false, decorado: false, aceitaPermuta: false,
+  condicoesPagemento: [], infraestrutura: [], outrasCaracteristicas: [],
+};
+
+function SectionHeader({ icon: Icon, title }: { icon: any; title: string }) {
+  return (
+    <div className="flex items-center gap-2 pb-2 mb-4 border-b border-border">
+      <Icon className="w-5 h-5 text-primary" />
+      <h3 className="text-base font-bold text-foreground">{title}</h3>
+    </div>
+  );
 }
 
 function CadastroImovelForm() {
   const { toast } = useToast();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState<Imovel>({
-    titulo: '',
-    endereco: '',
-    cidade: '',
-    tipo: '',
-    preco: 0,
-    quartos: 0,
-    banheiros: 0,
-    area: 0,
-    descricao: '',
-  });
+  const [form, setForm] = useState<FormData>(initialForm);
+  const [newInfra, setNewInfra] = useState('');
+  const [newCaract, setNewCaract] = useState('');
+  const [images, setImages] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
 
-  const handleChange = (field: keyof Imovel, value: string | number) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const set = (field: keyof FormData, value: any) => setForm(prev => ({ ...prev, [field]: value }));
+
+  const togglePayment = (cond: string) => {
+    setForm(prev => ({
+      ...prev,
+      condicoesPagemento: prev.condicoesPagemento.includes(cond)
+        ? prev.condicoesPagemento.filter(c => c !== cond)
+        : [...prev.condicoesPagemento, cond]
+    }));
+  };
+
+  const addInfra = () => {
+    if (newInfra.trim()) {
+      set('infraestrutura', [...form.infraestrutura, newInfra.trim()]);
+      setNewInfra('');
+    }
+  };
+
+  const addCaract = () => {
+    if (newCaract.trim()) {
+      set('outrasCaracteristicas', [...form.outrasCaracteristicas, newCaract.trim()]);
+      setNewCaract('');
+    }
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setImages(prev => [...prev, ...files]);
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        setImagePreviews(prev => [...prev, ev.target?.result as string]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeImage = (idx: number) => {
+    setImages(prev => prev.filter((_, i) => i !== idx));
+    setImagePreviews(prev => prev.filter((_, i) => i !== idx));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -47,146 +150,396 @@ function CadastroImovelForm() {
       toast({ title: "Erro", description: "Você precisa estar logado.", variant: "destructive" });
       return;
     }
+    if (!form.titulo.trim()) {
+      toast({ title: "Erro", description: "Título é obrigatório.", variant: "destructive" });
+      return;
+    }
     setLoading(true);
 
     try {
+      // Upload images
+      const uploadedUrls: string[] = [];
+      for (const file of images) {
+        const ext = file.name.split('.').pop();
+        const path = `${user.id}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+        const { error: uploadError } = await supabase.storage
+          .from('site-assets')
+          .upload(path, file);
+        if (uploadError) throw uploadError;
+        const { data: urlData } = supabase.storage.from('site-assets').getPublicUrl(path);
+        uploadedUrls.push(urlData.publicUrl);
+      }
+
       const { error } = await supabase
         .from('imoveis')
-        .insert([{ ...formData, user_id: user.id }])
+        .insert([{
+          titulo: form.titulo,
+          tipo: form.tipo || 'Casa',
+          status: form.status || 'Disponível',
+          endereco: form.endereco,
+          cidade: form.cidade,
+          preco: parseFloat(form.preco) || 0,
+          area: parseFloat(form.area) || 0,
+          quartos: form.quartos,
+          banheiros: form.banheiros,
+          descricao: form.descricao || null,
+          imagens: uploadedUrls.length > 0 ? uploadedUrls : null,
+          user_id: user.id,
+        }])
         .select();
 
       if (error) throw error;
 
-      toast({
-        title: "Sucesso! ✅",
-        description: "Imóvel cadastrado com sucesso!",
-      });
-
-      setFormData({
-        titulo: '',
-        endereco: '',
-        cidade: '',
-        tipo: '',
-        preco: 0,
-        quartos: 0,
-        banheiros: 0,
-        area: 0,
-        descricao: '',
-      });
+      toast({ title: "Sucesso! ✅", description: "Imóvel cadastrado com sucesso!" });
+      navigate('/imoveis');
     } catch (error: any) {
-      toast({
-        title: "Erro ao cadastrar",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast({ title: "Erro ao cadastrar", description: error.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
   };
 
+  const comissaoValor = (parseFloat(form.preco) || 0) * (parseFloat(form.comissao) || 0) / 100;
+
   return (
-    <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-6 p-6">
-      <h2 className="text-2xl font-bold text-foreground">Cadastrar Imóvel</h2>
-
-      <div className="space-y-2">
-        <Label>Título do Imóvel</Label>
-        <Input
-          placeholder="Ex: Apartamento 3 quartos no Centro"
-          value={formData.titulo}
-          onChange={(e) => handleChange('titulo', e.target.value)}
-          required
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label>Endereço</Label>
-        <Input
-          placeholder="Rua, número, bairro"
-          value={formData.endereco}
-          onChange={(e) => handleChange('endereco', e.target.value)}
-          required
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label>Cidade</Label>
-        <Input
-          placeholder="Nome da cidade"
-          value={formData.cidade}
-          onChange={(e) => handleChange('cidade', e.target.value)}
-          required
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label>Tipo</Label>
-        <Select value={formData.tipo} onValueChange={(value) => handleChange('tipo', value)}>
-          <SelectTrigger>
-            <SelectValue placeholder="Selecione o tipo" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Casa">Casa</SelectItem>
-            <SelectItem value="Apartamento">Apartamento</SelectItem>
-            <SelectItem value="Terreno">Terreno</SelectItem>
-            <SelectItem value="Comercial">Comercial</SelectItem>
-            <SelectItem value="Cobertura">Cobertura</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>Preço (R$)</Label>
-          <Input
-            type="number"
-            value={formData.preco}
-            onChange={(e) => handleChange('preco', Number(e.target.value))}
-            required
-          />
+    <form onSubmit={handleSubmit} className="max-w-5xl mx-auto space-y-6 p-4 sm:p-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <BackButton />
+          <h1 className="text-2xl font-black text-foreground mt-2">Cadastrar Novo Imóvel</h1>
+          <p className="text-sm text-muted-foreground">Preencha os dados completos do imóvel</p>
         </div>
-        <div className="space-y-2">
-          <Label>Área (m²)</Label>
-          <Input
-            type="number"
-            value={formData.area}
-            onChange={(e) => handleChange('area', Number(e.target.value))}
-            required
-          />
+        <Button type="submit" disabled={loading} className="gap-2">
+          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+          {loading ? 'Salvando...' : 'Cadastrar Imóvel'}
+        </Button>
+      </div>
+
+      {/* ===== BLOCO 1: IDENTIFICAÇÃO ===== */}
+      <div className="bg-card border border-border rounded-xl p-5">
+        <SectionHeader icon={Building2} title="Identificação" />
+
+        {/* Linha 1: Tipo, Empreendimento, Unidade/Quadra, Box/Lote */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+          <div className="space-y-1.5">
+            <Label className="text-xs">Tipo do Imóvel *</Label>
+            <Select value={form.tipo} onValueChange={(v) => set('tipo', v)}>
+              <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+              <SelectContent>
+                {tiposImovel.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Empreendimento</Label>
+            <Input placeholder="Nome do empreendimento" value={form.empreendimento} onChange={e => set('empreendimento', e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Unidade / Quadra</Label>
+            <div className="flex gap-2">
+              <Input placeholder="Unidade" value={form.unidade} onChange={e => set('unidade', e.target.value)} />
+              <Input placeholder="Quadra" value={form.quadra} onChange={e => set('quadra', e.target.value)} />
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Box / Lote</Label>
+            <div className="flex gap-2">
+              <Input placeholder="Box" value={form.box} onChange={e => set('box', e.target.value)} />
+              <Input placeholder="Lote" value={form.lote} onChange={e => set('lote', e.target.value)} />
+            </div>
+          </div>
+        </div>
+
+        {/* Linha 2: Dormitórios, Banheiros, Área Privativa, Área Total */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+          <div className="space-y-1.5">
+            <Label className="text-xs flex items-center gap-1"><BedDouble className="w-3.5 h-3.5" /> Dormitórios</Label>
+            <Input type="number" min={0} value={form.quartos} onChange={e => set('quartos', parseInt(e.target.value) || 0)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs flex items-center gap-1"><Bath className="w-3.5 h-3.5" /> Banheiros</Label>
+            <Input type="number" min={0} value={form.banheiros} onChange={e => set('banheiros', parseInt(e.target.value) || 0)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs flex items-center gap-1"><Ruler className="w-3.5 h-3.5" /> Área Privativa (m²)</Label>
+            <Input type="number" placeholder="0" value={form.areaPrivativa} onChange={e => set('areaPrivativa', e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs flex items-center gap-1"><Ruler className="w-3.5 h-3.5" /> Área Total (m²)</Label>
+            <Input type="number" placeholder="0" value={form.area} onChange={e => set('area', e.target.value)} />
+          </div>
+        </div>
+
+        {/* Linha 3: Título, Status, Vagas, Elevadores */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+          <div className="space-y-1.5 sm:col-span-2">
+            <Label className="text-xs">Título do Imóvel *</Label>
+            <Input placeholder="Ex: Apartamento 3 quartos frente mar" value={form.titulo} onChange={e => set('titulo', e.target.value)} required />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Status</Label>
+            <Select value={form.status} onValueChange={(v) => set('status', v)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {statusOptions.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs flex items-center gap-1"><Car className="w-3.5 h-3.5" /> Vagas</Label>
+            <Input type="number" min={0} value={form.vagas} onChange={e => set('vagas', parseInt(e.target.value) || 0)} />
+          </div>
+        </div>
+
+        {/* Linha 4: Cidade, Bairro, Endereço */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="space-y-1.5">
+            <Label className="text-xs flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> Cidade *</Label>
+            <Input placeholder="Nome da cidade" value={form.cidade} onChange={e => set('cidade', e.target.value)} required />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Bairro</Label>
+            <Input placeholder="Nome do bairro" value={form.bairro} onChange={e => set('bairro', e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Endereço Completo</Label>
+            <Input placeholder="Rua, número" value={form.endereco} onChange={e => set('endereco', e.target.value)} />
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>Quartos</Label>
-          <Input
-            type="number"
-            value={formData.quartos}
-            onChange={(e) => handleChange('quartos', Number(e.target.value))}
-          />
+      {/* ===== BLOCO 2: VALOR E CONDIÇÕES ===== */}
+      <div className="bg-card border border-border rounded-xl p-5">
+        <SectionHeader icon={DollarSign} title="Valor e Condições" />
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+          <div className="space-y-1.5">
+            <Label className="text-xs flex items-center gap-1"><DollarSign className="w-3.5 h-3.5" /> Preço (R$)</Label>
+            <Input type="number" placeholder="0" value={form.preco} onChange={e => set('preco', e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Preço Parcelado (R$)</Label>
+            <Input type="number" placeholder="0" value={form.precoParcelado} onChange={e => set('precoParcelado', e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs flex items-center gap-1"><Percent className="w-3.5 h-3.5" /> Comissão (%)</Label>
+            <Input type="number" placeholder="0" value={form.comissao} onChange={e => set('comissao', e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Valor Comissão</Label>
+            <div className="h-10 flex items-center px-3 rounded-md border border-input bg-muted text-sm font-semibold text-foreground">
+              R$ {comissaoValor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </div>
+          </div>
         </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
+          <div className="space-y-1.5">
+            <Label className="text-xs flex items-center gap-1"><Gift className="w-3.5 h-3.5" /> Bônus (R$)</Label>
+            <Input type="number" placeholder="0" value={form.bonus} onChange={e => set('bonus', e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> Validade do Bônus</Label>
+            <Input type="date" value={form.bonusValidade} onChange={e => set('bonusValidade', e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Padrão</Label>
+            <Select value={form.padrao} onValueChange={(v) => set('padrao', v)}>
+              <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+              <SelectContent>
+                {padraoOptions.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Condições de pagamento */}
         <div className="space-y-2">
-          <Label>Banheiros</Label>
-          <Input
-            type="number"
-            value={formData.banheiros}
-            onChange={(e) => handleChange('banheiros', Number(e.target.value))}
-          />
+          <Label className="text-xs font-semibold">Condições de Pagamento</Label>
+          <div className="flex flex-wrap gap-2">
+            {paymentConditionOptions.map(cond => (
+              <button
+                type="button"
+                key={cond}
+                onClick={() => togglePayment(cond)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                  form.condicoesPagemento.includes(cond)
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-muted text-muted-foreground border-border hover:bg-accent'
+                }`}
+              >
+                {cond}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label>Descrição</Label>
+      {/* ===== BLOCO 3: PROPRIETÁRIO ===== */}
+      <div className="bg-card border border-border rounded-xl p-5">
+        <SectionHeader icon={User} title="Proprietário" />
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+          <div className="space-y-1.5">
+            <Label className="text-xs flex items-center gap-1"><User className="w-3.5 h-3.5" /> Nome do Proprietário</Label>
+            <Input placeholder="Nome completo" value={form.proprietario} onChange={e => set('proprietario', e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs flex items-center gap-1"><Phone className="w-3.5 h-3.5" /> Telefone</Label>
+            <Input placeholder="(00) 00000-0000" value={form.proprietarioTelefone} onChange={e => set('proprietarioTelefone', e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Tipo do Proprietário</Label>
+            <Select value={form.proprietarioTipo} onValueChange={(v) => set('proprietarioTipo', v)}>
+              <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+              <SelectContent>
+                {ownerTypeOptions.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <Label className="text-xs flex items-center gap-1"><Key className="w-3.5 h-3.5" /> Local das Chaves</Label>
+            <Input placeholder="Ex: Portaria, Imobiliária..." value={form.localChaves} onChange={e => set('localChaves', e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs flex items-center gap-1"><FileText className="w-3.5 h-3.5" /> Termo de Exclusividade</Label>
+            <Input type="date" value={form.termoExclusividade} onChange={e => set('termoExclusividade', e.target.value)} />
+          </div>
+        </div>
+      </div>
+
+      {/* ===== BLOCO 4: CARACTERÍSTICAS ===== */}
+      <div className="bg-card border border-border rounded-xl p-5">
+        <SectionHeader icon={Sparkles} title="Características" />
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+          <div className="space-y-1.5">
+            <Label className="text-xs">Condição</Label>
+            <Select value={form.condicao} onValueChange={(v) => set('condicao', v)}>
+              <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+              <SelectContent>
+                {condicaoOptions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Posição no Prédio</Label>
+            <Input placeholder="Ex: Frente, Fundos" value={form.posicaoPredio} onChange={e => set('posicaoPredio', e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Posição Solar</Label>
+            <Input placeholder="Ex: Nascente, Poente" value={form.posicaoSolar} onChange={e => set('posicaoSolar', e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs flex items-center gap-1"><Eye className="w-3.5 h-3.5" /> Vista</Label>
+            <Input placeholder="Ex: Mar, Cidade, Lago" value={form.vista} onChange={e => set('vista', e.target.value)} />
+          </div>
+        </div>
+
+        {/* Toggles */}
+        <div className="flex flex-wrap gap-6 mb-4 py-3 px-4 bg-muted/50 rounded-lg">
+          <div className="flex items-center gap-2">
+            <Switch checked={form.vistaMar} onCheckedChange={(v) => set('vistaMar', v)} />
+            <Label className="text-xs">Vista para o Mar</Label>
+          </div>
+          <div className="flex items-center gap-2">
+            <Switch checked={form.decorado} onCheckedChange={(v) => set('decorado', v)} />
+            <Label className="text-xs">Decorado / Mobiliado</Label>
+          </div>
+          <div className="flex items-center gap-2">
+            <Switch checked={form.aceitaPermuta} onCheckedChange={(v) => set('aceitaPermuta', v)} />
+            <Label className="text-xs">Aceita Permuta</Label>
+          </div>
+        </div>
+
+        {/* Infraestrutura */}
+        <div className="mb-4">
+          <Label className="text-xs font-semibold mb-2 block">Infraestrutura</Label>
+          <div className="flex flex-wrap gap-1.5 mb-2">
+            {form.infraestrutura.map((item, i) => (
+              <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
+                {item}
+                <button type="button" onClick={() => set('infraestrutura', form.infraestrutura.filter((_, idx) => idx !== i))}>
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            <Input placeholder="Ex: Piscina, Churrasqueira..." value={newInfra} onChange={e => setNewInfra(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addInfra(); } }} className="max-w-xs" />
+            <Button type="button" variant="outline" size="sm" onClick={addInfra}><Plus className="w-3.5 h-3.5" /></Button>
+          </div>
+        </div>
+
+        {/* Outras Características */}
+        <div>
+          <Label className="text-xs font-semibold mb-2 block">Outras Características</Label>
+          <div className="flex flex-wrap gap-1.5 mb-2">
+            {form.outrasCaracteristicas.map((item, i) => (
+              <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-accent text-accent-foreground text-xs font-medium">
+                {item}
+                <button type="button" onClick={() => set('outrasCaracteristicas', form.outrasCaracteristicas.filter((_, idx) => idx !== i))}>
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            <Input placeholder="Ex: Beira Lago, Documentação OK..." value={newCaract} onChange={e => setNewCaract(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addCaract(); } }} className="max-w-xs" />
+            <Button type="button" variant="outline" size="sm" onClick={addCaract}><Plus className="w-3.5 h-3.5" /></Button>
+          </div>
+        </div>
+      </div>
+
+      {/* ===== BLOCO 5: DESCRIÇÃO ===== */}
+      <div className="bg-card border border-border rounded-xl p-5">
+        <SectionHeader icon={FileText} title="Descrição" />
         <Textarea
-          placeholder="Descreva o imóvel..."
-          value={formData.descricao}
-          onChange={(e) => handleChange('descricao', e.target.value)}
-          rows={4}
+          placeholder="Descreva o imóvel com o máximo de detalhes: localização, diferenciais, infraestrutura do condomínio, vista, acabamentos, etc."
+          value={form.descricao}
+          onChange={e => set('descricao', e.target.value)}
+          rows={6}
+          className="resize-y"
         />
       </div>
 
-      <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? 'Cadastrando...' : 'Cadastrar Imóvel'}
-      </Button>
+      {/* ===== BLOCO 6: FOTOS ===== */}
+      <div className="bg-card border border-border rounded-xl p-5">
+        <SectionHeader icon={Image} title="Fotos do Imóvel" />
+
+        <div className="flex flex-wrap gap-3 mb-4">
+          {imagePreviews.map((src, i) => (
+            <div key={i} className="relative w-24 h-24 rounded-lg overflow-hidden border border-border group">
+              <img src={src} alt="" className="w-full h-full object-cover" />
+              <button
+                type="button"
+                onClick={() => removeImage(i)}
+                className="absolute top-1 right-1 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          ))}
+          <label className="w-24 h-24 rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors">
+            <Plus className="w-6 h-6 text-muted-foreground" />
+            <span className="text-[10px] text-muted-foreground mt-1">Adicionar</span>
+            <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageChange} />
+          </label>
+        </div>
+        <p className="text-xs text-muted-foreground">Arraste ou clique para adicionar fotos. Formatos: JPG, PNG, WebP.</p>
+      </div>
+
+      {/* Submit */}
+      <div className="flex justify-end gap-3 pb-6">
+        <Button type="button" variant="outline" onClick={() => navigate('/imoveis')}>Cancelar</Button>
+        <Button type="submit" disabled={loading} className="gap-2 px-8">
+          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+          {loading ? 'Salvando...' : 'Cadastrar Imóvel'}
+        </Button>
+      </div>
     </form>
   );
 }
