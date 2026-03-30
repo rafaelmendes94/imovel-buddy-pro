@@ -302,7 +302,134 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, 
 function SiteMap({ properties: mapProperties }: { properties: typeof siteProperties }) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
+  const tileLayerRef = useRef<any>(null);
+  const labelsLayerRef = useRef<any[]>([]);
+  const markersLayerRef = useRef<any>(null);
   const [selectedProperty, setSelectedProperty] = useState<typeof siteProperties[0] | null>(null);
+  const [mapStyle, setMapStyle] = useState<"satellite" | "streets" | "dark">("satellite");
+  const [mapFilterType, setMapFilterType] = useState("");
+  const [mapFilterEmpreendimento, setMapFilterEmpreendimento] = useState("");
+  const [mapFilterAddress, setMapFilterAddress] = useState("");
+  const [mapFilterPriceMax, setMapFilterPriceMax] = useState("");
+
+  const uniqueMapEmpreendimentos = [...new Set(mapProperties.map((p) => p.empreendimento).filter(Boolean))].sort();
+
+  const filteredMapProperties = mapProperties.filter((p) => {
+    const matchType = !mapFilterType || p.type === mapFilterType;
+    const matchEmp = !mapFilterEmpreendimento || p.empreendimento === mapFilterEmpreendimento;
+    const matchAddr = !mapFilterAddress || p.address.toLowerCase().includes(mapFilterAddress.toLowerCase()) || p.city.toLowerCase().includes(mapFilterAddress.toLowerCase()) || (p.neighborhood || '').toLowerCase().includes(mapFilterAddress.toLowerCase());
+    const matchPrice = !mapFilterPriceMax || p.price <= parseInt(mapFilterPriceMax);
+    return matchType && matchEmp && matchAddr && matchPrice;
+  });
+
+  const tileConfigs = {
+    satellite: {
+      url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+      attribution: '&copy; Esri, Maxar',
+      labels: [
+        "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}",
+        "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
+      ],
+    },
+    streets: {
+      url: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+      attribution: '&copy; CARTO',
+      labels: [],
+    },
+    dark: {
+      url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+      attribution: '&copy; CARTO',
+      labels: [],
+    },
+  };
+
+  // Switch tile layer
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    const L = (window as any).L;
+    if (!map || !L) return;
+
+    if (tileLayerRef.current) map.removeLayer(tileLayerRef.current);
+    labelsLayerRef.current.forEach((l) => map.removeLayer(l));
+    labelsLayerRef.current = [];
+
+    const cfg = tileConfigs[mapStyle];
+    tileLayerRef.current = L.tileLayer(cfg.url, { attribution: cfg.attribution, maxZoom: 19, subdomains: "abcd" }).addTo(map);
+    cfg.labels.forEach((url: string) => {
+      const layer = L.tileLayer(url, { maxZoom: 19 }).addTo(map);
+      labelsLayerRef.current.push(layer);
+    });
+  }, [mapStyle]);
+
+  // Update markers when filters change
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    const L = (window as any).L;
+    if (!map || !L) return;
+
+    if (markersLayerRef.current) {
+      map.removeLayer(markersLayerRef.current);
+    }
+    const markersGroup = L.featureGroup();
+    markersLayerRef.current = markersGroup;
+
+    const getIcon = (type: string) => {
+      const colors: Record<string, string> = { Apartamento: "#f59e0b", Casa: "#3b82f6", Terreno: "#22c55e", Comercial: "#8b5cf6" };
+      const color = colors[type] || "#f59e0b";
+      return L.divIcon({
+        className: "custom-marker",
+        html: `<div style="width:36px;height:36px;background:${color};border:3px solid white;border-radius:50%;box-shadow:0 4px 12px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:13px;cursor:pointer;transition:transform 0.2s;">
+          <span style="filter:drop-shadow(0 1px 1px rgba(0,0,0,0.3));">${type === "Apartamento" ? "🏢" : type === "Casa" ? "🏠" : type === "Terreno" ? "🌳" : "🏬"}</span>
+        </div>
+        <div style="width:12px;height:12px;background:${color};transform:rotate(45deg);margin:-7px auto 0;box-shadow:2px 2px 4px rgba(0,0,0,0.3);"></div>`,
+        iconSize: [36, 48],
+        iconAnchor: [18, 48],
+        popupAnchor: [0, -48],
+      });
+    };
+
+    filteredMapProperties.forEach((p) => {
+      if (!p.lat || !p.lng) return;
+      const broker = brokerInfo[p.broker] || { photo: "", whatsapp: "5511999999999" };
+      const whatsMsg = encodeURIComponent(`Olá! Tenho interesse no imóvel: ${p.title}`);
+      const popup = L.popup({ maxWidth: 280, className: "custom-popup" }).setContent(`
+        <div style="font-family:system-ui,-apple-system,sans-serif;margin:-4px;">
+          <img src="${p.image}" alt="${p.title}" style="width:100%;height:120px;object-fit:cover;border-radius:8px 8px 0 0;margin-bottom:8px;" />
+          <div style="padding:0 4px 4px;">
+            <h3 style="font-size:14px;font-weight:700;color:#1a1a1a;margin:0 0 4px;">${p.title}</h3>
+            <p style="font-size:11px;color:#666;margin:0 0 6px;">📍 ${p.address}, ${p.city}</p>
+            <p style="font-size:18px;font-weight:800;color:#f59e0b;margin:0 0 8px;">${formatCurrency(p.price)}</p>
+            <div style="display:flex;gap:12px;font-size:11px;color:#888;margin-bottom:10px;">
+              ${p.area > 0 ? `<span>📐 ${p.area}m²</span>` : ""}
+              ${p.bedrooms > 0 ? `<span>🛏 ${p.bedrooms} qts</span>` : ""}
+              ${p.parking > 0 ? `<span>🚗 ${p.parking} vg</span>` : ""}
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding-top:8px;border-top:1px solid #eee;">
+              <div style="display:flex;align-items:center;gap:6px;">
+                ${broker.photo ? `<img src="${broker.photo}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;border:2px solid #f59e0b;" />` : ""}
+                <span style="font-size:11px;font-weight:600;color:#333;">${p.broker}</span>
+              </div>
+              <a href="https://wa.me/${broker.whatsapp}?text=${whatsMsg}" target="_blank" rel="noopener noreferrer" 
+                 style="display:inline-flex;align-items:center;gap:4px;padding:5px 10px;background:#22c55e;color:white;border-radius:8px;font-size:11px;font-weight:700;text-decoration:none;">
+                📱 WhatsApp
+              </a>
+            </div>
+          </div>
+        </div>
+      `);
+      L.marker([p.lat, p.lng], { icon: getIcon(p.type) }).bindPopup(popup).addTo(markersGroup);
+    });
+
+    markersGroup.addTo(map);
+
+    const validProps = filteredMapProperties.filter((p) => p.lat && p.lng);
+    if (validProps.length > 1) {
+      const bounds = L.latLngBounds(validProps.map((p) => [p.lat, p.lng]));
+      map.fitBounds(bounds, { padding: [40, 40] });
+    } else if (validProps.length === 1) {
+      map.setView([validProps[0].lat, validProps[0].lng], 14);
+    }
+  }, [filteredMapProperties]);
 
   useEffect(() => {
     if (!mapRef.current) return;
@@ -316,115 +443,16 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
       const L = (window as any).L;
       if (!L || !mapRef.current) return;
 
-      const map = L.map(mapRef.current, {
-        zoomControl: false,
-      }).setView([-29.77, -50.08], 12);
+      const map = L.map(mapRef.current, { zoomControl: false }).setView([-29.77, -50.08], 12);
       mapInstanceRef.current = map;
-
-      // Zoom control on the right
       L.control.zoom({ position: "topright" }).addTo(map);
 
-      // Realistic satellite-style tile layer
-      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
-        attribution: '&copy; Esri, Maxar, Earthstar Geographics',
-        maxZoom: 19,
-      }).addTo(map);
-
-      // Street labels overlay on top of satellite
-      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}", {
-        maxZoom: 19,
-      }).addTo(map);
-
-      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}", {
-        maxZoom: 19,
-      }).addTo(map);
-
-      // Custom icon based on property type
-      const getIcon = (type: string) => {
-        const colors: Record<string, string> = {
-          Apartamento: "#f59e0b",
-          Casa: "#3b82f6",
-          Terreno: "#22c55e",
-          Comercial: "#8b5cf6",
-        };
-        const color = colors[type] || "#f59e0b";
-
-        return L.divIcon({
-          className: "custom-marker",
-          html: `<div style="
-            width: 36px; height: 36px; 
-            background: ${color}; 
-            border: 3px solid white; 
-            border-radius: 50%; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-            display: flex; align-items: center; justify-content: center;
-            color: white; font-weight: 800; font-size: 13px;
-            cursor: pointer;
-            transition: transform 0.2s;
-          ">
-            <span style="filter: drop-shadow(0 1px 1px rgba(0,0,0,0.3));">
-              ${type === "Apartamento" ? "🏢" : type === "Casa" ? "🏠" : type === "Terreno" ? "🌳" : "🏬"}
-            </span>
-          </div>
-          <div style="
-            width: 12px; height: 12px; 
-            background: ${color}; 
-            transform: rotate(45deg); 
-            margin: -7px auto 0; 
-            box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-          "></div>`,
-          iconSize: [36, 48],
-          iconAnchor: [18, 48],
-          popupAnchor: [0, -48],
-        });
-      };
-
-      mapProperties.forEach((p) => {
-        if (!p.lat || !p.lng) return;
-
-        const broker = brokerInfo[p.broker] || { photo: "", whatsapp: "5511999999999" };
-        const whatsMsg = encodeURIComponent(`Olá! Tenho interesse no imóvel: ${p.title}`);
-
-        const popup = L.popup({
-          maxWidth: 280,
-          className: "custom-popup",
-        }).setContent(`
-          <div style="font-family: system-ui, -apple-system, sans-serif; margin: -4px;">
-            <img src="${p.image}" alt="${p.title}" style="width:100%; height:120px; object-fit:cover; border-radius:8px 8px 0 0; margin-bottom:8px;" />
-            <div style="padding: 0 4px 4px;">
-              <h3 style="font-size:14px; font-weight:700; color:#1a1a1a; margin:0 0 4px;">${p.title}</h3>
-              <p style="font-size:11px; color:#666; margin:0 0 6px;">📍 ${p.address}, ${p.city}</p>
-              <p style="font-size:18px; font-weight:800; color:#f59e0b; margin:0 0 8px;">${formatCurrency(p.price)}</p>
-              <div style="display:flex; gap:12px; font-size:11px; color:#888; margin-bottom:10px;">
-                ${p.area > 0 ? `<span>📐 ${p.area}m²</span>` : ""}
-                ${p.bedrooms > 0 ? `<span>🛏 ${p.bedrooms} qts</span>` : ""}
-                ${p.parking > 0 ? `<span>🚗 ${p.parking} vg</span>` : ""}
-              </div>
-              <div style="display:flex; align-items:center; justify-content:space-between; padding-top:8px; border-top:1px solid #eee;">
-                <div style="display:flex; align-items:center; gap:6px;">
-                  ${broker.photo ? `<img src="${broker.photo}" style="width:28px; height:28px; border-radius:50%; object-fit:cover; border:2px solid #f59e0b;" />` : ""}
-                  <span style="font-size:11px; font-weight:600; color:#333;">${p.broker}</span>
-                </div>
-                <a href="https://wa.me/${broker.whatsapp}?text=${whatsMsg}" target="_blank" rel="noopener noreferrer" 
-                   style="display:inline-flex; align-items:center; gap:4px; padding:5px 10px; background:#22c55e; color:white; border-radius:8px; font-size:11px; font-weight:700; text-decoration:none;">
-                  📱 WhatsApp
-                </a>
-              </div>
-            </div>
-          </div>
-        `);
-
-        L.marker([p.lat, p.lng], { icon: getIcon(p.type) })
-          .addTo(map)
-          .bindPopup(popup);
+      const cfg = tileConfigs[mapStyle];
+      tileLayerRef.current = L.tileLayer(cfg.url, { attribution: cfg.attribution, maxZoom: 19, subdomains: "abcd" }).addTo(map);
+      cfg.labels.forEach((url: string) => {
+        const layer = L.tileLayer(url, { maxZoom: 19 }).addTo(map);
+        labelsLayerRef.current.push(layer);
       });
-
-      // Fit bounds to all markers
-      const validProps = mapProperties.filter((p) => p.lat && p.lng);
-      if (validProps.length > 1) {
-        const bounds = L.latLngBounds(validProps.map((p) => [p.lat, p.lng]));
-        map.fitBounds(bounds, { padding: [40, 40] });
-      }
     };
 
     const L = (window as any).L;
@@ -456,20 +484,111 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
         mapInstanceRef.current = null;
       }
     };
-  }, [mapProperties]);
+  }, []);
+
+  const mapHasFilters = mapFilterType || mapFilterEmpreendimento || mapFilterAddress || mapFilterPriceMax;
 
   return (
     <div className="rounded-2xl overflow-hidden shadow-xl border border-gray-200 relative">
-      {/* Map legend */}
-      <div className="absolute top-4 left-4 z-[1000] bg-white/95 backdrop-blur-md rounded-xl p-3 shadow-lg border border-gray-100">
-        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Legenda</p>
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-2 text-xs"><span className="w-3 h-3 rounded-full bg-amber-500" /> Apartamento</div>
-          <div className="flex items-center gap-2 text-xs"><span className="w-3 h-3 rounded-full bg-blue-500" /> Casa</div>
-          <div className="flex items-center gap-2 text-xs"><span className="w-3 h-3 rounded-full bg-emerald-500" /> Terreno</div>
-          <div className="flex items-center gap-2 text-xs"><span className="w-3 h-3 rounded-full bg-violet-500" /> Comercial</div>
+      {/* Map Style Switcher */}
+      <div className="absolute top-4 left-4 z-[1000] flex flex-col gap-2">
+        <div className="bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-gray-100 p-1.5 flex gap-1">
+          {([
+            { key: "satellite" as const, label: "Satélite", icon: "🛰️" },
+            { key: "streets" as const, label: "Ruas", icon: "🗺️" },
+            { key: "dark" as const, label: "Escuro", icon: "🌙" },
+          ]).map((style) => (
+            <button
+              key={style.key}
+              onClick={() => setMapStyle(style.key)}
+              className={cn(
+                "flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all",
+                mapStyle === style.key
+                  ? "bg-amber-500 text-white shadow-sm"
+                  : "text-gray-600 hover:bg-gray-100"
+              )}
+            >
+              <span className="text-xs">{style.icon}</span> {style.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Legend */}
+        <div className="bg-white/95 backdrop-blur-md rounded-xl p-3 shadow-lg border border-gray-100">
+          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Legenda</p>
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2 text-xs"><span className="w-3 h-3 rounded-full bg-amber-500" /> Apartamento</div>
+            <div className="flex items-center gap-2 text-xs"><span className="w-3 h-3 rounded-full bg-blue-500" /> Casa</div>
+            <div className="flex items-center gap-2 text-xs"><span className="w-3 h-3 rounded-full bg-emerald-500" /> Terreno</div>
+            <div className="flex items-center gap-2 text-xs"><span className="w-3 h-3 rounded-full bg-violet-500" /> Comercial</div>
+          </div>
         </div>
       </div>
+
+      {/* Filters bar */}
+      <div className="absolute bottom-4 left-4 right-4 z-[1000]">
+        <div className="bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-gray-100 p-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <select
+              value={mapFilterType}
+              onChange={(e) => setMapFilterType(e.target.value)}
+              className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+            >
+              <option value="">Todos os tipos</option>
+              <option value="Apartamento">Apartamento</option>
+              <option value="Casa">Casa</option>
+              <option value="Terreno">Terreno</option>
+              <option value="Comercial">Comercial</option>
+            </select>
+
+            <select
+              value={mapFilterEmpreendimento}
+              onChange={(e) => setMapFilterEmpreendimento(e.target.value)}
+              className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+            >
+              <option value="">Todos empreendimentos</option>
+              {uniqueMapEmpreendimentos.map((emp) => (
+                <option key={emp} value={emp}>{emp}</option>
+              ))}
+            </select>
+
+            <input
+              type="text"
+              placeholder="🔍 Endereço ou bairro..."
+              value={mapFilterAddress}
+              onChange={(e) => setMapFilterAddress(e.target.value)}
+              className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-amber-400 min-w-[160px] flex-1"
+            />
+
+            <select
+              value={mapFilterPriceMax}
+              onChange={(e) => setMapFilterPriceMax(e.target.value)}
+              className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+            >
+              <option value="">Valor máximo</option>
+              <option value="300000">Até R$ 300 mil</option>
+              <option value="500000">Até R$ 500 mil</option>
+              <option value="800000">Até R$ 800 mil</option>
+              <option value="1000000">Até R$ 1 milhão</option>
+              <option value="1500000">Até R$ 1,5 milhão</option>
+              <option value="2000000">Até R$ 2 milhões</option>
+            </select>
+
+            <div className="flex items-center gap-2 ml-auto">
+              <span className="text-[11px] font-bold text-gray-500">{filteredMapProperties.filter(p => p.lat && p.lng).length} imóveis</span>
+              {mapHasFilters && (
+                <button
+                  onClick={() => { setMapFilterType(""); setMapFilterEmpreendimento(""); setMapFilterAddress(""); setMapFilterPriceMax(""); }}
+                  className="px-2 py-1 rounded-lg bg-gray-100 text-gray-500 text-[11px] font-medium hover:bg-gray-200 transition-colors"
+                >
+                  Limpar
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div ref={mapRef} style={{ height: "500px", width: "100%" }} />
     </div>
   );
