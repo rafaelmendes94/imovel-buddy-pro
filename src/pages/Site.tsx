@@ -39,6 +39,7 @@ import {
   Heart,
   Handshake,
   Route,
+  ShoppingBag,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { RoutePlanner } from "@/components/RoutePlanner";
@@ -817,6 +818,9 @@ export default function Site() {
                 {cat.label}
               </button>
             ))}
+            <Link to="/brick-store" className="flex items-center gap-1 hover:text-amber-600 transition-colors font-semibold">
+              <ShoppingBag className="w-4 h-4" /> Brick
+            </Link>
           </nav>
           <div className="flex items-center gap-3">
             <button
