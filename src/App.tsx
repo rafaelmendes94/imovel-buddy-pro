@@ -53,6 +53,8 @@ import Parceiros from "./pages/Parceiros";
 import Construtoras from "./pages/Construtoras";
 import ConstrutoraDetail from "./pages/ConstrutoraDetail";
 import ConstrutoraAvaliacoes from "./pages/ConstrutoraAvaliacoes";
+import Brick from "./pages/Brick";
+import BrickStore from "./pages/BrickStore";
 
 const queryClient = new QueryClient();
 
@@ -73,6 +75,7 @@ const App = () => (
             <Route path="/parceiro/:slug" element={<PartnerDetail />} />
             <Route path="/parceiros" element={<Parceiros />} />
             <Route path="/construtora/:slug" element={<ConstrutoraSite />} />
+            <Route path="/brick-store" element={<BrickStore />} />
 
             {/* Admin routes */}
             <Route path="/admin/dashboard" element={<AuthGuard requiredRoles={["super_admin", "admin_staff"]}><AdminDashboard /></AuthGuard>} />
@@ -111,6 +114,7 @@ const App = () => (
             <Route path="/construtoras" element={<AuthGuard><Construtoras /></AuthGuard>} />
             <Route path="/construtoras/:id" element={<AuthGuard><ConstrutoraDetail /></AuthGuard>} />
             <Route path="/construtoras/:id/avaliacoes" element={<AuthGuard><ConstrutoraAvaliacoes /></AuthGuard>} />
+            <Route path="/brick" element={<AuthGuard><Brick /></AuthGuard>} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>

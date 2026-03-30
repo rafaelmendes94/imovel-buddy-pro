@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Building2, Users, FileText, Settings,
   ChevronLeft, ChevronRight, Home, Building, Camera, Fence,
   Globe, ClipboardCheck, Wallet, Table2, FileSignature,
-  Clapperboard, GripVertical, Landmark, HardHat,
+  Clapperboard, GripVertical, Landmark, HardHat, ShoppingBag,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import logoImg from "@/assets/logo.png";
@@ -31,6 +31,7 @@ const defaultNavItems: NavItem[] = [
   { icon: Users, label: "Corretores", path: "/corretores" },
   { icon: Landmark, label: "Imobiliárias", path: "/imobiliarias" },
   { icon: HardHat, label: "Construtoras", path: "/construtoras" },
+  { icon: ShoppingBag, label: "Brick", path: "/brick" },
   { icon: Settings, label: "Configurações", path: "/configuracoes" },
 ];
 
