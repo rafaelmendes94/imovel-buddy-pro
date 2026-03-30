@@ -522,10 +522,10 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
         <div className="bg-white/95 backdrop-blur-md rounded-xl p-3 shadow-lg border border-gray-100">
           <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Legenda</p>
           <div className="space-y-1.5">
-            <div className="flex items-center gap-2 text-xs"><span className="w-3 h-3 rounded-full bg-amber-500" /> Apartamento</div>
-            <div className="flex items-center gap-2 text-xs"><span className="w-3 h-3 rounded-full bg-blue-500" /> Casa</div>
-            <div className="flex items-center gap-2 text-xs"><span className="w-3 h-3 rounded-full bg-emerald-500" /> Terreno</div>
-            <div className="flex items-center gap-2 text-xs"><span className="w-3 h-3 rounded-full bg-violet-500" /> Comercial</div>
+            <div className="flex items-center gap-2 text-xs font-medium text-gray-700"><span className="w-4 h-4 rounded bg-amber-500 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/></svg></span> Apartamento</div>
+            <div className="flex items-center gap-2 text-xs font-medium text-gray-700"><span className="w-4 h-4 rounded bg-blue-500 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span> Casa</div>
+            <div className="flex items-center gap-2 text-xs font-medium text-gray-700"><span className="w-4 h-4 rounded bg-emerald-500 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M10 20.777a6.942 6.942 0 0 1-2.5-12.026"/><path d="M2 21h20"/></svg></span> Terreno</div>
+            <div className="flex items-center gap-2 text-xs font-medium text-gray-700"><span className="w-4 h-4 rounded bg-violet-500 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/></svg></span> Comercial</div>
           </div>
         </div>
       </div>
