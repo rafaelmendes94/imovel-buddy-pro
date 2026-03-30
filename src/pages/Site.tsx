@@ -1148,14 +1148,6 @@ export default function Site() {
         )}
 
 
-        {!searchTerm && !hasActiveFilters && (activeCategory === "todos" || activeCategory === "destaque") && (
-          <section>
-            <SectionHeader title="Imóveis em Destaque" subtitle="Seleção especial dos melhores imóveis" icon={Star} />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {sortByPrice(featured).slice(0, 4).map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} isFavorited={favoriteIds.includes(p.id)} onToggleFavorite={toggleFavorite} isInRoute={routeIds.includes(p.id)} onToggleRoute={toggleRoute} />)}
-            </div>
-          </section>
-        )}
 
         {/* Apartamentos */}
         {!searchTerm && !hasActiveFilters && (activeCategory === "todos" || activeCategory === "apartamentos") && apartments.length > 0 && (
