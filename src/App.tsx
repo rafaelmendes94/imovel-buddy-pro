@@ -21,6 +21,7 @@ import AdminFuncionarios from "./pages/admin/AdminFuncionarios";
 import AdminClientes from "./pages/admin/AdminClientes";
 import AdminPlanos from "./pages/admin/AdminPlanos";
 import AdminCargos from "./pages/admin/AdminCargos";
+import AdminBrick from "./pages/admin/AdminBrick";
 
 // Broker pages
 import BrokerDashboard from "./pages/broker/BrokerDashboard";
@@ -83,6 +84,7 @@ const App = () => (
             <Route path="/admin/cargos" element={<AuthGuard requiredRoles={["super_admin"]}><AdminCargos /></AuthGuard>} />
             <Route path="/admin/clientes" element={<AuthGuard requiredRoles={["super_admin", "admin_staff"]}><AdminClientes /></AuthGuard>} />
             <Route path="/admin/planos" element={<AuthGuard requiredRoles={["super_admin", "admin_staff"]}><AdminPlanos /></AuthGuard>} />
+            <Route path="/admin/brick" element={<AuthGuard requiredRoles={["super_admin", "admin_staff"]}><AdminBrick /></AuthGuard>} />
 
             {/* Broker routes */}
             <Route path="/painel" element={<AuthGuard requiredRoles={["broker"]}><BrokerDashboard /></AuthGuard>} />
