@@ -374,15 +374,22 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
     const getIcon = (type: string) => {
       const colors: Record<string, string> = { Apartamento: "#f59e0b", Casa: "#3b82f6", Terreno: "#22c55e", Comercial: "#8b5cf6" };
       const color = colors[type] || "#f59e0b";
+      const svgIcons: Record<string, string> = {
+        Apartamento: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>`,
+        Casa: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>`,
+        Terreno: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 20.777a6.942 6.942 0 0 1-2.5-12.026"/><path d="M14 16.95A6.942 6.942 0 0 0 18 11c0-3.866-3.582-7-8-7a8.093 8.093 0 0 0-2.2.3"/><path d="M2 21h20"/></svg>`,
+        Comercial: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>`,
+      };
+      const svg = svgIcons[type] || svgIcons.Apartamento;
       return L.divIcon({
         className: "custom-marker",
-        html: `<div style="width:36px;height:36px;background:${color};border:3px solid white;border-radius:50%;box-shadow:0 4px 12px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:13px;cursor:pointer;transition:transform 0.2s;">
-          <span style="filter:drop-shadow(0 1px 1px rgba(0,0,0,0.3));">${type === "Apartamento" ? "🏢" : type === "Casa" ? "🏠" : type === "Terreno" ? "🌳" : "🏬"}</span>
+        html: `<div style="width:32px;height:32px;background:${color};border:2px solid white;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;cursor:pointer;">
+          ${svg}
         </div>
-        <div style="width:12px;height:12px;background:${color};transform:rotate(45deg);margin:-7px auto 0;box-shadow:2px 2px 4px rgba(0,0,0,0.3);"></div>`,
-        iconSize: [36, 48],
-        iconAnchor: [18, 48],
-        popupAnchor: [0, -48],
+        <div style="width:8px;height:8px;background:${color};transform:rotate(45deg);margin:-5px auto 0;box-shadow:1px 1px 3px rgba(0,0,0,0.25);"></div>`,
+        iconSize: [32, 42],
+        iconAnchor: [16, 42],
+        popupAnchor: [0, -42],
       });
     };
 
@@ -492,9 +499,9 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
       <div className="absolute top-4 left-4 z-[1000] flex flex-col gap-2">
         <div className="bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-gray-100 p-1.5 flex gap-1">
           {([
-            { key: "satellite" as const, label: "Satélite", icon: "🛰️" },
-            { key: "streets" as const, label: "Ruas", icon: "🗺️" },
-            { key: "dark" as const, label: "Escuro", icon: "🌙" },
+            { key: "satellite" as const, label: "Satélite", iconSvg: <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg> },
+            { key: "streets" as const, label: "Ruas", iconSvg: <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 7 17l-5-5"/><path d="m22 10-7.5 7.5L13 16"/></svg> },
+            { key: "dark" as const, label: "Escuro", iconSvg: <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg> },
           ]).map((style) => (
             <button
               key={style.key}
@@ -506,7 +513,7 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
                   : "text-gray-600 hover:bg-gray-100"
               )}
             >
-              <span className="text-xs">{style.icon}</span> {style.label}
+              {style.iconSvg} {style.label}
             </button>
           ))}
         </div>
