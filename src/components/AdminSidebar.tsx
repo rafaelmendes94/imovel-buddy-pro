@@ -16,6 +16,7 @@ const adminItems = [
   { icon: Briefcase, label: "Cargos e Funções", path: "/admin/cargos", moduleKey: "funcionarios" },
   { icon: Users, label: "Clientes", path: "/admin/clientes", moduleKey: "clientes" },
   { icon: CreditCard, label: "Planos", path: "/admin/planos", moduleKey: "planos" },
+  { icon: ShoppingBag, label: "Brick do Corretor", path: "/admin/brick", moduleKey: "brick" },
 ];
 
 const operationalItems = [
@@ -34,7 +35,6 @@ const operationalItems = [
   { icon: Users, label: "Corretores", path: "/corretores", moduleKey: "corretores" },
   { icon: Landmark, label: "Imobiliárias", path: "/imobiliarias", moduleKey: "imobiliarias" },
   { icon: Settings, label: "Configurações", path: "/configuracoes", moduleKey: "configuracoes" },
-  { icon: ShoppingBag, label: "Brick", path: "/admin/brick", moduleKey: "brick" },
 ];
 
 export function AdminSidebar() {
