@@ -636,12 +636,16 @@ export default function Site() {
   const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterType || filterCondition || filterEmpreendimento || filterParking || filterVista || filterNeighborhood || filterCaracteristica;
 
   const uniqueEmpreendimentos = [...new Set(available.map((p) => p.empreendimento).filter(Boolean))].sort();
+  const uniqueNeighborhoods = [...new Set(available.map((p) => p.neighborhood).filter(Boolean))].sort();
+  const uniqueVistas = [...new Set(available.map((p) => p.vista).filter(Boolean))].sort();
+  const uniqueCaracteristicas = [...new Set(available.flatMap((p) => p.caracteristicas || []).filter(Boolean))].sort();
 
   const filteredAll = available.filter((p) => {
     const matchSearch = !searchTerm ||
       p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.city.toLowerCase().includes(searchTerm.toLowerCase());
+      p.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (p.neighborhood || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchCity = !filterCity || p.city === filterCity;
     const matchBedrooms = !filterBedrooms || p.bedrooms >= parseInt(filterBedrooms);
     const matchPriceMin = !filterPriceMin || p.price >= parseInt(filterPriceMin);
@@ -651,7 +655,11 @@ export default function Site() {
       Array.isArray(p.paymentConditions) && p.paymentConditions.some(c => c.toLowerCase().includes(filterCondition.toLowerCase()))
     );
     const matchEmpreendimento = !filterEmpreendimento || p.empreendimento === filterEmpreendimento;
-    return matchSearch && matchCity && matchBedrooms && matchPriceMin && matchPriceMax && matchType && matchCondition && matchEmpreendimento;
+    const matchParking = !filterParking || p.parking >= parseInt(filterParking);
+    const matchVista = !filterVista || p.vista === filterVista;
+    const matchNeighborhood = !filterNeighborhood || p.neighborhood === filterNeighborhood;
+    const matchCaracteristica = !filterCaracteristica || (p.caracteristicas || []).includes(filterCaracteristica);
+    return matchSearch && matchCity && matchBedrooms && matchPriceMin && matchPriceMax && matchType && matchCondition && matchEmpreendimento && matchParking && matchVista && matchNeighborhood && matchCaracteristica;
   });
 
   const sortByPrice = <T extends { price: number }>(arr: T[]): T[] => {
