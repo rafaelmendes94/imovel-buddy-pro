@@ -81,6 +81,8 @@ export interface FormData {
   condicoesPagemento: string[];
   infraestrutura: string[];
   outrasCaracteristicas: string[];
+  latitude: string;
+  longitude: string;
 }
 
 export const initialForm: FormData = {
@@ -94,6 +96,7 @@ export const initialForm: FormData = {
   vistaMar: false, decorado: false, aceitaPermuta: false, destaqueHome: false, ativoSite: false,
   destaqueCategoria: 'none',
   condicoesPagemento: [], infraestrutura: [], outrasCaracteristicas: [],
+  latitude: '', longitude: '',
 };
 
 function SectionHeader({ icon: Icon, title }: { icon: any; title: string }) {
