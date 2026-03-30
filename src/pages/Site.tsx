@@ -76,6 +76,9 @@ interface SiteProperty {
   paymentConditionsOther?: string;
   destaqueCategoria?: string;
   destaqueHome?: boolean;
+  neighborhood?: string;
+  vista?: string;
+  caracteristicas?: string[];
 }
 // Broker info map
 const brokerInfo: Record<string, { photo: string; whatsapp: string }> = {
@@ -500,6 +503,10 @@ export default function Site() {
   const [filterType, setFilterType] = useState("");
   const [filterCondition, setFilterCondition] = useState("");
   const [filterEmpreendimento, setFilterEmpreendimento] = useState("");
+  const [filterParking, setFilterParking] = useState("");
+  const [filterVista, setFilterVista] = useState("");
+  const [filterNeighborhood, setFilterNeighborhood] = useState("");
+  const [filterCaracteristica, setFilterCaracteristica] = useState("");
   const [selectedProperty, setSelectedProperty] = useState<SiteProperty | null>(null);
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [priceSort, setPriceSort] = useState<"" | "asc" | "desc">("");
@@ -571,6 +578,9 @@ export default function Site() {
           exclusivityTerm: row.termo_exclusividade || '',
           destaqueCategoria: (row as any).destaque_categoria || '',
           destaqueHome: row.destaque_home,
+          neighborhood: row.bairro || '',
+          vista: row.vista || '',
+          caracteristicas: row.outras_caracteristicas || [],
         }));
         setSiteProperties(mapped);
       }
@@ -616,10 +626,14 @@ export default function Site() {
     setFilterType("");
     setFilterCondition("");
     setFilterEmpreendimento("");
+    setFilterParking("");
+    setFilterVista("");
+    setFilterNeighborhood("");
+    setFilterCaracteristica("");
     setSearchTerm("");
   };
 
-  const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterType || filterCondition || filterEmpreendimento;
+  const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterType || filterCondition || filterEmpreendimento || filterParking || filterVista || filterNeighborhood || filterCaracteristica;
 
   const uniqueEmpreendimentos = [...new Set(available.map((p) => p.empreendimento).filter(Boolean))].sort();
 
