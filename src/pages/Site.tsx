@@ -103,8 +103,6 @@ const categories: { key: Category; label: string; icon: typeof Home }[] = [
   { key: "casas", label: "Casas", icon: Home },
   { key: "decorados", label: "Decorados", icon: Paintbrush },
   { key: "vista-mar", label: "Vista Mar", icon: Waves },
-  { key: "lotes-cond", label: "Lotes Condomínio", icon: TreePine },
-  { key: "lotes-bairro", label: "Lotes Bairro", icon: MapPin },
 ];
 
 function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, onToggleFavorite, isInRoute, onToggleRoute }: { property: typeof siteProperties[0]; onSelect?: (p: typeof siteProperties[0]) => void; hideStamp?: boolean; onViewTerm?: (url: string) => void; isFavorited?: boolean; onToggleFavorite?: (id: string) => void; isInRoute?: boolean; onToggleRoute?: (id: string) => void }) {
