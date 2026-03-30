@@ -318,7 +318,9 @@ export type Database = {
           id: string
           imagens: string[] | null
           infraestrutura: string[] | null
+          latitude: number | null
           local_chaves: string | null
+          longitude: number | null
           lote: string | null
           outras_caracteristicas: string[] | null
           padrao: string | null
@@ -367,7 +369,9 @@ export type Database = {
           id?: string
           imagens?: string[] | null
           infraestrutura?: string[] | null
+          latitude?: number | null
           local_chaves?: string | null
+          longitude?: number | null
           lote?: string | null
           outras_caracteristicas?: string[] | null
           padrao?: string | null
@@ -416,7 +420,9 @@ export type Database = {
           id?: string
           imagens?: string[] | null
           infraestrutura?: string[] | null
+          latitude?: number | null
           local_chaves?: string | null
+          longitude?: number | null
           lote?: string | null
           outras_caracteristicas?: string[] | null
           padrao?: string | null

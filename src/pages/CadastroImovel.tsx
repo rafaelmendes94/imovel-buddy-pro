@@ -81,6 +81,8 @@ export interface FormData {
   condicoesPagemento: string[];
   infraestrutura: string[];
   outrasCaracteristicas: string[];
+  latitude: string;
+  longitude: string;
 }
 
 export const initialForm: FormData = {
@@ -94,6 +96,7 @@ export const initialForm: FormData = {
   vistaMar: false, decorado: false, aceitaPermuta: false, destaqueHome: false, ativoSite: false,
   destaqueCategoria: 'none',
   condicoesPagemento: [], infraestrutura: [], outrasCaracteristicas: [],
+  latitude: '', longitude: '',
 };
 
 function SectionHeader({ icon: Icon, title }: { icon: any; title: string }) {
@@ -176,6 +179,8 @@ export function ImovelForm({ editId }: { editId?: string }) {
         condicoesPagemento: data.condicoes_pagamento || [],
         infraestrutura: data.infraestrutura || [],
         outrasCaracteristicas: data.outras_caracteristicas || [],
+        latitude: (data as any).latitude ? String((data as any).latitude) : '',
+        longitude: (data as any).longitude ? String((data as any).longitude) : '',
       });
       setExistingImages(data.imagens || []);
       setLoadingData(false);
@@ -298,7 +303,9 @@ export function ImovelForm({ editId }: { editId?: string }) {
         infraestrutura: form.infraestrutura,
         outras_caracteristicas: form.outrasCaracteristicas,
         imagens: allImages.length > 0 ? allImages : null,
-      };
+        latitude: parseFloat(form.latitude) || 0,
+        longitude: parseFloat(form.longitude) || 0,
+      } as any;
 
       if (isEdit) {
         const { error } = await supabase
@@ -442,6 +449,25 @@ export function ImovelForm({ editId }: { editId?: string }) {
             <Input placeholder="Rua, número" value={form.endereco} onChange={e => set('endereco', e.target.value)} />
           </div>
         </div>
+
+        {/* Localização GPS */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+          <div className="space-y-1.5">
+            <Label className="text-xs flex items-center gap-1">
+              <MapPin className="w-3.5 h-3.5" /> Latitude
+            </Label>
+            <Input type="number" step="any" placeholder="Ex: -29.3456" value={form.latitude} onChange={e => set('latitude', e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs flex items-center gap-1">
+              <MapPin className="w-3.5 h-3.5" /> Longitude
+            </Label>
+            <Input type="number" step="any" placeholder="Ex: -50.1234" value={form.longitude} onChange={e => set('longitude', e.target.value)} />
+          </div>
+        </div>
+        <p className="text-[10px] text-muted-foreground mt-1">
+          💡 Dica: Abra o Google Maps, clique com botão direito no local desejado e copie as coordenadas (latitude, longitude).
+        </p>
       </div>
 
       {/* ===== BLOCO 2: VALOR E CONDIÇÕES ===== */}
