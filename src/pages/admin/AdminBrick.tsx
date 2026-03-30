@@ -112,7 +112,7 @@ export default function AdminBrick() {
               <ShoppingBag className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-foreground">Brick - Administração</h1>
+              <h1 className="text-xl font-bold text-foreground">Brick do Corretor</h1>
               <p className="text-sm text-muted-foreground">Gerencie todos os anúncios dos corretores</p>
             </div>
           </div>
