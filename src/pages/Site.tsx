@@ -1147,7 +1147,12 @@ export default function Site() {
           </section>
         )}
 
-
+        {!searchTerm && !hasActiveFilters && (activeCategory === "todos" || activeCategory === "destaque") && (
+          <div className="flex items-center gap-3 mb-2">
+            <Star className="w-6 h-6 text-primary" />
+            <h2 className="text-2xl font-bold text-foreground tracking-tight">Imóveis em Destaque</h2>
+          </div>
+        )}
 
         {/* Apartamentos */}
         {!searchTerm && !hasActiveFilters && (activeCategory === "todos" || activeCategory === "apartamentos") && apartments.length > 0 && (
