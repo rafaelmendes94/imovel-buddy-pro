@@ -31,7 +31,7 @@ const defaultNavItems: NavItem[] = [
   { icon: Users, label: "Corretores", path: "/corretores" },
   { icon: Landmark, label: "Imobiliárias", path: "/imobiliarias" },
   { icon: HardHat, label: "Construtoras", path: "/construtoras" },
-  { icon: ShoppingBag, label: "Brick", path: "/brick" },
+  { icon: ShoppingBag, label: "Brick do Corretor", path: "/brick" },
   { icon: Settings, label: "Configurações", path: "/configuracoes" },
 ];
 
