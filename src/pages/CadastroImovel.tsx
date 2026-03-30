@@ -179,6 +179,8 @@ export function ImovelForm({ editId }: { editId?: string }) {
         condicoesPagemento: data.condicoes_pagamento || [],
         infraestrutura: data.infraestrutura || [],
         outrasCaracteristicas: data.outras_caracteristicas || [],
+        latitude: (data as any).latitude ? String((data as any).latitude) : '',
+        longitude: (data as any).longitude ? String((data as any).longitude) : '',
       });
       setExistingImages(data.imagens || []);
       setLoadingData(false);
@@ -301,7 +303,9 @@ export function ImovelForm({ editId }: { editId?: string }) {
         infraestrutura: form.infraestrutura,
         outras_caracteristicas: form.outrasCaracteristicas,
         imagens: allImages.length > 0 ? allImages : null,
-      };
+        latitude: parseFloat(form.latitude) || 0,
+        longitude: parseFloat(form.longitude) || 0,
+      } as any;
 
       if (isEdit) {
         const { error } = await supabase
