@@ -43,6 +43,54 @@ export type Database = {
           },
         ]
       }
+      brick_items: {
+        Row: {
+          categoria: string
+          cidade: string | null
+          created_at: string
+          descricao: string | null
+          estado: string
+          id: string
+          imagens: string[] | null
+          preco: number
+          telefone: string | null
+          titulo: string
+          updated_at: string
+          user_id: string
+          vendido: boolean
+        }
+        Insert: {
+          categoria?: string
+          cidade?: string | null
+          created_at?: string
+          descricao?: string | null
+          estado?: string
+          id?: string
+          imagens?: string[] | null
+          preco?: number
+          telefone?: string | null
+          titulo: string
+          updated_at?: string
+          user_id: string
+          vendido?: boolean
+        }
+        Update: {
+          categoria?: string
+          cidade?: string | null
+          created_at?: string
+          descricao?: string | null
+          estado?: string
+          id?: string
+          imagens?: string[] | null
+          preco?: number
+          telefone?: string | null
+          titulo?: string
+          updated_at?: string
+          user_id?: string
+          vendido?: boolean
+        }
+        Relationships: []
+      }
       construtora_avaliacoes: {
         Row: {
           comentario: string | null
