@@ -601,10 +601,6 @@ export function ImovelForm({ editId }: { editId?: string }) {
             <Label className="text-xs flex items-center gap-1"><Ruler className="w-3.5 h-3.5" /> Área Total (m²)</Label>
             <Input type="number" placeholder="0" value={form.area} onChange={e => set('area', e.target.value)} className="h-10" />
           </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs">Título do Imóvel *</Label>
-            <Input placeholder="Ex: Apartamento 3 quartos frente mar" value={form.titulo} onChange={e => set('titulo', e.target.value)} required className="h-10" />
-          </div>
         </div>
 
         <QuickPick
