@@ -56,7 +56,7 @@ import Construtoras from "./pages/Construtoras";
 import ConstrutoraDetail from "./pages/ConstrutoraDetail";
 import ConstrutoraAvaliacoes from "./pages/ConstrutoraAvaliacoes";
 import Brick from "./pages/Brick";
-import BrickStore from "./pages/BrickStore";
+const BrickStore = lazy(() => import("./pages/BrickStore"));
 
 const queryClient = new QueryClient();
 
