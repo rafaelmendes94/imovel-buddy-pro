@@ -88,6 +88,10 @@ export default function Buildings() {
   const [mediaBuilding, setMediaBuilding] = useState<BuildingData | null>(null);
   const [saving, setSaving] = useState(false);
   const [cepLoading, setCepLoading] = useState(false);
+  const [linkedUnits, setLinkedUnits] = useState<LinkedUnit[]>([]);
+  const [unitsLoading, setUnitsLoading] = useState(false);
+  const [selectedFloor, setSelectedFloor] = useState<number | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
