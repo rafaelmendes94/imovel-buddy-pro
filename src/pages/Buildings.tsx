@@ -235,7 +235,7 @@ export default function Buildings() {
             <h1 className="text-2xl font-bold text-foreground">Edifícios</h1>
             <p className="text-sm text-muted-foreground mt-1">{buildings.length} edifícios cadastrados</p>
           </div>
-          <button onClick={() => { setForm(emptyForm); setEditingId(null); setShowForm(true); }}
+          <button onClick={() => { setForm(emptyForm); setEditingId(null); setLinkedUnits([]); setShowForm(true); }}
             className="flex items-center gap-2 px-4 py-2.5 rounded-lg gradient-gold text-primary text-sm font-semibold hover:opacity-90 transition-opacity self-start">
             <Plus className="w-4 h-4" /> Novo Edifício
           </button>
