@@ -1246,41 +1246,33 @@ export default function Site() {
           <section>
             <SectionHeader title="Parceiros MV BROKER CONNECT" subtitle="Empresas que confiam na nossa rede" icon={Handshake} />
             <div className="relative overflow-hidden">
-              <div className="flex animate-scroll gap-8 items-center">
-                {[
-                  { name: "Construtora Litoral", logo: "https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?w=200&h=100&fit=crop" },
-                  { name: "Incorporadora Sul", logo: "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=200&h=100&fit=crop" },
-                  { name: "Imobiliária Central", logo: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=200&h=100&fit=crop" },
-                  { name: "Porto Seguro Imóveis", logo: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=200&h=100&fit=crop" },
-                  { name: "Engenharia & Projetos", logo: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=200&h=100&fit=crop" },
-                  { name: "Financeira Prime", logo: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=200&h=100&fit=crop" },
-                  { name: "Seguradora Atlas", logo: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=200&h=100&fit=crop" },
-                  { name: "Arquitetura Moderna", logo: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=200&h=100&fit=crop" },
-                  { name: "Design & Interiores", logo: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=200&h=100&fit=crop" },
-                  { name: "Solar Energia", logo: "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=200&h=100&fit=crop" },
-                ].concat([
-                  { name: "Construtora Litoral", logo: "https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?w=200&h=100&fit=crop" },
-                  { name: "Incorporadora Sul", logo: "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=200&h=100&fit=crop" },
-                  { name: "Imobiliária Central", logo: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=200&h=100&fit=crop" },
-                  { name: "Porto Seguro Imóveis", logo: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=200&h=100&fit=crop" },
-                  { name: "Engenharia & Projetos", logo: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=200&h=100&fit=crop" },
-                  { name: "Financeira Prime", logo: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=200&h=100&fit=crop" },
-                  { name: "Seguradora Atlas", logo: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=200&h=100&fit=crop" },
-                  { name: "Arquitetura Moderna", logo: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=200&h=100&fit=crop" },
-                  { name: "Design & Interiores", logo: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=200&h=100&fit=crop" },
-                  { name: "Solar Energia", logo: "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=200&h=100&fit=crop" },
-                ]).map((partner, i) => (
-                  <Link
-                    key={`${partner.name}-${i}`}
-                    to={`/parceiro/${partner.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`}
-                    className="flex-shrink-0 w-40 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden hover:border-amber-300"
-                  >
-                    <div className="h-20 overflow-hidden">
-                      <img src={partner.logo} alt={partner.name} className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity" />
-                    </div>
-                    <p className="text-[11px] font-bold text-gray-700 text-center py-2 px-1 truncate">{partner.name}</p>
-                  </Link>
-                ))}
+              <div className="flex animate-scroll gap-8 items-center" style={{ animationDuration: "40s" }}>
+                {(() => {
+                  const partners = [
+                    { name: "Construtora Litoral", logo: "https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?w=200&h=100&fit=crop" },
+                    { name: "Incorporadora Sul", logo: "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=200&h=100&fit=crop" },
+                    { name: "Imobiliária Central", logo: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=200&h=100&fit=crop" },
+                    { name: "Porto Seguro Imóveis", logo: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=200&h=100&fit=crop" },
+                    { name: "Engenharia & Projetos", logo: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=200&h=100&fit=crop" },
+                    { name: "Financeira Prime", logo: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=200&h=100&fit=crop" },
+                    { name: "Seguradora Atlas", logo: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=200&h=100&fit=crop" },
+                    { name: "Arquitetura Moderna", logo: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=200&h=100&fit=crop" },
+                    { name: "Design & Interiores", logo: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=200&h=100&fit=crop" },
+                    { name: "Solar Energia", logo: "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=200&h=100&fit=crop" },
+                  ];
+                  return [...partners, ...partners].map((partner, i) => (
+                    <Link
+                      key={`${partner.name}-${i}`}
+                      to={`/parceiro/${partner.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`}
+                      className="flex-shrink-0 w-40 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden hover:border-amber-300"
+                    >
+                      <div className="h-20 overflow-hidden">
+                        <img src={partner.logo} alt={partner.name} className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity" loading="lazy" />
+                      </div>
+                      <p className="text-[11px] font-bold text-gray-700 text-center py-2 px-1 truncate">{partner.name}</p>
+                    </Link>
+                  ));
+                })()}
               </div>
             </div>
             <div className="flex justify-center mt-4">
