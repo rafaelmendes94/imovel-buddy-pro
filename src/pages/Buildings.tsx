@@ -561,7 +561,7 @@ export default function Buildings() {
                   )}
                   <div className="flex gap-2 mt-2">
                     <button onClick={(e) => { e.stopPropagation(); navigate(`/edificios/${building.id}`); }}
-                      className="flex items-center gap-1.5 flex-1 justify-center py-2 rounded-lg bg-emerald-500/15 text-emerald-500 text-xs font-semibold hover:bg-emerald-500/25 transition-colors border border-emerald-500/30">
+                      className="flex items-center gap-1.5 flex-1 justify-center py-2 rounded-lg bg-success/15 text-success text-xs font-semibold hover:bg-success/25 transition-colors border border-success/30">
                       <Home className="w-3.5 h-3.5" /> Imóveis
                     </button>
                     <button onClick={(e) => { e.stopPropagation(); setMediaBuilding(building); }}
