@@ -35,10 +35,17 @@ const destaqueCategoriaOptions = [
   { value: "decorados", label: "Decorados" },
   { value: "vista-mar", label: "Vista Mar" },
 ];
-const paymentConditionOptions = [
-  "À Vista", "Parcelamento 12x", "Parcelamento 24x", "Parcelamento 36x",
-  "Parcelamento 48x", "Parcelamento 60x", "Parcelamento 120x",
-  "Financiamento Bancário", "FGTS", "Dação", "Permuta", "Consórcio"
+const infraOptions = [
+  "Piscina", "Churrasqueira", "Salão de Festas", "Academia", "Playground",
+  "Sauna", "Quadra Esportiva", "Brinquedoteca", "Espaço Gourmet", "Portaria 24h",
+  "Lavanderia", "Pet Place", "Coworking", "Rooftop", "SPA", "Jardim",
+  "Bicicletário", "Garagem Coberta", "Elevador", "Gerador"
+];
+const caracteristicaOptions = [
+  "Beira Lago", "Beira Mar", "Documentação OK", "Escriturado", "ITBI Pago",
+  "Aceita Financiamento", "Pronto para Morar", "Em Construção", "Reformado",
+  "Nascente", "Andar Alto", "Sacada", "Varanda Gourmet", "Closet",
+  "Suíte Master", "Ar Condicionado", "Piso Porcelanato", "Cozinha Planejada"
 ];
 
 /** Inline one-click button picker */
