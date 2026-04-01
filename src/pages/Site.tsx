@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect, useRef, useCallback, lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
 import { formatCurrency } from "@/data/mockData";
 import { supabase } from "@/integrations/supabase/client";
-import { PropertyDetailModal } from "@/components/PropertyDetailModal";
+const PropertyDetailModal = lazy(() => import("@/components/PropertyDetailModal").then(m => ({ default: m.PropertyDetailModal })));
+const SharkAI = lazy(() => import("@/components/SharkAI").then(m => ({ default: m.SharkAI })));
+const RoutePlanner = lazy(() => import("@/components/RoutePlanner").then(m => ({ default: m.RoutePlanner })));
 import {
   Search,
   MapPin,
