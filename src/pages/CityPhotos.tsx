@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { AppLayout } from "@/components/AppLayout";
+import { SmartLayout } from "@/components/SmartLayout";
 import { BackButton } from "@/components/BackButton";
 import {
   Camera,
@@ -144,7 +144,7 @@ export default function CityPhotos() {
   const handleDelete = (id: string) => setPhotos((prev) => prev.filter((p) => p.id !== id));
 
   return (
-    <AppLayout>
+    <SmartLayout>
       <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
         <BackButton />
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -274,6 +274,6 @@ export default function CityPhotos() {
           </div>
         )}
       </div>
-    </AppLayout>
+    </SmartLayout>
   );
 }

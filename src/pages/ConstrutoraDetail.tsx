@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { AppLayout } from "@/components/AppLayout";
+import { SmartLayout } from "@/components/SmartLayout";
 import { BackButton } from "@/components/BackButton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -185,8 +185,8 @@ export default function ConstrutoraDetail() {
     setShowColors(false); fetchAll(); toast.success("Cores atualizadas!");
   };
 
-  if (loading) return <AppLayout><div className="p-8 text-center text-muted-foreground">Carregando...</div></AppLayout>;
-  if (!construtora) return <AppLayout><div className="p-8 text-center text-muted-foreground">Construtora não encontrada</div></AppLayout>;
+  if (loading) return <SmartLayout><div className="p-8 text-center text-muted-foreground">Carregando...</div></SmartLayout>;
+  if (!construtora) return <SmartLayout><div className="p-8 text-center text-muted-foreground">Construtora não encontrada</div></SmartLayout>;
 
   const filteredImoveis = imoveis.filter(i => {
     if (searchImoveis && !i.titulo.toLowerCase().includes(searchImoveis.toLowerCase())) return false;
@@ -202,7 +202,7 @@ export default function ConstrutoraDetail() {
   const totalVendidas = empreendimentos.reduce((s, e) => s + (e.unidades_vendidas || 0), 0);
 
   return (
-    <AppLayout>
+    <SmartLayout>
       <div className="space-y-0">
         {/* Hero/Cover */}
         <motion.div {...fadeUp} className="relative h-52 sm:h-64 overflow-hidden" style={{ background: `linear-gradient(135deg, ${construtora.cor_primaria}, ${construtora.cor_secundaria})` }}>
@@ -583,6 +583,6 @@ export default function ConstrutoraDetail() {
           )}
         </AnimatePresence>
       </div>
-    </AppLayout>
+    </SmartLayout>
   );
 }

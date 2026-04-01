@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
-import { AppLayout } from "@/components/AppLayout";
+import { SmartLayout } from "@/components/SmartLayout";
 import { BackButton } from "@/components/BackButton";
 import { PropertyMap } from "@/components/PropertyMap";
 import { PropertyDetailModal } from "@/components/PropertyDetailModal";
@@ -468,7 +468,7 @@ export default function Properties() {
   const totalSold = propertyList.filter(p => p.status === "Vendido").reduce((s, p) => s + p.price, 0);
 
   return (
-    <AppLayout>
+    <SmartLayout>
       <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
         {/* Header */}
         <div className="flex flex-col gap-3">
@@ -947,7 +947,7 @@ export default function Properties() {
           </div>
         </div>
       )}
-    </AppLayout>
+    </SmartLayout>
   );
 }
 

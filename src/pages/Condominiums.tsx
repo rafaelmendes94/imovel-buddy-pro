@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AppLayout } from "@/components/AppLayout";
+import { SmartLayout } from "@/components/SmartLayout";
 import { BackButton } from "@/components/BackButton";
 import {
   Fence,
@@ -161,7 +161,7 @@ export default function Condominiums() {
   const handleDelete = (id: string) => setCondos((prev) => prev.filter((c) => c.id !== id));
 
   return (
-    <AppLayout>
+    <SmartLayout>
       <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
         <BackButton />
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -323,6 +323,6 @@ export default function Condominiums() {
           </div>
         )}
       </div>
-    </AppLayout>
+    </SmartLayout>
   );
 }

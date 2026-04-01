@@ -1,4 +1,4 @@
-import { AppLayout } from "@/components/AppLayout";
+import { SmartLayout } from "@/components/SmartLayout";
 import { BackButton } from "@/components/BackButton";
 import { Building2, CreditCard, Bell, Shield, KeyRound, Palette } from "lucide-react";
 import { useState } from "react";
@@ -87,7 +87,7 @@ export default function Settings() {
   ];
 
   return (
-    <AppLayout>
+    <SmartLayout>
       <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
         <BackButton />
         <div>
@@ -151,6 +151,6 @@ export default function Settings() {
           title="Aparência do Site Público"
         />
       </div>
-    </AppLayout>
+    </SmartLayout>
   );
 }

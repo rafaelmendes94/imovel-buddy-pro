@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { AppLayout } from '@/components/AppLayout';
+import { SmartLayout } from '@/components/SmartLayout';
 import { BackButton } from '@/components/BackButton';
 import {
   Building2, MapPin, BedDouble, Bath, Car, Ruler, User, Phone, DollarSign,
@@ -752,8 +752,8 @@ export function ImovelForm({ editId }: { editId?: string }) {
 
 export default function CadastroImovel() {
   return (
-    <AppLayout>
+    <SmartLayout>
       <ImovelForm />
-    </AppLayout>
+    </SmartLayout>
   );
 }

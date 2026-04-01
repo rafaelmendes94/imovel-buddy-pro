@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { AppLayout } from "@/components/AppLayout";
+import { SmartLayout } from "@/components/SmartLayout";
 import { BackButton } from "@/components/BackButton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -149,7 +149,7 @@ export default function Imobiliarias() {
   );
 
   return (
-    <AppLayout>
+    <SmartLayout>
       <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
         <BackButton />
         <div className="flex items-center justify-between">
@@ -338,6 +338,6 @@ export default function Imobiliarias() {
           </TabsContent>
         </Tabs>
       </div>
-    </AppLayout>
+    </SmartLayout>
   );
 }
