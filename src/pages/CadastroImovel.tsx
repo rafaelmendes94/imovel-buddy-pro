@@ -278,6 +278,8 @@ export function ImovelForm({ editId }: { editId?: string }) {
         latitude: (data as any).latitude ? String((data as any).latitude) : '',
         longitude: (data as any).longitude ? String((data as any).longitude) : '',
         cep: '',
+        edificioId: (data as any).edificio_id || '',
+        condominioId: (data as any).condominio_id || '',
       });
       setExistingImages(data.imagens || []);
       setLoadingData(false);
