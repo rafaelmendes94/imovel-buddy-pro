@@ -488,6 +488,54 @@ export function ImovelForm({ editId }: { editId?: string }) {
           onChange={(v) => set('tipo', v)}
         />
 
+        {/* Edifício e Condomínio vinculados */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <Label className="text-xs flex items-center gap-1"><Building2 className="w-3.5 h-3.5" /> Edifício</Label>
+            <select
+              value={form.edificioId}
+              onChange={(e) => {
+                const id = e.target.value;
+                set('edificioId', id);
+                if (id) {
+                  const ed = edificiosList.find(x => x.id === id);
+                  if (ed) {
+                    set('endereco', ed.endereco);
+                    set('cidade', ed.cidade);
+                    if (ed.infraestrutura?.length) set('infraestrutura', [...new Set([...form.infraestrutura, ...ed.infraestrutura])]);
+                  }
+                }
+              }}
+              className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="">Nenhum</option>
+              {edificiosList.map(ed => <option key={ed.id} value={ed.id}>{ed.nome} - {ed.cidade}</option>)}
+            </select>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs flex items-center gap-1"><Home className="w-3.5 h-3.5" /> Condomínio</Label>
+            <select
+              value={form.condominioId}
+              onChange={(e) => {
+                const id = e.target.value;
+                set('condominioId', id);
+                if (id) {
+                  const co = condominiosList.find(x => x.id === id);
+                  if (co) {
+                    set('endereco', co.endereco);
+                    set('cidade', co.cidade);
+                    if (co.amenidades?.length) set('infraestrutura', [...new Set([...form.infraestrutura, ...co.amenidades])]);
+                  }
+                }
+              }}
+              className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="">Nenhum</option>
+              {condominiosList.map(co => <option key={co.id} value={co.id}>{co.nome} - {co.cidade}</option>)}
+            </select>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="space-y-1.5">
             <Label className="text-xs">Empreendimento</Label>
