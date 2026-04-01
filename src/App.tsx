@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -39,7 +40,7 @@ import CityPhotos from "./pages/CityPhotos";
 import Brokers from "./pages/Brokers";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
-import Site from "./pages/Site";
+const Site = lazy(() => import("./pages/Site"));
 import AllProperties from "./pages/AllProperties";
 import RankingPage from "./pages/RankingPage";
 import Avaliacoes from "./pages/Avaliacoes";
@@ -55,7 +56,7 @@ import Construtoras from "./pages/Construtoras";
 import ConstrutoraDetail from "./pages/ConstrutoraDetail";
 import ConstrutoraAvaliacoes from "./pages/ConstrutoraAvaliacoes";
 import Brick from "./pages/Brick";
-import BrickStore from "./pages/BrickStore";
+const BrickStore = lazy(() => import("./pages/BrickStore"));
 
 const queryClient = new QueryClient();
 
@@ -68,7 +69,7 @@ const App = () => (
         <AuthProvider>
           <Routes>
             {/* Public routes */}
-            <Route path="/" element={<Site />} />
+            <Route path="/" element={<Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" /></div>}><Site /></Suspense>} />
             <Route path="/login" element={<Login />} />
             <Route path="/registro" element={<Registro />} />
             <Route path="/corretor/:slug" element={<BrokerSite />} />
@@ -76,7 +77,7 @@ const App = () => (
             <Route path="/parceiro/:slug" element={<PartnerDetail />} />
             <Route path="/parceiros" element={<Parceiros />} />
             <Route path="/construtora/:slug" element={<ConstrutoraSite />} />
-            <Route path="/brick-store" element={<BrickStore />} />
+            <Route path="/brick-store" element={<Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" /></div>}><BrickStore /></Suspense>} />
 
             {/* Admin routes */}
             <Route path="/admin/dashboard" element={<AuthGuard requiredRoles={["super_admin", "admin_staff"]}><AdminDashboard /></AuthGuard>} />
