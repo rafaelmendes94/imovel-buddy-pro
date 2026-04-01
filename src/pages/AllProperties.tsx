@@ -158,6 +158,10 @@ export default function AllProperties() {
   const [filterPriceMax, setFilterPriceMax] = useState("");
   const [filterType, setFilterType] = useState("");
   const [filterCondition, setFilterCondition] = useState("");
+  const [filterEdificio, setFilterEdificio] = useState("");
+  const [filterCondominio, setFilterCondominio] = useState("");
+  const [edificiosList, setEdificiosList] = useState<{ id: string; nome: string }[]>([]);
+  const [condominiosList, setCondominiosList] = useState<{ id: string; nome: string }[]>([]);
   const [priceSort, setPriceSort] = useState<"" | "asc" | "desc">("");
   const [selectedProperty, setSelectedProperty] = useState<SiteProperty | null>(null);
 
