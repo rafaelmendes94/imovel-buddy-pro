@@ -443,43 +443,39 @@ export function ImovelForm({ editId }: { editId?: string }) {
       </div>
 
       {/* ===== BLOCO 1: IDENTIFICAÇÃO ===== */}
-      <div className="bg-card border border-border rounded-xl p-5">
+      <div className="bg-card border border-border rounded-xl p-4 sm:p-5 space-y-4">
         <SectionHeader icon={Building2} title="Identificação" />
 
-        {/* Tipo do Imóvel - QuickPick */}
-        <div className="mb-4">
-          <QuickPick
-            label="Tipo do Imóvel *"
-            icon={<Building2 className="w-3.5 h-3.5" />}
-            options={tiposImovel.map(t => ({ label: t, value: t }))}
-            value={form.tipo}
-            onChange={(v) => set('tipo', v)}
-          />
-        </div>
+        <QuickPick
+          label="Tipo do Imóvel *"
+          icon={<Building2 className="w-3.5 h-3.5" />}
+          options={tiposImovel.map(t => ({ label: t, value: t }))}
+          value={form.tipo}
+          onChange={(v) => set('tipo', v)}
+        />
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="space-y-1.5">
             <Label className="text-xs">Empreendimento</Label>
-            <Input placeholder="Nome do empreendimento" value={form.empreendimento} onChange={e => set('empreendimento', e.target.value)} />
+            <Input placeholder="Nome do empreendimento" value={form.empreendimento} onChange={e => set('empreendimento', e.target.value)} className="h-10" />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs">Unidade / Quadra</Label>
             <div className="flex gap-2">
-              <Input placeholder="Unidade" value={form.unidade} onChange={e => set('unidade', e.target.value)} />
-              <Input placeholder="Quadra" value={form.quadra} onChange={e => set('quadra', e.target.value)} />
+              <Input placeholder="Unidade" value={form.unidade} onChange={e => set('unidade', e.target.value)} className="h-10" />
+              <Input placeholder="Quadra" value={form.quadra} onChange={e => set('quadra', e.target.value)} className="h-10" />
             </div>
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs">Box / Lote</Label>
             <div className="flex gap-2">
-              <Input placeholder="Box" value={form.box} onChange={e => set('box', e.target.value)} />
-              <Input placeholder="Lote" value={form.lote} onChange={e => set('lote', e.target.value)} />
+              <Input placeholder="Box" value={form.box} onChange={e => set('box', e.target.value)} className="h-10" />
+              <Input placeholder="Lote" value={form.lote} onChange={e => set('lote', e.target.value)} className="h-10" />
             </div>
           </div>
         </div>
 
-        {/* Dormitórios, Banheiros, Vagas, Elevadores - QuickPick */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <QuickPick
             label="Dormitórios"
             icon={<BedDouble className="w-3.5 h-3.5" />}
@@ -509,34 +505,31 @@ export function ImovelForm({ editId }: { editId?: string }) {
           />
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><Ruler className="w-3.5 h-3.5" /> Área Privativa (m²)</Label>
-            <Input type="number" placeholder="0" value={form.areaPrivativa} onChange={e => set('areaPrivativa', e.target.value)} />
+            <Input type="number" placeholder="0" value={form.areaPrivativa} onChange={e => set('areaPrivativa', e.target.value)} className="h-10" />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><Ruler className="w-3.5 h-3.5" /> Área Total (m²)</Label>
-            <Input type="number" placeholder="0" value={form.area} onChange={e => set('area', e.target.value)} />
+            <Input type="number" placeholder="0" value={form.area} onChange={e => set('area', e.target.value)} className="h-10" />
           </div>
-          <div className="space-y-1.5 sm:col-span-2">
+          <div className="space-y-1.5">
             <Label className="text-xs">Título do Imóvel *</Label>
-            <Input placeholder="Ex: Apartamento 3 quartos frente mar" value={form.titulo} onChange={e => set('titulo', e.target.value)} required />
+            <Input placeholder="Ex: Apartamento 3 quartos frente mar" value={form.titulo} onChange={e => set('titulo', e.target.value)} required className="h-10" />
           </div>
         </div>
 
-        {/* Status - QuickPick */}
-        <div className="mb-4">
-          <QuickPick
-            label="Status"
-            options={statusOptions.map(s => ({ label: s, value: s }))}
-            value={form.status}
-            onChange={(v) => set('status', v)}
-          />
-        </div>
+        <QuickPick
+          label="Status"
+          options={statusOptions.map(s => ({ label: s, value: s }))}
+          value={form.status}
+          onChange={(v) => set('status', v)}
+        />
 
-        {/* Linha 1: CEP + Endereço */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4 items-end">
-          <div className="md:col-span-3 space-y-1.5">
+        {/* Endereço */}
+        <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-end">
+          <div className="sm:col-span-3 space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> CEP</Label>
             <div className="relative">
               <Input
@@ -560,56 +553,54 @@ export function ImovelForm({ editId }: { editId?: string }) {
               </button>
             </div>
           </div>
-          <div className="md:col-span-9 space-y-1.5">
+          <div className="sm:col-span-9 space-y-1.5">
             <Label className="text-xs">Endereço Completo</Label>
             <Input placeholder="Rua, número, complemento" value={form.endereco} onChange={e => set('endereco', e.target.value)} className="h-10" />
           </div>
         </div>
 
-        {/* Linha 2: Cidade + Bairro */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> Cidade *</Label>
-            <Input placeholder="Nome da cidade" value={form.cidade} onChange={e => set('cidade', e.target.value)} required />
+            <Input placeholder="Nome da cidade" value={form.cidade} onChange={e => set('cidade', e.target.value)} required className="h-10" />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs">Bairro</Label>
-            <Input placeholder="Nome do bairro" value={form.bairro} onChange={e => set('bairro', e.target.value)} />
+            <Input placeholder="Nome do bairro" value={form.bairro} onChange={e => set('bairro', e.target.value)} className="h-10" />
           </div>
         </div>
 
-        {/* Linha 3: Latitude + Longitude */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> Latitude</Label>
-            <Input type="number" step="any" placeholder="Ex: -29.3456" value={form.latitude} onChange={e => set('latitude', e.target.value)} />
+            <Input type="number" step="any" placeholder="Ex: -29.3456" value={form.latitude} onChange={e => set('latitude', e.target.value)} className="h-10" />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> Longitude</Label>
-            <Input type="number" step="any" placeholder="Ex: -50.1234" value={form.longitude} onChange={e => set('longitude', e.target.value)} />
+            <Input type="number" step="any" placeholder="Ex: -50.1234" value={form.longitude} onChange={e => set('longitude', e.target.value)} className="h-10" />
           </div>
         </div>
-        <p className="text-[10px] text-muted-foreground mt-1">
+        <p className="text-[10px] text-muted-foreground">
           💡 Preencha o CEP e clique na lupa (ou Enter) para buscar endereço e coordenadas automaticamente.
         </p>
       </div>
 
       {/* ===== BLOCO 2: VALOR E CONDIÇÕES ===== */}
-      <div className="bg-card border border-border rounded-xl p-5">
+      <div className="bg-card border border-border rounded-xl p-4 sm:p-5 space-y-4">
         <SectionHeader icon={DollarSign} title="Valor e Condições" />
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><DollarSign className="w-3.5 h-3.5" /> Preço (R$)</Label>
-            <Input type="number" placeholder="0" value={form.preco} onChange={e => set('preco', e.target.value)} />
+            <Input type="number" placeholder="0" value={form.preco} onChange={e => set('preco', e.target.value)} className="h-10" />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs">Preço Parcelado (R$)</Label>
-            <Input type="number" placeholder="0" value={form.precoParcelado} onChange={e => set('precoParcelado', e.target.value)} />
+            <Input type="number" placeholder="0" value={form.precoParcelado} onChange={e => set('precoParcelado', e.target.value)} className="h-10" />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><Percent className="w-3.5 h-3.5" /> Comissão (%)</Label>
-            <Input type="number" placeholder="0" value={form.comissao} onChange={e => set('comissao', e.target.value)} />
+            <Input type="number" placeholder="0" value={form.comissao} onChange={e => set('comissao', e.target.value)} className="h-10" />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs">Valor Comissão</Label>
@@ -619,26 +610,23 @@ export function ImovelForm({ editId }: { editId?: string }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><Gift className="w-3.5 h-3.5" /> Bônus (R$)</Label>
-            <Input type="number" placeholder="0" value={form.bonus} onChange={e => set('bonus', e.target.value)} />
+            <Input type="number" placeholder="0" value={form.bonus} onChange={e => set('bonus', e.target.value)} className="h-10" />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> Validade do Bônus</Label>
-            <Input type="date" value={form.bonusValidade} onChange={e => set('bonusValidade', e.target.value)} />
+            <Input type="date" value={form.bonusValidade} onChange={e => set('bonusValidade', e.target.value)} className="h-10" />
           </div>
         </div>
 
-        {/* Padrão - QuickPick */}
-        <div className="mb-4">
-          <QuickPick
-            label="Padrão"
-            options={padraoOptions.map(p => ({ label: p, value: p }))}
-            value={form.padrao}
-            onChange={(v) => set('padrao', v)}
-          />
-        </div>
+        <QuickPick
+          label="Padrão"
+          options={padraoOptions.map(p => ({ label: p, value: p }))}
+          value={form.padrao}
+          onChange={(v) => set('padrao', v)}
+        />
 
         <div className="space-y-2">
           <Label className="text-xs font-semibold">Condições de Pagamento</Label>
@@ -648,11 +636,12 @@ export function ImovelForm({ editId }: { editId?: string }) {
                 type="button"
                 key={cond}
                 onClick={() => togglePayment(cond)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                className={cn(
+                  "px-3 py-1.5 rounded-full text-xs font-medium border transition-colors",
                   form.condicoesPagemento.includes(cond)
                     ? 'bg-primary text-primary-foreground border-primary'
-                    : 'bg-muted text-muted-foreground border-border hover:bg-accent'
-                }`}
+                    : 'bg-muted text-muted-foreground border-border hover:bg-primary hover:text-primary-foreground hover:border-primary'
+                )}
               >
                 {cond}
               </button>
@@ -662,58 +651,51 @@ export function ImovelForm({ editId }: { editId?: string }) {
       </div>
 
       {/* ===== BLOCO 3: PROPRIETÁRIO ===== */}
-      <div className="bg-card border border-border rounded-xl p-5">
+      <div className="bg-card border border-border rounded-xl p-4 sm:p-5 space-y-4">
         <SectionHeader icon={User} title="Proprietário" />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><User className="w-3.5 h-3.5" /> Nome do Proprietário</Label>
-            <Input placeholder="Nome completo" value={form.proprietario} onChange={e => set('proprietario', e.target.value)} />
+            <Input placeholder="Nome completo" value={form.proprietario} onChange={e => set('proprietario', e.target.value)} className="h-10" />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><Phone className="w-3.5 h-3.5" /> Telefone</Label>
-            <Input placeholder="(00) 00000-0000" value={form.proprietarioTelefone} onChange={e => set('proprietarioTelefone', e.target.value)} />
+            <Input placeholder="(00) 00000-0000" value={form.proprietarioTelefone} onChange={e => set('proprietarioTelefone', e.target.value)} className="h-10" />
           </div>
         </div>
 
-        {/* Tipo do Proprietário - QuickPick */}
-        <div className="mb-4">
-          <QuickPick
-            label="Tipo do Proprietário"
-            options={ownerTypeOptions.map(t => ({ label: t, value: t }))}
-            value={form.proprietarioTipo}
-            onChange={(v) => set('proprietarioTipo', v)}
-          />
-        </div>
+        <QuickPick
+          label="Tipo do Proprietário"
+          options={ownerTypeOptions.map(t => ({ label: t, value: t }))}
+          value={form.proprietarioTipo}
+          onChange={(v) => set('proprietarioTipo', v)}
+        />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><Key className="w-3.5 h-3.5" /> Local das Chaves</Label>
-            <Input placeholder="Ex: Portaria, Imobiliária..." value={form.localChaves} onChange={e => set('localChaves', e.target.value)} />
+            <Input placeholder="Ex: Portaria, Imobiliária..." value={form.localChaves} onChange={e => set('localChaves', e.target.value)} className="h-10" />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><FileText className="w-3.5 h-3.5" /> Termo de Exclusividade</Label>
-            <Input type="date" value={form.termoExclusividade} onChange={e => set('termoExclusividade', e.target.value)} />
+            <Input type="date" value={form.termoExclusividade} onChange={e => set('termoExclusividade', e.target.value)} className="h-10" />
           </div>
         </div>
       </div>
 
       {/* ===== BLOCO 4: CARACTERÍSTICAS ===== */}
-      <div className="bg-card border border-border rounded-xl p-5">
+      <div className="bg-card border border-border rounded-xl p-4 sm:p-5 space-y-4">
         <SectionHeader icon={Sparkles} title="Características" />
 
-        {/* Condição - QuickPick */}
-        <div className="mb-4">
-          <QuickPick
-            label="Condição"
-            options={condicaoOptions.map(c => ({ label: c, value: c }))}
-            value={form.condicao}
-            onChange={(v) => set('condicao', v)}
-          />
-        </div>
+        <QuickPick
+          label="Condição"
+          options={condicaoOptions.map(c => ({ label: c, value: c }))}
+          value={form.condicao}
+          onChange={(v) => set('condicao', v)}
+        />
 
-        {/* Posição no Prédio & Posição Solar - QuickPick */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-start">
           <QuickPick
             label="Posição no Prédio"
             options={posicaoPredioOptions.map(p => ({ label: p, value: p }))}
@@ -728,26 +710,26 @@ export function ImovelForm({ editId }: { editId?: string }) {
           />
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><Eye className="w-3.5 h-3.5" /> Vista</Label>
-            <Input placeholder="Ex: Mar, Cidade, Lago" value={form.vista} onChange={e => set('vista', e.target.value)} />
+            <Input placeholder="Ex: Mar, Cidade, Lago" value={form.vista} onChange={e => set('vista', e.target.value)} className="h-10" />
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-6 mb-4 py-3 px-4 bg-muted/50 rounded-lg">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-6 gap-y-3 py-3 px-4 bg-muted/50 rounded-lg">
           <div className="flex items-center gap-2">
             <Switch checked={form.vistaMar} onCheckedChange={(v) => set('vistaMar', v)} />
-            <Label className="text-xs">Vista para o Mar</Label>
+            <Label className="text-xs">Vista Mar</Label>
           </div>
           <div className="flex items-center gap-2">
             <Switch checked={form.decorado} onCheckedChange={(v) => set('decorado', v)} />
-            <Label className="text-xs">Decorado / Mobiliado</Label>
+            <Label className="text-xs">Decorado</Label>
           </div>
           <div className="flex items-center gap-2">
             <Switch checked={form.aceitaPermuta} onCheckedChange={(v) => set('aceitaPermuta', v)} />
-            <Label className="text-xs">Aceita Permuta</Label>
+            <Label className="text-xs">Permuta</Label>
           </div>
-          <div className="flex items-center gap-2 border-l border-border pl-6">
+          <div className="flex items-center gap-2">
             <Switch checked={form.ativoSite} onCheckedChange={(v) => set('ativoSite', v)} />
-            <Label className="text-xs font-semibold">🌐 Ativo no Site</Label>
+            <Label className="text-xs font-semibold">🌐 Site</Label>
           </div>
           <div className="flex items-center gap-2">
             <Switch
@@ -757,30 +739,31 @@ export function ImovelForm({ editId }: { editId?: string }) {
                 if (!v) set('destaqueCategoria', 'none');
               }}
             />
-            <Label className="text-xs font-semibold">⭐ Destaque na Home</Label>
-          </div>
-          <div className="min-w-[220px] space-y-1.5">
-            <Label className="text-xs">Tipo de Destaque</Label>
-            <Select
-              value={form.destaqueCategoria}
-              onValueChange={(v) => {
-                set('destaqueCategoria', v);
-                if (v !== 'none') set('destaqueHome', true);
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione o destaque" />
-              </SelectTrigger>
-              <SelectContent>
-                {destaqueCategoriaOptions.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label className="text-xs font-semibold">⭐ Destaque</Label>
           </div>
         </div>
 
-        <div className="mb-4">
+        <div className="space-y-1.5">
+          <Label className="text-xs">Tipo de Destaque</Label>
+          <Select
+            value={form.destaqueCategoria}
+            onValueChange={(v) => {
+              set('destaqueCategoria', v);
+              if (v !== 'none') set('destaqueHome', true);
+            }}
+          >
+            <SelectTrigger className="h-10 max-w-xs">
+              <SelectValue placeholder="Selecione o destaque" />
+            </SelectTrigger>
+            <SelectContent>
+              {destaqueCategoriaOptions.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
           <Label className="text-xs font-semibold mb-2 block">Infraestrutura</Label>
           <div className="flex flex-wrap gap-1.5 mb-2">
             {form.infraestrutura.map((item, i) => (
@@ -793,8 +776,8 @@ export function ImovelForm({ editId }: { editId?: string }) {
             ))}
           </div>
           <div className="flex gap-2">
-            <Input placeholder="Ex: Piscina, Churrasqueira..." value={newInfra} onChange={e => setNewInfra(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addInfra(); } }} className="max-w-xs" />
-            <Button type="button" variant="outline" size="sm" onClick={addInfra}><Plus className="w-3.5 h-3.5" /></Button>
+            <Input placeholder="Ex: Piscina, Churrasqueira..." value={newInfra} onChange={e => setNewInfra(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addInfra(); } }} className="h-10 max-w-xs" />
+            <Button type="button" variant="outline" size="sm" onClick={addInfra} className="h-10"><Plus className="w-3.5 h-3.5" /></Button>
           </div>
         </div>
 
@@ -811,32 +794,31 @@ export function ImovelForm({ editId }: { editId?: string }) {
             ))}
           </div>
           <div className="flex gap-2">
-            <Input placeholder="Ex: Beira Lago, Documentação OK..." value={newCaract} onChange={e => setNewCaract(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addCaract(); } }} className="max-w-xs" />
-            <Button type="button" variant="outline" size="sm" onClick={addCaract}><Plus className="w-3.5 h-3.5" /></Button>
+            <Input placeholder="Ex: Beira Lago, Documentação OK..." value={newCaract} onChange={e => setNewCaract(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addCaract(); } }} className="h-10 max-w-xs" />
+            <Button type="button" variant="outline" size="sm" onClick={addCaract} className="h-10"><Plus className="w-3.5 h-3.5" /></Button>
           </div>
         </div>
       </div>
 
       {/* ===== BLOCO 5: DESCRIÇÃO ===== */}
-      <div className="bg-card border border-border rounded-xl p-5">
+      <div className="bg-card border border-border rounded-xl p-4 sm:p-5 space-y-4">
         <SectionHeader icon={FileText} title="Descrição" />
         <Textarea
           placeholder="Descreva o imóvel com o máximo de detalhes: localização, diferenciais, infraestrutura do condomínio, vista, acabamentos, etc."
           value={form.descricao}
           onChange={e => set('descricao', e.target.value)}
-          rows={6}
+          rows={5}
           className="resize-y"
         />
       </div>
 
       {/* ===== BLOCO 6: FOTOS ===== */}
-      <div className="bg-card border border-border rounded-xl p-5">
+      <div className="bg-card border border-border rounded-xl p-4 sm:p-5 space-y-4">
         <SectionHeader icon={Image} title="Fotos do Imóvel" />
 
-        <div className="flex flex-wrap gap-3 mb-4">
-          {/* Existing images (from DB) */}
+        <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3">
           {existingImages.map((src, i) => (
-            <div key={`existing-${i}`} className="relative w-24 h-24 rounded-lg overflow-hidden border border-border group">
+            <div key={`existing-${i}`} className="relative aspect-square rounded-lg overflow-hidden border border-border group">
               <img src={src} alt="" className="w-full h-full object-cover" />
               <button
                 type="button"
@@ -847,9 +829,8 @@ export function ImovelForm({ editId }: { editId?: string }) {
               </button>
             </div>
           ))}
-          {/* New images (not yet uploaded) */}
           {imagePreviews.map((src, i) => (
-            <div key={`new-${i}`} className="relative w-24 h-24 rounded-lg overflow-hidden border border-primary/30 group">
+            <div key={`new-${i}`} className="relative aspect-square rounded-lg overflow-hidden border border-primary/30 group">
               <img src={src} alt="" className="w-full h-full object-cover" />
               <button
                 type="button"
@@ -861,24 +842,23 @@ export function ImovelForm({ editId }: { editId?: string }) {
               <span className="absolute bottom-1 left-1 text-[8px] bg-primary text-primary-foreground px-1 rounded">Nova</span>
             </div>
           ))}
-          <label className="w-24 h-24 rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors">
+          <label className="aspect-square rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors">
             <Plus className="w-6 h-6 text-muted-foreground" />
             <span className="text-[10px] text-muted-foreground mt-1">Adicionar</span>
             <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageChange} />
           </label>
         </div>
-        <p className="text-xs text-muted-foreground">Arraste ou clique para adicionar fotos. Formatos: JPG, PNG, WebP.</p>
+        <p className="text-xs text-muted-foreground">Clique para adicionar fotos. Formatos: JPG, PNG, WebP.</p>
       </div>
 
       {/* Submit */}
-      <div className="flex justify-end gap-3 pb-6">
-        <Button type="button" variant="outline" onClick={() => navigate('/imoveis')}>Cancelar</Button>
-        <Button type="submit" disabled={loading} className="gap-2 px-8">
+      <div className="flex flex-col sm:flex-row justify-end gap-3 pb-6">
+        <Button type="button" variant="outline" onClick={() => navigate('/imoveis')} className="h-10">Cancelar</Button>
+        <Button type="submit" disabled={loading} className="gap-2 px-8 h-10">
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           {loading ? 'Salvando...' : isEdit ? 'Salvar Alterações' : 'Cadastrar Imóvel'}
         </Button>
       </div>
-    </form>
   );
 }
 
