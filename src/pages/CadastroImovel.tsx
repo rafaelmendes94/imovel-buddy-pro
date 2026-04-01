@@ -535,8 +535,8 @@ export function ImovelForm({ editId }: { editId?: string }) {
         </div>
 
         {/* Linha 1: CEP + Endereço */}
-        <div className="grid grid-cols-[160px_1fr] sm:grid-cols-[160px_1fr] gap-4 mb-4">
-          <div className="space-y-1.5">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4 items-end">
+          <div className="md:col-span-3 space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> CEP</Label>
             <div className="relative">
               <Input
@@ -548,7 +548,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
                   set('cep', formatted);
                 }}
                 onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); buscarCep(); } }}
-                className="pr-9"
+                className="pr-9 h-10"
               />
               <button
                 type="button"
@@ -560,9 +560,9 @@ export function ImovelForm({ editId }: { editId?: string }) {
               </button>
             </div>
           </div>
-          <div className="space-y-1.5">
+          <div className="md:col-span-9 space-y-1.5">
             <Label className="text-xs">Endereço Completo</Label>
-            <Input placeholder="Rua, número, complemento" value={form.endereco} onChange={e => set('endereco', e.target.value)} />
+            <Input placeholder="Rua, número, complemento" value={form.endereco} onChange={e => set('endereco', e.target.value)} className="h-10" />
           </div>
         </div>
 
