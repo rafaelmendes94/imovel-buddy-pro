@@ -35,6 +35,11 @@ const destaqueCategoriaOptions = [
   { value: "decorados", label: "Decorados" },
   { value: "vista-mar", label: "Vista Mar" },
 ];
+const paymentConditionOptions = [
+  "À Vista", "Parcelamento 12x", "Parcelamento 24x", "Parcelamento 36x",
+  "Parcelamento 48x", "Parcelamento 60x", "Parcelamento 120x",
+  "Financiamento Bancário", "FGTS", "Dação", "Permuta", "Consórcio"
+];
 const infraOptions = [
   "Piscina", "Churrasqueira", "Salão de Festas", "Academia", "Playground",
   "Sauna", "Quadra Esportiva", "Brinquedoteca", "Espaço Gourmet", "Portaria 24h",
