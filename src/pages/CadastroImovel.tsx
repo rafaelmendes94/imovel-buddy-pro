@@ -131,6 +131,8 @@ export interface FormData {
   latitude: string;
   longitude: string;
   cep: string;
+  edificioId: string;
+  condominioId: string;
 }
 
 export const initialForm: FormData = {
@@ -145,6 +147,7 @@ export const initialForm: FormData = {
   destaqueCategoria: 'none',
   condicoesPagemento: [], infraestrutura: [], outrasCaracteristicas: [],
   latitude: '', longitude: '', cep: '',
+  edificioId: '', condominioId: '',
 };
 
 function SectionHeader({ icon: Icon, title }: { icon: any; title: string }) {
