@@ -62,7 +62,7 @@ function QuickPick({ label, icon, options, value, onChange }: {
               "px-3 py-1.5 rounded-lg text-xs font-medium border transition-all",
               value === opt.value || String(value) === String(opt.value)
                 ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                : "bg-muted text-muted-foreground border-border hover:bg-accent hover:border-primary/30"
+                : "bg-muted text-muted-foreground border-border hover:bg-primary hover:text-primary-foreground hover:border-primary"
             )}
           >
             {opt.label}
