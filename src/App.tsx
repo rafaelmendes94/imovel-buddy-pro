@@ -41,7 +41,7 @@ const BrokerAssinatura = lazy(() => import("./pages/broker/BrokerAssinatura"));
 // Legacy pages (lazy)
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Properties = lazy(() => import("./pages/Properties"));
-const Buildings = lazy(() => import("./pages/Buildings"));
+import Buildings from "./pages/Buildings";
 const BuildingDetail = lazy(() => import("./pages/BuildingDetail"));
 const Condominiums = lazy(() => import("./pages/Condominiums"));
 const CondominiumDetail = lazy(() => import("./pages/CondominiumDetail"));
