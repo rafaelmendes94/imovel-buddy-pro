@@ -473,6 +473,9 @@ export function ImovelForm({ editId }: { editId?: string }) {
         edificio_id: form.edificioId || null,
         condominio_id: form.condominioId || null,
         empreendimento_id: form.empreendimentoId || null,
+        corretor_id: form.corretorId || user.id,
+        corretor_nome: form.corretorNome || '',
+        imobiliaria_nome: form.imobiliariaNome || '',
       } as any;
 
       if (isEdit) {
