@@ -15,7 +15,7 @@ import { cn } from '@/lib/utils';
 import {
   Building2, MapPin, BedDouble, Bath, Car, Ruler, User, Phone, DollarSign,
   Percent, Gift, Home, Sparkles, Save, Image, Plus, X, Loader2,
-  Hash, FileText, Eye, Key, Calendar
+  Hash, FileText, Eye, Key, Calendar, Search
 } from 'lucide-react';
 
 const tiposImovel = ["Apartamento", "Casa", "Comercial", "Terreno", "Lote", "Condomínio"];
