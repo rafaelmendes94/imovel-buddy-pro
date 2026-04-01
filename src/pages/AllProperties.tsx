@@ -158,59 +158,55 @@ export default function AllProperties() {
   const [filterPriceMax, setFilterPriceMax] = useState("");
   const [filterType, setFilterType] = useState("");
   const [filterCondition, setFilterCondition] = useState("");
+  const [filterEdificio, setFilterEdificio] = useState("");
+  const [filterCondominio, setFilterCondominio] = useState("");
+  const [edificiosList, setEdificiosList] = useState<{ id: string; nome: string }[]>([]);
+  const [condominiosList, setCondominiosList] = useState<{ id: string; nome: string }[]>([]);
   const [priceSort, setPriceSort] = useState<"" | "asc" | "desc">("");
   const [selectedProperty, setSelectedProperty] = useState<SiteProperty | null>(null);
 
   useEffect(() => {
-    const fetchProperties = async () => {
+    const fetchAll = async () => {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('imoveis')
-        .select('*')
-        .eq('ativo_site', true);
-
-      if (!error && data) {
+      const [{ data }, { data: eds }, { data: cos }] = await Promise.all([
+        supabase.from('imoveis').select('*').eq('ativo_site', true),
+        supabase.from('edificios').select('id, nome').order('nome'),
+        supabase.from('condominios').select('id, nome').order('nome'),
+      ]);
+      if (eds) setEdificiosList(eds as any);
+      if (cos) setCondominiosList(cos as any);
+      if (data) {
         const mapped: SiteProperty[] = data
           .filter((row) => row.status === "Disponível")
           .map((row) => ({
-            id: row.id,
-            title: row.titulo,
-            address: row.endereco,
-            city: row.cidade,
-            type: row.tipo,
-            status: row.status,
-            price: Number(row.preco),
-            area: Number(row.area),
-            bedrooms: row.quartos,
-            bathrooms: row.banheiros,
-            parking: row.vagas,
+            id: row.id, title: row.titulo, address: row.endereco, city: row.cidade,
+            type: row.tipo, status: row.status, price: Number(row.preco), area: Number(row.area),
+            bedrooms: row.quartos, bathrooms: row.banheiros, parking: row.vagas,
             broker: "Corretor",
             image: row.imagens?.[0] || "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&h=400&fit=crop",
-            images: row.imagens || [],
-            createdAt: row.created_at,
-            decorated: row.decorado,
-            seaView: row.vista_mar,
-            acceptsExchange: row.aceita_permuta,
+            images: row.imagens || [], createdAt: row.created_at,
+            decorated: row.decorado, seaView: row.vista_mar, acceptsExchange: row.aceita_permuta,
             paymentConditions: row.condicoes_pagamento || [],
             empreendimento: row.empreendimento || '',
-            unitNumber: row.unidade || '',
-            boxNumber: row.box || '',
-            quadra: row.quadra || '',
-            lote: row.lote || '',
+            unitNumber: row.unidade || '', boxNumber: row.box || '',
+            quadra: row.quadra || '', lote: row.lote || '',
+            edificio_id: (row as any).edificio_id || '',
+            condominio_id: (row as any).condominio_id || '',
           }));
         setAllProperties(mapped);
       }
       setLoading(false);
     };
-    fetchProperties();
+    fetchAll();
   }, []);
 
   const clearFilters = () => {
     setFilterCity(""); setFilterBedrooms(""); setFilterPriceMin(""); setFilterPriceMax("");
     setFilterType(""); setFilterCondition(""); setSearchTerm(""); setPriceSort("");
+    setFilterEdificio(""); setFilterCondominio("");
   };
 
-  const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterType || filterCondition;
+  const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterType || filterCondition || filterEdificio || filterCondominio;
 
   let filtered = allProperties.filter((p) => {
     const matchSearch = !searchTerm ||
@@ -226,7 +222,9 @@ export default function AllProperties() {
     const matchCondition = !filterCondition || (
       Array.isArray(p.paymentConditions) && p.paymentConditions.some(c => c.toLowerCase().includes(filterCondition.toLowerCase()))
     );
-    return matchSearch && matchCity && matchBedrooms && matchPriceMin && matchPriceMax && matchType && matchCondition;
+    const matchEdificio = !filterEdificio || (p as any).edificio_id === filterEdificio;
+    const matchCondominio = !filterCondominio || (p as any).condominio_id === filterCondominio;
+    return matchSearch && matchCity && matchBedrooms && matchPriceMin && matchPriceMax && matchType && matchCondition && matchEdificio && matchCondominio;
   });
 
   if (priceSort) {
@@ -324,7 +322,7 @@ export default function AllProperties() {
       {showFilters && (
         <div className="bg-white border-b border-gray-200 shadow-md">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-9 gap-3">
               <div>
                 <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">Cidade</label>
                 <select value={filterCity} onChange={(e) => setFilterCity(e.target.value)}
@@ -380,6 +378,22 @@ export default function AllProperties() {
                   <option value="12x">12x</option><option value="24x">24x</option><option value="36x">36x</option>
                   <option value="48x">48x</option><option value="60x">60x</option><option value="72x">72x</option>
                   <option value="84x">84x</option><option value="Permuta">Permuta</option><option value="Carro">Carro</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">Edifício</label>
+                <select value={filterEdificio} onChange={(e) => setFilterEdificio(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                  <option value="">Todos</option>
+                  {edificiosList.map(e => <option key={e.id} value={e.id}>{e.nome}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">Condomínio</label>
+                <select value={filterCondominio} onChange={(e) => setFilterCondominio(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                  <option value="">Todos</option>
+                  {condominiosList.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
                 </select>
               </div>
               <div className="flex items-end gap-2">

@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { useParams, Link } from "react-router-dom";
 import { MiniMap } from "@/components/MiniMap";
 import { SmartLayout } from "@/components/SmartLayout";
@@ -223,7 +224,49 @@ export default function CondominiumDetail() {
   const [implantationLightbox, setImplantationLightbox] = useState<number | null>(null);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
-  const condo = mockCondos[id || ""];
+  const [condo, setCondo] = useState<CondoInfo | null>(null);
+  const [loadingCondo, setLoadingCondo] = useState(true);
+
+  useEffect(() => {
+    if (!id) return;
+    const load = async () => {
+      setLoadingCondo(true);
+      const { data } = await supabase.from('condominios').select('*').eq('id', id).maybeSingle();
+      if (data) {
+        const { data: props } = await supabase.from('imoveis').select('*').eq('condominio_id', id);
+        const units: Unit[] = (props || []).map((p: any) => ({
+          id: p.id, number: p.unidade || p.titulo, block: p.quadra || 'A', type: p.tipo,
+          area: Number(p.area), bedrooms: p.quartos, bathrooms: p.banheiros, parking: p.vagas,
+          price: Number(p.preco),
+          status: p.status as Unit["status"],
+          buyer: p.proprietario || undefined,
+        }));
+        const blocks = [...new Set(units.map(u => u.block))];
+        setCondo({
+          id: data.id, name: data.nome, address: data.endereco || '', city: data.cidade || '',
+          blocks: blocks.length > 0 ? blocks : ['A'], totalUnits: data.total_unidades || 0,
+          monthlyFee: Number(data.taxa_condominio) || 0, type: data.tipo || 'Vertical',
+          image: data.imagem_url || "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&h=500&fit=crop",
+          amenities: data.amenidades || [], infrastructure: data.amenidades || [],
+          infraPhotos: [], implantationMedia: [], videoUrl: "", downloadUrl: "#",
+          units, lat: Number(data.latitude) || 0, lng: Number(data.longitude) || 0,
+        });
+      }
+      setLoadingCondo(false);
+    };
+    load();
+  }, [id]);
+
+  if (loadingCondo) {
+    return (
+      <SmartLayout>
+        <div className="p-8 text-center text-muted-foreground">
+          <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p>Carregando condomínio...</p>
+        </div>
+      </SmartLayout>
+    );
+  }
 
   if (!condo) {
     return (

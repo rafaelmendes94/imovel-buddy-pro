@@ -131,6 +131,8 @@ export interface FormData {
   latitude: string;
   longitude: string;
   cep: string;
+  edificioId: string;
+  condominioId: string;
 }
 
 export const initialForm: FormData = {
@@ -145,6 +147,7 @@ export const initialForm: FormData = {
   destaqueCategoria: 'none',
   condicoesPagemento: [], infraestrutura: [], outrasCaracteristicas: [],
   latitude: '', longitude: '', cep: '',
+  edificioId: '', condominioId: '',
 };
 
 function SectionHeader({ icon: Icon, title }: { icon: any; title: string }) {
@@ -169,6 +172,8 @@ export function ImovelForm({ editId }: { editId?: string }) {
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [loadingCep, setLoadingCep] = useState(false);
+  const [edificiosList, setEdificiosList] = useState<{ id: string; nome: string; endereco: string; cidade: string; infraestrutura: string[] }[]>([]);
+  const [condominiosList, setCondominiosList] = useState<{ id: string; nome: string; endereco: string; cidade: string; amenidades: string[] }[]>([]);
 
   const buscarCep = async () => {
     const cepClean = form.cep.replace(/\D/g, '');
@@ -215,6 +220,19 @@ export function ImovelForm({ editId }: { editId?: string }) {
   const isEdit = !!editId;
 
   const set = (field: keyof FormData, value: any) => setForm(prev => ({ ...prev, [field]: value }));
+
+  // Load edificios and condominios lists
+  useEffect(() => {
+    const loadLists = async () => {
+      const [{ data: ed }, { data: co }] = await Promise.all([
+        supabase.from('edificios').select('id, nome, endereco, cidade, infraestrutura').order('nome'),
+        supabase.from('condominios').select('id, nome, endereco, cidade, amenidades').order('nome'),
+      ]);
+      if (ed) setEdificiosList(ed as any);
+      if (co) setCondominiosList(co as any);
+    };
+    loadLists();
+  }, []);
 
   // Load existing data for edit mode
   useEffect(() => {
@@ -273,6 +291,8 @@ export function ImovelForm({ editId }: { editId?: string }) {
         latitude: (data as any).latitude ? String((data as any).latitude) : '',
         longitude: (data as any).longitude ? String((data as any).longitude) : '',
         cep: '',
+        edificioId: (data as any).edificio_id || '',
+        condominioId: (data as any).condominio_id || '',
       });
       setExistingImages(data.imagens || []);
       setLoadingData(false);
@@ -397,6 +417,8 @@ export function ImovelForm({ editId }: { editId?: string }) {
         imagens: allImages.length > 0 ? allImages : null,
         latitude: parseFloat(form.latitude) || 0,
         longitude: parseFloat(form.longitude) || 0,
+        edificio_id: form.edificioId || null,
+        condominio_id: form.condominioId || null,
       } as any;
 
       if (isEdit) {
@@ -465,6 +487,54 @@ export function ImovelForm({ editId }: { editId?: string }) {
           value={form.tipo}
           onChange={(v) => set('tipo', v)}
         />
+
+        {/* Edifício e Condomínio vinculados */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <Label className="text-xs flex items-center gap-1"><Building2 className="w-3.5 h-3.5" /> Edifício</Label>
+            <select
+              value={form.edificioId}
+              onChange={(e) => {
+                const id = e.target.value;
+                set('edificioId', id);
+                if (id) {
+                  const ed = edificiosList.find(x => x.id === id);
+                  if (ed) {
+                    set('endereco', ed.endereco);
+                    set('cidade', ed.cidade);
+                    if (ed.infraestrutura?.length) set('infraestrutura', [...new Set([...form.infraestrutura, ...ed.infraestrutura])]);
+                  }
+                }
+              }}
+              className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="">Nenhum</option>
+              {edificiosList.map(ed => <option key={ed.id} value={ed.id}>{ed.nome} - {ed.cidade}</option>)}
+            </select>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs flex items-center gap-1"><Home className="w-3.5 h-3.5" /> Condomínio</Label>
+            <select
+              value={form.condominioId}
+              onChange={(e) => {
+                const id = e.target.value;
+                set('condominioId', id);
+                if (id) {
+                  const co = condominiosList.find(x => x.id === id);
+                  if (co) {
+                    set('endereco', co.endereco);
+                    set('cidade', co.cidade);
+                    if (co.amenidades?.length) set('infraestrutura', [...new Set([...form.infraestrutura, ...co.amenidades])]);
+                  }
+                }
+              }}
+              className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="">Nenhum</option>
+              {condominiosList.map(co => <option key={co.id} value={co.id}>{co.nome} - {co.cidade}</option>)}
+            </select>
+          </div>
+        </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="space-y-1.5">
