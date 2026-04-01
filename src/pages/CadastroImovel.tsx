@@ -859,6 +859,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
           {loading ? 'Salvando...' : isEdit ? 'Salvar Alterações' : 'Cadastrar Imóvel'}
         </Button>
       </div>
+    </form>
   );
 }
 
