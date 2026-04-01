@@ -77,7 +77,7 @@ const App = () => (
             <Route path="/parceiro/:slug" element={<PartnerDetail />} />
             <Route path="/parceiros" element={<Parceiros />} />
             <Route path="/construtora/:slug" element={<ConstrutoraSite />} />
-            <Route path="/brick-store" element={<BrickStore />} />
+            <Route path="/brick-store" element={<Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" /></div>}><BrickStore /></Suspense>} />
 
             {/* Admin routes */}
             <Route path="/admin/dashboard" element={<AuthGuard requiredRoles={["super_admin", "admin_staff"]}><AdminDashboard /></AuthGuard>} />
