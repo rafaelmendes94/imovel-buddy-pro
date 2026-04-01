@@ -1,12 +1,12 @@
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, lazy, Suspense } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { SmartLayout } from "@/components/SmartLayout";
 import { BackButton } from "@/components/BackButton";
-import { PropertyMap } from "@/components/PropertyMap";
-import { PropertyDetailModal } from "@/components/PropertyDetailModal";
-import { RoutePlanner } from "@/components/RoutePlanner";
-import { SharkAI } from "@/components/SharkAI";
+const PropertyMap = lazy(() => import("@/components/PropertyMap").then(m => ({ default: m.PropertyMap })));
+const PropertyDetailModal = lazy(() => import("@/components/PropertyDetailModal").then(m => ({ default: m.PropertyDetailModal })));
+const RoutePlanner = lazy(() => import("@/components/RoutePlanner").then(m => ({ default: m.RoutePlanner })));
+const SharkAI = lazy(() => import("@/components/SharkAI").then(m => ({ default: m.SharkAI })));
 import { properties as initialProperties, salesRecords, formatCurrency, Property } from "@/data/mockData";
 import {
   Building2, Search, Plus, MapPin, BedDouble, Bath, Car, Ruler,
