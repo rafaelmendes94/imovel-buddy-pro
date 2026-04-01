@@ -843,6 +843,37 @@ export function ImovelForm({ editId }: { editId?: string }) {
             <Input type="date" value={form.termoExclusividade} onChange={e => set('termoExclusividade', e.target.value)} className="h-10" />
           </div>
         </div>
+
+        {/* Corretor e Imobiliária */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <Label className="text-xs flex items-center gap-1"><User className="w-3.5 h-3.5" /> Corretor Responsável</Label>
+            {isSuperAdmin ? (
+              <SearchableSelect
+                options={corretoresList.map(c => ({ id: c.id, label: c.full_name, sublabel: c.email }))}
+                value={form.corretorId}
+                onChange={(id) => {
+                  set('corretorId', id);
+                  if (id) {
+                    const c = corretoresList.find(x => x.id === id);
+                    if (c) set('corretorNome', c.full_name);
+                  } else {
+                    set('corretorNome', '');
+                  }
+                }}
+                placeholder="Selecionar corretor..."
+              />
+            ) : (
+              <div className="h-10 flex items-center px-3 rounded-md border border-input bg-muted text-sm text-foreground">
+                {user?.email || 'Você'}
+              </div>
+            )}
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs flex items-center gap-1"><Building2 className="w-3.5 h-3.5" /> Imobiliária</Label>
+            <Input placeholder="Nome da imobiliária (opcional)" value={form.imobiliariaNome} onChange={e => set('imobiliariaNome', e.target.value)} className="h-10" />
+          </div>
+        </div>
       </div>
 
       {/* ===== BLOCO 4: CARACTERÍSTICAS ===== */}
