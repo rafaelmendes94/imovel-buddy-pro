@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { DEFAULT_PROTECTED_ROUTE } from "@/config/coreNavigation";
 import { LogIn, Eye, EyeOff } from "lucide-react";
 import logoImg from "@/assets/logo.png";
 
@@ -27,19 +28,7 @@ export default function Login() {
       return;
     }
 
-    // Check roles to redirect
-    const { data: rolesData } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", data.user.id);
-
-    const roles = rolesData?.map(r => r.role) || [];
-
-    if (roles.includes("super_admin") || roles.includes("admin_staff")) {
-      navigate("/admin/dashboard");
-    } else {
-      navigate("/painel");
-    }
+    navigate(DEFAULT_PROTECTED_ROUTE, { replace: true });
 
     setLoading(false);
   };
