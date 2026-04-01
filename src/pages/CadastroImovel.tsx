@@ -15,7 +15,7 @@ import { cn } from '@/lib/utils';
 import {
   Building2, MapPin, BedDouble, Bath, Car, Ruler, User, Phone, DollarSign,
   Percent, Gift, Home, Sparkles, Save, Image, Plus, X, Loader2,
-  Hash, FileText, Eye, Key, Calendar
+  Hash, FileText, Eye, Key, Calendar, Search
 } from 'lucide-react';
 
 const tiposImovel = ["Apartamento", "Casa", "Comercial", "Terreno", "Lote", "Condomínio"];
@@ -118,6 +118,7 @@ export interface FormData {
   outrasCaracteristicas: string[];
   latitude: string;
   longitude: string;
+  cep: string;
 }
 
 export const initialForm: FormData = {
@@ -131,7 +132,7 @@ export const initialForm: FormData = {
   vistaMar: false, decorado: false, aceitaPermuta: false, destaqueHome: false, ativoSite: false,
   destaqueCategoria: 'none',
   condicoesPagemento: [], infraestrutura: [], outrasCaracteristicas: [],
-  latitude: '', longitude: '',
+  latitude: '', longitude: '', cep: '',
 };
 
 function SectionHeader({ icon: Icon, title }: { icon: any; title: string }) {
@@ -155,6 +156,49 @@ export function ImovelForm({ editId }: { editId?: string }) {
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [loadingCep, setLoadingCep] = useState(false);
+
+  const buscarCep = async () => {
+    const cepClean = form.cep.replace(/\D/g, '');
+    if (cepClean.length !== 8) {
+      toast({ title: "CEP inválido", description: "Digite um CEP com 8 dígitos.", variant: "destructive" });
+      return;
+    }
+    setLoadingCep(true);
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${cepClean}/json/`);
+      const data = await res.json();
+      if (data.erro) {
+        toast({ title: "CEP não encontrado", description: "Verifique o CEP digitado.", variant: "destructive" });
+        setLoadingCep(false);
+        return;
+      }
+      setForm(prev => ({
+        ...prev,
+        cidade: data.localidade || prev.cidade,
+        bairro: data.bairro || prev.bairro,
+        endereco: data.logradouro ? `${data.logradouro}${data.complemento ? ', ' + data.complemento : ''}` : prev.endereco,
+      }));
+      // Buscar coordenadas via Nominatim
+      try {
+        const query = `${data.logradouro || ''}, ${data.bairro || ''}, ${data.localidade || ''}, ${data.uf || ''}, Brasil`;
+        const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
+        const geoData = await geoRes.json();
+        if (geoData.length > 0) {
+          setForm(prev => ({
+            ...prev,
+            latitude: geoData[0].lat,
+            longitude: geoData[0].lon,
+          }));
+        }
+      } catch {}
+      toast({ title: "Endereço preenchido! ✅" });
+    } catch {
+      toast({ title: "Erro ao buscar CEP", variant: "destructive" });
+    } finally {
+      setLoadingCep(false);
+    }
+  };
 
   const isEdit = !!editId;
 
@@ -216,6 +260,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         outrasCaracteristicas: data.outras_caracteristicas || [],
         latitude: (data as any).latitude ? String((data as any).latitude) : '',
         longitude: (data as any).longitude ? String((data as any).longitude) : '',
+        cep: '',
       });
       setExistingImages(data.imagens || []);
       setLoadingData(false);
@@ -489,7 +534,31 @@ export function ImovelForm({ editId }: { editId?: string }) {
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {/* CEP com busca automática */}
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-4">
+          <div className="space-y-1.5">
+            <Label className="text-xs flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> CEP</Label>
+            <div className="relative">
+              <Input
+                placeholder="00000-000"
+                value={form.cep}
+                onChange={e => {
+                  const raw = e.target.value.replace(/\D/g, '').slice(0, 8);
+                  const formatted = raw.length > 5 ? `${raw.slice(0, 5)}-${raw.slice(5)}` : raw;
+                  set('cep', formatted);
+                }}
+                className="pr-9"
+              />
+              <button
+                type="button"
+                disabled={loadingCep}
+                onClick={buscarCep}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
+              >
+                {loadingCep ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> Cidade *</Label>
             <Input placeholder="Nome da cidade" value={form.cidade} onChange={e => set('cidade', e.target.value)} required />
@@ -505,7 +574,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         </div>
 
         {/* Localização GPS */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1">
               <MapPin className="w-3.5 h-3.5" /> Latitude
@@ -520,7 +589,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
           </div>
         </div>
         <p className="text-[10px] text-muted-foreground mt-1">
-          💡 Dica: Abra o Google Maps, clique com botão direito no local desejado e copie as coordenadas (latitude, longitude).
+          💡 Preencha o CEP e clique na lupa para buscar endereço e coordenadas automaticamente.
         </p>
       </div>
 
