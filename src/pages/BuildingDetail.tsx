@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { MiniMap } from "@/components/MiniMap";
 import { SmartLayout } from "@/components/SmartLayout";
 import { formatCurrency } from "@/data/mockData";
