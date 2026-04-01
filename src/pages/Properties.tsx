@@ -215,7 +215,7 @@ export default function Properties() {
         bedrooms: row.quartos || 0,
         bathrooms: row.banheiros || 0,
         parking: row.vagas || 0,
-        broker: "Corretor",
+        broker: (row as any).corretor_nome || "Corretor",
         owner: row.proprietario || "",
         ownerPhone: row.proprietario_telefone || "",
         image: row.imagens?.[0] || "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=300&fit=crop",
@@ -248,6 +248,7 @@ export default function Properties() {
         bonusExpiry: row.bonus_validade || "",
         padrao: (row.padrao as Property["padrao"]) || undefined,
         outrasCaracteristicas: row.outras_caracteristicas || [],
+        imobiliariaNome: (row as any).imobiliaria_nome || '',
       }));
 
       setPropertyList(mapped);

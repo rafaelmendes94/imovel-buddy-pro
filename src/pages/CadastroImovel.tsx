@@ -135,6 +135,9 @@ export interface FormData {
   edificioId: string;
   condominioId: string;
   empreendimentoId: string;
+  corretorId: string;
+  corretorNome: string;
+  imobiliariaNome: string;
 }
 
 export const initialForm: FormData = {
@@ -150,6 +153,7 @@ export const initialForm: FormData = {
   condicoesPagemento: [], infraestrutura: [], outrasCaracteristicas: [],
   latitude: '', longitude: '', cep: '',
   edificioId: '', condominioId: '', empreendimentoId: '',
+  corretorId: '', corretorNome: '', imobiliariaNome: '',
 };
 
 function SectionHeader({ icon: Icon, title }: { icon: any; title: string }) {
@@ -177,6 +181,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
   const [edificiosList, setEdificiosList] = useState<{ id: string; nome: string; endereco: string; cidade: string; infraestrutura: string[] }[]>([]);
   const [condominiosList, setCondominiosList] = useState<{ id: string; nome: string; endereco: string; cidade: string; amenidades: string[] }[]>([]);
   const [empreendimentosList, setEmpreendimentosList] = useState<{ id: string; nome: string; endereco: string; cidade: string; infraestrutura: string[] }[]>([]);
+  const [corretoresList, setCorretoresList] = useState<{ id: string; full_name: string; email: string }[]>([]);
 
   const [generatingDesc, setGeneratingDesc] = useState(false);
   const [generatingStyle, setGeneratingStyle] = useState('');
@@ -267,17 +272,24 @@ export function ImovelForm({ editId }: { editId?: string }) {
   // Load edificios and condominios lists
   useEffect(() => {
     const loadLists = async () => {
-      const [{ data: ed }, { data: co }, { data: emp }] = await Promise.all([
-        supabase.from('edificios').select('id, nome, endereco, cidade, infraestrutura').order('nome'),
-        supabase.from('condominios').select('id, nome, endereco, cidade, amenidades').order('nome'),
-        supabase.from('empreendimentos' as any).select('id, nome, endereco, cidade, infraestrutura').order('nome'),
+      const [edRes, coRes, empRes] = await Promise.all([
+        supabase.from('edificios').select('id, nome, endereco, cidade, infraestrutura').order('nome').then(r => r),
+        supabase.from('condominios').select('id, nome, endereco, cidade, amenidades').order('nome').then(r => r),
+        supabase.from('empreendimentos' as any).select('id, nome, endereco, cidade, infraestrutura').order('nome').then(r => r),
       ]);
-      if (ed) setEdificiosList(ed as any);
-      if (co) setCondominiosList(co as any);
-      if (emp) setEmpreendimentosList(emp as any);
+      if (edRes.data) setEdificiosList(edRes.data as any);
+      if (coRes.data) setCondominiosList(coRes.data as any);
+      if (empRes.data) setEmpreendimentosList(empRes.data as any);
+
+      if (isSuperAdmin) {
+        const { data: profiles } = await supabase.from('profiles').select('user_id, full_name, email').order('full_name');
+        if (profiles) {
+          setCorretoresList(profiles.map((p: any) => ({ id: p.user_id, full_name: p.full_name || p.email, email: p.email || '' })));
+        }
+      }
     };
     loadLists();
-  }, []);
+  }, [isSuperAdmin]);
 
   // Load existing data for edit mode
   useEffect(() => {
@@ -339,6 +351,9 @@ export function ImovelForm({ editId }: { editId?: string }) {
         edificioId: (data as any).edificio_id || '',
         condominioId: (data as any).condominio_id || '',
         empreendimentoId: (data as any).empreendimento_id || '',
+        corretorId: (data as any).corretor_id || '',
+        corretorNome: (data as any).corretor_nome || '',
+        imobiliariaNome: (data as any).imobiliaria_nome || '',
       });
       setExistingImages(data.imagens || []);
       setLoadingData(false);
@@ -466,6 +481,9 @@ export function ImovelForm({ editId }: { editId?: string }) {
         edificio_id: form.edificioId || null,
         condominio_id: form.condominioId || null,
         empreendimento_id: form.empreendimentoId || null,
+        corretor_id: form.corretorId || user.id,
+        corretor_nome: form.corretorNome || '',
+        imobiliaria_nome: form.imobiliariaNome || '',
       } as any;
 
       if (isEdit) {
@@ -823,6 +841,37 @@ export function ImovelForm({ editId }: { editId?: string }) {
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><FileText className="w-3.5 h-3.5" /> Termo de Exclusividade</Label>
             <Input type="date" value={form.termoExclusividade} onChange={e => set('termoExclusividade', e.target.value)} className="h-10" />
+          </div>
+        </div>
+
+        {/* Corretor e Imobiliária */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <Label className="text-xs flex items-center gap-1"><User className="w-3.5 h-3.5" /> Corretor Responsável</Label>
+            {isSuperAdmin ? (
+              <SearchableSelect
+                options={corretoresList.map(c => ({ id: c.id, label: c.full_name, sublabel: c.email }))}
+                value={form.corretorId}
+                onChange={(id) => {
+                  set('corretorId', id);
+                  if (id) {
+                    const c = corretoresList.find(x => x.id === id);
+                    if (c) set('corretorNome', c.full_name);
+                  } else {
+                    set('corretorNome', '');
+                  }
+                }}
+                placeholder="Selecionar corretor..."
+              />
+            ) : (
+              <div className="h-10 flex items-center px-3 rounded-md border border-input bg-muted text-sm text-foreground">
+                {user?.email || 'Você'}
+              </div>
+            )}
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs flex items-center gap-1"><Building2 className="w-3.5 h-3.5" /> Imobiliária</Label>
+            <Input placeholder="Nome da imobiliária (opcional)" value={form.imobiliariaNome} onChange={e => set('imobiliariaNome', e.target.value)} className="h-10" />
           </div>
         </div>
       </div>

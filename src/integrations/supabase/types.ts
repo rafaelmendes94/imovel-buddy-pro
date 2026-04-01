@@ -518,6 +518,8 @@ export type Database = {
           condicao: string | null
           condicoes_pagamento: string[] | null
           condominio_id: string | null
+          corretor_id: string | null
+          corretor_nome: string | null
           created_at: string
           decorado: boolean
           descricao: string | null
@@ -530,6 +532,7 @@ export type Database = {
           endereco: string
           id: string
           imagens: string[] | null
+          imobiliaria_nome: string | null
           infraestrutura: string[] | null
           latitude: number | null
           local_chaves: string | null
@@ -572,6 +575,8 @@ export type Database = {
           condicao?: string | null
           condicoes_pagamento?: string[] | null
           condominio_id?: string | null
+          corretor_id?: string | null
+          corretor_nome?: string | null
           created_at?: string
           decorado?: boolean
           descricao?: string | null
@@ -584,6 +589,7 @@ export type Database = {
           endereco?: string
           id?: string
           imagens?: string[] | null
+          imobiliaria_nome?: string | null
           infraestrutura?: string[] | null
           latitude?: number | null
           local_chaves?: string | null
@@ -626,6 +632,8 @@ export type Database = {
           condicao?: string | null
           condicoes_pagamento?: string[] | null
           condominio_id?: string | null
+          corretor_id?: string | null
+          corretor_nome?: string | null
           created_at?: string
           decorado?: boolean
           descricao?: string | null
@@ -638,6 +646,7 @@ export type Database = {
           endereco?: string
           id?: string
           imagens?: string[] | null
+          imobiliaria_nome?: string | null
           infraestrutura?: string[] | null
           latitude?: number | null
           local_chaves?: string | null

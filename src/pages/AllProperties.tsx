@@ -182,7 +182,7 @@ export default function AllProperties() {
             id: row.id, title: row.titulo, address: row.endereco, city: row.cidade,
             type: row.tipo, status: row.status, price: Number(row.preco), area: Number(row.area),
             bedrooms: row.quartos, bathrooms: row.banheiros, parking: row.vagas,
-            broker: "Corretor",
+            broker: (row as any).corretor_nome || "Corretor",
             image: row.imagens?.[0] || "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&h=400&fit=crop",
             images: row.imagens || [], createdAt: row.created_at,
             decorated: row.decorado, seaView: row.vista_mar, acceptsExchange: row.aceita_permuta,
