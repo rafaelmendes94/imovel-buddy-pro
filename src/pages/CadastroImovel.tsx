@@ -158,7 +158,7 @@ function SectionHeader({ icon: Icon, title }: { icon: any; title: string }) {
 
 export function ImovelForm({ editId }: { editId?: string }) {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, isSuperAdmin } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(!!editId);
