@@ -12,6 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { SmartLayout } from '@/components/SmartLayout';
 import { BackButton } from '@/components/BackButton';
 import { cn } from '@/lib/utils';
+import { SearchableSelect } from '@/components/SearchableSelect';
 import {
   Building2, MapPin, BedDouble, Bath, Car, Ruler, User, Phone, DollarSign,
   Percent, Gift, Home, Sparkles, Save, Image, Plus, X, Loader2,
@@ -133,6 +134,7 @@ export interface FormData {
   cep: string;
   edificioId: string;
   condominioId: string;
+  empreendimentoId: string;
 }
 
 export const initialForm: FormData = {
@@ -147,7 +149,7 @@ export const initialForm: FormData = {
   destaqueCategoria: 'none',
   condicoesPagemento: [], infraestrutura: [], outrasCaracteristicas: [],
   latitude: '', longitude: '', cep: '',
-  edificioId: '', condominioId: '',
+  edificioId: '', condominioId: '', empreendimentoId: '',
 };
 
 function SectionHeader({ icon: Icon, title }: { icon: any; title: string }) {
@@ -174,6 +176,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
   const [loadingCep, setLoadingCep] = useState(false);
   const [edificiosList, setEdificiosList] = useState<{ id: string; nome: string; endereco: string; cidade: string; infraestrutura: string[] }[]>([]);
   const [condominiosList, setCondominiosList] = useState<{ id: string; nome: string; endereco: string; cidade: string; amenidades: string[] }[]>([]);
+  const [empreendimentosList, setEmpreendimentosList] = useState<{ id: string; nome: string; endereco: string; cidade: string; infraestrutura: string[] }[]>([]);
 
   const [generatingDesc, setGeneratingDesc] = useState(false);
   const [generatingStyle, setGeneratingStyle] = useState('');
@@ -264,12 +267,14 @@ export function ImovelForm({ editId }: { editId?: string }) {
   // Load edificios and condominios lists
   useEffect(() => {
     const loadLists = async () => {
-      const [{ data: ed }, { data: co }] = await Promise.all([
+      const [{ data: ed }, { data: co }, { data: emp }] = await Promise.all([
         supabase.from('edificios').select('id, nome, endereco, cidade, infraestrutura').order('nome'),
         supabase.from('condominios').select('id, nome, endereco, cidade, amenidades').order('nome'),
+        supabase.from('empreendimentos' as any).select('id, nome, endereco, cidade, infraestrutura').order('nome'),
       ]);
       if (ed) setEdificiosList(ed as any);
       if (co) setCondominiosList(co as any);
+      if (emp) setEmpreendimentosList(emp as any);
     };
     loadLists();
   }, []);
@@ -333,6 +338,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         cep: '',
         edificioId: (data as any).edificio_id || '',
         condominioId: (data as any).condominio_id || '',
+        empreendimentoId: (data as any).empreendimento_id || '',
       });
       setExistingImages(data.imagens || []);
       setLoadingData(false);
@@ -459,6 +465,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         longitude: parseFloat(form.longitude) || 0,
         edificio_id: form.edificioId || null,
         condominio_id: form.condominioId || null,
+        empreendimento_id: form.empreendimentoId || null,
       } as any;
 
       if (isEdit) {
@@ -533,14 +540,14 @@ export function ImovelForm({ editId }: { editId?: string }) {
           onChange={(v) => set('tipo', v)}
         />
 
-        {/* Edifício e Condomínio vinculados */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Edifício, Condomínio e Empreendimento vinculados */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><Building2 className="w-3.5 h-3.5" /> Edifício</Label>
-            <select
+            <SearchableSelect
+              options={edificiosList.map(ed => ({ id: ed.id, label: ed.nome, sublabel: ed.cidade }))}
               value={form.edificioId}
-              onChange={(e) => {
-                const id = e.target.value;
+              onChange={(id) => {
                 set('edificioId', id);
                 if (id) {
                   const ed = edificiosList.find(x => x.id === id);
@@ -551,18 +558,15 @@ export function ImovelForm({ editId }: { editId?: string }) {
                   }
                 }
               }}
-              className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            >
-              <option value="">Nenhum</option>
-              {edificiosList.map(ed => <option key={ed.id} value={ed.id}>{ed.nome} - {ed.cidade}</option>)}
-            </select>
+              placeholder="Nenhum"
+            />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><Home className="w-3.5 h-3.5" /> Condomínio</Label>
-            <select
+            <SearchableSelect
+              options={condominiosList.map(co => ({ id: co.id, label: co.nome, sublabel: co.cidade }))}
               value={form.condominioId}
-              onChange={(e) => {
-                const id = e.target.value;
+              onChange={(id) => {
                 set('condominioId', id);
                 if (id) {
                   const co = condominiosList.find(x => x.id === id);
@@ -573,17 +577,33 @@ export function ImovelForm({ editId }: { editId?: string }) {
                   }
                 }
               }}
-              className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            >
-              <option value="">Nenhum</option>
-              {condominiosList.map(co => <option key={co.id} value={co.id}>{co.nome} - {co.cidade}</option>)}
-            </select>
+              placeholder="Nenhum"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs flex items-center gap-1"><Sparkles className="w-3.5 h-3.5" /> Empreendimento</Label>
+            <SearchableSelect
+              options={empreendimentosList.map(emp => ({ id: emp.id, label: emp.nome, sublabel: emp.cidade }))}
+              value={form.empreendimentoId}
+              onChange={(id) => {
+                set('empreendimentoId', id);
+                if (id) {
+                  const emp = empreendimentosList.find(x => x.id === id);
+                  if (emp) {
+                    set('endereco', emp.endereco);
+                    set('cidade', emp.cidade);
+                    if (emp.infraestrutura?.length) set('infraestrutura', [...new Set([...form.infraestrutura, ...emp.infraestrutura])]);
+                  }
+                }
+              }}
+              placeholder="Nenhum"
+            />
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="space-y-1.5">
-            <Label className="text-xs">Empreendimento</Label>
+            <Label className="text-xs">Empreendimento (texto livre)</Label>
             <Input placeholder="Nome do empreendimento" value={form.empreendimento} onChange={e => set('empreendimento', e.target.value)} className="h-10" />
           </div>
           <div className="space-y-1.5">

@@ -445,6 +445,63 @@ export type Database = {
         }
         Relationships: []
       }
+      empreendimentos: {
+        Row: {
+          cidade: string | null
+          construtora: string | null
+          created_at: string | null
+          descricao: string | null
+          endereco: string | null
+          id: string
+          imagem_url: string | null
+          infraestrutura: string[] | null
+          latitude: number | null
+          longitude: number | null
+          nome: string
+          previsao_entrega: string | null
+          status: string | null
+          tipo: string | null
+          total_unidades: number | null
+          user_id: string
+        }
+        Insert: {
+          cidade?: string | null
+          construtora?: string | null
+          created_at?: string | null
+          descricao?: string | null
+          endereco?: string | null
+          id?: string
+          imagem_url?: string | null
+          infraestrutura?: string[] | null
+          latitude?: number | null
+          longitude?: number | null
+          nome: string
+          previsao_entrega?: string | null
+          status?: string | null
+          tipo?: string | null
+          total_unidades?: number | null
+          user_id: string
+        }
+        Update: {
+          cidade?: string | null
+          construtora?: string | null
+          created_at?: string | null
+          descricao?: string | null
+          endereco?: string | null
+          id?: string
+          imagem_url?: string | null
+          infraestrutura?: string[] | null
+          latitude?: number | null
+          longitude?: number | null
+          nome?: string
+          previsao_entrega?: string | null
+          status?: string | null
+          tipo?: string | null
+          total_unidades?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       imoveis: {
         Row: {
           aceita_permuta: boolean
@@ -469,6 +526,7 @@ export type Database = {
           edificio_id: string | null
           elevadores: number | null
           empreendimento: string | null
+          empreendimento_id: string | null
           endereco: string
           id: string
           imagens: string[] | null
@@ -522,6 +580,7 @@ export type Database = {
           edificio_id?: string | null
           elevadores?: number | null
           empreendimento?: string | null
+          empreendimento_id?: string | null
           endereco?: string
           id?: string
           imagens?: string[] | null
@@ -575,6 +634,7 @@ export type Database = {
           edificio_id?: string | null
           elevadores?: number | null
           empreendimento?: string | null
+          empreendimento_id?: string | null
           endereco?: string
           id?: string
           imagens?: string[] | null
@@ -618,6 +678,13 @@ export type Database = {
             columns: ["edificio_id"]
             isOneToOne: false
             referencedRelation: "edificios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "imoveis_empreendimento_id_fkey"
+            columns: ["empreendimento_id"]
+            isOneToOne: false
+            referencedRelation: "empreendimentos"
             referencedColumns: ["id"]
           },
         ]
