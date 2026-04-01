@@ -7,14 +7,14 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
 import { AuthGuard } from "@/components/AuthGuard";
 
-// Public pages
-import Login from "./pages/Login";
-import Registro from "./pages/Registro";
-import NotFound from "./pages/NotFound";
-import BrokerSite from "./pages/BrokerSite";
-import EmpreendimentoDetail from "./pages/EmpreendimentoDetail";
-import PartnerDetail from "./pages/PartnerDetail";
-import ConstrutoraSite from "./pages/ConstrutoraSite";
+// Public pages (lazy)
+const Login = lazy(() => import("./pages/Login"));
+const Registro = lazy(() => import("./pages/Registro"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const BrokerSite = lazy(() => import("./pages/BrokerSite"));
+const EmpreendimentoDetail = lazy(() => import("./pages/EmpreendimentoDetail"));
+const PartnerDetail = lazy(() => import("./pages/PartnerDetail"));
+const ConstrutoraSite = lazy(() => import("./pages/ConstrutoraSite"));
 
 // Admin pages (lazy)
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
