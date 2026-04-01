@@ -118,6 +118,7 @@ export interface FormData {
   outrasCaracteristicas: string[];
   latitude: string;
   longitude: string;
+  cep: string;
 }
 
 export const initialForm: FormData = {
