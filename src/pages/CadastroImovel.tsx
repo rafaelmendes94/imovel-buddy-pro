@@ -175,6 +175,46 @@ export function ImovelForm({ editId }: { editId?: string }) {
   const [edificiosList, setEdificiosList] = useState<{ id: string; nome: string; endereco: string; cidade: string; infraestrutura: string[] }[]>([]);
   const [condominiosList, setCondominiosList] = useState<{ id: string; nome: string; endereco: string; cidade: string; amenidades: string[] }[]>([]);
 
+  const [generatingDesc, setGeneratingDesc] = useState(false);
+  const [generatingStyle, setGeneratingStyle] = useState('');
+
+  const generateDescription = async (style: string) => {
+    if (!form.titulo) {
+      toast({ title: "Preencha o título", description: "Informe pelo menos o título do imóvel para gerar a descrição.", variant: "destructive" });
+      return;
+    }
+    setGeneratingDesc(true);
+    setGeneratingStyle(style);
+    try {
+      const property = {
+        title: form.titulo, type: form.tipo, status: form.status,
+        price: Number(form.preco) || 0, address: form.endereco, city: form.cidade,
+        neighborhood: form.bairro, area: Number(form.area) || 0,
+        privateArea: Number(form.areaPrivativa) || 0, bedrooms: form.quartos,
+        bathrooms: form.banheiros, parking: form.vagas, seaView: form.vistaMar,
+        decorated: form.decorado, acceptsExchange: form.aceitaPermuta,
+        empreendimento: form.empreendimento, posicaoPredio: form.posicaoPredio,
+        posicaoSolar: form.posicaoSolar, vista: form.vista, condicao: form.condicao,
+        infraestrutura: form.infraestrutura, elevadores: form.elevadores,
+        paymentConditions: form.condicoesPagemento,
+      };
+      const { data, error } = await supabase.functions.invoke('generate-description', {
+        body: { property, style },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      if (data?.description) {
+        set('descricao', data.description);
+        toast({ title: "Descrição gerada! ✨", description: "Revise e ajuste conforme necessário." });
+      }
+    } catch (e: any) {
+      toast({ title: "Erro ao gerar descrição", description: e.message || "Tente novamente.", variant: "destructive" });
+    } finally {
+      setGeneratingDesc(false);
+      setGeneratingStyle('');
+    }
+  };
+
   const buscarCep = async () => {
     const cepClean = form.cep.replace(/\D/g, '');
     if (cepClean.length !== 8) {
@@ -918,11 +958,38 @@ export function ImovelForm({ editId }: { editId?: string }) {
       {/* ===== BLOCO 5: DESCRIÇÃO ===== */}
       <div className="bg-card border border-border rounded-xl p-4 sm:p-5 space-y-4">
         <SectionHeader icon={FileText} title="Descrição" />
+
+        <div className="flex flex-wrap gap-2">
+          {[
+            { key: 'informativa', label: '📋 Informativa', desc: 'Completa e técnica' },
+            { key: 'gatilhos', label: '🎯 Gatilhos de Venda', desc: 'Persuasiva' },
+            { key: 'agressiva', label: '🔥 Agressiva', desc: 'Impacto e conversão' },
+            { key: 'geolocalizacao', label: '📍 Geolocalização', desc: 'Foco na região' },
+          ].map((style) => (
+            <Button
+              key={style.key}
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={generatingDesc}
+              onClick={() => generateDescription(style.key)}
+              className="gap-1.5 text-xs"
+            >
+              {generatingDesc && generatingStyle === style.key ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Sparkles className="w-3.5 h-3.5" />
+              )}
+              {style.label}
+            </Button>
+          ))}
+        </div>
+
         <Textarea
           placeholder="Descreva o imóvel com o máximo de detalhes: localização, diferenciais, infraestrutura do condomínio, vista, acabamentos, etc."
           value={form.descricao}
           onChange={e => set('descricao', e.target.value)}
-          rows={5}
+          rows={8}
           className="resize-y"
         />
       </div>
