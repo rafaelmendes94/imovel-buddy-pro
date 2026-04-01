@@ -181,6 +181,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
   const [edificiosList, setEdificiosList] = useState<{ id: string; nome: string; endereco: string; cidade: string; infraestrutura: string[] }[]>([]);
   const [condominiosList, setCondominiosList] = useState<{ id: string; nome: string; endereco: string; cidade: string; amenidades: string[] }[]>([]);
   const [empreendimentosList, setEmpreendimentosList] = useState<{ id: string; nome: string; endereco: string; cidade: string; infraestrutura: string[] }[]>([]);
+  const [corretoresList, setCorretoresList] = useState<{ id: string; full_name: string; email: string }[]>([]);
 
   const [generatingDesc, setGeneratingDesc] = useState(false);
   const [generatingStyle, setGeneratingStyle] = useState('');
