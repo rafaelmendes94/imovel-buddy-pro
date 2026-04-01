@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { SmartLayout } from '@/components/SmartLayout';
 import { BackButton } from '@/components/BackButton';
+import { cn } from '@/lib/utils';
 import {
   Building2, MapPin, BedDouble, Bath, Car, Ruler, User, Phone, DollarSign,
   Percent, Gift, Home, Sparkles, Save, Image, Plus, X, Loader2,
@@ -22,6 +23,8 @@ const statusOptions = ["Disponível", "Vendido", "Reservado", "Alugado", "Suspen
 const condicaoOptions = ["Mobiliado", "Semi-mobiliado", "Vazio", "Decorado"];
 const ownerTypeOptions = ["Construtora", "Investidor", "Particular", "Adm Comercial", "Exclusividade"];
 const padraoOptions = ["Econômico", "Médio Padrão", "Alto Padrão", "Luxo"];
+const posicaoSolarOptions = ["Nascente", "Poente", "Norte", "Sul"];
+const posicaoPredioOptions = ["Frente", "Fundos", "Lateral"];
 const destaqueCategoriaOptions = [
   { value: "none", label: "Sem destaque" },
   { value: "apartamentos", label: "Apartamentos" },
@@ -37,6 +40,38 @@ const paymentConditionOptions = [
   "Parcelamento 48x", "Parcelamento 60x", "Parcelamento 120x",
   "Financiamento Bancário", "FGTS", "Dação", "Permuta", "Consórcio"
 ];
+
+/** Inline one-click button picker */
+function QuickPick({ label, icon, options, value, onChange }: {
+  label: string;
+  icon?: React.ReactNode;
+  options: { label: string; value: string | number }[];
+  value: string | number;
+  onChange: (v: any) => void;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-xs flex items-center gap-1">{icon}{label}</Label>
+      <div className="flex flex-wrap gap-1.5">
+        {options.map((opt) => (
+          <button
+            key={String(opt.value)}
+            type="button"
+            onClick={() => onChange(opt.value)}
+            className={cn(
+              "px-3 py-1.5 rounded-lg text-xs font-medium border transition-all",
+              value === opt.value || String(value) === String(opt.value)
+                ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                : "bg-muted text-muted-foreground border-border hover:bg-accent hover:border-primary/30"
+            )}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export interface FormData {
   titulo: string;
@@ -366,16 +401,18 @@ export function ImovelForm({ editId }: { editId?: string }) {
       <div className="bg-card border border-border rounded-xl p-5">
         <SectionHeader icon={Building2} title="Identificação" />
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
-          <div className="space-y-1.5">
-            <Label className="text-xs">Tipo do Imóvel *</Label>
-            <Select value={form.tipo} onValueChange={(v) => set('tipo', v)}>
-              <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-              <SelectContent>
-                {tiposImovel.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
+        {/* Tipo do Imóvel - QuickPick */}
+        <div className="mb-4">
+          <QuickPick
+            label="Tipo do Imóvel *"
+            icon={<Building2 className="w-3.5 h-3.5" />}
+            options={tiposImovel.map(t => ({ label: t, value: t }))}
+            value={form.tipo}
+            onChange={(v) => set('tipo', v)}
+          />
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
           <div className="space-y-1.5">
             <Label className="text-xs">Empreendimento</Label>
             <Input placeholder="Nome do empreendimento" value={form.empreendimento} onChange={e => set('empreendimento', e.target.value)} />
@@ -396,15 +433,38 @@ export function ImovelForm({ editId }: { editId?: string }) {
           </div>
         </div>
 
+        {/* Dormitórios, Banheiros, Vagas, Elevadores - QuickPick */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
-          <div className="space-y-1.5">
-            <Label className="text-xs flex items-center gap-1"><BedDouble className="w-3.5 h-3.5" /> Dormitórios</Label>
-            <Input type="number" min={0} value={form.quartos} onChange={e => set('quartos', parseInt(e.target.value) || 0)} />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs flex items-center gap-1"><Bath className="w-3.5 h-3.5" /> Banheiros</Label>
-            <Input type="number" min={0} value={form.banheiros} onChange={e => set('banheiros', parseInt(e.target.value) || 0)} />
-          </div>
+          <QuickPick
+            label="Dormitórios"
+            icon={<BedDouble className="w-3.5 h-3.5" />}
+            options={[0,1,2,3,4,5].map(n => ({ label: n === 5 ? '5+' : String(n), value: n }))}
+            value={form.quartos}
+            onChange={(v) => set('quartos', v)}
+          />
+          <QuickPick
+            label="Banheiros"
+            icon={<Bath className="w-3.5 h-3.5" />}
+            options={[0,1,2,3,4,5].map(n => ({ label: n === 5 ? '5+' : String(n), value: n }))}
+            value={form.banheiros}
+            onChange={(v) => set('banheiros', v)}
+          />
+          <QuickPick
+            label="Vagas"
+            icon={<Car className="w-3.5 h-3.5" />}
+            options={[0,1,2,3,4].map(n => ({ label: n === 4 ? '4+' : String(n), value: n }))}
+            value={form.vagas}
+            onChange={(v) => set('vagas', v)}
+          />
+          <QuickPick
+            label="Elevadores"
+            options={[0,1,2,3].map(n => ({ label: n === 3 ? '3+' : String(n), value: n }))}
+            value={form.elevadores}
+            onChange={(v) => set('elevadores', v)}
+          />
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><Ruler className="w-3.5 h-3.5" /> Área Privativa (m²)</Label>
             <Input type="number" placeholder="0" value={form.areaPrivativa} onChange={e => set('areaPrivativa', e.target.value)} />
@@ -413,26 +473,20 @@ export function ImovelForm({ editId }: { editId?: string }) {
             <Label className="text-xs flex items-center gap-1"><Ruler className="w-3.5 h-3.5" /> Área Total (m²)</Label>
             <Input type="number" placeholder="0" value={form.area} onChange={e => set('area', e.target.value)} />
           </div>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
           <div className="space-y-1.5 sm:col-span-2">
             <Label className="text-xs">Título do Imóvel *</Label>
             <Input placeholder="Ex: Apartamento 3 quartos frente mar" value={form.titulo} onChange={e => set('titulo', e.target.value)} required />
           </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs">Status</Label>
-            <Select value={form.status} onValueChange={(v) => set('status', v)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {statusOptions.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs flex items-center gap-1"><Car className="w-3.5 h-3.5" /> Vagas</Label>
-            <Input type="number" min={0} value={form.vagas} onChange={e => set('vagas', parseInt(e.target.value) || 0)} />
-          </div>
+        </div>
+
+        {/* Status - QuickPick */}
+        <div className="mb-4">
+          <QuickPick
+            label="Status"
+            options={statusOptions.map(s => ({ label: s, value: s }))}
+            value={form.status}
+            onChange={(v) => set('status', v)}
+          />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -495,7 +549,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 mb-4">
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><Gift className="w-3.5 h-3.5" /> Bônus (R$)</Label>
             <Input type="number" placeholder="0" value={form.bonus} onChange={e => set('bonus', e.target.value)} />
@@ -504,15 +558,16 @@ export function ImovelForm({ editId }: { editId?: string }) {
             <Label className="text-xs flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> Validade do Bônus</Label>
             <Input type="date" value={form.bonusValidade} onChange={e => set('bonusValidade', e.target.value)} />
           </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs">Padrão</Label>
-            <Select value={form.padrao} onValueChange={(v) => set('padrao', v)}>
-              <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-              <SelectContent>
-                {padraoOptions.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
+        </div>
+
+        {/* Padrão - QuickPick */}
+        <div className="mb-4">
+          <QuickPick
+            label="Padrão"
+            options={padraoOptions.map(p => ({ label: p, value: p }))}
+            value={form.padrao}
+            onChange={(v) => set('padrao', v)}
+          />
         </div>
 
         <div className="space-y-2">
@@ -540,7 +595,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
       <div className="bg-card border border-border rounded-xl p-5">
         <SectionHeader icon={User} title="Proprietário" />
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><User className="w-3.5 h-3.5" /> Nome do Proprietário</Label>
             <Input placeholder="Nome completo" value={form.proprietario} onChange={e => set('proprietario', e.target.value)} />
@@ -549,15 +604,16 @@ export function ImovelForm({ editId }: { editId?: string }) {
             <Label className="text-xs flex items-center gap-1"><Phone className="w-3.5 h-3.5" /> Telefone</Label>
             <Input placeholder="(00) 00000-0000" value={form.proprietarioTelefone} onChange={e => set('proprietarioTelefone', e.target.value)} />
           </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs">Tipo do Proprietário</Label>
-            <Select value={form.proprietarioTipo} onValueChange={(v) => set('proprietarioTipo', v)}>
-              <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-              <SelectContent>
-                {ownerTypeOptions.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
+        </div>
+
+        {/* Tipo do Proprietário - QuickPick */}
+        <div className="mb-4">
+          <QuickPick
+            label="Tipo do Proprietário"
+            options={ownerTypeOptions.map(t => ({ label: t, value: t }))}
+            value={form.proprietarioTipo}
+            onChange={(v) => set('proprietarioTipo', v)}
+          />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -576,24 +632,30 @@ export function ImovelForm({ editId }: { editId?: string }) {
       <div className="bg-card border border-border rounded-xl p-5">
         <SectionHeader icon={Sparkles} title="Características" />
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
-          <div className="space-y-1.5">
-            <Label className="text-xs">Condição</Label>
-            <Select value={form.condicao} onValueChange={(v) => set('condicao', v)}>
-              <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-              <SelectContent>
-                {condicaoOptions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs">Posição no Prédio</Label>
-            <Input placeholder="Ex: Frente, Fundos" value={form.posicaoPredio} onChange={e => set('posicaoPredio', e.target.value)} />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs">Posição Solar</Label>
-            <Input placeholder="Ex: Nascente, Poente" value={form.posicaoSolar} onChange={e => set('posicaoSolar', e.target.value)} />
-          </div>
+        {/* Condição - QuickPick */}
+        <div className="mb-4">
+          <QuickPick
+            label="Condição"
+            options={condicaoOptions.map(c => ({ label: c, value: c }))}
+            value={form.condicao}
+            onChange={(v) => set('condicao', v)}
+          />
+        </div>
+
+        {/* Posição no Prédio & Posição Solar - QuickPick */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+          <QuickPick
+            label="Posição no Prédio"
+            options={posicaoPredioOptions.map(p => ({ label: p, value: p }))}
+            value={form.posicaoPredio}
+            onChange={(v) => set('posicaoPredio', v)}
+          />
+          <QuickPick
+            label="Posição Solar"
+            options={posicaoSolarOptions.map(p => ({ label: p, value: p }))}
+            value={form.posicaoSolar}
+            onChange={(v) => set('posicaoSolar', v)}
+          />
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><Eye className="w-3.5 h-3.5" /> Vista</Label>
             <Input placeholder="Ex: Mar, Cidade, Lago" value={form.vista} onChange={e => set('vista', e.target.value)} />
