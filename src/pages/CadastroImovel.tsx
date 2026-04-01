@@ -132,7 +132,7 @@ export const initialForm: FormData = {
   vistaMar: false, decorado: false, aceitaPermuta: false, destaqueHome: false, ativoSite: false,
   destaqueCategoria: 'none',
   condicoesPagemento: [], infraestrutura: [], outrasCaracteristicas: [],
-  latitude: '', longitude: '',
+  latitude: '', longitude: '', cep: '',
 };
 
 function SectionHeader({ icon: Icon, title }: { icon: any; title: string }) {
