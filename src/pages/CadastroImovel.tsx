@@ -267,12 +267,14 @@ export function ImovelForm({ editId }: { editId?: string }) {
   // Load edificios and condominios lists
   useEffect(() => {
     const loadLists = async () => {
-      const [{ data: ed }, { data: co }] = await Promise.all([
+      const [{ data: ed }, { data: co }, { data: emp }] = await Promise.all([
         supabase.from('edificios').select('id, nome, endereco, cidade, infraestrutura').order('nome'),
         supabase.from('condominios').select('id, nome, endereco, cidade, amenidades').order('nome'),
+        supabase.from('empreendimentos' as any).select('id, nome, endereco, cidade, infraestrutura').order('nome'),
       ]);
       if (ed) setEdificiosList(ed as any);
       if (co) setCondominiosList(co as any);
+      if (emp) setEmpreendimentosList(emp as any);
     };
     loadLists();
   }, []);
