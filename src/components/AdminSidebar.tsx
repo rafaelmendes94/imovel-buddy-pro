@@ -1,50 +1,23 @@
 import { Link, useLocation } from "react-router-dom";
 import {
-  LayoutDashboard, Users, UserCog, CreditCard, LogOut, Crown,
-  Building2, Building, Fence, Camera, ClipboardCheck, Wallet,
-  Table2, FileSignature, Clapperboard, Globe, Landmark, Settings,
-  FileText, Map, Briefcase, ShoppingBag,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
-import { Separator } from "@/components/ui/separator";
 import logoImg from "@/assets/logo.png";
+import { CORE_NAV_ITEMS } from "@/config/coreNavigation";
 
-const adminItems = [
-  { icon: LayoutDashboard, label: "Dashboard Admin", path: "/admin/dashboard", moduleKey: "dashboard_admin" },
-  { icon: UserCog, label: "Funcionários", path: "/admin/funcionarios", moduleKey: "funcionarios" },
-  { icon: Briefcase, label: "Cargos e Funções", path: "/admin/cargos", moduleKey: "funcionarios" },
-  { icon: Users, label: "Clientes", path: "/admin/clientes", moduleKey: "clientes" },
-  { icon: CreditCard, label: "Planos", path: "/admin/planos", moduleKey: "planos" },
-  { icon: ShoppingBag, label: "Brick do Corretor", path: "/admin/brick", moduleKey: "brick" },
-];
-
-const operationalItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard", moduleKey: "dashboard" },
-  { icon: FileText, label: "Relatórios", path: "/relatorios", moduleKey: "relatorios" },
-  { icon: Globe, label: "Site", path: "/site-editor", moduleKey: "site_editor" },
-  { icon: Building2, label: "Imóveis", path: "/imoveis", moduleKey: "imoveis" },
-  { icon: Building, label: "Edifícios", path: "/edificios", moduleKey: "edificios" },
-  { icon: Fence, label: "Condomínios", path: "/condominios", moduleKey: "condominios" },
-  { icon: Camera, label: "Fotos da Cidade", path: "/fotos-cidade", moduleKey: "fotos_cidade" },
-  { icon: ClipboardCheck, label: "Avaliações", path: "/avaliacoes", moduleKey: "avaliacoes" },
-  { icon: Wallet, label: "Financeiro", path: "/financeiro", moduleKey: "financeiro" },
-  { icon: Table2, label: "Tabelas", path: "/tabelas", moduleKey: "tabelas" },
-  { icon: FileSignature, label: "Contratos", path: "/contratos", moduleKey: "contratos" },
-  { icon: Clapperboard, label: "Material Extra", path: "/videomaker", moduleKey: "material_extra" },
-  { icon: Users, label: "Corretores", path: "/corretores", moduleKey: "corretores" },
-  { icon: Landmark, label: "Imobiliárias", path: "/imobiliarias", moduleKey: "imobiliarias" },
-  { icon: Settings, label: "Configurações", path: "/configuracoes", moduleKey: "configuracoes" },
-];
+type NavItem = (typeof CORE_NAV_ITEMS)[number];
 
 export function AdminSidebar() {
   const location = useLocation();
   const { signOut, profile, isSuperAdmin, hasModuleAccess } = useAuth();
 
-  const visibleAdmin = isSuperAdmin ? adminItems : adminItems.filter(i => hasModuleAccess(i.moduleKey));
-  const visibleOps = isSuperAdmin ? operationalItems : operationalItems.filter(i => hasModuleAccess(i.moduleKey));
+  const visibleModules = isSuperAdmin
+    ? CORE_NAV_ITEMS
+    : CORE_NAV_ITEMS.filter(item => hasModuleAccess(item.moduleKey));
 
-  const renderItem = (item: typeof adminItems[0]) => {
+  const renderItem = (item: NavItem) => {
     const isActive = location.pathname === item.path;
     return (
       <Link
@@ -74,27 +47,12 @@ export function AdminSidebar() {
       </div>
 
       <nav className="flex-1 py-2 px-2 space-y-0.5 overflow-y-auto scrollbar-thin">
-        {visibleAdmin.length > 0 && (
+        {visibleModules.length > 0 && (
           <>
             <p className="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/50">
-              Administração
+              Módulos
             </p>
-            {visibleAdmin.map(renderItem)}
-          </>
-        )}
-
-        {visibleAdmin.length > 0 && visibleOps.length > 0 && (
-          <div className="px-3 py-2">
-            <Separator className="bg-sidebar-border" />
-          </div>
-        )}
-
-        {visibleOps.length > 0 && (
-          <>
-            <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/50">
-              Operacional
-            </p>
-            {visibleOps.map(renderItem)}
+            {visibleModules.map(renderItem)}
           </>
         )}
       </nav>
