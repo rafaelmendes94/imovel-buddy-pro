@@ -222,7 +222,9 @@ export default function AllProperties() {
     const matchCondition = !filterCondition || (
       Array.isArray(p.paymentConditions) && p.paymentConditions.some(c => c.toLowerCase().includes(filterCondition.toLowerCase()))
     );
-    return matchSearch && matchCity && matchBedrooms && matchPriceMin && matchPriceMax && matchType && matchCondition;
+    const matchEdificio = !filterEdificio || (p as any).edificio_id === filterEdificio;
+    const matchCondominio = !filterCondominio || (p as any).condominio_id === filterCondominio;
+    return matchSearch && matchCity && matchBedrooms && matchPriceMin && matchPriceMax && matchType && matchCondition && matchEdificio && matchCondominio;
   });
 
   if (priceSort) {
