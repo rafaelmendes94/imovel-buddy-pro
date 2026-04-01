@@ -272,20 +272,20 @@ export function ImovelForm({ editId }: { editId?: string }) {
   // Load edificios and condominios lists
   useEffect(() => {
     const loadLists = async () => {
-      const promises: Promise<any>[] = [
-        supabase.from('edificios').select('id, nome, endereco, cidade, infraestrutura').order('nome'),
-        supabase.from('condominios').select('id, nome, endereco, cidade, amenidades').order('nome'),
-        supabase.from('empreendimentos' as any).select('id, nome, endereco, cidade, infraestrutura').order('nome'),
-      ];
+      const [edRes, coRes, empRes] = await Promise.all([
+        supabase.from('edificios').select('id, nome, endereco, cidade, infraestrutura').order('nome').then(r => r),
+        supabase.from('condominios').select('id, nome, endereco, cidade, amenidades').order('nome').then(r => r),
+        supabase.from('empreendimentos' as any).select('id, nome, endereco, cidade, infraestrutura').order('nome').then(r => r),
+      ]);
+      if (edRes.data) setEdificiosList(edRes.data as any);
+      if (coRes.data) setCondominiosList(coRes.data as any);
+      if (empRes.data) setEmpreendimentosList(empRes.data as any);
+
       if (isSuperAdmin) {
-        promises.push(supabase.from('profiles').select('user_id, full_name, email').order('full_name'));
-      }
-      const results = await Promise.all(promises);
-      if (results[0].data) setEdificiosList(results[0].data as any);
-      if (results[1].data) setCondominiosList(results[1].data as any);
-      if (results[2].data) setEmpreendimentosList(results[2].data as any);
-      if (isSuperAdmin && results[3]?.data) {
-        setCorretoresList(results[3].data.map((p: any) => ({ id: p.user_id, full_name: p.full_name || p.email, email: p.email || '' })));
+        const { data: profiles } = await supabase.from('profiles').select('user_id, full_name, email').order('full_name');
+        if (profiles) {
+          setCorretoresList(profiles.map((p: any) => ({ id: p.user_id, full_name: p.full_name || p.email, email: p.email || '' })));
+        }
       }
     };
     loadLists();
