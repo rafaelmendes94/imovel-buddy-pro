@@ -175,6 +175,46 @@ export function ImovelForm({ editId }: { editId?: string }) {
   const [edificiosList, setEdificiosList] = useState<{ id: string; nome: string; endereco: string; cidade: string; infraestrutura: string[] }[]>([]);
   const [condominiosList, setCondominiosList] = useState<{ id: string; nome: string; endereco: string; cidade: string; amenidades: string[] }[]>([]);
 
+  const [generatingDesc, setGeneratingDesc] = useState(false);
+  const [generatingStyle, setGeneratingStyle] = useState('');
+
+  const generateDescription = async (style: string) => {
+    if (!form.titulo) {
+      toast({ title: "Preencha o título", description: "Informe pelo menos o título do imóvel para gerar a descrição.", variant: "destructive" });
+      return;
+    }
+    setGeneratingDesc(true);
+    setGeneratingStyle(style);
+    try {
+      const property = {
+        title: form.titulo, type: form.tipo, status: form.status,
+        price: Number(form.preco) || 0, address: form.endereco, city: form.cidade,
+        neighborhood: form.bairro, area: Number(form.area) || 0,
+        privateArea: Number(form.areaPrivativa) || 0, bedrooms: form.quartos,
+        bathrooms: form.banheiros, parking: form.vagas, seaView: form.vistaMar,
+        decorated: form.decorado, acceptsExchange: form.aceitaPermuta,
+        empreendimento: form.empreendimento, posicaoPredio: form.posicaoPredio,
+        posicaoSolar: form.posicaoSolar, vista: form.vista, condicao: form.condicao,
+        infraestrutura: form.infraestrutura, elevadores: form.elevadores,
+        paymentConditions: form.condicoesPagamento,
+      };
+      const { data, error } = await supabase.functions.invoke('generate-description', {
+        body: { property, style },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      if (data?.description) {
+        set('descricao', data.description);
+        toast({ title: "Descrição gerada! ✨", description: "Revise e ajuste conforme necessário." });
+      }
+    } catch (e: any) {
+      toast({ title: "Erro ao gerar descrição", description: e.message || "Tente novamente.", variant: "destructive" });
+    } finally {
+      setGeneratingDesc(false);
+      setGeneratingStyle('');
+    }
+  };
+
   const buscarCep = async () => {
     const cepClean = form.cep.replace(/\D/g, '');
     if (cepClean.length !== 8) {
