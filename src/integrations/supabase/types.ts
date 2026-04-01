@@ -395,16 +395,21 @@ export type Database = {
         Row: {
           andares: number | null
           ano_construcao: string | null
+          bairro: string | null
+          cep: string | null
           cidade: string | null
+          complemento: string | null
           construtora: string | null
           created_at: string | null
           endereco: string | null
+          estado: string | null
           id: string
           imagem_url: string | null
           infraestrutura: string[] | null
           latitude: number | null
           longitude: number | null
           nome: string
+          numero: string | null
           status: string | null
           total_unidades: number | null
           user_id: string
@@ -412,16 +417,21 @@ export type Database = {
         Insert: {
           andares?: number | null
           ano_construcao?: string | null
+          bairro?: string | null
+          cep?: string | null
           cidade?: string | null
+          complemento?: string | null
           construtora?: string | null
           created_at?: string | null
           endereco?: string | null
+          estado?: string | null
           id?: string
           imagem_url?: string | null
           infraestrutura?: string[] | null
           latitude?: number | null
           longitude?: number | null
           nome: string
+          numero?: string | null
           status?: string | null
           total_unidades?: number | null
           user_id: string
@@ -429,16 +439,21 @@ export type Database = {
         Update: {
           andares?: number | null
           ano_construcao?: string | null
+          bairro?: string | null
+          cep?: string | null
           cidade?: string | null
+          complemento?: string | null
           construtora?: string | null
           created_at?: string | null
           endereco?: string | null
+          estado?: string | null
           id?: string
           imagem_url?: string | null
           infraestrutura?: string[] | null
           latitude?: number | null
           longitude?: number | null
           nome?: string
+          numero?: string | null
           status?: string | null
           total_unidades?: number | null
           user_id?: string
