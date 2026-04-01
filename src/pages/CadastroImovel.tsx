@@ -196,7 +196,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         empreendimento: form.empreendimento, posicaoPredio: form.posicaoPredio,
         posicaoSolar: form.posicaoSolar, vista: form.vista, condicao: form.condicao,
         infraestrutura: form.infraestrutura, elevadores: form.elevadores,
-        paymentConditions: form.condicoesPagamento,
+        paymentConditions: form.condicoesPagemento,
       };
       const { data, error } = await supabase.functions.invoke('generate-description', {
         body: { property, style },
