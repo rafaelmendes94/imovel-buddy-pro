@@ -35,6 +35,8 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
   const [showAIOptions, setShowAIOptions] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [editingBlock, setEditingBlock] = useState<string | null>(null);
+  const [linkedEdificio, setLinkedEdificio] = useState<any>(null);
+  const [linkedCondominio, setLinkedCondominio] = useState<any>(null);
 
   // Block ordering with drag support
   const defaultBlockOrder = ["identificacao", "valor", "proprietario", "caracteristicas"];
