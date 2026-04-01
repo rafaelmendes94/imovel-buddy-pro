@@ -17,15 +17,6 @@ import {
   Percent, Gift, Home, Sparkles, Save, Image, Plus, X, Loader2,
   Hash, FileText, Eye, Key, Calendar
 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/useAuth';
-import { SmartLayout } from '@/components/SmartLayout';
-import { BackButton } from '@/components/BackButton';
-import {
-  Building2, MapPin, BedDouble, Bath, Car, Ruler, User, Phone, DollarSign,
-  Percent, Gift, Home, Sparkles, Save, Image, Plus, X, Loader2,
-  Hash, FileText, Eye, Key, Calendar
-} from 'lucide-react';
 
 const tiposImovel = ["Apartamento", "Casa", "Comercial", "Terreno", "Lote", "Condomínio"];
 const statusOptions = ["Disponível", "Vendido", "Reservado", "Alugado", "Suspenso"];
