@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   X, MapPin, BedDouble, Bath, Car, Ruler, Phone, Waves, Paintbrush,
