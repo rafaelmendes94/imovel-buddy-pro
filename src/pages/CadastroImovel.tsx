@@ -274,12 +274,12 @@ export function ImovelForm({ editId }: { editId?: string }) {
     const ac = new AbortController();
     const loadLists = async () => {
       const queries: Promise<any>[] = [
-        supabase.from('edificios').select('id,nome,endereco,cidade,infraestrutura').order('nome').abortSignal(ac.signal),
-        supabase.from('condominios').select('id,nome,endereco,cidade,amenidades').order('nome').abortSignal(ac.signal),
-        supabase.from('empreendimentos' as any).select('id,nome,endereco,cidade,infraestrutura').order('nome').abortSignal(ac.signal),
+        supabase.from('edificios').select('id,nome,endereco,cidade,infraestrutura').order('nome').abortSignal(ac.signal).then(r => r),
+        supabase.from('condominios').select('id,nome,endereco,cidade,amenidades').order('nome').abortSignal(ac.signal).then(r => r),
+        supabase.from('empreendimentos' as any).select('id,nome,endereco,cidade,infraestrutura').order('nome').abortSignal(ac.signal).then(r => r),
       ];
       if (isSuperAdmin) {
-        queries.push(supabase.from('profiles').select('user_id,full_name,email').order('full_name').abortSignal(ac.signal));
+        queries.push(supabase.from('profiles').select('user_id,full_name,email').order('full_name').abortSignal(ac.signal).then(r => r));
       }
       const results = await Promise.all(queries);
       if (ac.signal.aborted) return;
