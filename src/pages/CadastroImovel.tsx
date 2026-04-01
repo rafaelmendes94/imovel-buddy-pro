@@ -918,11 +918,38 @@ export function ImovelForm({ editId }: { editId?: string }) {
       {/* ===== BLOCO 5: DESCRIÇÃO ===== */}
       <div className="bg-card border border-border rounded-xl p-4 sm:p-5 space-y-4">
         <SectionHeader icon={FileText} title="Descrição" />
+
+        <div className="flex flex-wrap gap-2">
+          {[
+            { key: 'informativa', label: '📋 Informativa', desc: 'Completa e técnica' },
+            { key: 'gatilhos', label: '🎯 Gatilhos de Venda', desc: 'Persuasiva' },
+            { key: 'agressiva', label: '🔥 Agressiva', desc: 'Impacto e conversão' },
+            { key: 'geolocalizacao', label: '📍 Geolocalização', desc: 'Foco na região' },
+          ].map((style) => (
+            <Button
+              key={style.key}
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={generatingDesc}
+              onClick={() => generateDescription(style.key)}
+              className="gap-1.5 text-xs"
+            >
+              {generatingDesc && generatingStyle === style.key ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Sparkles className="w-3.5 h-3.5" />
+              )}
+              {style.label}
+            </Button>
+          ))}
+        </div>
+
         <Textarea
           placeholder="Descreva o imóvel com o máximo de detalhes: localização, diferenciais, infraestrutura do condomínio, vista, acabamentos, etc."
           value={form.descricao}
           onChange={e => set('descricao', e.target.value)}
-          rows={5}
+          rows={8}
           className="resize-y"
         />
       </div>
