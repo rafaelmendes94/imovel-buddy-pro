@@ -135,6 +135,9 @@ export interface FormData {
   edificioId: string;
   condominioId: string;
   empreendimentoId: string;
+  corretorId: string;
+  corretorNome: string;
+  imobiliariaNome: string;
 }
 
 export const initialForm: FormData = {
