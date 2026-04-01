@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { AppLayout } from "@/components/AppLayout";
+import { SmartLayout } from "@/components/SmartLayout";
 import { BackButton } from "@/components/BackButton";
 import { properties, formatCurrency } from "@/data/mockData";
 import { supabase } from "@/integrations/supabase/client";
@@ -142,7 +142,7 @@ export default function Avaliacoes() {
     : <BarChart3 className="w-4 h-4 text-yellow-500" />;
 
   return (
-    <AppLayout>
+    <SmartLayout>
       <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
         {/* Header */}
         <BackButton />
@@ -506,6 +506,6 @@ export default function Avaliacoes() {
           </div>
         </div>
       </div>
-    </AppLayout>
+    </SmartLayout>
   );
 }

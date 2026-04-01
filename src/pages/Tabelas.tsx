@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { AppLayout } from "@/components/AppLayout";
+import { SmartLayout } from "@/components/SmartLayout";
 import { BackButton } from "@/components/BackButton";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -112,7 +112,7 @@ export default function Tabelas() {
   };
 
   return (
-    <AppLayout>
+    <SmartLayout>
       <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
         <BackButton />
         <div className="flex items-center justify-between">
@@ -228,6 +228,6 @@ export default function Tabelas() {
           </div>
         </DialogContent>
       </Dialog>
-    </AppLayout>
+    </SmartLayout>
   );
 }

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
-import { AppLayout } from "@/components/AppLayout";
+import { SmartLayout } from "@/components/SmartLayout";
 import { BackButton } from "@/components/BackButton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -365,7 +365,7 @@ export default function ConstrutoraAvaliacoes() {
 
   if (loading) {
     return (
-      <AppLayout>
+      <SmartLayout>
         <div className="p-6 space-y-4">
           <Skeleton className="h-10 w-64" />
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -374,18 +374,18 @@ export default function ConstrutoraAvaliacoes() {
             <Skeleton className="h-96" />
           </div>
         </div>
-      </AppLayout>
+      </SmartLayout>
     );
   }
 
   if (!construtora) {
-    return <AppLayout><div className="p-6"><p>Construtora não encontrada.</p></div></AppLayout>;
+    return <SmartLayout><div className="p-6"><p>Construtora não encontrada.</p></div></SmartLayout>;
   }
 
   const overallAvg = construtora.avaliacao || 0;
 
   return (
-    <AppLayout>
+    <SmartLayout>
       <ConfettiBurst show={showConfetti} />
       <div className="p-4 md:p-6 space-y-6 max-w-[1400px] mx-auto">
         {/* Header */}
@@ -696,6 +696,6 @@ export default function ConstrutoraAvaliacoes() {
           </motion.div>
         </div>
       </div>
-    </AppLayout>
+    </SmartLayout>
   );
 }

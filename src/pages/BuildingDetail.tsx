@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { MiniMap } from "@/components/MiniMap";
-import { AppLayout } from "@/components/AppLayout";
+import { SmartLayout } from "@/components/SmartLayout";
 import { formatCurrency } from "@/data/mockData";
 import {
   ArrowLeft,
@@ -220,13 +220,13 @@ export default function BuildingDetail() {
 
   if (!building) {
     return (
-      <AppLayout>
+      <SmartLayout>
         <div className="p-8 text-center text-muted-foreground">
           <Building className="w-16 h-16 mx-auto mb-4 opacity-40" />
           <p className="text-lg">Edifício não encontrado</p>
           <Link to="/edificios" className="text-accent hover:underline mt-2 inline-block">Voltar</Link>
         </div>
-      </AppLayout>
+      </SmartLayout>
     );
   }
 
@@ -247,7 +247,7 @@ export default function BuildingDetail() {
     : building.units;
 
   return (
-    <AppLayout>
+    <SmartLayout>
       <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
         {/* Header with actions */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -570,6 +570,6 @@ export default function BuildingDetail() {
           </div>
         )}
       </div>
-    </AppLayout>
+    </SmartLayout>
   );
 }
