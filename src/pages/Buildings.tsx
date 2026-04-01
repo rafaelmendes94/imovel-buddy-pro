@@ -4,12 +4,36 @@ import { useNavigate } from "react-router-dom";
 import { SmartLayout } from "@/components/SmartLayout";
 import {
   Building, Plus, Search, MapPin, Layers, X, Save, Edit, Trash2, Camera, Home, Map, Loader2,
+  BedDouble, Bath, Car, Ruler, CheckCircle2, Clock, Key, Wrench,
 } from "lucide-react";
 import { InfraMediaModal } from "@/components/InfraMediaModal";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { formatCurrency } from "@/data/mockData";
+
+interface LinkedUnit {
+  id: string;
+  titulo: string;
+  unidade: string | null;
+  tipo: string;
+  area: number;
+  quartos: number;
+  banheiros: number;
+  vagas: number;
+  preco: number;
+  status: string;
+  proprietario: string | null;
+}
+
+const unitStatusConfig: Record<string, { color: string; bg: string; bgLight: string; border: string }> = {
+  Disponível: { color: "text-success", bg: "bg-success", bgLight: "bg-success/10", border: "border-success/30" },
+  Vendido: { color: "text-destructive", bg: "bg-destructive", bgLight: "bg-destructive/10", border: "border-destructive/30" },
+  Reservado: { color: "text-warning", bg: "bg-warning", bgLight: "bg-warning/10", border: "border-warning/30" },
+  Alugado: { color: "text-info", bg: "bg-info", bgLight: "bg-info/10", border: "border-info/30" },
+};
 
 interface BuildingData {
   id: string;
