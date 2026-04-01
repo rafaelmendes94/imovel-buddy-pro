@@ -595,7 +595,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
       <div className="bg-card border border-border rounded-xl p-5">
         <SectionHeader icon={User} title="Proprietário" />
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><User className="w-3.5 h-3.5" /> Nome do Proprietário</Label>
             <Input placeholder="Nome completo" value={form.proprietario} onChange={e => set('proprietario', e.target.value)} />
@@ -604,15 +604,16 @@ export function ImovelForm({ editId }: { editId?: string }) {
             <Label className="text-xs flex items-center gap-1"><Phone className="w-3.5 h-3.5" /> Telefone</Label>
             <Input placeholder="(00) 00000-0000" value={form.proprietarioTelefone} onChange={e => set('proprietarioTelefone', e.target.value)} />
           </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs">Tipo do Proprietário</Label>
-            <Select value={form.proprietarioTipo} onValueChange={(v) => set('proprietarioTipo', v)}>
-              <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-              <SelectContent>
-                {ownerTypeOptions.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
+        </div>
+
+        {/* Tipo do Proprietário - QuickPick */}
+        <div className="mb-4">
+          <QuickPick
+            label="Tipo do Proprietário"
+            options={ownerTypeOptions.map(t => ({ label: t, value: t }))}
+            value={form.proprietarioTipo}
+            onChange={(v) => set('proprietarioTipo', v)}
+          />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -631,24 +632,30 @@ export function ImovelForm({ editId }: { editId?: string }) {
       <div className="bg-card border border-border rounded-xl p-5">
         <SectionHeader icon={Sparkles} title="Características" />
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
-          <div className="space-y-1.5">
-            <Label className="text-xs">Condição</Label>
-            <Select value={form.condicao} onValueChange={(v) => set('condicao', v)}>
-              <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-              <SelectContent>
-                {condicaoOptions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs">Posição no Prédio</Label>
-            <Input placeholder="Ex: Frente, Fundos" value={form.posicaoPredio} onChange={e => set('posicaoPredio', e.target.value)} />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs">Posição Solar</Label>
-            <Input placeholder="Ex: Nascente, Poente" value={form.posicaoSolar} onChange={e => set('posicaoSolar', e.target.value)} />
-          </div>
+        {/* Condição - QuickPick */}
+        <div className="mb-4">
+          <QuickPick
+            label="Condição"
+            options={condicaoOptions.map(c => ({ label: c, value: c }))}
+            value={form.condicao}
+            onChange={(v) => set('condicao', v)}
+          />
+        </div>
+
+        {/* Posição no Prédio & Posição Solar - QuickPick */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+          <QuickPick
+            label="Posição no Prédio"
+            options={posicaoPredioOptions.map(p => ({ label: p, value: p }))}
+            value={form.posicaoPredio}
+            onChange={(v) => set('posicaoPredio', v)}
+          />
+          <QuickPick
+            label="Posição Solar"
+            options={posicaoSolarOptions.map(p => ({ label: p, value: p }))}
+            value={form.posicaoSolar}
+            onChange={(v) => set('posicaoSolar', v)}
+          />
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><Eye className="w-3.5 h-3.5" /> Vista</Label>
             <Input placeholder="Ex: Mar, Cidade, Lago" value={form.vista} onChange={e => set('vista', e.target.value)} />
