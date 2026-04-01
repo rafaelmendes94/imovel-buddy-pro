@@ -91,6 +91,57 @@ export type Database = {
         }
         Relationships: []
       }
+      condominios: {
+        Row: {
+          amenidades: string[] | null
+          cidade: string | null
+          created_at: string | null
+          endereco: string | null
+          id: string
+          imagem_url: string | null
+          latitude: number | null
+          longitude: number | null
+          nome: string
+          taxa_condominio: number | null
+          tipo: string | null
+          total_unidades: number | null
+          unidades_disponiveis: number | null
+          user_id: string
+        }
+        Insert: {
+          amenidades?: string[] | null
+          cidade?: string | null
+          created_at?: string | null
+          endereco?: string | null
+          id?: string
+          imagem_url?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          nome: string
+          taxa_condominio?: number | null
+          tipo?: string | null
+          total_unidades?: number | null
+          unidades_disponiveis?: number | null
+          user_id: string
+        }
+        Update: {
+          amenidades?: string[] | null
+          cidade?: string | null
+          created_at?: string | null
+          endereco?: string | null
+          id?: string
+          imagem_url?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          nome?: string
+          taxa_condominio?: number | null
+          tipo?: string | null
+          total_unidades?: number | null
+          unidades_disponiveis?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       construtora_avaliacoes: {
         Row: {
           comentario: string | null
@@ -340,6 +391,60 @@ export type Database = {
         }
         Relationships: []
       }
+      edificios: {
+        Row: {
+          andares: number | null
+          ano_construcao: string | null
+          cidade: string | null
+          construtora: string | null
+          created_at: string | null
+          endereco: string | null
+          id: string
+          imagem_url: string | null
+          infraestrutura: string[] | null
+          latitude: number | null
+          longitude: number | null
+          nome: string
+          status: string | null
+          total_unidades: number | null
+          user_id: string
+        }
+        Insert: {
+          andares?: number | null
+          ano_construcao?: string | null
+          cidade?: string | null
+          construtora?: string | null
+          created_at?: string | null
+          endereco?: string | null
+          id?: string
+          imagem_url?: string | null
+          infraestrutura?: string[] | null
+          latitude?: number | null
+          longitude?: number | null
+          nome: string
+          status?: string | null
+          total_unidades?: number | null
+          user_id: string
+        }
+        Update: {
+          andares?: number | null
+          ano_construcao?: string | null
+          cidade?: string | null
+          construtora?: string | null
+          created_at?: string | null
+          endereco?: string | null
+          id?: string
+          imagem_url?: string | null
+          infraestrutura?: string[] | null
+          latitude?: number | null
+          longitude?: number | null
+          nome?: string
+          status?: string | null
+          total_unidades?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       imoveis: {
         Row: {
           aceita_permuta: boolean
@@ -355,11 +460,13 @@ export type Database = {
           comissao: number | null
           condicao: string | null
           condicoes_pagamento: string[] | null
+          condominio_id: string | null
           created_at: string
           decorado: boolean
           descricao: string | null
           destaque_categoria: string | null
           destaque_home: boolean
+          edificio_id: string | null
           elevadores: number | null
           empreendimento: string | null
           endereco: string
@@ -406,11 +513,13 @@ export type Database = {
           comissao?: number | null
           condicao?: string | null
           condicoes_pagamento?: string[] | null
+          condominio_id?: string | null
           created_at?: string
           decorado?: boolean
           descricao?: string | null
           destaque_categoria?: string | null
           destaque_home?: boolean
+          edificio_id?: string | null
           elevadores?: number | null
           empreendimento?: string | null
           endereco?: string
@@ -457,11 +566,13 @@ export type Database = {
           comissao?: number | null
           condicao?: string | null
           condicoes_pagamento?: string[] | null
+          condominio_id?: string | null
           created_at?: string
           decorado?: boolean
           descricao?: string | null
           destaque_categoria?: string | null
           destaque_home?: boolean
+          edificio_id?: string | null
           elevadores?: number | null
           empreendimento?: string | null
           endereco?: string
@@ -494,7 +605,22 @@ export type Database = {
           vista?: string | null
           vista_mar?: boolean
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "imoveis_condominio_id_fkey"
+            columns: ["condominio_id"]
+            isOneToOne: false
+            referencedRelation: "condominios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "imoveis_edificio_id_fkey"
+            columns: ["edificio_id"]
+            isOneToOne: false
+            referencedRelation: "edificios"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       job_roles: {
         Row: {
