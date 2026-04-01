@@ -16,46 +16,46 @@ import EmpreendimentoDetail from "./pages/EmpreendimentoDetail";
 import PartnerDetail from "./pages/PartnerDetail";
 import ConstrutoraSite from "./pages/ConstrutoraSite";
 
-// Admin pages
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminFuncionarios from "./pages/admin/AdminFuncionarios";
-import AdminClientes from "./pages/admin/AdminClientes";
-import AdminPlanos from "./pages/admin/AdminPlanos";
-import AdminCargos from "./pages/admin/AdminCargos";
-import AdminBrick from "./pages/admin/AdminBrick";
+// Admin pages (lazy)
+const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
+const AdminFuncionarios = lazy(() => import("./pages/admin/AdminFuncionarios"));
+const AdminClientes = lazy(() => import("./pages/admin/AdminClientes"));
+const AdminPlanos = lazy(() => import("./pages/admin/AdminPlanos"));
+const AdminCargos = lazy(() => import("./pages/admin/AdminCargos"));
+const AdminBrick = lazy(() => import("./pages/admin/AdminBrick"));
 
-// Broker pages
-import BrokerDashboard from "./pages/broker/BrokerDashboard";
-import BrokerAssinatura from "./pages/broker/BrokerAssinatura";
+// Broker pages (lazy)
+const BrokerDashboard = lazy(() => import("./pages/broker/BrokerDashboard"));
+const BrokerAssinatura = lazy(() => import("./pages/broker/BrokerAssinatura"));
 
-// Legacy pages (used in broker panel context)
-import Dashboard from "./pages/Dashboard";
-import Properties from "./pages/Properties";
-import Buildings from "./pages/Buildings";
-import BuildingDetail from "./pages/BuildingDetail";
-import Condominiums from "./pages/Condominiums";
-import CondominiumDetail from "./pages/CondominiumDetail";
-import Maps from "./pages/Maps";
-import CityPhotos from "./pages/CityPhotos";
-import Brokers from "./pages/Brokers";
-import Reports from "./pages/Reports";
-import Settings from "./pages/Settings";
+// Legacy pages (lazy)
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Properties = lazy(() => import("./pages/Properties"));
+const Buildings = lazy(() => import("./pages/Buildings"));
+const BuildingDetail = lazy(() => import("./pages/BuildingDetail"));
+const Condominiums = lazy(() => import("./pages/Condominiums"));
+const CondominiumDetail = lazy(() => import("./pages/CondominiumDetail"));
+const Maps = lazy(() => import("./pages/Maps"));
+const CityPhotos = lazy(() => import("./pages/CityPhotos"));
+const Brokers = lazy(() => import("./pages/Brokers"));
+const Reports = lazy(() => import("./pages/Reports"));
+const Settings = lazy(() => import("./pages/Settings"));
 const Site = lazy(() => import("./pages/Site"));
-import AllProperties from "./pages/AllProperties";
-import RankingPage from "./pages/RankingPage";
-import Avaliacoes from "./pages/Avaliacoes";
-import Financeiro from "./pages/Financeiro";
-import Tabelas from "./pages/Tabelas";
-import Contratos from "./pages/Contratos";
-import VideoMaker from "./pages/VideoMaker";
-import Imobiliarias from "./pages/Imobiliarias";
-import CadastroImovel from "./pages/CadastroImovel";
-import EditarImovel from "./pages/EditarImovel";
-import Parceiros from "./pages/Parceiros";
-import Construtoras from "./pages/Construtoras";
-import ConstrutoraDetail from "./pages/ConstrutoraDetail";
-import ConstrutoraAvaliacoes from "./pages/ConstrutoraAvaliacoes";
-import Brick from "./pages/Brick";
+const AllProperties = lazy(() => import("./pages/AllProperties"));
+const RankingPage = lazy(() => import("./pages/RankingPage"));
+const Avaliacoes = lazy(() => import("./pages/Avaliacoes"));
+const Financeiro = lazy(() => import("./pages/Financeiro"));
+const Tabelas = lazy(() => import("./pages/Tabelas"));
+const Contratos = lazy(() => import("./pages/Contratos"));
+const VideoMaker = lazy(() => import("./pages/VideoMaker"));
+const Imobiliarias = lazy(() => import("./pages/Imobiliarias"));
+const CadastroImovel = lazy(() => import("./pages/CadastroImovel"));
+const EditarImovel = lazy(() => import("./pages/EditarImovel"));
+const Parceiros = lazy(() => import("./pages/Parceiros"));
+const Construtoras = lazy(() => import("./pages/Construtoras"));
+const ConstrutoraDetail = lazy(() => import("./pages/ConstrutoraDetail"));
+const ConstrutoraAvaliacoes = lazy(() => import("./pages/ConstrutoraAvaliacoes"));
+const Brick = lazy(() => import("./pages/Brick"));
 const BrickStore = lazy(() => import("./pages/BrickStore"));
 
 const queryClient = new QueryClient();
