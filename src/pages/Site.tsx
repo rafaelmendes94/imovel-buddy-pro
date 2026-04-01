@@ -1450,15 +1450,19 @@ export default function Site() {
       >
         <ArrowUp className="w-5 h-5" />
       </button>
-      <RoutePlanner properties={routeProperties as any} />
-      <SharkAI properties={siteProperties as any} onSelectProperty={setSelectedProperty as any} />
-      <PropertyDetailModal
-        property={selectedProperty as any}
-        onClose={() => setSelectedProperty(null)}
-        allProperties={siteProperties as any}
-        brokerInfo={brokerInfo}
-        onSelectSimilar={(p: any) => setSelectedProperty(p)}
-      />
+      <Suspense fallback={null}>
+        <RoutePlanner properties={routeProperties as any} />
+        <SharkAI properties={siteProperties as any} onSelectProperty={setSelectedProperty as any} />
+        {selectedProperty && (
+          <PropertyDetailModal
+            property={selectedProperty as any}
+            onClose={() => setSelectedProperty(null)}
+            allProperties={siteProperties as any}
+            brokerInfo={brokerInfo}
+            onSelectSimilar={(p: any) => setSelectedProperty(p)}
+          />
+        )}
+      </Suspense>
 
       {/* Term Viewer Modal */}
       {viewingTerm && (
