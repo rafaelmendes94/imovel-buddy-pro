@@ -401,16 +401,18 @@ export function ImovelForm({ editId }: { editId?: string }) {
       <div className="bg-card border border-border rounded-xl p-5">
         <SectionHeader icon={Building2} title="Identificação" />
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
-          <div className="space-y-1.5">
-            <Label className="text-xs">Tipo do Imóvel *</Label>
-            <Select value={form.tipo} onValueChange={(v) => set('tipo', v)}>
-              <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-              <SelectContent>
-                {tiposImovel.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
+        {/* Tipo do Imóvel - QuickPick */}
+        <div className="mb-4">
+          <QuickPick
+            label="Tipo do Imóvel *"
+            icon={<Building2 className="w-3.5 h-3.5" />}
+            options={tiposImovel.map(t => ({ label: t, value: t }))}
+            value={form.tipo}
+            onChange={(v) => set('tipo', v)}
+          />
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
           <div className="space-y-1.5">
             <Label className="text-xs">Empreendimento</Label>
             <Input placeholder="Nome do empreendimento" value={form.empreendimento} onChange={e => set('empreendimento', e.target.value)} />
@@ -431,15 +433,38 @@ export function ImovelForm({ editId }: { editId?: string }) {
           </div>
         </div>
 
+        {/* Dormitórios, Banheiros, Vagas, Elevadores - QuickPick */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
-          <div className="space-y-1.5">
-            <Label className="text-xs flex items-center gap-1"><BedDouble className="w-3.5 h-3.5" /> Dormitórios</Label>
-            <Input type="number" min={0} value={form.quartos} onChange={e => set('quartos', parseInt(e.target.value) || 0)} />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs flex items-center gap-1"><Bath className="w-3.5 h-3.5" /> Banheiros</Label>
-            <Input type="number" min={0} value={form.banheiros} onChange={e => set('banheiros', parseInt(e.target.value) || 0)} />
-          </div>
+          <QuickPick
+            label="Dormitórios"
+            icon={<BedDouble className="w-3.5 h-3.5" />}
+            options={[0,1,2,3,4,5].map(n => ({ label: n === 5 ? '5+' : String(n), value: n }))}
+            value={form.quartos}
+            onChange={(v) => set('quartos', v)}
+          />
+          <QuickPick
+            label="Banheiros"
+            icon={<Bath className="w-3.5 h-3.5" />}
+            options={[0,1,2,3,4,5].map(n => ({ label: n === 5 ? '5+' : String(n), value: n }))}
+            value={form.banheiros}
+            onChange={(v) => set('banheiros', v)}
+          />
+          <QuickPick
+            label="Vagas"
+            icon={<Car className="w-3.5 h-3.5" />}
+            options={[0,1,2,3,4].map(n => ({ label: n === 4 ? '4+' : String(n), value: n }))}
+            value={form.vagas}
+            onChange={(v) => set('vagas', v)}
+          />
+          <QuickPick
+            label="Elevadores"
+            options={[0,1,2,3].map(n => ({ label: n === 3 ? '3+' : String(n), value: n }))}
+            value={form.elevadores}
+            onChange={(v) => set('elevadores', v)}
+          />
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><Ruler className="w-3.5 h-3.5" /> Área Privativa (m²)</Label>
             <Input type="number" placeholder="0" value={form.areaPrivativa} onChange={e => set('areaPrivativa', e.target.value)} />
@@ -448,26 +473,20 @@ export function ImovelForm({ editId }: { editId?: string }) {
             <Label className="text-xs flex items-center gap-1"><Ruler className="w-3.5 h-3.5" /> Área Total (m²)</Label>
             <Input type="number" placeholder="0" value={form.area} onChange={e => set('area', e.target.value)} />
           </div>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
           <div className="space-y-1.5 sm:col-span-2">
             <Label className="text-xs">Título do Imóvel *</Label>
             <Input placeholder="Ex: Apartamento 3 quartos frente mar" value={form.titulo} onChange={e => set('titulo', e.target.value)} required />
           </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs">Status</Label>
-            <Select value={form.status} onValueChange={(v) => set('status', v)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {statusOptions.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs flex items-center gap-1"><Car className="w-3.5 h-3.5" /> Vagas</Label>
-            <Input type="number" min={0} value={form.vagas} onChange={e => set('vagas', parseInt(e.target.value) || 0)} />
-          </div>
+        </div>
+
+        {/* Status - QuickPick */}
+        <div className="mb-4">
+          <QuickPick
+            label="Status"
+            options={statusOptions.map(s => ({ label: s, value: s }))}
+            value={form.status}
+            onChange={(v) => set('status', v)}
+          />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
