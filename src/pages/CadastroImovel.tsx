@@ -777,38 +777,70 @@ export function ImovelForm({ editId }: { editId?: string }) {
 
         <div>
           <Label className="text-xs font-semibold mb-2 block">Infraestrutura</Label>
-          <div className="flex flex-wrap gap-1.5 mb-2">
-            {form.infraestrutura.map((item, i) => (
-              <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
+          <div className="flex flex-wrap gap-1.5">
+            {[...new Set([...infraOptions, ...form.infraestrutura])].map((item) => (
+              <button
+                key={item}
+                type="button"
+                onClick={() => {
+                  setForm(prev => ({
+                    ...prev,
+                    infraestrutura: prev.infraestrutura.includes(item)
+                      ? prev.infraestrutura.filter(i => i !== item)
+                      : [...prev.infraestrutura, item]
+                  }));
+                }}
+                className={cn(
+                  "px-3 py-1.5 rounded-full text-xs font-medium border transition-all",
+                  form.infraestrutura.includes(item)
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-muted text-muted-foreground border-border hover:bg-primary hover:text-primary-foreground hover:border-primary"
+                )}
+              >
                 {item}
-                <button type="button" onClick={() => set('infraestrutura', form.infraestrutura.filter((_, idx) => idx !== i))}>
-                  <X className="w-3 h-3" />
-                </button>
-              </span>
+              </button>
             ))}
           </div>
-          <div className="flex gap-2">
-            <Input placeholder="Ex: Piscina, Churrasqueira..." value={newInfra} onChange={e => setNewInfra(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addInfra(); } }} className="h-10 max-w-xs" />
-            <Button type="button" variant="outline" size="sm" onClick={addInfra} className="h-10"><Plus className="w-3.5 h-3.5" /></Button>
-          </div>
+          {isSuperAdmin && (
+            <div className="flex gap-2 mt-2">
+              <Input placeholder="Adicionar nova infraestrutura..." value={newInfra} onChange={e => setNewInfra(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addInfra(); } }} className="h-10 max-w-xs" />
+              <Button type="button" variant="outline" size="sm" onClick={addInfra} className="h-10"><Plus className="w-3.5 h-3.5" /></Button>
+            </div>
+          )}
         </div>
 
         <div>
           <Label className="text-xs font-semibold mb-2 block">Outras Características</Label>
-          <div className="flex flex-wrap gap-1.5 mb-2">
-            {form.outrasCaracteristicas.map((item, i) => (
-              <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-accent text-accent-foreground text-xs font-medium">
+          <div className="flex flex-wrap gap-1.5">
+            {[...new Set([...caracteristicaOptions, ...form.outrasCaracteristicas])].map((item) => (
+              <button
+                key={item}
+                type="button"
+                onClick={() => {
+                  setForm(prev => ({
+                    ...prev,
+                    outrasCaracteristicas: prev.outrasCaracteristicas.includes(item)
+                      ? prev.outrasCaracteristicas.filter(i => i !== item)
+                      : [...prev.outrasCaracteristicas, item]
+                  }));
+                }}
+                className={cn(
+                  "px-3 py-1.5 rounded-full text-xs font-medium border transition-all",
+                  form.outrasCaracteristicas.includes(item)
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-muted text-muted-foreground border-border hover:bg-primary hover:text-primary-foreground hover:border-primary"
+                )}
+              >
                 {item}
-                <button type="button" onClick={() => set('outrasCaracteristicas', form.outrasCaracteristicas.filter((_, idx) => idx !== i))}>
-                  <X className="w-3 h-3" />
-                </button>
-              </span>
+              </button>
             ))}
           </div>
-          <div className="flex gap-2">
-            <Input placeholder="Ex: Beira Lago, Documentação OK..." value={newCaract} onChange={e => setNewCaract(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addCaract(); } }} className="h-10 max-w-xs" />
-            <Button type="button" variant="outline" size="sm" onClick={addCaract} className="h-10"><Plus className="w-3.5 h-3.5" /></Button>
-          </div>
+          {isSuperAdmin && (
+            <div className="flex gap-2 mt-2">
+              <Input placeholder="Adicionar nova característica..." value={newCaract} onChange={e => setNewCaract(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addCaract(); } }} className="h-10 max-w-xs" />
+              <Button type="button" variant="outline" size="sm" onClick={addCaract} className="h-10"><Plus className="w-3.5 h-3.5" /></Button>
+            </div>
+          )}
         </div>
       </div>
 
