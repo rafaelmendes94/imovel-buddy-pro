@@ -172,6 +172,8 @@ export function ImovelForm({ editId }: { editId?: string }) {
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [loadingCep, setLoadingCep] = useState(false);
+  const [edificiosList, setEdificiosList] = useState<{ id: string; nome: string; endereco: string; cidade: string; infraestrutura: string[] }[]>([]);
+  const [condominiosList, setCondominiosList] = useState<{ id: string; nome: string; endereco: string; cidade: string; amenidades: string[] }[]>([]);
 
   const buscarCep = async () => {
     const cepClean = form.cep.replace(/\D/g, '');
