@@ -156,6 +156,49 @@ export function ImovelForm({ editId }: { editId?: string }) {
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [loadingCep, setLoadingCep] = useState(false);
+
+  const buscarCep = async () => {
+    const cepClean = form.cep.replace(/\D/g, '');
+    if (cepClean.length !== 8) {
+      toast({ title: "CEP inválido", description: "Digite um CEP com 8 dígitos.", variant: "destructive" });
+      return;
+    }
+    setLoadingCep(true);
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${cepClean}/json/`);
+      const data = await res.json();
+      if (data.erro) {
+        toast({ title: "CEP não encontrado", description: "Verifique o CEP digitado.", variant: "destructive" });
+        setLoadingCep(false);
+        return;
+      }
+      setForm(prev => ({
+        ...prev,
+        cidade: data.localidade || prev.cidade,
+        bairro: data.bairro || prev.bairro,
+        endereco: data.logradouro ? `${data.logradouro}${data.complemento ? ', ' + data.complemento : ''}` : prev.endereco,
+      }));
+      // Buscar coordenadas via Nominatim
+      try {
+        const query = `${data.logradouro || ''}, ${data.bairro || ''}, ${data.localidade || ''}, ${data.uf || ''}, Brasil`;
+        const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
+        const geoData = await geoRes.json();
+        if (geoData.length > 0) {
+          setForm(prev => ({
+            ...prev,
+            latitude: geoData[0].lat,
+            longitude: geoData[0].lon,
+          }));
+        }
+      } catch {}
+      toast({ title: "Endereço preenchido! ✅" });
+    } catch {
+      toast({ title: "Erro ao buscar CEP", variant: "destructive" });
+    } finally {
+      setLoadingCep(false);
+    }
+  };
 
   const isEdit = !!editId;
 
