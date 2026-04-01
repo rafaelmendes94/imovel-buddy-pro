@@ -539,14 +539,14 @@ export function ImovelForm({ editId }: { editId?: string }) {
           onChange={(v) => set('tipo', v)}
         />
 
-        {/* Edifício e Condomínio vinculados */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Edifício, Condomínio e Empreendimento vinculados */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><Building2 className="w-3.5 h-3.5" /> Edifício</Label>
-            <select
+            <SearchableSelect
+              options={edificiosList.map(ed => ({ id: ed.id, label: ed.nome, sublabel: ed.cidade }))}
               value={form.edificioId}
-              onChange={(e) => {
-                const id = e.target.value;
+              onChange={(id) => {
                 set('edificioId', id);
                 if (id) {
                   const ed = edificiosList.find(x => x.id === id);
@@ -557,18 +557,15 @@ export function ImovelForm({ editId }: { editId?: string }) {
                   }
                 }
               }}
-              className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            >
-              <option value="">Nenhum</option>
-              {edificiosList.map(ed => <option key={ed.id} value={ed.id}>{ed.nome} - {ed.cidade}</option>)}
-            </select>
+              placeholder="Nenhum"
+            />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><Home className="w-3.5 h-3.5" /> Condomínio</Label>
-            <select
+            <SearchableSelect
+              options={condominiosList.map(co => ({ id: co.id, label: co.nome, sublabel: co.cidade }))}
               value={form.condominioId}
-              onChange={(e) => {
-                const id = e.target.value;
+              onChange={(id) => {
                 set('condominioId', id);
                 if (id) {
                   const co = condominiosList.find(x => x.id === id);
@@ -579,17 +576,33 @@ export function ImovelForm({ editId }: { editId?: string }) {
                   }
                 }
               }}
-              className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            >
-              <option value="">Nenhum</option>
-              {condominiosList.map(co => <option key={co.id} value={co.id}>{co.nome} - {co.cidade}</option>)}
-            </select>
+              placeholder="Nenhum"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs flex items-center gap-1"><Sparkles className="w-3.5 h-3.5" /> Empreendimento</Label>
+            <SearchableSelect
+              options={empreendimentosList.map(emp => ({ id: emp.id, label: emp.nome, sublabel: emp.cidade }))}
+              value={form.empreendimentoId}
+              onChange={(id) => {
+                set('empreendimentoId', id);
+                if (id) {
+                  const emp = empreendimentosList.find(x => x.id === id);
+                  if (emp) {
+                    set('endereco', emp.endereco);
+                    set('cidade', emp.cidade);
+                    if (emp.infraestrutura?.length) set('infraestrutura', [...new Set([...form.infraestrutura, ...emp.infraestrutura])]);
+                  }
+                }
+              }}
+              placeholder="Nenhum"
+            />
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="space-y-1.5">
-            <Label className="text-xs">Empreendimento</Label>
+            <Label className="text-xs">Empreendimento (texto livre)</Label>
             <Input placeholder="Nome do empreendimento" value={form.empreendimento} onChange={e => set('empreendimento', e.target.value)} className="h-10" />
           </div>
           <div className="space-y-1.5">
