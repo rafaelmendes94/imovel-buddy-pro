@@ -166,55 +166,47 @@ export default function AllProperties() {
   const [selectedProperty, setSelectedProperty] = useState<SiteProperty | null>(null);
 
   useEffect(() => {
-    const fetchProperties = async () => {
+    const fetchAll = async () => {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('imoveis')
-        .select('*')
-        .eq('ativo_site', true);
-
-      if (!error && data) {
+      const [{ data }, { data: eds }, { data: cos }] = await Promise.all([
+        supabase.from('imoveis').select('*').eq('ativo_site', true),
+        supabase.from('edificios').select('id, nome').order('nome'),
+        supabase.from('condominios').select('id, nome').order('nome'),
+      ]);
+      if (eds) setEdificiosList(eds as any);
+      if (cos) setCondominiosList(cos as any);
+      if (data) {
         const mapped: SiteProperty[] = data
           .filter((row) => row.status === "Disponível")
           .map((row) => ({
-            id: row.id,
-            title: row.titulo,
-            address: row.endereco,
-            city: row.cidade,
-            type: row.tipo,
-            status: row.status,
-            price: Number(row.preco),
-            area: Number(row.area),
-            bedrooms: row.quartos,
-            bathrooms: row.banheiros,
-            parking: row.vagas,
+            id: row.id, title: row.titulo, address: row.endereco, city: row.cidade,
+            type: row.tipo, status: row.status, price: Number(row.preco), area: Number(row.area),
+            bedrooms: row.quartos, bathrooms: row.banheiros, parking: row.vagas,
             broker: "Corretor",
             image: row.imagens?.[0] || "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&h=400&fit=crop",
-            images: row.imagens || [],
-            createdAt: row.created_at,
-            decorated: row.decorado,
-            seaView: row.vista_mar,
-            acceptsExchange: row.aceita_permuta,
+            images: row.imagens || [], createdAt: row.created_at,
+            decorated: row.decorado, seaView: row.vista_mar, acceptsExchange: row.aceita_permuta,
             paymentConditions: row.condicoes_pagamento || [],
             empreendimento: row.empreendimento || '',
-            unitNumber: row.unidade || '',
-            boxNumber: row.box || '',
-            quadra: row.quadra || '',
-            lote: row.lote || '',
+            unitNumber: row.unidade || '', boxNumber: row.box || '',
+            quadra: row.quadra || '', lote: row.lote || '',
+            edificio_id: (row as any).edificio_id || '',
+            condominio_id: (row as any).condominio_id || '',
           }));
         setAllProperties(mapped);
       }
       setLoading(false);
     };
-    fetchProperties();
+    fetchAll();
   }, []);
 
   const clearFilters = () => {
     setFilterCity(""); setFilterBedrooms(""); setFilterPriceMin(""); setFilterPriceMax("");
     setFilterType(""); setFilterCondition(""); setSearchTerm(""); setPriceSort("");
+    setFilterEdificio(""); setFilterCondominio("");
   };
 
-  const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterType || filterCondition;
+  const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterType || filterCondition || filterEdificio || filterCondominio;
 
   let filtered = allProperties.filter((p) => {
     const matchSearch = !searchTerm ||
