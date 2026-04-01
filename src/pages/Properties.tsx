@@ -248,6 +248,7 @@ export default function Properties() {
         bonusExpiry: row.bonus_validade || "",
         padrao: (row.padrao as Property["padrao"]) || undefined,
         outrasCaracteristicas: row.outras_caracteristicas || [],
+        imobiliariaNome: (row as any).imobiliaria_nome || '',
       }));
 
       setPropertyList(mapped);
