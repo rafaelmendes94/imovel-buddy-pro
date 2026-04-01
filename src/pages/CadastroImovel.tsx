@@ -465,6 +465,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         longitude: parseFloat(form.longitude) || 0,
         edificio_id: form.edificioId || null,
         condominio_id: form.condominioId || null,
+        empreendimento_id: form.empreendimentoId || null,
       } as any;
 
       if (isEdit) {
