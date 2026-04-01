@@ -14,8 +14,13 @@ import { useToast } from "@/hooks/use-toast";
 interface BuildingData {
   id: string;
   nome: string;
+  cep: string;
   endereco: string;
+  numero: string;
+  complemento: string;
+  bairro: string;
   cidade: string;
+  estado: string;
   andares: number;
   total_unidades: number;
   construtora: string;
@@ -35,10 +40,18 @@ const statusColors: Record<string, string> = {
   Lançamento: "bg-info/10 text-info border-info/30",
 };
 
+const infraOptions = [
+  "Elevador", "Portaria 24h", "Piscina", "Academia", "Salão de Festas",
+  "Churrasqueira", "Playground", "Quadra", "Bicicletário", "Pet Place",
+  "Coworking", "Segurança 24h", "CFTV", "Gerador", "Energia Solar",
+  "Área Verde", "Estacionamento", "Cisterna", "Wi-Fi nas áreas comuns",
+];
+
 const emptyForm = {
-  nome: "", endereco: "", cidade: "", andares: 0, total_unidades: 0,
+  nome: "", cep: "", endereco: "", numero: "", complemento: "", bairro: "",
+  cidade: "", estado: "", andares: 0, total_unidades: 0,
   construtora: "", ano_construcao: "", status: "Lançamento",
-  imagem_url: "", latitude: -23.55, longitude: -46.63, infraestrutura: [] as string[],
+  imagem_url: "", latitude: 0, longitude: 0, infraestrutura: [] as string[],
 };
 
 export default function Buildings() {
@@ -50,6 +63,7 @@ export default function Buildings() {
   const [form, setForm] = useState(emptyForm);
   const [mediaBuilding, setMediaBuilding] = useState<BuildingData | null>(null);
   const [saving, setSaving] = useState(false);
+  const [cepLoading, setCepLoading] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -57,7 +71,7 @@ export default function Buildings() {
   const fetchBuildings = async (signal?: AbortSignal) => {
     setLoading(true);
     const [{ data, error }, { data: counts }] = await Promise.all([
-      supabase.from("edificios").select("id,nome,endereco,cidade,andares,total_unidades,construtora,ano_construcao,status,imagem_url,latitude,longitude,infraestrutura,user_id").order("created_at", { ascending: false }),
+      supabase.from("edificios").select("id,nome,cep,endereco,numero,complemento,bairro,cidade,estado,andares,total_unidades,construtora,ano_construcao,status,imagem_url,latitude,longitude,infraestrutura,user_id").order("created_at", { ascending: false }),
       supabase.from("imoveis").select("edificio_id").not("edificio_id", "is", null),
     ]);
     if (signal?.aborted) return;
@@ -76,11 +90,62 @@ export default function Buildings() {
   }, []);
 
   const filtered = buildings.filter(
-    (b) => b.nome.toLowerCase().includes(search.toLowerCase()) || b.endereco.toLowerCase().includes(search.toLowerCase())
+    (b) => b.nome.toLowerCase().includes(search.toLowerCase()) || b.endereco.toLowerCase().includes(search.toLowerCase()) || b.cidade.toLowerCase().includes(search.toLowerCase())
   );
 
+  // CEP lookup
+  const handleCepSearch = async (cep: string) => {
+    const cleanCep = cep.replace(/\D/g, "");
+    if (cleanCep.length !== 8) return;
+    setCepLoading(true);
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
+      const data = await res.json();
+      if (!data.erro) {
+        const updates: Partial<typeof form> = {
+          endereco: data.logradouro || form.endereco,
+          bairro: data.bairro || form.bairro,
+          cidade: data.localidade || form.cidade,
+          estado: data.uf || form.estado,
+        };
+        setForm(prev => ({ ...prev, ...updates }));
+
+        // Try to get coordinates
+        const addr = `${data.logradouro || ''}, ${data.localidade || ''}, ${data.uf || ''}, Brasil`;
+        try {
+          const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addr)}&limit=1`);
+          const geoData = await geoRes.json();
+          if (geoData.length > 0) {
+            setForm(prev => ({ ...prev, latitude: parseFloat(geoData[0].lat), longitude: parseFloat(geoData[0].lon) }));
+          }
+        } catch { /* ignore geo errors */ }
+
+        toast({ title: "Endereço encontrado! ✅" });
+      } else {
+        toast({ title: "CEP não encontrado", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Erro ao buscar CEP", variant: "destructive" });
+    } finally { setCepLoading(false); }
+  };
+
+  const formatCep = (v: string) => {
+    const nums = v.replace(/\D/g, "").slice(0, 8);
+    if (nums.length > 5) return `${nums.slice(0, 5)}-${nums.slice(5)}`;
+    return nums;
+  };
+
+  const toggleInfra = (item: string) => {
+    setForm(prev => ({
+      ...prev,
+      infraestrutura: prev.infraestrutura.includes(item)
+        ? prev.infraestrutura.filter(i => i !== item)
+        : [...prev.infraestrutura, item],
+    }));
+  };
+
   const handleSubmit = async () => {
-    if (!form.nome || !form.endereco || !user) return;
+    if (!form.nome || !user) return;
     setSaving(true);
     try {
       const payload = { ...form, imagem_url: form.imagem_url || null, user_id: user.id };
@@ -105,8 +170,10 @@ export default function Buildings() {
 
   const handleEdit = (b: BuildingData) => {
     setForm({
-      nome: b.nome, endereco: b.endereco, cidade: b.cidade, andares: b.andares,
-      total_unidades: b.total_unidades, construtora: b.construtora, ano_construcao: b.ano_construcao,
+      nome: b.nome, cep: b.cep || "", endereco: b.endereco, numero: b.numero || "",
+      complemento: b.complemento || "", bairro: b.bairro || "", cidade: b.cidade,
+      estado: b.estado || "", andares: b.andares, total_unidades: b.total_unidades,
+      construtora: b.construtora, ano_construcao: b.ano_construcao,
       status: b.status, imagem_url: b.imagem_url || "", latitude: b.latitude, longitude: b.longitude,
       infraestrutura: b.infraestrutura || [],
     });
@@ -118,6 +185,8 @@ export default function Buildings() {
     const { error } = await supabase.from("edificios").delete().eq("id", id);
     if (!error) { fetchBuildings(); toast({ title: "Edifício removido" }); }
   };
+
+  const inputClass = "w-full px-3 py-2 bg-background border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring";
 
   return (
     <SmartLayout>
@@ -140,63 +209,146 @@ export default function Buildings() {
             className="w-full pl-10 pr-4 py-2.5 bg-card border border-input rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
         </div>
 
+        {/* Form Modal */}
         {showForm && (
           <div className="fixed inset-0 bg-foreground/50 z-50 flex items-center justify-center p-4">
-            <div className="bg-card rounded-xl border border-border shadow-xl w-full max-w-lg animate-scale-in max-h-[90vh] overflow-y-auto">
+            <div className="bg-card rounded-xl border border-border shadow-xl w-full max-w-2xl animate-scale-in max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between p-5 border-b border-border sticky top-0 bg-card z-10">
                 <h2 className="text-lg font-bold text-card-foreground">{editingId ? "Editar Edifício" : "Novo Edifício"}</h2>
                 <button onClick={() => setShowForm(false)} className="text-muted-foreground hover:text-foreground"><X className="w-5 h-5" /></button>
               </div>
-              <div className="p-5 space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="col-span-2">
-                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Nome do Edifício *</label>
-                    <input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} className="w-full px-3 py-2 bg-background border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+              <div className="p-5 space-y-5">
+
+                {/* Identificação */}
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                    <Building className="w-4 h-4 text-primary" /> Identificação
+                  </h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="col-span-2">
+                      <label className="text-xs font-medium text-muted-foreground mb-1 block">Nome do Edifício *</label>
+                      <input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} className={inputClass} placeholder="Ex: Edifício Aurora" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground mb-1 block">Construtora</label>
+                      <input value={form.construtora} onChange={(e) => setForm({ ...form, construtora: e.target.value })} className={inputClass} />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground mb-1 block">Ano de Construção</label>
+                      <input value={form.ano_construcao} onChange={(e) => setForm({ ...form, ano_construcao: e.target.value })} className={inputClass} placeholder="2025" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground mb-1 block">Andares</label>
+                      <input type="number" value={form.andares || ""} onChange={(e) => setForm({ ...form, andares: +e.target.value })} className={inputClass} />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground mb-1 block">Total de Unidades</label>
+                      <input type="number" value={form.total_unidades || ""} onChange={(e) => setForm({ ...form, total_unidades: +e.target.value })} className={inputClass} />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground mb-1 block">Status</label>
+                      <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className={inputClass}>
+                        <option>Lançamento</option>
+                        <option>Em construção</option>
+                        <option>Pronto</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground mb-1 block">URL da Imagem</label>
+                      <input value={form.imagem_url} onChange={(e) => setForm({ ...form, imagem_url: e.target.value })} placeholder="https://..." className={inputClass} />
+                    </div>
                   </div>
-                  <div className="col-span-2">
-                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Endereço *</label>
-                    <input value={form.endereco} onChange={(e) => setForm({ ...form, endereco: e.target.value })} className="w-full px-3 py-2 bg-background border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                </div>
+
+                {/* Endereço - padrão Correios */}
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-primary" /> Endereço
+                  </h3>
+                  <div className="grid grid-cols-6 gap-3">
+                    <div className="col-span-2">
+                      <label className="text-xs font-medium text-muted-foreground mb-1 block">CEP</label>
+                      <div className="relative">
+                        <input
+                          value={form.cep}
+                          onChange={(e) => setForm({ ...form, cep: formatCep(e.target.value) })}
+                          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleCepSearch(form.cep); } }}
+                          onBlur={() => { if (form.cep.replace(/\D/g, "").length === 8) handleCepSearch(form.cep); }}
+                          placeholder="00000-000"
+                          className={inputClass}
+                        />
+                        {cepLoading && <Loader2 className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-muted-foreground" />}
+                      </div>
+                    </div>
+                    <div className="col-span-4">
+                      <label className="text-xs font-medium text-muted-foreground mb-1 block">Logradouro</label>
+                      <input value={form.endereco} onChange={(e) => setForm({ ...form, endereco: e.target.value })} className={inputClass} placeholder="Rua, Av, Travessa..." />
+                    </div>
+                    <div className="col-span-2">
+                      <label className="text-xs font-medium text-muted-foreground mb-1 block">Número</label>
+                      <input value={form.numero} onChange={(e) => setForm({ ...form, numero: e.target.value })} className={inputClass} placeholder="123" />
+                    </div>
+                    <div className="col-span-4">
+                      <label className="text-xs font-medium text-muted-foreground mb-1 block">Complemento</label>
+                      <input value={form.complemento} onChange={(e) => setForm({ ...form, complemento: e.target.value })} className={inputClass} placeholder="Bloco A, Sala 101..." />
+                    </div>
+                    <div className="col-span-3">
+                      <label className="text-xs font-medium text-muted-foreground mb-1 block">Bairro</label>
+                      <input value={form.bairro} onChange={(e) => setForm({ ...form, bairro: e.target.value })} className={inputClass} />
+                    </div>
+                    <div className="col-span-2">
+                      <label className="text-xs font-medium text-muted-foreground mb-1 block">Cidade</label>
+                      <input value={form.cidade} onChange={(e) => setForm({ ...form, cidade: e.target.value })} className={inputClass} />
+                    </div>
+                    <div className="col-span-1">
+                      <label className="text-xs font-medium text-muted-foreground mb-1 block">UF</label>
+                      <input value={form.estado} onChange={(e) => setForm({ ...form, estado: e.target.value })} maxLength={2} className={inputClass} placeholder="RS" />
+                    </div>
                   </div>
-                  <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Cidade</label>
-                    <input value={form.cidade} onChange={(e) => setForm({ ...form, cidade: e.target.value })} className="w-full px-3 py-2 bg-background border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                </div>
+
+                {/* Coordenadas */}
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                    <Map className="w-4 h-4 text-primary" /> Coordenadas
+                  </h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground mb-1 block">Latitude</label>
+                      <input type="number" step="0.0001" value={form.latitude || ""} onChange={(e) => setForm({ ...form, latitude: +e.target.value })} className={inputClass} />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground mb-1 block">Longitude</label>
+                      <input type="number" step="0.0001" value={form.longitude || ""} onChange={(e) => setForm({ ...form, longitude: +e.target.value })} className={inputClass} />
+                    </div>
                   </div>
-                  <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Construtora</label>
-                    <input value={form.construtora} onChange={(e) => setForm({ ...form, construtora: e.target.value })} className="w-full px-3 py-2 bg-background border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Andares</label>
-                    <input type="number" value={form.andares} onChange={(e) => setForm({ ...form, andares: +e.target.value })} className="w-full px-3 py-2 bg-background border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Unidades</label>
-                    <input type="number" value={form.total_unidades} onChange={(e) => setForm({ ...form, total_unidades: +e.target.value })} className="w-full px-3 py-2 bg-background border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Ano</label>
-                    <input value={form.ano_construcao} onChange={(e) => setForm({ ...form, ano_construcao: e.target.value })} className="w-full px-3 py-2 bg-background border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Status</label>
-                    <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className="w-full px-3 py-2 bg-background border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring">
-                      <option>Lançamento</option><option>Em construção</option><option>Pronto</option>
-                    </select>
-                  </div>
-                  <div className="col-span-2">
-                    <label className="text-xs font-medium text-muted-foreground mb-1 block">URL da Imagem</label>
-                    <input value={form.imagem_url} onChange={(e) => setForm({ ...form, imagem_url: e.target.value })} placeholder="https://..." className="w-full px-3 py-2 bg-background border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Latitude</label>
-                    <input type="number" step="0.0001" value={form.latitude} onChange={(e) => setForm({ ...form, latitude: +e.target.value })} className="w-full px-3 py-2 bg-background border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Longitude</label>
-                    <input type="number" step="0.0001" value={form.longitude} onChange={(e) => setForm({ ...form, longitude: +e.target.value })} className="w-full px-3 py-2 bg-background border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                </div>
+
+                {/* Infraestrutura */}
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                    <Layers className="w-4 h-4 text-primary" /> Infraestrutura
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {infraOptions.map(item => (
+                      <button
+                        key={item}
+                        type="button"
+                        onClick={() => toggleInfra(item)}
+                        className={cn(
+                          "px-3 py-1.5 rounded-full text-xs font-medium border transition-colors",
+                          form.infraestrutura.includes(item)
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "bg-background text-muted-foreground border-input hover:border-primary/50"
+                        )}
+                      >
+                        {item}
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>
+
               <div className="flex justify-end gap-3 p-5 border-t border-border">
                 <button onClick={() => setShowForm(false)} className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium hover:bg-muted transition-colors">Cancelar</button>
                 <button onClick={handleSubmit} disabled={saving} className="flex items-center gap-2 px-4 py-2 rounded-lg gradient-gold text-primary text-sm font-semibold hover:opacity-90 transition-opacity">
@@ -216,7 +368,7 @@ export default function Buildings() {
               <div key={building.id} className="elevated-card rounded-xl overflow-hidden group cursor-pointer" onClick={() => navigate(`/edificios/${building.id}`)}>
                 <div className="relative h-44 overflow-hidden">
                   <img src={building.imagem_url || "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&h=300&fit=crop"} alt={building.nome}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
                   <span className={cn("absolute top-3 left-3 px-2.5 py-1 rounded-md text-[11px] font-semibold border", statusColors[building.status] || "bg-muted text-muted-foreground")}>
                     {building.status}
                   </span>
@@ -233,12 +385,14 @@ export default function Buildings() {
                   <h3 className="font-semibold text-card-foreground text-sm">{building.nome}</h3>
                   <div className="flex items-center gap-1">
                     <MapPin className="w-3 h-3 text-muted-foreground" />
-                    <p className="text-xs text-muted-foreground">{building.endereco}, {building.cidade}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {[building.endereco, building.numero, building.bairro, building.cidade, building.estado].filter(Boolean).join(", ")}
+                    </p>
                   </div>
                   <div className="flex items-center gap-4 text-xs text-muted-foreground pt-2 border-t border-border">
                     <span className="flex items-center gap-1"><Layers className="w-3.5 h-3.5" /> {building.andares} andares</span>
                     <span className="flex items-center gap-1"><Building className="w-3.5 h-3.5" /> {building.total_unidades} unid.</span>
-                    <span>{building.construtora}</span>
+                    {building.construtora && <span>{building.construtora}</span>}
                   </div>
                   {(building.imoveis_count || 0) > 0 && (
                     <p className="text-xs font-semibold text-accent">{building.imoveis_count} imóveis vinculados</p>
