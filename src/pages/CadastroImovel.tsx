@@ -343,6 +343,9 @@ export function ImovelForm({ editId }: { editId?: string }) {
         edificioId: (data as any).edificio_id || '',
         condominioId: (data as any).condominio_id || '',
         empreendimentoId: (data as any).empreendimento_id || '',
+        corretorId: (data as any).corretor_id || '',
+        corretorNome: (data as any).corretor_nome || '',
+        imobiliariaNome: (data as any).imobiliaria_nome || '',
       });
       setExistingImages(data.imagens || []);
       setLoadingData(false);
