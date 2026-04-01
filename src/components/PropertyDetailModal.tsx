@@ -800,6 +800,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                 { id: "keysLocation", label: "Chaves do Imóvel", render: () => editingBlock === "proprietario" ? <EditableField field="keysLocation" value={property.keysLocation || ""} label="chaves" /> : <span className="text-sm font-medium text-foreground">{property.keysLocation || "—"}</span> },
                 { id: "exclusivity", label: "Exclusividade", render: () => editingBlock === "proprietario" ? <EditableField field="exclusivityTerm" value={property.exclusivityTerm || ""} label="exclusividade" /> : <span className="text-sm font-medium text-foreground">{property.exclusivityTerm || "—"}</span> },
                 { id: "broker", label: "Corretor", render: () => editingBlock === "proprietario" ? <EditableField field="broker" value={property.broker} label="corretor" /> : <span className="text-sm font-medium text-foreground">{property.broker}</span> },
+                { id: "imobiliaria", label: "Imobiliária", render: () => <span className="text-sm font-medium text-foreground">{(property as any).imobiliariaNome || "—"}</span> },
               ];
 
               return blockWrapper("proprietario",
