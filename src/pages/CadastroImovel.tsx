@@ -23,6 +23,8 @@ const statusOptions = ["Disponível", "Vendido", "Reservado", "Alugado", "Suspen
 const condicaoOptions = ["Mobiliado", "Semi-mobiliado", "Vazio", "Decorado"];
 const ownerTypeOptions = ["Construtora", "Investidor", "Particular", "Adm Comercial", "Exclusividade"];
 const padraoOptions = ["Econômico", "Médio Padrão", "Alto Padrão", "Luxo"];
+const posicaoSolarOptions = ["Nascente", "Poente", "Norte", "Sul"];
+const posicaoPredioOptions = ["Frente", "Fundos", "Lateral"];
 const destaqueCategoriaOptions = [
   { value: "none", label: "Sem destaque" },
   { value: "apartamentos", label: "Apartamentos" },
@@ -38,6 +40,38 @@ const paymentConditionOptions = [
   "Parcelamento 48x", "Parcelamento 60x", "Parcelamento 120x",
   "Financiamento Bancário", "FGTS", "Dação", "Permuta", "Consórcio"
 ];
+
+/** Inline one-click button picker */
+function QuickPick({ label, icon, options, value, onChange }: {
+  label: string;
+  icon?: React.ReactNode;
+  options: { label: string; value: string | number }[];
+  value: string | number;
+  onChange: (v: any) => void;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-xs flex items-center gap-1">{icon}{label}</Label>
+      <div className="flex flex-wrap gap-1.5">
+        {options.map((opt) => (
+          <button
+            key={String(opt.value)}
+            type="button"
+            onClick={() => onChange(opt.value)}
+            className={cn(
+              "px-3 py-1.5 rounded-lg text-xs font-medium border transition-all",
+              value === opt.value || String(value) === String(opt.value)
+                ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                : "bg-muted text-muted-foreground border-border hover:bg-accent hover:border-primary/30"
+            )}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export interface FormData {
   titulo: string;
