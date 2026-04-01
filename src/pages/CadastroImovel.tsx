@@ -153,6 +153,7 @@ export const initialForm: FormData = {
   condicoesPagemento: [], infraestrutura: [], outrasCaracteristicas: [],
   latitude: '', longitude: '', cep: '',
   edificioId: '', condominioId: '', empreendimentoId: '',
+  corretorId: '', corretorNome: '', imobiliariaNome: '',
 };
 
 function SectionHeader({ icon: Icon, title }: { icon: any; title: string }) {
