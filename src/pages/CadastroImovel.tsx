@@ -549,7 +549,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 mb-4">
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><Gift className="w-3.5 h-3.5" /> Bônus (R$)</Label>
             <Input type="number" placeholder="0" value={form.bonus} onChange={e => set('bonus', e.target.value)} />
@@ -558,15 +558,16 @@ export function ImovelForm({ editId }: { editId?: string }) {
             <Label className="text-xs flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> Validade do Bônus</Label>
             <Input type="date" value={form.bonusValidade} onChange={e => set('bonusValidade', e.target.value)} />
           </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs">Padrão</Label>
-            <Select value={form.padrao} onValueChange={(v) => set('padrao', v)}>
-              <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-              <SelectContent>
-                {padraoOptions.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
+        </div>
+
+        {/* Padrão - QuickPick */}
+        <div className="mb-4">
+          <QuickPick
+            label="Padrão"
+            options={padraoOptions.map(p => ({ label: p, value: p }))}
+            value={form.padrao}
+            onChange={(v) => set('padrao', v)}
+          />
         </div>
 
         <div className="space-y-2">
