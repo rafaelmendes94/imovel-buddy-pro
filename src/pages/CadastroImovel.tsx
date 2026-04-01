@@ -417,6 +417,8 @@ export function ImovelForm({ editId }: { editId?: string }) {
         imagens: allImages.length > 0 ? allImages : null,
         latitude: parseFloat(form.latitude) || 0,
         longitude: parseFloat(form.longitude) || 0,
+        edificio_id: form.edificioId || null,
+        condominio_id: form.condominioId || null,
       } as any;
 
       if (isEdit) {
