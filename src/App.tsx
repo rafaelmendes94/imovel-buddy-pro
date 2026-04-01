@@ -58,7 +58,11 @@ const ConstrutoraAvaliacoes = lazy(() => import("./pages/ConstrutoraAvaliacoes")
 const Brick = lazy(() => import("./pages/Brick"));
 const BrickStore = lazy(() => import("./pages/BrickStore"));
 
-const queryClient = new QueryClient();
+const LoadingSpinner = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+  </div>
+);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -67,60 +71,62 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
-            {/* Public routes */}
-            <Route path="/" element={<Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" /></div>}><Site /></Suspense>} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/registro" element={<Registro />} />
-            <Route path="/corretor/:slug" element={<BrokerSite />} />
-            <Route path="/empreendimento/:slug" element={<EmpreendimentoDetail />} />
-            <Route path="/parceiro/:slug" element={<PartnerDetail />} />
-            <Route path="/parceiros" element={<Parceiros />} />
-            <Route path="/construtora/:slug" element={<ConstrutoraSite />} />
-            <Route path="/brick-store" element={<Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" /></div>}><BrickStore /></Suspense>} />
+          <Suspense fallback={<LoadingSpinner />}>
+            <Routes>
+              {/* Public routes */}
+              <Route path="/" element={<Site />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/registro" element={<Registro />} />
+              <Route path="/corretor/:slug" element={<BrokerSite />} />
+              <Route path="/empreendimento/:slug" element={<EmpreendimentoDetail />} />
+              <Route path="/parceiro/:slug" element={<PartnerDetail />} />
+              <Route path="/parceiros" element={<Parceiros />} />
+              <Route path="/construtora/:slug" element={<ConstrutoraSite />} />
+              <Route path="/brick-store" element={<BrickStore />} />
 
-            {/* Admin routes */}
-            <Route path="/admin/dashboard" element={<AuthGuard requiredRoles={["super_admin", "admin_staff"]}><AdminDashboard /></AuthGuard>} />
-            <Route path="/admin/funcionarios" element={<AuthGuard requiredRoles={["super_admin"]}><AdminFuncionarios /></AuthGuard>} />
-            <Route path="/admin/cargos" element={<AuthGuard requiredRoles={["super_admin"]}><AdminCargos /></AuthGuard>} />
-            <Route path="/admin/clientes" element={<AuthGuard requiredRoles={["super_admin", "admin_staff"]}><AdminClientes /></AuthGuard>} />
-            <Route path="/admin/planos" element={<AuthGuard requiredRoles={["super_admin", "admin_staff"]}><AdminPlanos /></AuthGuard>} />
-            <Route path="/admin/brick" element={<AuthGuard requiredRoles={["super_admin", "admin_staff"]}><AdminBrick /></AuthGuard>} />
+              {/* Admin routes */}
+              <Route path="/admin/dashboard" element={<AuthGuard requiredRoles={["super_admin", "admin_staff"]}><AdminDashboard /></AuthGuard>} />
+              <Route path="/admin/funcionarios" element={<AuthGuard requiredRoles={["super_admin"]}><AdminFuncionarios /></AuthGuard>} />
+              <Route path="/admin/cargos" element={<AuthGuard requiredRoles={["super_admin"]}><AdminCargos /></AuthGuard>} />
+              <Route path="/admin/clientes" element={<AuthGuard requiredRoles={["super_admin", "admin_staff"]}><AdminClientes /></AuthGuard>} />
+              <Route path="/admin/planos" element={<AuthGuard requiredRoles={["super_admin", "admin_staff"]}><AdminPlanos /></AuthGuard>} />
+              <Route path="/admin/brick" element={<AuthGuard requiredRoles={["super_admin", "admin_staff"]}><AdminBrick /></AuthGuard>} />
 
-            {/* Broker routes */}
-            <Route path="/painel" element={<AuthGuard requiredRoles={["broker"]}><BrokerDashboard /></AuthGuard>} />
-            <Route path="/painel/assinatura" element={<AuthGuard requiredRoles={["broker"]} allowBlocked><BrokerAssinatura /></AuthGuard>} />
+              {/* Broker routes */}
+              <Route path="/painel" element={<AuthGuard requiredRoles={["broker"]}><BrokerDashboard /></AuthGuard>} />
+              <Route path="/painel/assinatura" element={<AuthGuard requiredRoles={["broker"]} allowBlocked><BrokerAssinatura /></AuthGuard>} />
 
-            {/* Legacy routes - now require auth */}
-            <Route path="/dashboard" element={<AuthGuard><Dashboard /></AuthGuard>} />
-            <Route path="/imoveis" element={<AuthGuard><Properties /></AuthGuard>} />
-            <Route path="/edificios" element={<AuthGuard><Buildings /></AuthGuard>} />
-            <Route path="/edificios/:id" element={<AuthGuard><BuildingDetail /></AuthGuard>} />
-            <Route path="/condominios" element={<AuthGuard><Condominiums /></AuthGuard>} />
-            <Route path="/condominios/:id" element={<AuthGuard><CondominiumDetail /></AuthGuard>} />
-            <Route path="/mapas" element={<AuthGuard><Maps /></AuthGuard>} />
-            <Route path="/fotos-cidade" element={<AuthGuard><CityPhotos /></AuthGuard>} />
-            <Route path="/corretores" element={<AuthGuard><Brokers /></AuthGuard>} />
-            <Route path="/relatorios" element={<AuthGuard><Reports /></AuthGuard>} />
-            <Route path="/configuracoes" element={<AuthGuard><Settings /></AuthGuard>} />
-            <Route path="/site-editor" element={<AuthGuard><Site /></AuthGuard>} />
-            <Route path="/todos-imoveis" element={<AuthGuard><AllProperties /></AuthGuard>} />
-            <Route path="/ranking" element={<AuthGuard><RankingPage /></AuthGuard>} />
-            <Route path="/avaliacoes" element={<AuthGuard><Avaliacoes /></AuthGuard>} />
-            <Route path="/financeiro" element={<AuthGuard><Financeiro /></AuthGuard>} />
-            <Route path="/tabelas" element={<AuthGuard><Tabelas /></AuthGuard>} />
-            <Route path="/contratos" element={<AuthGuard><Contratos /></AuthGuard>} />
-            <Route path="/videomaker" element={<AuthGuard><VideoMaker /></AuthGuard>} />
-            <Route path="/imobiliarias" element={<AuthGuard><Imobiliarias /></AuthGuard>} />
-            <Route path="/cadastro-imovel" element={<AuthGuard><CadastroImovel /></AuthGuard>} />
-            <Route path="/editar-imovel/:id" element={<AuthGuard><EditarImovel /></AuthGuard>} />
-            <Route path="/construtoras" element={<AuthGuard><Construtoras /></AuthGuard>} />
-            <Route path="/construtoras/:id" element={<AuthGuard><ConstrutoraDetail /></AuthGuard>} />
-            <Route path="/construtoras/:id/avaliacoes" element={<AuthGuard><ConstrutoraAvaliacoes /></AuthGuard>} />
-            <Route path="/brick" element={<AuthGuard><Brick /></AuthGuard>} />
+              {/* Legacy routes */}
+              <Route path="/dashboard" element={<AuthGuard><Dashboard /></AuthGuard>} />
+              <Route path="/imoveis" element={<AuthGuard><Properties /></AuthGuard>} />
+              <Route path="/edificios" element={<AuthGuard><Buildings /></AuthGuard>} />
+              <Route path="/edificios/:id" element={<AuthGuard><BuildingDetail /></AuthGuard>} />
+              <Route path="/condominios" element={<AuthGuard><Condominiums /></AuthGuard>} />
+              <Route path="/condominios/:id" element={<AuthGuard><CondominiumDetail /></AuthGuard>} />
+              <Route path="/mapas" element={<AuthGuard><Maps /></AuthGuard>} />
+              <Route path="/fotos-cidade" element={<AuthGuard><CityPhotos /></AuthGuard>} />
+              <Route path="/corretores" element={<AuthGuard><Brokers /></AuthGuard>} />
+              <Route path="/relatorios" element={<AuthGuard><Reports /></AuthGuard>} />
+              <Route path="/configuracoes" element={<AuthGuard><Settings /></AuthGuard>} />
+              <Route path="/site-editor" element={<AuthGuard><Site /></AuthGuard>} />
+              <Route path="/todos-imoveis" element={<AuthGuard><AllProperties /></AuthGuard>} />
+              <Route path="/ranking" element={<AuthGuard><RankingPage /></AuthGuard>} />
+              <Route path="/avaliacoes" element={<AuthGuard><Avaliacoes /></AuthGuard>} />
+              <Route path="/financeiro" element={<AuthGuard><Financeiro /></AuthGuard>} />
+              <Route path="/tabelas" element={<AuthGuard><Tabelas /></AuthGuard>} />
+              <Route path="/contratos" element={<AuthGuard><Contratos /></AuthGuard>} />
+              <Route path="/videomaker" element={<AuthGuard><VideoMaker /></AuthGuard>} />
+              <Route path="/imobiliarias" element={<AuthGuard><Imobiliarias /></AuthGuard>} />
+              <Route path="/cadastro-imovel" element={<AuthGuard><CadastroImovel /></AuthGuard>} />
+              <Route path="/editar-imovel/:id" element={<AuthGuard><EditarImovel /></AuthGuard>} />
+              <Route path="/construtoras" element={<AuthGuard><Construtoras /></AuthGuard>} />
+              <Route path="/construtoras/:id" element={<AuthGuard><ConstrutoraDetail /></AuthGuard>} />
+              <Route path="/construtoras/:id/avaliacoes" element={<AuthGuard><ConstrutoraAvaliacoes /></AuthGuard>} />
+              <Route path="/brick" element={<AuthGuard><Brick /></AuthGuard>} />
 
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
