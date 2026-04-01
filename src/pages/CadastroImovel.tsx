@@ -221,6 +221,19 @@ export function ImovelForm({ editId }: { editId?: string }) {
 
   const set = (field: keyof FormData, value: any) => setForm(prev => ({ ...prev, [field]: value }));
 
+  // Load edificios and condominios lists
+  useEffect(() => {
+    const loadLists = async () => {
+      const [{ data: ed }, { data: co }] = await Promise.all([
+        supabase.from('edificios').select('id, nome, endereco, cidade, infraestrutura').order('nome'),
+        supabase.from('condominios').select('id, nome, endereco, cidade, amenidades').order('nome'),
+      ]);
+      if (ed) setEdificiosList(ed as any);
+      if (co) setCondominiosList(co as any);
+    };
+    loadLists();
+  }, []);
+
   // Load existing data for edit mode
   useEffect(() => {
     if (!editId) return;
