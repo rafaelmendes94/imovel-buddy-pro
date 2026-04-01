@@ -40,7 +40,7 @@ import CityPhotos from "./pages/CityPhotos";
 import Brokers from "./pages/Brokers";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
-import Site from "./pages/Site";
+const Site = lazy(() => import("./pages/Site"));
 import AllProperties from "./pages/AllProperties";
 import RankingPage from "./pages/RankingPage";
 import Avaliacoes from "./pages/Avaliacoes";
