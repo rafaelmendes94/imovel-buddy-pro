@@ -79,6 +79,18 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
   };
   const handleBlockDragEnd = () => { setDragBlockIdx(null); setOverBlockIdx(null); };
 
+  // Fetch linked edificio/condominio
+  useEffect(() => {
+    if (!property) { setLinkedEdificio(null); setLinkedCondominio(null); return; }
+    const p = property as any;
+    if (p.edificio_id || p.edificioId) {
+      supabase.from('edificios').select('*').eq('id', p.edificio_id || p.edificioId).maybeSingle().then(({ data }) => setLinkedEdificio(data));
+    } else { setLinkedEdificio(null); }
+    if (p.condominio_id || p.condominioId) {
+      supabase.from('condominios').select('*').eq('id', p.condominio_id || p.condominioId).maybeSingle().then(({ data }) => setLinkedCondominio(data));
+    } else { setLinkedCondominio(null); }
+  }, [property]);
+
   if (!property) return null;
 
   const images = property.images && property.images.length > 0 ? property.images : [property.image];
