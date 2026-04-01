@@ -260,6 +260,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         outrasCaracteristicas: data.outras_caracteristicas || [],
         latitude: (data as any).latitude ? String((data as any).latitude) : '',
         longitude: (data as any).longitude ? String((data as any).longitude) : '',
+        cep: '',
       });
       setExistingImages(data.imagens || []);
       setLoadingData(false);
