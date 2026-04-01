@@ -272,17 +272,24 @@ export function ImovelForm({ editId }: { editId?: string }) {
   // Load edificios and condominios lists
   useEffect(() => {
     const loadLists = async () => {
-      const [{ data: ed }, { data: co }, { data: emp }] = await Promise.all([
+      const promises: Promise<any>[] = [
         supabase.from('edificios').select('id, nome, endereco, cidade, infraestrutura').order('nome'),
         supabase.from('condominios').select('id, nome, endereco, cidade, amenidades').order('nome'),
         supabase.from('empreendimentos' as any).select('id, nome, endereco, cidade, infraestrutura').order('nome'),
-      ]);
-      if (ed) setEdificiosList(ed as any);
-      if (co) setCondominiosList(co as any);
-      if (emp) setEmpreendimentosList(emp as any);
+      ];
+      if (isSuperAdmin) {
+        promises.push(supabase.from('profiles').select('user_id, full_name, email').order('full_name'));
+      }
+      const results = await Promise.all(promises);
+      if (results[0].data) setEdificiosList(results[0].data as any);
+      if (results[1].data) setCondominiosList(results[1].data as any);
+      if (results[2].data) setEmpreendimentosList(results[2].data as any);
+      if (isSuperAdmin && results[3]?.data) {
+        setCorretoresList(results[3].data.map((p: any) => ({ id: p.user_id, full_name: p.full_name || p.email, email: p.email || '' })));
+      }
     };
     loadLists();
-  }, []);
+  }, [isSuperAdmin]);
 
   // Load existing data for edit mode
   useEffect(() => {
