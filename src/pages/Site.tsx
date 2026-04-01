@@ -150,7 +150,7 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, 
         {property.exclusivityTerm && (
           <button
             onClick={(e) => { e.stopPropagation(); onViewTerm?.(property.exclusivityTerm!); }}
-            className="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-amber-500/90 text-white backdrop-blur-sm hover:bg-amber-600 transition-colors z-20 shadow-md"
+            className="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-amber-500/90 text-white  hover:bg-amber-600 transition-colors z-20 shadow-md"
           >
             <FileCheck className="w-3 h-3" /> Ex.Assinada
           </button>
@@ -187,13 +187,13 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, 
           <>
             <button
               onClick={(e) => { e.stopPropagation(); setImgIndex((prev) => (prev > 0 ? prev - 1 : imgs.length - 1)); }}
-              className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-foreground/50 backdrop-blur-sm hover:bg-foreground/70 flex items-center justify-center shadow opacity-0 group-hover:opacity-100 transition-opacity z-20"
+              className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-foreground/50  hover:bg-foreground/70 flex items-center justify-center shadow opacity-0 group-hover:opacity-100 transition-opacity z-20"
             >
               <ChevronLeft className="w-4 h-4 text-white" />
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); setImgIndex((prev) => (prev < imgs.length - 1 ? prev + 1 : 0)); }}
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-foreground/50 backdrop-blur-sm hover:bg-foreground/70 flex items-center justify-center shadow opacity-0 group-hover:opacity-100 transition-opacity z-20"
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-foreground/50  hover:bg-foreground/70 flex items-center justify-center shadow opacity-0 group-hover:opacity-100 transition-opacity z-20"
             >
               <ChevronRight className="w-4 h-4 text-white" />
             </button>
@@ -209,8 +209,8 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, 
         <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
           <p className="text-xl font-bold text-white drop-shadow-lg">{formatCurrency(property.price)}</p>
           <div className="flex gap-1">
-            {property.seaView && <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-blue-500/90 text-white backdrop-blur-sm flex items-center gap-0.5"><Waves className="w-2.5 h-2.5" /> Mar</span>}
-            {property.decorated && <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-purple-500/90 text-white backdrop-blur-sm flex items-center gap-0.5"><Paintbrush className="w-2.5 h-2.5" /> Dec.</span>}
+            {property.seaView && <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-blue-500/90 text-white  flex items-center gap-0.5"><Waves className="w-2.5 h-2.5" /> Mar</span>}
+            {property.decorated && <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-purple-500/90 text-white  flex items-center gap-0.5"><Paintbrush className="w-2.5 h-2.5" /> Dec.</span>}
           </div>
         </div>
       </div>
@@ -498,7 +498,7 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
     <div className="rounded-2xl overflow-hidden shadow-xl border border-gray-200 relative">
       {/* Map Style Switcher */}
       <div className="absolute top-4 left-4 z-[1000] flex flex-col gap-2">
-        <div className="bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-gray-100 p-1.5 flex gap-1">
+        <div className="bg-white/95  rounded-xl shadow-lg border border-gray-100 p-1.5 flex gap-1">
           {([
             { key: "satellite" as const, label: "Satélite", iconSvg: <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg> },
             { key: "streets" as const, label: "Ruas", iconSvg: <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 7 17l-5-5"/><path d="m22 10-7.5 7.5L13 16"/></svg> },
@@ -520,7 +520,7 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
         </div>
 
         {/* Legend */}
-        <div className="bg-white/95 backdrop-blur-md rounded-xl p-3 shadow-lg border border-gray-100">
+        <div className="bg-white/95  rounded-xl p-3 shadow-lg border border-gray-100">
           <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Legenda</p>
           <div className="space-y-1.5">
             <div className="flex items-center gap-2 text-xs font-medium text-gray-700"><span className="w-4 h-4 rounded bg-amber-500 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/></svg></span> Apartamento</div>
@@ -533,7 +533,7 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
 
       {/* Filters bar */}
       <div className="absolute bottom-4 left-4 right-4 z-[1000]">
-        <div className="bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-gray-100 p-3">
+        <div className="bg-white/95  rounded-xl shadow-lg border border-gray-100 p-3">
           <div className="flex flex-wrap items-center gap-2">
             <select
               value={mapFilterType}
@@ -876,7 +876,7 @@ export default function Site() {
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
               <button
                 onClick={() => setActiveCategory("todos")}
-                className="group bg-white/10 hover:bg-amber-500/90 backdrop-blur-md rounded-2xl p-4 border border-white/20 hover:border-amber-400 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-amber-500/20 text-left"
+                className="group bg-white/10 hover:bg-amber-500/90  rounded-2xl p-4 border border-white/20 hover:border-amber-400 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-amber-500/20 text-left"
               >
                 <div className="w-10 h-10 rounded-xl bg-amber-400/20 group-hover:bg-white/20 flex items-center justify-center mb-3 transition-colors">
                   <Star className="w-5 h-5 text-amber-400 group-hover:text-white transition-colors" />
@@ -887,7 +887,7 @@ export default function Site() {
 
               <button
                 onClick={() => setActiveCategory("apartamentos")}
-                className="group bg-white/10 hover:bg-blue-500/90 backdrop-blur-md rounded-2xl p-4 border border-white/20 hover:border-blue-400 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-blue-500/20 text-left"
+                className="group bg-white/10 hover:bg-blue-500/90  rounded-2xl p-4 border border-white/20 hover:border-blue-400 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-blue-500/20 text-left"
               >
                 <div className="w-10 h-10 rounded-xl bg-blue-400/20 group-hover:bg-white/20 flex items-center justify-center mb-3 transition-colors">
                   <Building2 className="w-5 h-5 text-blue-400 group-hover:text-white transition-colors" />
@@ -898,7 +898,7 @@ export default function Site() {
 
               <button
                 onClick={() => setActiveCategory("condominios")}
-                className="group bg-white/10 hover:bg-emerald-500/90 backdrop-blur-md rounded-2xl p-4 border border-white/20 hover:border-emerald-400 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-emerald-500/20 text-left"
+                className="group bg-white/10 hover:bg-emerald-500/90  rounded-2xl p-4 border border-white/20 hover:border-emerald-400 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-emerald-500/20 text-left"
               >
                 <div className="w-10 h-10 rounded-xl bg-emerald-400/20 group-hover:bg-white/20 flex items-center justify-center mb-3 transition-colors">
                   <Fence className="w-5 h-5 text-emerald-400 group-hover:text-white transition-colors" />
@@ -909,7 +909,7 @@ export default function Site() {
 
               <button
                 onClick={() => { setFilterCity("Capão da Canoa"); setActiveCategory("todos"); }}
-                className="group bg-white/10 hover:bg-cyan-500/90 backdrop-blur-md rounded-2xl p-4 border border-white/20 hover:border-cyan-400 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-cyan-500/20 text-left"
+                className="group bg-white/10 hover:bg-cyan-500/90  rounded-2xl p-4 border border-white/20 hover:border-cyan-400 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-cyan-500/20 text-left"
               >
                 <div className="w-10 h-10 rounded-xl bg-cyan-400/20 group-hover:bg-white/20 flex items-center justify-center mb-3 transition-colors">
                   <MapPin className="w-5 h-5 text-cyan-400 group-hover:text-white transition-colors" />
@@ -920,7 +920,7 @@ export default function Site() {
 
               <button
                 onClick={() => { setFilterCity("Xangri-lá"); setActiveCategory("todos"); }}
-                className="group bg-white/10 hover:bg-violet-500/90 backdrop-blur-md rounded-2xl p-4 border border-white/20 hover:border-violet-400 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-violet-500/20 text-left"
+                className="group bg-white/10 hover:bg-violet-500/90  rounded-2xl p-4 border border-white/20 hover:border-violet-400 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-violet-500/20 text-left"
               >
                 <div className="w-10 h-10 rounded-xl bg-violet-400/20 group-hover:bg-white/20 flex items-center justify-center mb-3 transition-colors">
                   <MapPin className="w-5 h-5 text-violet-400 group-hover:text-white transition-colors" />
@@ -929,7 +929,7 @@ export default function Site() {
                 <p className="text-[11px] font-semibold text-gray-300 group-hover:text-violet-100 uppercase tracking-wider">Xangri-lá</p>
               </button>
 
-              <div className="bg-gradient-to-br from-amber-500/30 to-amber-600/30 backdrop-blur-md rounded-2xl p-4 border border-amber-400/40">
+              <div className="bg-gradient-to-br from-amber-500/30 to-amber-600/30  rounded-2xl p-4 border border-amber-400/40">
                 <div className="w-10 h-10 rounded-xl bg-amber-400/30 flex items-center justify-center mb-3">
                   <DollarSign className="w-5 h-5 text-amber-300" />
                 </div>
@@ -957,7 +957,7 @@ export default function Site() {
               </div>
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-white/15 hover:bg-white/25 text-white text-sm font-bold transition-all backdrop-blur-sm border border-white/30 hover:scale-105"
+                className="flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-white/15 hover:bg-white/25 text-white text-sm font-bold transition-all  border border-white/30 hover:scale-105"
               >
                 <SlidersHorizontal className="w-4 h-4" /> Filtros
                 <ChevronDown className={cn("w-4 h-4 transition-transform", showFilters && "rotate-180")} />
@@ -1459,7 +1459,7 @@ export default function Site() {
 
       {/* Term Viewer Modal */}
       {viewingTerm && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setViewingTerm(null)}>
+        <div className="fixed inset-0 bg-black/80  z-50 flex items-center justify-center p-4" onClick={() => setViewingTerm(null)}>
           <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between p-4 border-b border-gray-100">
               <div className="flex items-center gap-2">
