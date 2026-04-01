@@ -12,6 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { SmartLayout } from '@/components/SmartLayout';
 import { BackButton } from '@/components/BackButton';
 import { cn } from '@/lib/utils';
+import { SearchableSelect } from '@/components/SearchableSelect';
 import {
   Building2, MapPin, BedDouble, Bath, Car, Ruler, User, Phone, DollarSign,
   Percent, Gift, Home, Sparkles, Save, Image, Plus, X, Loader2,
