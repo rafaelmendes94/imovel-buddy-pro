@@ -385,7 +385,131 @@ export default function Buildings() {
                     ))}
                   </div>
                 </div>
-              </div>
+                </div>
+
+                {/* Tabs - only when editing */}
+                {editingId && (
+                  <div className="border-t border-border pt-5">
+                    <Tabs defaultValue="unidades" className="space-y-3">
+                      <TabsList className="bg-secondary">
+                        <TabsTrigger value="unidades">Imóveis à Venda</TabsTrigger>
+                        <TabsTrigger value="espelho">Espelho de Vendas</TabsTrigger>
+                        <TabsTrigger value="infra">Infraestrutura</TabsTrigger>
+                      </TabsList>
+
+                      {/* Imóveis à Venda */}
+                      <TabsContent value="unidades" className="space-y-3">
+                        {form.andares > 0 && (
+                          <div className="flex gap-2 flex-wrap">
+                            <button type="button" onClick={() => setSelectedFloor(null)} className={cn("px-3 py-1.5 rounded-lg text-xs font-medium transition-colors", !selectedFloor ? "bg-accent text-accent-foreground" : "bg-secondary text-secondary-foreground hover:bg-muted")}>Todos</button>
+                            {Array.from({ length: form.andares }, (_, i) => form.andares - i).map((f) => (
+                              <button type="button" key={f} onClick={() => setSelectedFloor(f)} className={cn("px-3 py-1.5 rounded-lg text-xs font-medium transition-colors", selectedFloor === f ? "bg-accent text-accent-foreground" : "bg-secondary text-secondary-foreground hover:bg-muted")}>{f}º</button>
+                            ))}
+                          </div>
+                        )}
+                        {unitsLoading ? (
+                          <div className="flex justify-center py-6"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>
+                        ) : (() => {
+                          const available = linkedUnits.filter(u => u.status === "Disponível");
+                          if (available.length === 0) return <p className="text-center py-6 text-muted-foreground text-sm">Nenhuma unidade disponível neste filtro</p>;
+                          return (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              {available.map(unit => (
+                                <div key={unit.id} className="rounded-xl border border-border bg-card p-3 space-y-2">
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-xs font-semibold text-foreground">{unit.unidade || unit.titulo}</span>
+                                    <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-success text-primary-foreground">Disponível</span>
+                                  </div>
+                                  <p className="text-sm font-bold text-accent">{formatCurrency(unit.preco)}</p>
+                                  <div className="flex items-center gap-3 text-[11px] text-muted-foreground border-t border-border pt-2">
+                                    <span className="flex items-center gap-1"><Ruler className="w-3 h-3" />{unit.area}m²</span>
+                                    <span className="flex items-center gap-1"><BedDouble className="w-3 h-3" />{unit.quartos}q</span>
+                                    <span className="flex items-center gap-1"><Bath className="w-3 h-3" />{unit.banheiros}b</span>
+                                    <span className="flex items-center gap-1"><Car className="w-3 h-3" />{unit.vagas}v</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        })()}
+                      </TabsContent>
+
+                      {/* Espelho de Vendas */}
+                      <TabsContent value="espelho" className="space-y-3">
+                        <div className="flex flex-wrap gap-2 items-center">
+                          {Object.entries(unitStatusConfig).map(([key, cfg]) => {
+                            const count = linkedUnits.filter(u => u.status === key).length;
+                            return (
+                              <button type="button" key={key} onClick={() => setStatusFilter(statusFilter === key ? null : key)}
+                                className={cn("flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border transition-all",
+                                  statusFilter === key ? `${cfg.bgLight} ${cfg.border} ${cfg.color} font-semibold` : "border-transparent hover:bg-muted/50"
+                                )}>
+                                <span className={cn("w-3 h-3 rounded-sm", cfg.bg)} />
+                                <span>{key}</span>
+                                <span className="text-muted-foreground">({count})</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                        {unitsLoading ? (
+                          <div className="flex justify-center py-6"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>
+                        ) : linkedUnits.length === 0 ? (
+                          <p className="text-center py-6 text-muted-foreground text-sm">Nenhuma unidade vinculada a este edifício</p>
+                        ) : (
+                          <div className="overflow-x-auto rounded-xl border border-border bg-card p-3">
+                            <div className="space-y-1.5">
+                              {linkedUnits
+                                .filter(u => !statusFilter || u.status === statusFilter)
+                                .map(unit => {
+                                  const cfg = unitStatusConfig[unit.status] || unitStatusConfig["Disponível"];
+                                  return (
+                                    <div key={unit.id} className={cn("flex items-center gap-3 p-2.5 rounded-lg border", cfg.bgLight, cfg.border)}>
+                                      <span className={cn("w-3 h-3 rounded-sm flex-shrink-0", cfg.bg)} />
+                                      <span className="text-xs font-semibold text-foreground min-w-[60px]">{unit.unidade || unit.titulo}</span>
+                                      <span className="text-xs text-muted-foreground">{unit.tipo}</span>
+                                      <span className="text-xs font-bold text-accent ml-auto">{formatCurrency(unit.preco)}</span>
+                                      <span className={cn("text-[10px] font-semibold px-2 py-0.5 rounded", cfg.color)}>{unit.status}</span>
+                                    </div>
+                                  );
+                                })}
+                            </div>
+                          </div>
+                        )}
+                        {linkedUnits.length > 0 && (
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            {[
+                              { label: "Preço médio", value: formatCurrency(linkedUnits.reduce((s, u) => s + u.preco, 0) / linkedUnits.length) },
+                              { label: "Menor preço", value: formatCurrency(Math.min(...linkedUnits.map(u => u.preco))) },
+                              { label: "Maior preço", value: formatCurrency(Math.max(...linkedUnits.map(u => u.preco))) },
+                              { label: "VGV Total", value: formatCurrency(linkedUnits.reduce((s, u) => s + u.preco, 0)) },
+                            ].map(item => (
+                              <div key={item.label} className="p-2 rounded-lg bg-muted/50 border border-border text-center">
+                                <p className="text-[10px] text-muted-foreground">{item.label}</p>
+                                <p className="text-xs font-bold text-foreground">{item.value}</p>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </TabsContent>
+
+                      {/* Infraestrutura */}
+                      <TabsContent value="infra" className="space-y-3">
+                        {form.infraestrutura.length === 0 ? (
+                          <p className="text-center py-6 text-muted-foreground text-sm">Nenhuma infraestrutura selecionada</p>
+                        ) : (
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            {form.infraestrutura.map(item => (
+                              <div key={item} className="flex items-center gap-2 p-2.5 rounded-lg bg-muted/50 border border-border">
+                                <Wrench className="w-3.5 h-3.5 text-accent" />
+                                <span className="text-xs text-foreground">{item}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </TabsContent>
+                    </Tabs>
+                  </div>
+                )}
 
               <div className="flex justify-end gap-3 p-5 border-t border-border">
                 <button onClick={() => setShowForm(false)} className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium hover:bg-muted transition-colors">Cancelar</button>
