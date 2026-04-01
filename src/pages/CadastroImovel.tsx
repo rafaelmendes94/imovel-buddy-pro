@@ -490,7 +490,31 @@ export function ImovelForm({ editId }: { editId?: string }) {
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {/* CEP com busca automática */}
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-4">
+          <div className="space-y-1.5">
+            <Label className="text-xs flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> CEP</Label>
+            <div className="relative">
+              <Input
+                placeholder="00000-000"
+                value={form.cep}
+                onChange={e => {
+                  const raw = e.target.value.replace(/\D/g, '').slice(0, 8);
+                  const formatted = raw.length > 5 ? `${raw.slice(0, 5)}-${raw.slice(5)}` : raw;
+                  set('cep', formatted);
+                }}
+                className="pr-9"
+              />
+              <button
+                type="button"
+                disabled={loadingCep}
+                onClick={buscarCep}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
+              >
+                {loadingCep ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> Cidade *</Label>
             <Input placeholder="Nome da cidade" value={form.cidade} onChange={e => set('cidade', e.target.value)} required />
@@ -506,7 +530,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         </div>
 
         {/* Localização GPS */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1">
               <MapPin className="w-3.5 h-3.5" /> Latitude
@@ -521,7 +545,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
           </div>
         </div>
         <p className="text-[10px] text-muted-foreground mt-1">
-          💡 Dica: Abra o Google Maps, clique com botão direito no local desejado e copie as coordenadas (latitude, longitude).
+          💡 Preencha o CEP e clique na lupa para buscar endereço e coordenadas automaticamente.
         </p>
       </div>
 
