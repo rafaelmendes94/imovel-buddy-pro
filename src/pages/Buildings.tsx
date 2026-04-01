@@ -196,6 +196,13 @@ export default function Buildings() {
     } finally { setSaving(false); }
   };
 
+  const loadLinkedUnits = async (buildingId: string) => {
+    setUnitsLoading(true);
+    const { data } = await supabase.from("imoveis").select("id,titulo,unidade,tipo,area,quartos,banheiros,vagas,preco,status,proprietario").eq("edificio_id", buildingId);
+    setLinkedUnits(data || []);
+    setUnitsLoading(false);
+  };
+
   const handleEdit = (b: BuildingData) => {
     setForm({
       nome: b.nome, cep: b.cep || "", endereco: b.endereco, numero: b.numero || "",
@@ -207,6 +214,9 @@ export default function Buildings() {
     });
     setEditingId(b.id);
     setShowForm(true);
+    setSelectedFloor(null);
+    setStatusFilter(null);
+    loadLinkedUnits(b.id);
   };
 
   const handleDelete = async (id: string) => {
