@@ -188,11 +188,15 @@ export default function Properties() {
   const xmlMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const ac = new AbortController();
     const fetchProperties = async () => {
       const { data, error } = await supabase
         .from("imoveis")
-        .select("*")
-        .order("created_at", { ascending: false });
+        .select("id,titulo,endereco,bairro,cidade,tipo,status,preco,area,area_privativa,quartos,banheiros,vagas,corretor_nome,proprietario,proprietario_telefone,imagens,created_at,updated_at,decorado,vista_mar,aceita_permuta,condicoes_pagamento,empreendimento,unidade,box,quadra,lote,termo_exclusividade,descricao,posicao_predio,posicao_solar,infraestrutura,elevadores,vista,condicao,proprietario_tipo,preco_parcelado,comissao,bonus,bonus_validade,padrao,outras_caracteristicas,imobiliaria_nome,destaque_categoria,destaque_home,latitude,longitude")
+        .order("created_at", { ascending: false })
+        .abortSignal(ac.signal);
+
+      if (ac.signal.aborted) return;
 
       if (error) {
         toast.error("Erro ao carregar imóveis");
@@ -215,15 +219,15 @@ export default function Properties() {
         bedrooms: row.quartos || 0,
         bathrooms: row.banheiros || 0,
         parking: row.vagas || 0,
-        broker: (row as any).corretor_nome || "Corretor",
+        broker: row.corretor_nome || "Corretor",
         owner: row.proprietario || "",
         ownerPhone: row.proprietario_telefone || "",
         image: row.imagens?.[0] || "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=300&fit=crop",
         images: row.imagens || [],
         createdAt: row.created_at,
         updatedAt: row.updated_at,
-        lat: 0,
-        lng: 0,
+        lat: Number(row.latitude) || 0,
+        lng: Number(row.longitude) || 0,
         decorated: row.decorado || false,
         seaView: row.vista_mar || false,
         acceptsExchange: row.aceita_permuta || false,
@@ -248,13 +252,14 @@ export default function Properties() {
         bonusExpiry: row.bonus_validade || "",
         padrao: (row.padrao as Property["padrao"]) || undefined,
         outrasCaracteristicas: row.outras_caracteristicas || [],
-        imobiliariaNome: (row as any).imobiliaria_nome || '',
+        imobiliariaNome: row.imobiliaria_nome || '',
       }));
 
       setPropertyList(mapped);
     };
 
     fetchProperties();
+    return () => ac.abort();
   }, []);
 
   useEffect(() => {
