@@ -534,8 +534,8 @@ export function ImovelForm({ editId }: { editId?: string }) {
           />
         </div>
 
-        {/* CEP com busca automática */}
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-4">
+        {/* Linha 1: CEP + Endereço */}
+        <div className="grid grid-cols-[160px_1fr] sm:grid-cols-[160px_1fr] gap-4 mb-4">
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> CEP</Label>
             <div className="relative">
@@ -547,6 +547,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
                   const formatted = raw.length > 5 ? `${raw.slice(0, 5)}-${raw.slice(5)}` : raw;
                   set('cep', formatted);
                 }}
+                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); buscarCep(); } }}
                 className="pr-9"
               />
               <button
@@ -560,6 +561,14 @@ export function ImovelForm({ editId }: { editId?: string }) {
             </div>
           </div>
           <div className="space-y-1.5">
+            <Label className="text-xs">Endereço Completo</Label>
+            <Input placeholder="Rua, número, complemento" value={form.endereco} onChange={e => set('endereco', e.target.value)} />
+          </div>
+        </div>
+
+        {/* Linha 2: Cidade + Bairro */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+          <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> Cidade *</Label>
             <Input placeholder="Nome da cidade" value={form.cidade} onChange={e => set('cidade', e.target.value)} required />
           </div>
@@ -567,29 +576,21 @@ export function ImovelForm({ editId }: { editId?: string }) {
             <Label className="text-xs">Bairro</Label>
             <Input placeholder="Nome do bairro" value={form.bairro} onChange={e => set('bairro', e.target.value)} />
           </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs">Endereço Completo</Label>
-            <Input placeholder="Rua, número" value={form.endereco} onChange={e => set('endereco', e.target.value)} />
-          </div>
         </div>
 
-        {/* Localização GPS */}
+        {/* Linha 3: Latitude + Longitude */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <Label className="text-xs flex items-center gap-1">
-              <MapPin className="w-3.5 h-3.5" /> Latitude
-            </Label>
+            <Label className="text-xs flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> Latitude</Label>
             <Input type="number" step="any" placeholder="Ex: -29.3456" value={form.latitude} onChange={e => set('latitude', e.target.value)} />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs flex items-center gap-1">
-              <MapPin className="w-3.5 h-3.5" /> Longitude
-            </Label>
+            <Label className="text-xs flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> Longitude</Label>
             <Input type="number" step="any" placeholder="Ex: -50.1234" value={form.longitude} onChange={e => set('longitude', e.target.value)} />
           </div>
         </div>
         <p className="text-[10px] text-muted-foreground mt-1">
-          💡 Preencha o CEP e clique na lupa para buscar endereço e coordenadas automaticamente.
+          💡 Preencha o CEP e clique na lupa (ou Enter) para buscar endereço e coordenadas automaticamente.
         </p>
       </div>
 
