@@ -148,7 +148,7 @@ export const initialForm: FormData = {
   destaqueCategoria: 'none',
   condicoesPagemento: [], infraestrutura: [], outrasCaracteristicas: [],
   latitude: '', longitude: '', cep: '',
-  edificioId: '', condominioId: '',
+  edificioId: '', condominioId: '', empreendimentoId: '',
 };
 
 function SectionHeader({ icon: Icon, title }: { icon: any; title: string }) {
