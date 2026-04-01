@@ -480,6 +480,11 @@ export function ImovelForm({ editId }: { editId?: string }) {
       <div className="bg-card border border-border rounded-xl p-4 sm:p-5 space-y-4">
         <SectionHeader icon={Building2} title="Identificação" />
 
+        <div className="space-y-1.5">
+          <Label className="text-xs">Título do Imóvel *</Label>
+          <Input placeholder="Ex: Apartamento 3 quartos frente mar" value={form.titulo} onChange={e => set('titulo', e.target.value)} required className="h-10" />
+        </div>
+
         <QuickPick
           label="Tipo do Imóvel *"
           icon={<Building2 className="w-3.5 h-3.5" />}
