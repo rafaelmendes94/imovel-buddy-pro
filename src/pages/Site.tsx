@@ -665,13 +665,17 @@ export default function Site() {
 
   // Fetch properties from DB
   useEffect(() => {
+    const ac = new AbortController();
     const fetchProperties = async () => {
       setLoading(true);
       const { data, error } = await supabase
         .from('imoveis')
-        .select('*')
-        .eq('ativo_site', true);
+        .select('id,titulo,endereco,cidade,tipo,status,preco,area,quartos,banheiros,vagas,corretor_nome,imagens,created_at,decorado,vista_mar,aceita_permuta,condicoes_pagamento,empreendimento,unidade,box,quadra,lote,termo_exclusividade,destaque_categoria,destaque_home,bairro,vista,outras_caracteristicas,latitude,longitude')
+        .eq('ativo_site', true)
+        .abortSignal(ac.signal);
       
+      if (ac.signal.aborted) return;
+
       if (!error && data) {
         const mapped: SiteProperty[] = data.map((row) => ({
           id: row.id,
@@ -685,12 +689,12 @@ export default function Site() {
           bedrooms: row.quartos,
           bathrooms: row.banheiros,
           parking: row.vagas,
-          broker: (row as any).corretor_nome || "Corretor",
+          broker: row.corretor_nome || "Corretor",
           image: row.imagens?.[0] || "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&h=400&fit=crop",
           images: row.imagens || [],
           createdAt: row.created_at,
-          lat: Number((row as any).latitude) || 0,
-          lng: Number((row as any).longitude) || 0,
+          lat: Number(row.latitude) || 0,
+          lng: Number(row.longitude) || 0,
           decorated: row.decorado,
           seaView: row.vista_mar,
           acceptsExchange: row.aceita_permuta,
@@ -701,7 +705,7 @@ export default function Site() {
           quadra: row.quadra || '',
           lote: row.lote || '',
           exclusivityTerm: row.termo_exclusividade || '',
-          destaqueCategoria: (row as any).destaque_categoria || '',
+          destaqueCategoria: row.destaque_categoria || '',
           destaqueHome: row.destaque_home,
           neighborhood: row.bairro || '',
           vista: row.vista || '',
@@ -712,6 +716,7 @@ export default function Site() {
       setLoading(false);
     };
     fetchProperties();
+    return () => ac.abort();
   }, []);
 
   const favoritedProperties = siteProperties.filter((p) => favoriteIds.includes(p.id));

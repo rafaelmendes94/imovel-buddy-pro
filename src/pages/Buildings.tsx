@@ -54,12 +54,14 @@ export default function Buildings() {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const fetchBuildings = async () => {
+  const fetchBuildings = async (signal?: AbortSignal) => {
     setLoading(true);
-    const { data, error } = await supabase.from("edificios").select("*").order("created_at", { ascending: false });
+    const [{ data, error }, { data: counts }] = await Promise.all([
+      supabase.from("edificios").select("id,nome,endereco,cidade,andares,total_unidades,construtora,ano_construcao,status,imagem_url,latitude,longitude,infraestrutura,user_id").order("created_at", { ascending: false }),
+      supabase.from("imoveis").select("edificio_id").not("edificio_id", "is", null),
+    ]);
+    if (signal?.aborted) return;
     if (!error && data) {
-      // Get property counts
-      const { data: counts } = await supabase.from("imoveis").select("edificio_id").not("edificio_id", "is", null);
       const countMap: Record<string, number> = {};
       counts?.forEach((row: any) => { countMap[row.edificio_id] = (countMap[row.edificio_id] || 0) + 1; });
       setBuildings(data.map((b: any) => ({ ...b, imoveis_count: countMap[b.id] || 0 })));
@@ -67,7 +69,11 @@ export default function Buildings() {
     setLoading(false);
   };
 
-  useEffect(() => { fetchBuildings(); }, []);
+  useEffect(() => {
+    const ac = new AbortController();
+    fetchBuildings(ac.signal);
+    return () => ac.abort();
+  }, []);
 
   const filtered = buildings.filter(
     (b) => b.nome.toLowerCase().includes(search.toLowerCase()) || b.endereco.toLowerCase().includes(search.toLowerCase())
