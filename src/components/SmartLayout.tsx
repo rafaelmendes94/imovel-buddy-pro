@@ -5,7 +5,7 @@ import { AppLayout } from "./AppLayout";
 export function SmartLayout({ children }: { children: React.ReactNode }) {
   const { isSuperAdmin, isAdminStaff } = useAuth();
 
-  if (isSuperAdmin || isStaff) {
+  if (isSuperAdmin || isAdminStaff) {
     return <AdminLayout>{children}</AdminLayout>;
   }
 
