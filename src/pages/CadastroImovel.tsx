@@ -375,6 +375,8 @@ export function ImovelForm({ editId }: { editId?: string }) {
         edificio_id: data.edificio_id || '',
         condominio_id: data.condominio_id || '',
         empreendimento_id: data.empreendimento_id || '',
+        linkVideo: (data as any).link_video || '',
+        linkMaterial: (data as any).link_material || '',
       });
       setExistingImages(data.imagens || []);
       setLoadingData(false);
