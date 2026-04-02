@@ -36,6 +36,10 @@ import {
 } from "recharts";
 
 export default function Dashboard() {
+  const { isSuperAdmin, isAdminStaff } = useAuth();
+  const isAdmin = isSuperAdmin || isAdminStaff;
+  const Layout = isAdmin ? AdminLayout : AppLayout;
+
   const totalProperties = properties.length;
   const available = properties.filter((p) => p.status === "Disponível").length;
   const totalRevenue = salesData.reduce((sum, d) => sum + d.receita, 0);
@@ -48,7 +52,7 @@ export default function Dashboard() {
   const qtdVendas = salesRecords.length;
 
   return (
-    <AppLayout>
+    <Layout>
       <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
         {/* Header */}
         <BackButton />
