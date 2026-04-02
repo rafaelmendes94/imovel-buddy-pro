@@ -896,9 +896,9 @@ export function ImovelForm({ editId }: { editId?: string }) {
         </div>
       </div>
 
-      <div className="flex justify-end gap-3 pb-6">
-        <Button type="button" variant="outline" onClick={() => navigate('/imoveis')}>Cancelar</Button>
-        <Button type="submit" disabled={loading} className="gap-2 px-8">
+      <div className="flex flex-col sm:flex-row justify-end gap-3 pb-6">
+        <Button type="button" variant="outline" onClick={() => navigate('/imoveis')} className="w-full sm:w-auto">Cancelar</Button>
+        <Button type="submit" disabled={loading} className="gap-2 px-8 w-full sm:w-auto">
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           {loading ? 'Salvando...' : isEdit ? 'Salvar' : 'Cadastrar'}
         </Button>
