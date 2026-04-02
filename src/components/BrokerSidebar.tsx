@@ -12,6 +12,13 @@ export function BrokerSidebar() {
   const enabledModules = Array.isArray(subscription?.plan?.modules) ? subscription.plan.modules : [];
   const navItems = CORE_NAV_ITEMS.filter(item => enabledModules.includes(item.moduleKey));
 
+  const groups = navItems.reduce<Record<string, typeof navItems>>((acc, item) => {
+    const g = item.group || "Outros";
+    if (!acc[g]) acc[g] = [];
+    acc[g].push(item);
+    return acc;
+  }, {});
+
   return (
     <aside className="flex flex-col h-screen w-[260px] bg-sidebar border-r border-sidebar-border sticky top-0">
       <div className="flex items-center gap-3 px-4 h-16 border-b border-sidebar-border flex-shrink-0">
@@ -22,25 +29,32 @@ export function BrokerSidebar() {
         </div>
       </div>
 
-      <nav className="flex-1 py-2 px-2 space-y-0.5 overflow-y-auto">
-        {navItems.map(item => {
-          const isActive = location.pathname === item.path;
-          return (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200",
-                isActive
-                  ? "bg-sidebar-accent text-sidebar-primary"
-                  : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-              )}
-            >
-              <item.icon className="w-5 h-5 flex-shrink-0" />
-              <span>{item.label}</span>
-            </Link>
-          );
-        })}
+      <nav className="flex-1 py-2 px-2 space-y-1 overflow-y-auto">
+        {Object.entries(groups).map(([group, items]) => (
+          <div key={group}>
+            <p className="px-3 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/50">
+              {group}
+            </p>
+            {items.map(item => {
+              const isActive = location.pathname === item.path;
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+                    isActive
+                      ? "bg-sidebar-accent text-sidebar-primary"
+                      : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                  )}
+                >
+                  <item.icon className="w-5 h-5 flex-shrink-0" />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+        ))}
       </nav>
 
       <div className="p-2 border-t border-sidebar-border flex-shrink-0">
