@@ -91,6 +91,57 @@ export type Database = {
         }
         Relationships: []
       }
+      condominios: {
+        Row: {
+          amenidades: string[] | null
+          cidade: string | null
+          created_at: string | null
+          endereco: string | null
+          id: string
+          imagem_url: string | null
+          latitude: number | null
+          longitude: number | null
+          nome: string
+          taxa_condominio: number | null
+          tipo: string | null
+          total_unidades: number | null
+          unidades_disponiveis: number | null
+          user_id: string
+        }
+        Insert: {
+          amenidades?: string[] | null
+          cidade?: string | null
+          created_at?: string | null
+          endereco?: string | null
+          id?: string
+          imagem_url?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          nome: string
+          taxa_condominio?: number | null
+          tipo?: string | null
+          total_unidades?: number | null
+          unidades_disponiveis?: number | null
+          user_id: string
+        }
+        Update: {
+          amenidades?: string[] | null
+          cidade?: string | null
+          created_at?: string | null
+          endereco?: string | null
+          id?: string
+          imagem_url?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          nome?: string
+          taxa_condominio?: number | null
+          tipo?: string | null
+          total_unidades?: number | null
+          unidades_disponiveis?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       construtora_avaliacoes: {
         Row: {
           comentario: string | null
@@ -340,6 +391,132 @@ export type Database = {
         }
         Relationships: []
       }
+      edificios: {
+        Row: {
+          andares: number | null
+          ano_construcao: string | null
+          bairro: string | null
+          cep: string | null
+          cidade: string | null
+          complemento: string | null
+          construtora: string | null
+          created_at: string | null
+          endereco: string | null
+          estado: string | null
+          id: string
+          imagem_url: string | null
+          infraestrutura: string[] | null
+          latitude: number | null
+          longitude: number | null
+          nome: string
+          numero: string | null
+          status: string | null
+          total_unidades: number | null
+          user_id: string
+        }
+        Insert: {
+          andares?: number | null
+          ano_construcao?: string | null
+          bairro?: string | null
+          cep?: string | null
+          cidade?: string | null
+          complemento?: string | null
+          construtora?: string | null
+          created_at?: string | null
+          endereco?: string | null
+          estado?: string | null
+          id?: string
+          imagem_url?: string | null
+          infraestrutura?: string[] | null
+          latitude?: number | null
+          longitude?: number | null
+          nome: string
+          numero?: string | null
+          status?: string | null
+          total_unidades?: number | null
+          user_id: string
+        }
+        Update: {
+          andares?: number | null
+          ano_construcao?: string | null
+          bairro?: string | null
+          cep?: string | null
+          cidade?: string | null
+          complemento?: string | null
+          construtora?: string | null
+          created_at?: string | null
+          endereco?: string | null
+          estado?: string | null
+          id?: string
+          imagem_url?: string | null
+          infraestrutura?: string[] | null
+          latitude?: number | null
+          longitude?: number | null
+          nome?: string
+          numero?: string | null
+          status?: string | null
+          total_unidades?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      empreendimentos: {
+        Row: {
+          cidade: string | null
+          construtora: string | null
+          created_at: string | null
+          descricao: string | null
+          endereco: string | null
+          id: string
+          imagem_url: string | null
+          infraestrutura: string[] | null
+          latitude: number | null
+          longitude: number | null
+          nome: string
+          previsao_entrega: string | null
+          status: string | null
+          tipo: string | null
+          total_unidades: number | null
+          user_id: string
+        }
+        Insert: {
+          cidade?: string | null
+          construtora?: string | null
+          created_at?: string | null
+          descricao?: string | null
+          endereco?: string | null
+          id?: string
+          imagem_url?: string | null
+          infraestrutura?: string[] | null
+          latitude?: number | null
+          longitude?: number | null
+          nome: string
+          previsao_entrega?: string | null
+          status?: string | null
+          tipo?: string | null
+          total_unidades?: number | null
+          user_id: string
+        }
+        Update: {
+          cidade?: string | null
+          construtora?: string | null
+          created_at?: string | null
+          descricao?: string | null
+          endereco?: string | null
+          id?: string
+          imagem_url?: string | null
+          infraestrutura?: string[] | null
+          latitude?: number | null
+          longitude?: number | null
+          nome?: string
+          previsao_entrega?: string | null
+          status?: string | null
+          tipo?: string | null
+          total_unidades?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       imoveis: {
         Row: {
           aceita_permuta: boolean
@@ -355,16 +532,22 @@ export type Database = {
           comissao: number | null
           condicao: string | null
           condicoes_pagamento: string[] | null
+          condominio_id: string | null
+          corretor_id: string | null
+          corretor_nome: string | null
           created_at: string
           decorado: boolean
           descricao: string | null
           destaque_categoria: string | null
           destaque_home: boolean
+          edificio_id: string | null
           elevadores: number | null
           empreendimento: string | null
+          empreendimento_id: string | null
           endereco: string
           id: string
           imagens: string[] | null
+          imobiliaria_nome: string | null
           infraestrutura: string[] | null
           latitude: number | null
           local_chaves: string | null
@@ -406,16 +589,22 @@ export type Database = {
           comissao?: number | null
           condicao?: string | null
           condicoes_pagamento?: string[] | null
+          condominio_id?: string | null
+          corretor_id?: string | null
+          corretor_nome?: string | null
           created_at?: string
           decorado?: boolean
           descricao?: string | null
           destaque_categoria?: string | null
           destaque_home?: boolean
+          edificio_id?: string | null
           elevadores?: number | null
           empreendimento?: string | null
+          empreendimento_id?: string | null
           endereco?: string
           id?: string
           imagens?: string[] | null
+          imobiliaria_nome?: string | null
           infraestrutura?: string[] | null
           latitude?: number | null
           local_chaves?: string | null
@@ -457,16 +646,22 @@ export type Database = {
           comissao?: number | null
           condicao?: string | null
           condicoes_pagamento?: string[] | null
+          condominio_id?: string | null
+          corretor_id?: string | null
+          corretor_nome?: string | null
           created_at?: string
           decorado?: boolean
           descricao?: string | null
           destaque_categoria?: string | null
           destaque_home?: boolean
+          edificio_id?: string | null
           elevadores?: number | null
           empreendimento?: string | null
+          empreendimento_id?: string | null
           endereco?: string
           id?: string
           imagens?: string[] | null
+          imobiliaria_nome?: string | null
           infraestrutura?: string[] | null
           latitude?: number | null
           local_chaves?: string | null
@@ -494,7 +689,29 @@ export type Database = {
           vista?: string | null
           vista_mar?: boolean
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "imoveis_condominio_id_fkey"
+            columns: ["condominio_id"]
+            isOneToOne: false
+            referencedRelation: "condominios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "imoveis_edificio_id_fkey"
+            columns: ["edificio_id"]
+            isOneToOne: false
+            referencedRelation: "edificios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "imoveis_empreendimento_id_fkey"
+            columns: ["empreendimento_id"]
+            isOneToOne: false
+            referencedRelation: "empreendimentos"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       job_roles: {
         Row: {
@@ -899,6 +1116,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      system_settings: {
+        Row: {
+          created_at: string
+          id: string
+          key: string
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          key: string
+          updated_at?: string
+          value?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          key?: string
+          updated_at?: string
+          value?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
