@@ -84,7 +84,8 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
   const broker = brokerInfo?.[property.broker];
   const whatsappMessage = encodeURIComponent(`Olá! Tenho interesse no imóvel: ${property.title} - ${formatCurrency(property.price)}`);
   const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${property.address}, ${property.city}`)}`;
-  const videoUrl = "https://www.youtube.com/embed/dQw4w9WgXcQ";
+  const videoUrl = property.linkVideo || "";
+  const materialUrl = property.linkMaterial || "";
 
   const ownerProperties = allProperties
     .filter((p) => p.id !== property.id && p.owner && property.owner && p.owner === property.owner)
