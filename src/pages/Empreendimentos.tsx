@@ -2,10 +2,12 @@ import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { BackButton } from "@/components/BackButton";
 import { QuickPick } from "@/components/QuickPick";
+import { InfraToggle } from "@/components/InfraToggle";
 import { CepAutoFill, type AddressData } from "@/components/CepAutoFill";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useSystemOptions } from "@/hooks/useSystemOptions";
 import { cn } from "@/lib/utils";
 import {
   Landmark, Plus, Search, MapPin, X, Save, Edit, Trash2, Loader2, Calendar, Building2,
@@ -15,7 +17,6 @@ import { Textarea } from "@/components/ui/textarea";
 
 const statusOptions = ["Lançamento", "Em construção", "Pronto", "Em vendas"];
 const tipoOptions = ["Residencial", "Comercial", "Misto", "Loteamento"];
-const allInfra = ["Piscina", "Academia", "Salão de Festas", "Playground", "Quadra", "Churrasqueira", "Segurança 24h", "Portaria", "Área Verde", "Coworking"];
 
 const statusColors: Record<string, string> = {
   "Em construção": "bg-warning/10 text-warning border-warning/30",
@@ -58,6 +59,7 @@ export default function Empreendimentos() {
   const [saving, setSaving] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
+  const { values: infraOptions } = useSystemOptions("infraestrutura");
 
   useEffect(() => { loadData(); }, []);
 
@@ -73,12 +75,8 @@ export default function Empreendimentos() {
     (e.cidade || "").toLowerCase().includes(search.toLowerCase())
   );
 
-  const toggleInfra = (item: string) => {
-    setForm(f => ({
-      ...f,
-      infraestrutura: f.infraestrutura.includes(item) ? f.infraestrutura.filter(x => x !== item) : [...f.infraestrutura, item],
-    }));
-  };
+
+
 
   const handleSubmit = async () => {
     if (!form.nome || !user) return;
@@ -204,16 +202,13 @@ export default function Empreendimentos() {
                   </div>
                 </div>
 
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-2 block">Infraestrutura</label>
-                  <div className="flex flex-wrap gap-2">
-                    {allInfra.map(a => (
-                      <button key={a} type="button" onClick={() => toggleInfra(a)} className={cn("px-2.5 py-1 rounded-md text-xs font-medium border transition-all", form.infraestrutura.includes(a) ? "bg-primary/10 text-primary border-primary/30" : "bg-muted/50 text-muted-foreground border-transparent hover:bg-muted")}>
-                        {a}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                <InfraToggle
+                  label="Infraestrutura"
+                  options={infraOptions}
+                  selected={form.infraestrutura}
+                  onChange={(sel) => setForm(f => ({ ...f, infraestrutura: sel }))}
+                  allowCustom
+                />
               </div>
               <div className="flex justify-end gap-3 p-5 border-t border-border">
                 <button onClick={() => setShowForm(false)} className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium hover:bg-muted transition-colors">Cancelar</button>
