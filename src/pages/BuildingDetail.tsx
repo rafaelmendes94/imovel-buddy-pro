@@ -152,26 +152,65 @@ export default function BuildingDetail() {
                 <p>Nenhum imóvel vinculado a este edifício</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {imoveis.map((im) => (
-                  <div key={im.id} onClick={() => navigate(`/editar-imovel/${im.id}`)} className="elevated-card rounded-xl overflow-hidden cursor-pointer group">
-                    <div className="relative h-36 overflow-hidden">
-                      <img src={im.imagens?.[0] || "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=300&fit=crop"} alt={im.titulo} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                      <span className={cn("absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-semibold border", imovelStatusColors[im.status] || "bg-muted text-muted-foreground")}>{im.status}</span>
-                    </div>
-                    <div className="p-3 space-y-2">
-                      <h4 className="font-semibold text-card-foreground text-sm truncate">{im.titulo}</h4>
-                      <p className="text-base font-bold text-accent">{formatCurrency(im.preco)}</p>
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1"><BedDouble className="w-3 h-3" /> {im.quartos}</span>
-                        <span className="flex items-center gap-1"><Bath className="w-3 h-3" /> {im.banheiros}</span>
-                        <span className="flex items-center gap-1"><Car className="w-3 h-3" /> {im.vagas}</span>
-                        <span className="flex items-center gap-1"><Ruler className="w-3 h-3" /> {im.area}m²</span>
+              <>
+                <p className="text-sm text-muted-foreground mb-3">{imoveis.length} imóvel(is)</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {imoveis.map((im) => {
+                    const imgs = im.imagens && im.imagens.length > 0 ? im.imagens : ["https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=300&fit=crop"];
+                    const conditions = im.condicoes_pagamento || [];
+                    return (
+                      <div key={im.id} onClick={() => navigate(`/editar-imovel/${im.id}`)} className="elevated-card rounded-xl overflow-hidden cursor-pointer group flex flex-col">
+                        <div className="relative h-44 overflow-hidden">
+                          <img src={imgs[0]} alt={im.titulo} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                          {im.proprietario_tipo && (
+                            <span className="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-success text-success-foreground">{im.proprietario_tipo}</span>
+                          )}
+                          <span className={cn("absolute top-2.5 right-2.5 px-2 py-0.5 rounded text-[10px] font-semibold border", imovelStatusColors[im.status] || "bg-muted text-muted-foreground")}>{im.status}</span>
+                          <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-end justify-between">
+                            <p className="text-lg font-bold text-white drop-shadow-lg">{formatCurrency(im.preco)}</p>
+                            <div className="flex gap-1">
+                              {im.vista_mar && <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-info/90 text-info-foreground">Mar</span>}
+                              {im.decorado && <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-purple-500/90 text-white">Dec.</span>}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="p-3.5 space-y-2.5 flex-1 flex flex-col">
+                          <h4 className="font-bold text-card-foreground text-sm leading-tight uppercase">{im.titulo}</h4>
+                          {im.empreendimento && (
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <span className="text-[11px] font-bold text-card-foreground bg-muted px-2 py-0.5 rounded border border-border uppercase">{im.empreendimento}</span>
+                              {im.unidade && <span className="text-[11px] font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded">{im.unidade}</span>}
+                              {im.box && <span className="text-[11px] font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded">{im.box}</span>}
+                            </div>
+                          )}
+                          <p className="text-xs text-muted-foreground flex items-center gap-1">
+                            <MapPin className="w-3 h-3 flex-shrink-0" />
+                            <span className="truncate">{im.endereco}, {im.cidade}</span>
+                          </p>
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
+                            {im.quartos > 0 && <span className="flex items-center gap-1"><BedDouble className="w-3.5 h-3.5" /> {im.quartos}</span>}
+                            {im.banheiros > 0 && <span className="flex items-center gap-1"><Bath className="w-3.5 h-3.5" /> {im.banheiros}</span>}
+                            {im.vagas > 0 && <span className="flex items-center gap-1"><Car className="w-3.5 h-3.5" /> {im.vagas}</span>}
+                            {im.area > 0 && <span className="flex items-center gap-1"><Ruler className="w-3.5 h-3.5" /> {im.area}m² t.</span>}
+                            {im.area_privativa > 0 && <span className="flex items-center gap-1"><Ruler className="w-3.5 h-3.5" /> {im.area_privativa}m² p.</span>}
+                          </div>
+                          {conditions.length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                              {conditions.map((c: string) => (
+                                <span key={c} className="px-2 py-0.5 rounded text-[10px] font-bold bg-success/10 text-success border border-success/20">{c}</span>
+                              ))}
+                            </div>
+                          )}
+                          <div className="mt-auto pt-2 border-t border-border flex items-center gap-2">
+                            <span className="text-xs font-semibold text-accent">{im.corretor_nome || "Corretor"}</span>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                    );
+                  })}
+                </div>
+              </>
             )}
           </TabsContent>
 
