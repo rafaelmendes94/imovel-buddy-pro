@@ -576,25 +576,25 @@ export function ImovelForm({ editId }: { editId?: string }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-5xl mx-auto space-y-6 p-4 sm:p-6">
-      <div className="flex items-center justify-between">
+    <form onSubmit={handleSubmit} className="max-w-5xl mx-auto space-y-4 sm:space-y-6 p-3 sm:p-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <BackButton />
-          <h1 className="text-2xl font-black text-foreground mt-2">
+          <h1 className="text-xl sm:text-2xl font-black text-foreground mt-2">
             {isEdit ? 'Editar Imóvel' : 'Cadastrar Novo Imóvel'}
           </h1>
         </div>
-        <Button type="submit" disabled={loading} className="gap-2">
+        <Button type="submit" disabled={loading} className="gap-2 w-full sm:w-auto">
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           {loading ? 'Salvando...' : isEdit ? 'Salvar' : 'Cadastrar'}
         </Button>
       </div>
 
       {/* ===== BLOCO 1: IDENTIFICAÇÃO ===== */}
-      <div className="bg-card border border-border rounded-xl p-5">
+      <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
         <SectionHeader icon={Building2} title="Identificação" />
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 sm:gap-4 mb-4">
           <div className="space-y-1.5 sm:col-span-2">
             <Label className="text-xs">Título do Imóvel *</Label>
             <Input placeholder="Ex: Apartamento 3 quartos frente mar" value={form.titulo} onChange={e => set('titulo', e.target.value)} required />
@@ -616,14 +616,14 @@ export function ImovelForm({ editId }: { editId?: string }) {
         <QuickPick label="Tipo do Imóvel" options={tiposImovel} value={form.tipo} onChange={(v) => set('tipo', v)} icon={<Home className="w-3.5 h-3.5" />} className="mb-4" />
         <QuickPick label="Status" options={statusOptions} value={form.status} onChange={(v) => set('status', v)} className="mb-4" />
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-4">
           <QuickPick label="Dormitórios" options={[0, 1, 2, 3, 4, "5+"]} value={form.quartos} onChange={(v) => set('quartos', v === "5+" ? 5 : Number(v))} icon={<BedDouble className="w-3.5 h-3.5" />} />
           <QuickPick label="Banheiros" options={[0, 1, 2, 3, 4, "5+"]} value={form.banheiros} onChange={(v) => set('banheiros', v === "5+" ? 5 : Number(v))} icon={<Bath className="w-3.5 h-3.5" />} />
           <QuickPick label="Vagas" options={[0, 1, 2, 3, "4+"]} value={form.vagas} onChange={(v) => set('vagas', v === "4+" ? 4 : Number(v))} icon={<Car className="w-3.5 h-3.5" />} />
           <QuickPick label="Elevadores" options={[0, 1, 2, "3+"]} value={form.elevadores} onChange={(v) => set('elevadores', v === "3+" ? 3 : Number(v))} />
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><Ruler className="w-3.5 h-3.5" /> Área Privativa (m²)</Label>
             <Input type="number" placeholder="0" value={form.areaPrivativa} onChange={e => set('areaPrivativa', e.target.value)} />
@@ -636,10 +636,10 @@ export function ImovelForm({ editId }: { editId?: string }) {
       </div>
 
       {/* ===== BLOCO: VINCULAÇÃO DE ENTIDADE ===== */}
-      <div className="bg-card border border-border rounded-xl p-5">
+      <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
         <SectionHeader icon={Landmark} title="Vincular a Edifício / Condomínio / Empreendimento" />
         <p className="text-xs text-muted-foreground mb-4">Selecione apenas um. O endereço e infraestrutura serão preenchidos automaticamente.</p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <EntitySelector
             label="Edifício"
             icon={<Building className="w-3.5 h-3.5" />}
@@ -677,16 +677,16 @@ export function ImovelForm({ editId }: { editId?: string }) {
       </div>
 
       {/* ===== BLOCO: ENDEREÇO COM CEP ===== */}
-      <div className="bg-card border border-border rounded-xl p-5">
+      <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
         <SectionHeader icon={MapPin} title="Endereço" />
         <CepAutoFill data={addressData} onChange={handleAddressChange} />
       </div>
 
       {/* ===== BLOCO 2: VALOR E CONDIÇÕES ===== */}
-      <div className="bg-card border border-border rounded-xl p-5">
+      <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
         <SectionHeader icon={DollarSign} title="Valor e Condições" />
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 sm:gap-4 mb-4">
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><DollarSign className="w-3.5 h-3.5" /> Preço (R$)</Label>
             <Input type="number" placeholder="0" value={form.preco} onChange={e => set('preco', e.target.value)} />
@@ -707,7 +707,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4">
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><Gift className="w-3.5 h-3.5" /> Bônus (R$)</Label>
             <Input type="number" placeholder="0" value={form.bonus} onChange={e => set('bonus', e.target.value)} />
@@ -741,9 +741,9 @@ export function ImovelForm({ editId }: { editId?: string }) {
       </div>
 
       {/* ===== BLOCO 3: PROPRIETÁRIO ===== */}
-      <div className="bg-card border border-border rounded-xl p-5">
+      <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
         <SectionHeader icon={User} title="Proprietário" />
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4">
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><User className="w-3.5 h-3.5" /> Nome</Label>
             <Input placeholder="Nome completo" value={form.proprietario} onChange={e => set('proprietario', e.target.value)} />
@@ -754,7 +754,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
           </div>
           <QuickPick label="Tipo do Proprietário" options={ownerTypeOptions} value={form.proprietarioTipo} onChange={(v) => set('proprietarioTipo', String(v))} />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><Key className="w-3.5 h-3.5" /> Local das Chaves</Label>
             <Input placeholder="Ex: Portaria, Imobiliária..." value={form.localChaves} onChange={e => set('localChaves', e.target.value)} />
@@ -767,10 +767,10 @@ export function ImovelForm({ editId }: { editId?: string }) {
       </div>
 
       {/* ===== BLOCO 4: CARACTERÍSTICAS ===== */}
-      <div className="bg-card border border-border rounded-xl p-5">
+      <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
         <SectionHeader icon={Sparkles} title="Características" />
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 sm:gap-4 mb-4">
           <QuickPick label="Condição" options={condicaoOptions} value={form.condicao} onChange={(v) => set('condicao', String(v))} />
           <div className="space-y-1.5">
             <Label className="text-xs">Posição no Prédio</Label>
@@ -786,41 +786,42 @@ export function ImovelForm({ editId }: { editId?: string }) {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-6 mb-4 py-3 px-4 bg-muted/50 rounded-lg">
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-3 sm:gap-6 mb-4 py-3 px-3 sm:px-4 bg-muted/50 rounded-lg">
           <div className="flex items-center gap-2">
             <Switch checked={form.vistaMar} onCheckedChange={(v) => set('vistaMar', v)} />
-            <Label className="text-xs">Vista para o Mar</Label>
+            <Label className="text-xs">Vista Mar</Label>
           </div>
           <div className="flex items-center gap-2">
             <Switch checked={form.decorado} onCheckedChange={(v) => set('decorado', v)} />
-            <Label className="text-xs">Decorado / Mobiliado</Label>
+            <Label className="text-xs">Decorado</Label>
           </div>
           <div className="flex items-center gap-2">
             <Switch checked={form.aceitaPermuta} onCheckedChange={(v) => set('aceitaPermuta', v)} />
-            <Label className="text-xs">Aceita Permuta</Label>
+            <Label className="text-xs">Permuta</Label>
           </div>
-          <div className="flex items-center gap-2 border-l border-border pl-6">
+          <div className="flex items-center gap-2">
             <Switch checked={form.ativoSite} onCheckedChange={(v) => set('ativoSite', v)} />
-            <Label className="text-xs font-semibold">🌐 Ativo no Site</Label>
+            <Label className="text-xs font-semibold">🌐 Site</Label>
           </div>
           <div className="flex items-center gap-2">
             <Switch
               checked={form.destaqueHome}
               onCheckedChange={(v) => { set('destaqueHome', v); if (!v) set('destaqueCategoria', 'none'); }}
             />
-            <Label className="text-xs font-semibold">⭐ Destaque na Home</Label>
+            <Label className="text-xs font-semibold">⭐ Destaque</Label>
           </div>
-          <QuickPick
-            label="Tipo de Destaque"
-            options={destaqueCategoriaOptions.map(o => o.label)}
-            value={destaqueCategoriaOptions.find(o => o.value === form.destaqueCategoria)?.label || 'Sem destaque'}
-            onChange={(v) => {
-              const opt = destaqueCategoriaOptions.find(o => o.label === String(v));
-              set('destaqueCategoria', opt?.value || 'none');
-              if (opt && opt.value !== 'none') set('destaqueHome', true);
-            }}
-            className="min-w-[200px]"
-          />
+          <div className="col-span-2 sm:col-span-1">
+            <QuickPick
+              label="Tipo de Destaque"
+              options={destaqueCategoriaOptions.map(o => o.label)}
+              value={destaqueCategoriaOptions.find(o => o.value === form.destaqueCategoria)?.label || 'Sem destaque'}
+              onChange={(v) => {
+                const opt = destaqueCategoriaOptions.find(o => o.label === String(v));
+                set('destaqueCategoria', opt?.value || 'none');
+                if (opt && opt.value !== 'none') set('destaqueHome', true);
+              }}
+            />
+          </div>
         </div>
 
         <InfraToggle
@@ -842,23 +843,23 @@ export function ImovelForm({ editId }: { editId?: string }) {
             ))}
           </div>
           <div className="flex gap-2">
-            <Input placeholder="Ex: Beira Lago, Documentação OK..." value={newCaract} onChange={e => setNewCaract(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addCaract(); } }} className="max-w-xs" />
+            <Input placeholder="Ex: Beira Lago, Documentação OK..." value={newCaract} onChange={e => setNewCaract(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addCaract(); } }} className="flex-1 sm:max-w-xs" />
             <Button type="button" variant="outline" size="sm" onClick={addCaract}><Plus className="w-3.5 h-3.5" /></Button>
           </div>
         </div>
       </div>
 
       {/* ===== BLOCO 5: DESCRIÇÃO COM IA ===== */}
-      <div className="bg-card border border-border rounded-xl p-5">
+      <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
         <SectionHeader icon={FileText} title="Descrição" />
         <DescriptionAI form={form} onGenerated={(text) => set('descricao', text)} />
         <Textarea placeholder="Descreva o imóvel com o máximo de detalhes..." value={form.descricao} onChange={e => set('descricao', e.target.value)} rows={6} className="resize-y" />
       </div>
 
       {/* ===== BLOCO 5B: LINKS DE MÍDIA ===== */}
-      <div className="bg-card border border-border rounded-xl p-5">
+      <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
         <SectionHeader icon={Play} title="Vídeo e Material" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><Play className="w-3.5 h-3.5" /> Link do Vídeo</Label>
             <Input placeholder="https://youtube.com/..." value={form.linkVideo} onChange={e => set('linkVideo', e.target.value)} />
@@ -871,23 +872,23 @@ export function ImovelForm({ editId }: { editId?: string }) {
       </div>
 
       {/* ===== BLOCO 6: FOTOS ===== */}
-      <div className="bg-card border border-border rounded-xl p-5">
+      <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
         <SectionHeader icon={Image} title="Fotos do Imóvel" />
-        <div className="flex flex-wrap gap-3 mb-4">
+        <div className="grid grid-cols-3 sm:flex sm:flex-wrap gap-2 sm:gap-3 mb-4">
           {existingImages.map((src, i) => (
-            <div key={`existing-${i}`} className="relative w-24 h-24 rounded-lg overflow-hidden border border-border group">
+            <div key={`existing-${i}`} className="relative aspect-square sm:w-24 sm:h-24 rounded-lg overflow-hidden border border-border group">
               <img src={src} alt="" className="w-full h-full object-cover" />
               <button type="button" onClick={() => removeExistingImage(i)} className="absolute top-1 right-1 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"><X className="w-3 h-3" /></button>
             </div>
           ))}
           {imagePreviews.map((src, i) => (
-            <div key={`new-${i}`} className="relative w-24 h-24 rounded-lg overflow-hidden border border-primary/30 group">
+            <div key={`new-${i}`} className="relative aspect-square sm:w-24 sm:h-24 rounded-lg overflow-hidden border border-primary/30 group">
               <img src={src} alt="" className="w-full h-full object-cover" />
               <button type="button" onClick={() => removeImage(i)} className="absolute top-1 right-1 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"><X className="w-3 h-3" /></button>
               <span className="absolute bottom-1 left-1 text-[8px] bg-primary text-primary-foreground px-1 rounded">Nova</span>
             </div>
           ))}
-          <label className="w-24 h-24 rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors">
+          <label className="aspect-square sm:w-24 sm:h-24 rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors">
             <Plus className="w-6 h-6 text-muted-foreground" />
             <span className="text-[10px] text-muted-foreground mt-1">Adicionar</span>
             <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageChange} />
@@ -895,9 +896,9 @@ export function ImovelForm({ editId }: { editId?: string }) {
         </div>
       </div>
 
-      <div className="flex justify-end gap-3 pb-6">
-        <Button type="button" variant="outline" onClick={() => navigate('/imoveis')}>Cancelar</Button>
-        <Button type="submit" disabled={loading} className="gap-2 px-8">
+      <div className="flex flex-col sm:flex-row justify-end gap-3 pb-6">
+        <Button type="button" variant="outline" onClick={() => navigate('/imoveis')} className="w-full sm:w-auto">Cancelar</Button>
+        <Button type="submit" disabled={loading} className="gap-2 px-8 w-full sm:w-auto">
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           {loading ? 'Salvando...' : isEdit ? 'Salvar' : 'Cadastrar'}
         </Button>

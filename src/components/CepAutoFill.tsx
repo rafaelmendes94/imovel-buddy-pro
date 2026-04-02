@@ -68,8 +68,8 @@ export function CepAutoFill({ data, onChange }: CepAutoFillProps) {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+    <div className="space-y-3 sm:space-y-4">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 sm:gap-4">
         <div className="space-y-1.5">
           <Label className="text-xs flex items-center gap-1">
             <MapPin className="w-3.5 h-3.5" /> CEP
@@ -100,7 +100,7 @@ export function CepAutoFill({ data, onChange }: CepAutoFillProps) {
           />
         </div>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         <div className="space-y-1.5">
           <Label className="text-xs">Complemento</Label>
           <Input
@@ -135,7 +135,7 @@ export function CepAutoFill({ data, onChange }: CepAutoFillProps) {
           />
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4">
         <div className="space-y-1.5">
           <Label className="text-xs">Latitude</Label>
           <Input
