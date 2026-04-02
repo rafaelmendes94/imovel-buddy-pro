@@ -683,10 +683,10 @@ export function ImovelForm({ editId }: { editId?: string }) {
       </div>
 
       {/* ===== BLOCO 2: VALOR E CONDIÇÕES ===== */}
-      <div className="bg-card border border-border rounded-xl p-5">
+      <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
         <SectionHeader icon={DollarSign} title="Valor e Condições" />
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 sm:gap-4 mb-4">
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><DollarSign className="w-3.5 h-3.5" /> Preço (R$)</Label>
             <Input type="number" placeholder="0" value={form.preco} onChange={e => set('preco', e.target.value)} />
@@ -707,7 +707,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4">
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><Gift className="w-3.5 h-3.5" /> Bônus (R$)</Label>
             <Input type="number" placeholder="0" value={form.bonus} onChange={e => set('bonus', e.target.value)} />
