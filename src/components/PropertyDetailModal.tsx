@@ -271,8 +271,12 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
 
   // -- Download material completo --
   const handleMaterialDownload = () => {
-    toast.info("Preparando material completo...", { description: "Fotos, plantas, documentos e fichas do imóvel." });
-    window.open(`https://drive.google.com/drive/search?q=${encodeURIComponent(property.title + " material")}`, "_blank");
+    if (materialUrl) {
+      window.open(materialUrl, "_blank");
+      toast.success("Abrindo material completo...");
+    } else {
+      toast.info("Nenhum link de material cadastrado para este imóvel.");
+    }
   };
 
   // -- Editable field component --
