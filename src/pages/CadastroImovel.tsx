@@ -591,10 +591,10 @@ export function ImovelForm({ editId }: { editId?: string }) {
       </div>
 
       {/* ===== BLOCO 1: IDENTIFICAÇÃO ===== */}
-      <div className="bg-card border border-border rounded-xl p-5">
+      <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
         <SectionHeader icon={Building2} title="Identificação" />
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 sm:gap-4 mb-4">
           <div className="space-y-1.5 sm:col-span-2">
             <Label className="text-xs">Título do Imóvel *</Label>
             <Input placeholder="Ex: Apartamento 3 quartos frente mar" value={form.titulo} onChange={e => set('titulo', e.target.value)} required />
@@ -616,14 +616,14 @@ export function ImovelForm({ editId }: { editId?: string }) {
         <QuickPick label="Tipo do Imóvel" options={tiposImovel} value={form.tipo} onChange={(v) => set('tipo', v)} icon={<Home className="w-3.5 h-3.5" />} className="mb-4" />
         <QuickPick label="Status" options={statusOptions} value={form.status} onChange={(v) => set('status', v)} className="mb-4" />
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-4">
           <QuickPick label="Dormitórios" options={[0, 1, 2, 3, 4, "5+"]} value={form.quartos} onChange={(v) => set('quartos', v === "5+" ? 5 : Number(v))} icon={<BedDouble className="w-3.5 h-3.5" />} />
           <QuickPick label="Banheiros" options={[0, 1, 2, 3, 4, "5+"]} value={form.banheiros} onChange={(v) => set('banheiros', v === "5+" ? 5 : Number(v))} icon={<Bath className="w-3.5 h-3.5" />} />
           <QuickPick label="Vagas" options={[0, 1, 2, 3, "4+"]} value={form.vagas} onChange={(v) => set('vagas', v === "4+" ? 4 : Number(v))} icon={<Car className="w-3.5 h-3.5" />} />
           <QuickPick label="Elevadores" options={[0, 1, 2, "3+"]} value={form.elevadores} onChange={(v) => set('elevadores', v === "3+" ? 3 : Number(v))} />
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><Ruler className="w-3.5 h-3.5" /> Área Privativa (m²)</Label>
             <Input type="number" placeholder="0" value={form.areaPrivativa} onChange={e => set('areaPrivativa', e.target.value)} />
