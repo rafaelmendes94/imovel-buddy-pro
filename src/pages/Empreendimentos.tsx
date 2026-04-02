@@ -206,7 +206,7 @@ export default function Empreendimentos() {
                   </div>
                 </div>
 
-                <QuickSelect
+                <InfraToggle
                   label="Infraestrutura"
                   options={infraOptions}
                   selected={form.infraestrutura}
