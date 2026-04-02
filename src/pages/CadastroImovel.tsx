@@ -767,10 +767,10 @@ export function ImovelForm({ editId }: { editId?: string }) {
       </div>
 
       {/* ===== BLOCO 4: CARACTERÍSTICAS ===== */}
-      <div className="bg-card border border-border rounded-xl p-5">
+      <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
         <SectionHeader icon={Sparkles} title="Características" />
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 sm:gap-4 mb-4">
           <QuickPick label="Condição" options={condicaoOptions} value={form.condicao} onChange={(v) => set('condicao', String(v))} />
           <div className="space-y-1.5">
             <Label className="text-xs">Posição no Prédio</Label>
@@ -786,41 +786,42 @@ export function ImovelForm({ editId }: { editId?: string }) {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-6 mb-4 py-3 px-4 bg-muted/50 rounded-lg">
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-3 sm:gap-6 mb-4 py-3 px-3 sm:px-4 bg-muted/50 rounded-lg">
           <div className="flex items-center gap-2">
             <Switch checked={form.vistaMar} onCheckedChange={(v) => set('vistaMar', v)} />
-            <Label className="text-xs">Vista para o Mar</Label>
+            <Label className="text-xs">Vista Mar</Label>
           </div>
           <div className="flex items-center gap-2">
             <Switch checked={form.decorado} onCheckedChange={(v) => set('decorado', v)} />
-            <Label className="text-xs">Decorado / Mobiliado</Label>
+            <Label className="text-xs">Decorado</Label>
           </div>
           <div className="flex items-center gap-2">
             <Switch checked={form.aceitaPermuta} onCheckedChange={(v) => set('aceitaPermuta', v)} />
-            <Label className="text-xs">Aceita Permuta</Label>
+            <Label className="text-xs">Permuta</Label>
           </div>
-          <div className="flex items-center gap-2 border-l border-border pl-6">
+          <div className="flex items-center gap-2">
             <Switch checked={form.ativoSite} onCheckedChange={(v) => set('ativoSite', v)} />
-            <Label className="text-xs font-semibold">🌐 Ativo no Site</Label>
+            <Label className="text-xs font-semibold">🌐 Site</Label>
           </div>
           <div className="flex items-center gap-2">
             <Switch
               checked={form.destaqueHome}
               onCheckedChange={(v) => { set('destaqueHome', v); if (!v) set('destaqueCategoria', 'none'); }}
             />
-            <Label className="text-xs font-semibold">⭐ Destaque na Home</Label>
+            <Label className="text-xs font-semibold">⭐ Destaque</Label>
           </div>
-          <QuickPick
-            label="Tipo de Destaque"
-            options={destaqueCategoriaOptions.map(o => o.label)}
-            value={destaqueCategoriaOptions.find(o => o.value === form.destaqueCategoria)?.label || 'Sem destaque'}
-            onChange={(v) => {
-              const opt = destaqueCategoriaOptions.find(o => o.label === String(v));
-              set('destaqueCategoria', opt?.value || 'none');
-              if (opt && opt.value !== 'none') set('destaqueHome', true);
-            }}
-            className="min-w-[200px]"
-          />
+          <div className="col-span-2 sm:col-span-1">
+            <QuickPick
+              label="Tipo de Destaque"
+              options={destaqueCategoriaOptions.map(o => o.label)}
+              value={destaqueCategoriaOptions.find(o => o.value === form.destaqueCategoria)?.label || 'Sem destaque'}
+              onChange={(v) => {
+                const opt = destaqueCategoriaOptions.find(o => o.label === String(v));
+                set('destaqueCategoria', opt?.value || 'none');
+                if (opt && opt.value !== 'none') set('destaqueHome', true);
+              }}
+            />
+          </div>
         </div>
 
         <InfraToggle
@@ -842,7 +843,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
             ))}
           </div>
           <div className="flex gap-2">
-            <Input placeholder="Ex: Beira Lago, Documentação OK..." value={newCaract} onChange={e => setNewCaract(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addCaract(); } }} className="max-w-xs" />
+            <Input placeholder="Ex: Beira Lago, Documentação OK..." value={newCaract} onChange={e => setNewCaract(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addCaract(); } }} className="flex-1 sm:max-w-xs" />
             <Button type="button" variant="outline" size="sm" onClick={addCaract}><Plus className="w-3.5 h-3.5" /></Button>
           </div>
         </div>
