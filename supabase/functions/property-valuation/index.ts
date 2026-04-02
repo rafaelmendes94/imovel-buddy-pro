@@ -67,7 +67,7 @@ Sempre responda em português brasileiro. Seja preciso e profissional.`;
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
+          model: await getAIModel(),
           messages: [
             { role: "system", content: systemPrompt },
             {

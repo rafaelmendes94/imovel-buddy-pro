@@ -68,7 +68,7 @@ ${JSON.stringify(properties, null, 2)}`;
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "google/gemini-3-flash-preview",
+          model: await getAIModel(),
           messages: [
             { role: "system", content: systemPrompt },
             { role: "user", content: query },
