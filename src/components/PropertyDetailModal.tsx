@@ -466,7 +466,6 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
               <Download className="w-4 h-4 text-purple-500" /> Material Completo
             </button>
           )}
-          </button>
         </div>
 
         {/* Content */}
