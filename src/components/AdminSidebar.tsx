@@ -11,7 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import logoImg from "@/assets/logo.png";
 
 const adminItems = [
-  { icon: LayoutDashboard, label: "Dashboard Admin", path: "/admin/dashboard", moduleKey: "dashboard_admin" },
+  { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard", moduleKey: "dashboard_admin" },
   { icon: UserCog, label: "Funcionários", path: "/admin/funcionarios", moduleKey: "funcionarios" },
   { icon: Briefcase, label: "Cargos e Funções", path: "/admin/cargos", moduleKey: "funcionarios" },
   { icon: Users, label: "Clientes", path: "/admin/clientes", moduleKey: "clientes" },
@@ -19,7 +19,6 @@ const adminItems = [
 ];
 
 const operationalItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard", moduleKey: "dashboard" },
   { icon: FileText, label: "Relatórios", path: "/relatorios", moduleKey: "relatorios" },
   { icon: Globe, label: "Site", path: "/site-editor", moduleKey: "site_editor" },
   { icon: Building2, label: "Imóveis", path: "/imoveis", moduleKey: "imoveis" },

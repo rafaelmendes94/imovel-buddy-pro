@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -16,7 +16,7 @@ import PartnerDetail from "./pages/PartnerDetail";
 import ConstrutoraSite from "./pages/ConstrutoraSite";
 
 // Admin pages
-import AdminDashboard from "./pages/admin/AdminDashboard";
+// AdminDashboard removed - using unified Dashboard
 import AdminFuncionarios from "./pages/admin/AdminFuncionarios";
 import AdminClientes from "./pages/admin/AdminClientes";
 import AdminPlanos from "./pages/admin/AdminPlanos";
@@ -79,7 +79,7 @@ const App = () => (
             <Route path="/brick-store" element={<BrickStore />} />
 
             {/* Admin routes */}
-            <Route path="/admin/dashboard" element={<AuthGuard requiredRoles={["super_admin", "admin_staff"]}><AdminDashboard /></AuthGuard>} />
+            <Route path="/admin/dashboard" element={<Navigate to="/dashboard" replace />} />
             <Route path="/admin/funcionarios" element={<AuthGuard requiredRoles={["super_admin"]}><AdminFuncionarios /></AuthGuard>} />
             <Route path="/admin/cargos" element={<AuthGuard requiredRoles={["super_admin"]}><AdminCargos /></AuthGuard>} />
             <Route path="/admin/clientes" element={<AuthGuard requiredRoles={["super_admin", "admin_staff"]}><AdminClientes /></AuthGuard>} />
