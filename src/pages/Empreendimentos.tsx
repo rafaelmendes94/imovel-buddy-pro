@@ -59,6 +59,7 @@ export default function Empreendimentos() {
   const [saving, setSaving] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
+  const { values: infraOptions } = useSystemOptions("infraestrutura");
 
   useEffect(() => { loadData(); }, []);
 
