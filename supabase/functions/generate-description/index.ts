@@ -82,6 +82,8 @@ Gere descrições em português brasileiro, profissionais e atrativas.
 NÃO inclua o preço na descrição (ele já aparece separado no anúncio).
 NÃO invente informações que não foram fornecidas nos dados.`;
 
+    const aiModel = await getAIModel();
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -89,7 +91,7 @@ NÃO invente informações que não foram fornecidas nos dados.`;
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: aiModel,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: `${stylePrompt}\n\n${propertyInfo}` },
