@@ -18,7 +18,7 @@ import { useSystemOptions } from '@/hooks/useSystemOptions';
 import {
   Building2, MapPin, BedDouble, Bath, Car, Ruler, User, Phone, DollarSign,
   Percent, Gift, Home, Sparkles, Save, Image, Plus, X, Loader2,
-  Hash, FileText, Eye, Key, Calendar, Building, Fence, Landmark, Search
+  Hash, FileText, Eye, Key, Calendar, Building, Fence, Landmark, Search, Brain, Wand2
 } from 'lucide-react';
 
 const tiposImovel = ["Apartamento", "Casa", "Comercial", "Terreno", "Lote", "Condomínio"];
@@ -201,6 +201,93 @@ function EntitySelector({ label, icon, table, value, onChange, onSelect }: {
           Nenhum encontrado
         </div>
       )}
+    </div>
+  );
+}
+
+const descriptionStyles = [
+  { id: "gatilhos", label: "🎯 Gatilhos de Venda", desc: "Persuasão e urgência" },
+  { id: "agressiva", label: "🔥 Agressiva", desc: "Impacto e conversão" },
+  { id: "informativa", label: "📋 Informativa", desc: "Detalhes técnicos" },
+  { id: "geolocalizacao", label: "📍 Geolocalização", desc: "Foco na localização" },
+];
+
+function DescriptionAI({ form, onGenerated }: { form: FormData; onGenerated: (text: string) => void }) {
+  const [generating, setGenerating] = useState(false);
+  const [activeStyle, setActiveStyle] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  const generate = async (style: string) => {
+    if (!form.titulo && !form.tipo && !form.cidade) {
+      toast({ title: "Preencha dados básicos", description: "Título, tipo e cidade são necessários para gerar.", variant: "destructive" });
+      return;
+    }
+    setGenerating(true);
+    setActiveStyle(style);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-description", {
+        body: {
+          property: {
+            title: form.titulo,
+            type: form.tipo,
+            status: form.status,
+            price: parseFloat(form.preco) || 0,
+            address: form.endereco,
+            city: form.cidade,
+            area: parseFloat(form.area) || 0,
+            privateArea: parseFloat(form.areaPrivativa) || 0,
+            bedrooms: form.quartos,
+            bathrooms: form.banheiros,
+            parking: form.vagas,
+            seaView: form.vistaMar,
+            decorated: form.decorado,
+            acceptsExchange: form.aceitaPermuta,
+            empreendimento: form.empreendimento,
+            posicaoPredio: form.posicaoPredio,
+            posicaoSolar: form.posicaoSolar,
+            vista: form.vista,
+            condicao: form.condicao,
+            infraestrutura: form.infraestrutura,
+            elevadores: form.elevadores,
+            paymentConditions: form.condicoesPagemento,
+            neighborhood: form.bairro,
+          },
+          style,
+        },
+      });
+      if (error || data?.error) {
+        toast({ title: "Erro ao gerar", description: data?.error || error?.message, variant: "destructive" });
+      } else if (data?.description) {
+        onGenerated(data.description);
+        toast({ title: "Descrição gerada ✅" });
+      }
+    } catch {
+      toast({ title: "Erro de conexão", variant: "destructive" });
+    }
+    setGenerating(false);
+    setActiveStyle(null);
+  };
+
+  return (
+    <div className="mb-3">
+      <div className="flex items-center gap-2 mb-2">
+        <Wand2 className="w-4 h-4 text-primary" />
+        <span className="text-xs font-semibold text-muted-foreground">Gerar com IA</span>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {descriptionStyles.map(s => (
+          <button
+            key={s.id}
+            type="button"
+            disabled={generating}
+            onClick={() => generate(s.id)}
+            className="px-3 py-1.5 rounded-lg border border-border text-xs font-medium hover:border-primary hover:bg-primary/5 transition-all disabled:opacity-50 flex items-center gap-1.5"
+          >
+            {generating && activeStyle === s.id ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
+            {s.label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
@@ -753,9 +840,10 @@ export function ImovelForm({ editId }: { editId?: string }) {
         </div>
       </div>
 
-      {/* ===== BLOCO 5: DESCRIÇÃO ===== */}
+      {/* ===== BLOCO 5: DESCRIÇÃO COM IA ===== */}
       <div className="bg-card border border-border rounded-xl p-5">
         <SectionHeader icon={FileText} title="Descrição" />
+        <DescriptionAI form={form} onGenerated={(text) => set('descricao', text)} />
         <Textarea placeholder="Descreva o imóvel com o máximo de detalhes..." value={form.descricao} onChange={e => set('descricao', e.target.value)} rows={6} className="resize-y" />
       </div>
 
