@@ -855,6 +855,21 @@ export function ImovelForm({ editId }: { editId?: string }) {
         <Textarea placeholder="Descreva o imóvel com o máximo de detalhes..." value={form.descricao} onChange={e => set('descricao', e.target.value)} rows={6} className="resize-y" />
       </div>
 
+      {/* ===== BLOCO 5B: LINKS DE MÍDIA ===== */}
+      <div className="bg-card border border-border rounded-xl p-5">
+        <SectionHeader icon={Play} title="Vídeo e Material" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <Label className="text-xs flex items-center gap-1"><Play className="w-3.5 h-3.5" /> Link do Vídeo</Label>
+            <Input placeholder="https://youtube.com/..." value={form.linkVideo} onChange={e => set('linkVideo', e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs flex items-center gap-1"><FolderDown className="w-3.5 h-3.5" /> Link Material Completo</Label>
+            <Input placeholder="https://drive.google.com/..." value={form.linkMaterial} onChange={e => set('linkMaterial', e.target.value)} />
+          </div>
+        </div>
+      </div>
+
       {/* ===== BLOCO 6: FOTOS ===== */}
       <div className="bg-card border border-border rounded-xl p-5">
         <SectionHeader icon={Image} title="Fotos do Imóvel" />
