@@ -677,7 +677,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
       </div>
 
       {/* ===== BLOCO: ENDEREÇO COM CEP ===== */}
-      <div className="bg-card border border-border rounded-xl p-5">
+      <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
         <SectionHeader icon={MapPin} title="Endereço" />
         <CepAutoFill data={addressData} onChange={handleAddressChange} />
       </div>
