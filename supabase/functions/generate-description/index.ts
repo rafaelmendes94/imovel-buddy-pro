@@ -80,7 +80,8 @@ ${property.neighborhood ? `- Bairro: ${property.neighborhood}` : ""}
     const systemPrompt = `Você é um copywriter imobiliário profissional especializado no litoral gaúcho (Capão da Canoa, Xangri-lá, Tramandaí, Torres). 
 Gere descrições em português brasileiro, profissionais e atrativas.
 NÃO inclua o preço na descrição (ele já aparece separado no anúncio).
-NÃO invente informações que não foram fornecidas nos dados.`;
+NÃO invente informações que não foram fornecidas nos dados.
+REGRA DE FORMATAÇÃO OBRIGATÓRIA: NÃO use asteriscos (**), negrito, itálico, markdown ou traços (- ou —) no texto. Escreva em texto corrido com parágrafos simples separados por quebra de linha. Use apenas texto puro sem qualquer formatação especial.`;
 
     const aiModel = await getAIModel();
 
