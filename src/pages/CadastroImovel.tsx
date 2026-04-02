@@ -872,23 +872,23 @@ export function ImovelForm({ editId }: { editId?: string }) {
       </div>
 
       {/* ===== BLOCO 6: FOTOS ===== */}
-      <div className="bg-card border border-border rounded-xl p-5">
+      <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
         <SectionHeader icon={Image} title="Fotos do Imóvel" />
-        <div className="flex flex-wrap gap-3 mb-4">
+        <div className="grid grid-cols-3 sm:flex sm:flex-wrap gap-2 sm:gap-3 mb-4">
           {existingImages.map((src, i) => (
-            <div key={`existing-${i}`} className="relative w-24 h-24 rounded-lg overflow-hidden border border-border group">
+            <div key={`existing-${i}`} className="relative aspect-square sm:w-24 sm:h-24 rounded-lg overflow-hidden border border-border group">
               <img src={src} alt="" className="w-full h-full object-cover" />
               <button type="button" onClick={() => removeExistingImage(i)} className="absolute top-1 right-1 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"><X className="w-3 h-3" /></button>
             </div>
           ))}
           {imagePreviews.map((src, i) => (
-            <div key={`new-${i}`} className="relative w-24 h-24 rounded-lg overflow-hidden border border-primary/30 group">
+            <div key={`new-${i}`} className="relative aspect-square sm:w-24 sm:h-24 rounded-lg overflow-hidden border border-primary/30 group">
               <img src={src} alt="" className="w-full h-full object-cover" />
               <button type="button" onClick={() => removeImage(i)} className="absolute top-1 right-1 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"><X className="w-3 h-3" /></button>
               <span className="absolute bottom-1 left-1 text-[8px] bg-primary text-primary-foreground px-1 rounded">Nova</span>
             </div>
           ))}
-          <label className="w-24 h-24 rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors">
+          <label className="aspect-square sm:w-24 sm:h-24 rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors">
             <Plus className="w-6 h-6 text-muted-foreground" />
             <span className="text-[10px] text-muted-foreground mt-1">Adicionar</span>
             <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageChange} />
