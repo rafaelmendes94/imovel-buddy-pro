@@ -1129,6 +1129,30 @@ export type Database = {
           },
         ]
       }
+      system_options: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          sort_order: number
+          value: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          sort_order?: number
+          value: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          sort_order?: number
+          value?: string
+        }
+        Relationships: []
+      }
       system_settings: {
         Row: {
           created_at: string
