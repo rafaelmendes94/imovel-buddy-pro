@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Building2, Users, FileText, Settings,
   ChevronLeft, ChevronRight, Building, Camera, Fence,
   Globe, ClipboardCheck, Wallet, Table2, FileSignature,
-  Clapperboard, Landmark, HardHat, ShoppingBag,
+  Clapperboard, Landmark, Landmark as Landmark2, HardHat, ShoppingBag,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import logoImg from "@/assets/logo.png";
@@ -16,6 +16,7 @@ const navItems = [
   { icon: Building2, label: "Imóveis", path: "/imoveis" },
   { icon: Building, label: "Edifícios", path: "/edificios" },
   { icon: Fence, label: "Condomínios", path: "/condominios" },
+  { icon: Landmark, label: "Empreendimentos", path: "/empreendimentos" },
   { icon: Camera, label: "Fotos da Cidade", path: "/fotos-cidade" },
   { icon: ClipboardCheck, label: "Avaliações", path: "/avaliacoes" },
   { icon: Wallet, label: "Financeiro", path: "/financeiro" },
@@ -23,7 +24,7 @@ const navItems = [
   { icon: FileSignature, label: "Contratos", path: "/contratos" },
   { icon: Clapperboard, label: "Material Extra", path: "/videomaker" },
   { icon: Users, label: "Corretores", path: "/corretores" },
-  { icon: Landmark, label: "Imobiliárias", path: "/imobiliarias" },
+  { icon: Landmark2, label: "Imobiliárias", path: "/imobiliarias" },
   { icon: HardHat, label: "Construtoras", path: "/construtoras" },
   { icon: ShoppingBag, label: "Brick", path: "/brick" },
   { icon: Settings, label: "Configurações", path: "/configuracoes" },

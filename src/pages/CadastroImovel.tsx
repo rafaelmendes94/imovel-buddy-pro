@@ -11,10 +11,12 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { AppLayout } from '@/components/AppLayout';
 import { BackButton } from '@/components/BackButton';
+import { QuickPick } from '@/components/QuickPick';
+import { CepAutoFill, type AddressData } from '@/components/CepAutoFill';
 import {
   Building2, MapPin, BedDouble, Bath, Car, Ruler, User, Phone, DollarSign,
   Percent, Gift, Home, Sparkles, Save, Image, Plus, X, Loader2,
-  Hash, FileText, Eye, Key, Calendar
+  Hash, FileText, Eye, Key, Calendar, Building, Fence, Landmark, Search
 } from 'lucide-react';
 
 const tiposImovel = ["Apartamento", "Casa", "Comercial", "Terreno", "Lote", "Condomínio"];
@@ -42,9 +44,13 @@ export interface FormData {
   titulo: string;
   tipo: string;
   status: string;
+  cep: string;
   endereco: string;
+  numero: string;
+  complemento: string;
   bairro: string;
   cidade: string;
+  estado: string;
   empreendimento: string;
   unidade: string;
   box: string;
@@ -83,10 +89,14 @@ export interface FormData {
   outrasCaracteristicas: string[];
   latitude: string;
   longitude: string;
+  edificio_id: string;
+  condominio_id: string;
+  empreendimento_id: string;
 }
 
 export const initialForm: FormData = {
-  titulo: '', tipo: '', status: 'Disponível', endereco: '', bairro: '', cidade: '',
+  titulo: '', tipo: '', status: 'Disponível', cep: '', endereco: '', numero: '', complemento: '',
+  bairro: '', cidade: '', estado: '',
   empreendimento: '', unidade: '', box: '', quadra: '', lote: '',
   preco: '', precoParcelado: '', comissao: '', bonus: '', bonusValidade: '',
   area: '', areaPrivativa: '', quartos: 0, banheiros: 0, vagas: 0, elevadores: 0,
@@ -97,6 +107,7 @@ export const initialForm: FormData = {
   destaqueCategoria: 'none',
   condicoesPagemento: [], infraestrutura: [], outrasCaracteristicas: [],
   latitude: '', longitude: '',
+  edificio_id: '', condominio_id: '', empreendimento_id: '',
 };
 
 function SectionHeader({ icon: Icon, title }: { icon: any; title: string }) {
@@ -104,6 +115,90 @@ function SectionHeader({ icon: Icon, title }: { icon: any; title: string }) {
     <div className="flex items-center gap-2 pb-2 mb-4 border-b border-border">
       <Icon className="w-5 h-5 text-primary" />
       <h3 className="text-base font-bold text-foreground">{title}</h3>
+    </div>
+  );
+}
+
+interface EntityOption {
+  id: string;
+  nome: string;
+  endereco?: string;
+  cidade?: string;
+  bairro?: string;
+  latitude?: number;
+  longitude?: number;
+  infraestrutura?: string[];
+  amenidades?: string[];
+  cep?: string;
+  numero?: string;
+  complemento?: string;
+  estado?: string;
+}
+
+function EntitySelector({ label, icon, table, value, onChange, onSelect }: {
+  label: string;
+  icon: React.ReactNode;
+  table: 'edificios' | 'condominios' | 'empreendimentos';
+  value: string;
+  onChange: (id: string) => void;
+  onSelect: (entity: EntityOption) => void;
+}) {
+  const [options, setOptions] = useState<EntityOption[]>([]);
+  const [search, setSearch] = useState('');
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    const load = async () => {
+      const { data } = await supabase.from(table).select('*').order('nome');
+      if (data) setOptions(data as any);
+    };
+    load();
+  }, [table]);
+
+  const filtered = options.filter(o => o.nome.toLowerCase().includes(search.toLowerCase()));
+  const selectedName = options.find(o => o.id === value)?.nome || '';
+
+  return (
+    <div className="space-y-1.5 relative">
+      <Label className="text-xs flex items-center gap-1">{icon} {label}</Label>
+      <div className="relative">
+        <Input
+          placeholder={`Buscar ${label.toLowerCase()}...`}
+          value={open ? search : selectedName}
+          onChange={(e) => { setSearch(e.target.value); setOpen(true); }}
+          onFocus={() => setOpen(true)}
+        />
+        {value && (
+          <button type="button" onClick={() => { onChange(''); setSearch(''); }} className="absolute right-2 top-1/2 -translate-y-1/2">
+            <X className="w-3.5 h-3.5 text-muted-foreground" />
+          </button>
+        )}
+      </div>
+      {open && filtered.length > 0 && (
+        <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+          {filtered.map(o => (
+            <button
+              key={o.id}
+              type="button"
+              onClick={() => {
+                onChange(o.id);
+                onSelect(o);
+                setSearch('');
+                setOpen(false);
+              }}
+              className="w-full text-left px-3 py-2 text-sm hover:bg-accent transition-colors"
+            >
+              <span className="font-medium">{o.nome}</span>
+              {o.cidade && <span className="text-muted-foreground ml-2 text-xs">• {o.cidade}</span>}
+            </button>
+          ))}
+        </div>
+      )}
+      {open && filtered.length === 0 && search && (
+        <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-lg shadow-lg p-3 text-sm text-muted-foreground">
+          Nenhum encontrado
+        </div>
+      )}
     </div>
   );
 }
@@ -122,10 +217,8 @@ export function ImovelForm({ editId }: { editId?: string }) {
   const [existingImages, setExistingImages] = useState<string[]>([]);
 
   const isEdit = !!editId;
-
   const set = (field: keyof FormData, value: any) => setForm(prev => ({ ...prev, [field]: value }));
 
-  // Load existing data for edit mode
   useEffect(() => {
     if (!editId) return;
     const load = async () => {
@@ -140,9 +233,13 @@ export function ImovelForm({ editId }: { editId?: string }) {
         titulo: data.titulo || '',
         tipo: data.tipo || '',
         status: data.status || 'Disponível',
+        cep: (data as any).cep || '',
         endereco: data.endereco || '',
+        numero: (data as any).numero || '',
+        complemento: (data as any).complemento || '',
         bairro: data.bairro || '',
         cidade: data.cidade || '',
+        estado: (data as any).estado || '',
         empreendimento: data.empreendimento || '',
         unidade: data.unidade || '',
         box: data.box || '',
@@ -179,8 +276,11 @@ export function ImovelForm({ editId }: { editId?: string }) {
         condicoesPagemento: data.condicoes_pagamento || [],
         infraestrutura: data.infraestrutura || [],
         outrasCaracteristicas: data.outras_caracteristicas || [],
-        latitude: (data as any).latitude ? String((data as any).latitude) : '',
-        longitude: (data as any).longitude ? String((data as any).longitude) : '',
+        latitude: data.latitude ? String(data.latitude) : '',
+        longitude: data.longitude ? String(data.longitude) : '',
+        edificio_id: data.edificio_id || '',
+        condominio_id: data.condominio_id || '',
+        empreendimento_id: data.empreendimento_id || '',
       });
       setExistingImages(data.imagens || []);
       setLoadingData(false);
@@ -232,6 +332,25 @@ export function ImovelForm({ editId }: { editId?: string }) {
     setExistingImages(prev => prev.filter((_, i) => i !== idx));
   };
 
+  const handleEntitySelect = (entity: EntityOption) => {
+    const updates: Partial<FormData> = {};
+    if (entity.endereco) updates.endereco = entity.endereco;
+    if (entity.cidade) updates.cidade = entity.cidade;
+    if (entity.bairro) updates.bairro = entity.bairro;
+    if ((entity as any).cep) updates.cep = (entity as any).cep;
+    if ((entity as any).numero) updates.numero = (entity as any).numero;
+    if ((entity as any).complemento) updates.complemento = (entity as any).complemento;
+    if ((entity as any).estado) updates.estado = (entity as any).estado;
+    if (entity.latitude) updates.latitude = String(entity.latitude);
+    if (entity.longitude) updates.longitude = String(entity.longitude);
+    // Merge infrastructure
+    const entityInfra = entity.infraestrutura || entity.amenidades || [];
+    if (entityInfra.length > 0) {
+      updates.infraestrutura = [...new Set([...form.infraestrutura, ...entityInfra])];
+    }
+    setForm(prev => ({ ...prev, ...updates }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
@@ -245,14 +364,11 @@ export function ImovelForm({ editId }: { editId?: string }) {
     setLoading(true);
 
     try {
-      // Upload new images
       const uploadedUrls: string[] = [];
       for (const file of images) {
         const ext = file.name.split('.').pop();
         const path = `${user.id}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
-        const { error: uploadError } = await supabase.storage
-          .from('site-assets')
-          .upload(path, file);
+        const { error: uploadError } = await supabase.storage.from('site-assets').upload(path, file);
         if (uploadError) throw uploadError;
         const { data: urlData } = supabase.storage.from('site-assets').getPublicUrl(path);
         uploadedUrls.push(urlData.publicUrl);
@@ -264,8 +380,12 @@ export function ImovelForm({ editId }: { editId?: string }) {
         titulo: form.titulo,
         tipo: form.tipo || 'Casa',
         status: form.status || 'Disponível',
+        cep: form.cep || '',
         endereco: form.endereco,
+        numero: form.numero || '',
+        complemento: form.complemento || '',
         cidade: form.cidade,
+        estado: form.estado || '',
         bairro: form.bairro || '',
         empreendimento: form.empreendimento || '',
         unidade: form.unidade || '',
@@ -305,20 +425,17 @@ export function ImovelForm({ editId }: { editId?: string }) {
         imagens: allImages.length > 0 ? allImages : null,
         latitude: parseFloat(form.latitude) || 0,
         longitude: parseFloat(form.longitude) || 0,
+        edificio_id: form.edificio_id || null,
+        condominio_id: form.condominio_id || null,
+        empreendimento_id: form.empreendimento_id || null,
       } as any;
 
       if (isEdit) {
-        const { error } = await supabase
-          .from('imoveis')
-          .update(payload)
-          .eq('id', editId);
+        const { error } = await supabase.from('imoveis').update(payload).eq('id', editId);
         if (error) throw error;
         toast({ title: "Sucesso! ✅", description: "Imóvel atualizado com sucesso!" });
       } else {
-        const { error } = await supabase
-          .from('imoveis')
-          .insert([{ ...payload, user_id: user.id }])
-          .select();
+        const { error } = await supabase.from('imoveis').insert([{ ...payload, user_id: user.id }]).select();
         if (error) throw error;
         toast({ title: "Sucesso! ✅", description: "Imóvel cadastrado com sucesso!" });
       }
@@ -332,6 +449,22 @@ export function ImovelForm({ editId }: { editId?: string }) {
   };
 
   const comissaoValor = (parseFloat(form.preco) || 0) * (parseFloat(form.comissao) || 0) / 100;
+
+  const addressData: AddressData = {
+    cep: form.cep,
+    endereco: form.endereco,
+    numero: form.numero,
+    complemento: form.complemento,
+    bairro: form.bairro,
+    cidade: form.cidade,
+    estado: form.estado,
+    latitude: form.latitude,
+    longitude: form.longitude,
+  };
+
+  const handleAddressChange = (updates: Partial<AddressData>) => {
+    setForm(prev => ({ ...prev, ...updates }));
+  };
 
   if (loadingData) {
     return (
@@ -352,13 +485,10 @@ export function ImovelForm({ editId }: { editId?: string }) {
           <h1 className="text-2xl font-black text-foreground mt-2">
             {isEdit ? 'Editar Imóvel' : 'Cadastrar Novo Imóvel'}
           </h1>
-          <p className="text-sm text-muted-foreground">
-            {isEdit ? 'Atualize os dados do imóvel' : 'Preencha os dados completos do imóvel'}
-          </p>
         </div>
         <Button type="submit" disabled={loading} className="gap-2">
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-          {loading ? 'Salvando...' : isEdit ? 'Salvar Alterações' : 'Cadastrar Imóvel'}
+          {loading ? 'Salvando...' : isEdit ? 'Salvar' : 'Cadastrar'}
         </Button>
       </div>
 
@@ -367,44 +497,35 @@ export function ImovelForm({ editId }: { editId?: string }) {
         <SectionHeader icon={Building2} title="Identificação" />
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
-          <div className="space-y-1.5">
-            <Label className="text-xs">Tipo do Imóvel *</Label>
-            <Select value={form.tipo} onValueChange={(v) => set('tipo', v)}>
-              <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-              <SelectContent>
-                {tiposImovel.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-              </SelectContent>
-            </Select>
+          <div className="space-y-1.5 sm:col-span-2">
+            <Label className="text-xs">Título do Imóvel *</Label>
+            <Input placeholder="Ex: Apartamento 3 quartos frente mar" value={form.titulo} onChange={e => set('titulo', e.target.value)} required />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs">Empreendimento</Label>
-            <Input placeholder="Nome do empreendimento" value={form.empreendimento} onChange={e => set('empreendimento', e.target.value)} />
+            <Label className="text-xs">Unidade</Label>
+            <Input placeholder="Unidade" value={form.unidade} onChange={e => set('unidade', e.target.value)} />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs">Unidade / Quadra</Label>
-            <div className="flex gap-2">
-              <Input placeholder="Unidade" value={form.unidade} onChange={e => set('unidade', e.target.value)} />
-              <Input placeholder="Quadra" value={form.quadra} onChange={e => set('quadra', e.target.value)} />
-            </div>
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs">Box / Lote</Label>
-            <div className="flex gap-2">
-              <Input placeholder="Box" value={form.box} onChange={e => set('box', e.target.value)} />
-              <Input placeholder="Lote" value={form.lote} onChange={e => set('lote', e.target.value)} />
+            <Label className="text-xs">Quadra / Lote / Box</Label>
+            <div className="flex gap-1">
+              <Input placeholder="Qd" value={form.quadra} onChange={e => set('quadra', e.target.value)} />
+              <Input placeholder="Lt" value={form.lote} onChange={e => set('lote', e.target.value)} />
+              <Input placeholder="Bx" value={form.box} onChange={e => set('box', e.target.value)} />
             </div>
           </div>
         </div>
 
+        <QuickPick label="Tipo do Imóvel" options={tiposImovel} value={form.tipo} onChange={(v) => set('tipo', v)} icon={<Home className="w-3.5 h-3.5" />} className="mb-4" />
+        <QuickPick label="Status" options={statusOptions} value={form.status} onChange={(v) => set('status', v)} className="mb-4" />
+
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
-          <div className="space-y-1.5">
-            <Label className="text-xs flex items-center gap-1"><BedDouble className="w-3.5 h-3.5" /> Dormitórios</Label>
-            <Input type="number" min={0} value={form.quartos} onChange={e => set('quartos', parseInt(e.target.value) || 0)} />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs flex items-center gap-1"><Bath className="w-3.5 h-3.5" /> Banheiros</Label>
-            <Input type="number" min={0} value={form.banheiros} onChange={e => set('banheiros', parseInt(e.target.value) || 0)} />
-          </div>
+          <QuickPick label="Dormitórios" options={[0, 1, 2, 3, 4, "5+"]} value={form.quartos} onChange={(v) => set('quartos', v === "5+" ? 5 : Number(v))} icon={<BedDouble className="w-3.5 h-3.5" />} />
+          <QuickPick label="Banheiros" options={[0, 1, 2, 3, 4, "5+"]} value={form.banheiros} onChange={(v) => set('banheiros', v === "5+" ? 5 : Number(v))} icon={<Bath className="w-3.5 h-3.5" />} />
+          <QuickPick label="Vagas" options={[0, 1, 2, 3, "4+"]} value={form.vagas} onChange={(v) => set('vagas', v === "4+" ? 4 : Number(v))} icon={<Car className="w-3.5 h-3.5" />} />
+          <QuickPick label="Elevadores" options={[0, 1, 2, "3+"]} value={form.elevadores} onChange={(v) => set('elevadores', v === "3+" ? 3 : Number(v))} />
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><Ruler className="w-3.5 h-3.5" /> Área Privativa (m²)</Label>
             <Input type="number" placeholder="0" value={form.areaPrivativa} onChange={e => set('areaPrivativa', e.target.value)} />
@@ -414,60 +535,44 @@ export function ImovelForm({ editId }: { editId?: string }) {
             <Input type="number" placeholder="0" value={form.area} onChange={e => set('area', e.target.value)} />
           </div>
         </div>
+      </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
-          <div className="space-y-1.5 sm:col-span-2">
-            <Label className="text-xs">Título do Imóvel *</Label>
-            <Input placeholder="Ex: Apartamento 3 quartos frente mar" value={form.titulo} onChange={e => set('titulo', e.target.value)} required />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs">Status</Label>
-            <Select value={form.status} onValueChange={(v) => set('status', v)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {statusOptions.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs flex items-center gap-1"><Car className="w-3.5 h-3.5" /> Vagas</Label>
-            <Input type="number" min={0} value={form.vagas} onChange={e => set('vagas', parseInt(e.target.value) || 0)} />
-          </div>
-        </div>
-
+      {/* ===== BLOCO: VINCULAÇÃO DE ENTIDADE ===== */}
+      <div className="bg-card border border-border rounded-xl p-5">
+        <SectionHeader icon={Landmark} title="Vincular a Edifício / Condomínio / Empreendimento" />
+        <p className="text-xs text-muted-foreground mb-4">Ao selecionar, o endereço e infraestrutura serão preenchidos automaticamente.</p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="space-y-1.5">
-            <Label className="text-xs flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> Cidade *</Label>
-            <Input placeholder="Nome da cidade" value={form.cidade} onChange={e => set('cidade', e.target.value)} required />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs">Bairro</Label>
-            <Input placeholder="Nome do bairro" value={form.bairro} onChange={e => set('bairro', e.target.value)} />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs">Endereço Completo</Label>
-            <Input placeholder="Rua, número" value={form.endereco} onChange={e => set('endereco', e.target.value)} />
-          </div>
+          <EntitySelector
+            label="Edifício"
+            icon={<Building className="w-3.5 h-3.5" />}
+            table="edificios"
+            value={form.edificio_id}
+            onChange={(id) => set('edificio_id', id)}
+            onSelect={handleEntitySelect}
+          />
+          <EntitySelector
+            label="Condomínio"
+            icon={<Fence className="w-3.5 h-3.5" />}
+            table="condominios"
+            value={form.condominio_id}
+            onChange={(id) => set('condominio_id', id)}
+            onSelect={handleEntitySelect}
+          />
+          <EntitySelector
+            label="Empreendimento"
+            icon={<Landmark className="w-3.5 h-3.5" />}
+            table="empreendimentos"
+            value={form.empreendimento_id}
+            onChange={(id) => set('empreendimento_id', id)}
+            onSelect={handleEntitySelect}
+          />
         </div>
+      </div>
 
-        {/* Localização GPS */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-          <div className="space-y-1.5">
-            <Label className="text-xs flex items-center gap-1">
-              <MapPin className="w-3.5 h-3.5" /> Latitude
-            </Label>
-            <Input type="number" step="any" placeholder="Ex: -29.3456" value={form.latitude} onChange={e => set('latitude', e.target.value)} />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs flex items-center gap-1">
-              <MapPin className="w-3.5 h-3.5" /> Longitude
-            </Label>
-            <Input type="number" step="any" placeholder="Ex: -50.1234" value={form.longitude} onChange={e => set('longitude', e.target.value)} />
-          </div>
-        </div>
-        <p className="text-[10px] text-muted-foreground mt-1">
-          💡 Dica: Abra o Google Maps, clique com botão direito no local desejado e copie as coordenadas (latitude, longitude).
-        </p>
+      {/* ===== BLOCO: ENDEREÇO COM CEP ===== */}
+      <div className="bg-card border border-border rounded-xl p-5">
+        <SectionHeader icon={MapPin} title="Endereço" />
+        <CepAutoFill data={addressData} onChange={handleAddressChange} />
       </div>
 
       {/* ===== BLOCO 2: VALOR E CONDIÇÕES ===== */}
@@ -504,15 +609,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
             <Label className="text-xs flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> Validade do Bônus</Label>
             <Input type="date" value={form.bonusValidade} onChange={e => set('bonusValidade', e.target.value)} />
           </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs">Padrão</Label>
-            <Select value={form.padrao} onValueChange={(v) => set('padrao', v)}>
-              <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-              <SelectContent>
-                {padraoOptions.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
+          <QuickPick label="Padrão" options={padraoOptions} value={form.padrao} onChange={(v) => set('padrao', String(v))} />
         </div>
 
         <div className="space-y-2">
@@ -539,27 +636,17 @@ export function ImovelForm({ editId }: { editId?: string }) {
       {/* ===== BLOCO 3: PROPRIETÁRIO ===== */}
       <div className="bg-card border border-border rounded-xl p-5">
         <SectionHeader icon={User} title="Proprietário" />
-
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
           <div className="space-y-1.5">
-            <Label className="text-xs flex items-center gap-1"><User className="w-3.5 h-3.5" /> Nome do Proprietário</Label>
+            <Label className="text-xs flex items-center gap-1"><User className="w-3.5 h-3.5" /> Nome</Label>
             <Input placeholder="Nome completo" value={form.proprietario} onChange={e => set('proprietario', e.target.value)} />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><Phone className="w-3.5 h-3.5" /> Telefone</Label>
             <Input placeholder="(00) 00000-0000" value={form.proprietarioTelefone} onChange={e => set('proprietarioTelefone', e.target.value)} />
           </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs">Tipo do Proprietário</Label>
-            <Select value={form.proprietarioTipo} onValueChange={(v) => set('proprietarioTipo', v)}>
-              <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-              <SelectContent>
-                {ownerTypeOptions.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
+          <QuickPick label="Tipo do Proprietário" options={ownerTypeOptions} value={form.proprietarioTipo} onChange={(v) => set('proprietarioTipo', String(v))} />
         </div>
-
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><Key className="w-3.5 h-3.5" /> Local das Chaves</Label>
@@ -577,15 +664,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         <SectionHeader icon={Sparkles} title="Características" />
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
-          <div className="space-y-1.5">
-            <Label className="text-xs">Condição</Label>
-            <Select value={form.condicao} onValueChange={(v) => set('condicao', v)}>
-              <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-              <SelectContent>
-                {condicaoOptions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
+          <QuickPick label="Condição" options={condicaoOptions} value={form.condicao} onChange={(v) => set('condicao', String(v))} />
           <div className="space-y-1.5">
             <Label className="text-xs">Posição no Prédio</Label>
             <Input placeholder="Ex: Frente, Fundos" value={form.posicaoPredio} onChange={e => set('posicaoPredio', e.target.value)} />
@@ -596,7 +675,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><Eye className="w-3.5 h-3.5" /> Vista</Label>
-            <Input placeholder="Ex: Mar, Cidade, Lago" value={form.vista} onChange={e => set('vista', e.target.value)} />
+            <Input placeholder="Ex: Mar, Cidade" value={form.vista} onChange={e => set('vista', e.target.value)} />
           </div>
         </div>
 
@@ -620,32 +699,21 @@ export function ImovelForm({ editId }: { editId?: string }) {
           <div className="flex items-center gap-2">
             <Switch
               checked={form.destaqueHome}
-              onCheckedChange={(v) => {
-                set('destaqueHome', v);
-                if (!v) set('destaqueCategoria', 'none');
-              }}
+              onCheckedChange={(v) => { set('destaqueHome', v); if (!v) set('destaqueCategoria', 'none'); }}
             />
             <Label className="text-xs font-semibold">⭐ Destaque na Home</Label>
           </div>
-          <div className="min-w-[220px] space-y-1.5">
-            <Label className="text-xs">Tipo de Destaque</Label>
-            <Select
-              value={form.destaqueCategoria}
-              onValueChange={(v) => {
-                set('destaqueCategoria', v);
-                if (v !== 'none') set('destaqueHome', true);
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione o destaque" />
-              </SelectTrigger>
-              <SelectContent>
-                {destaqueCategoriaOptions.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <QuickPick
+            label="Tipo de Destaque"
+            options={destaqueCategoriaOptions.map(o => o.label)}
+            value={destaqueCategoriaOptions.find(o => o.value === form.destaqueCategoria)?.label || 'Sem destaque'}
+            onChange={(v) => {
+              const opt = destaqueCategoriaOptions.find(o => o.label === String(v));
+              set('destaqueCategoria', opt?.value || 'none');
+              if (opt && opt.value !== 'none') set('destaqueHome', true);
+            }}
+            className="min-w-[200px]"
+          />
         </div>
 
         <div className="mb-4">
@@ -654,9 +722,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
             {form.infraestrutura.map((item, i) => (
               <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
                 {item}
-                <button type="button" onClick={() => set('infraestrutura', form.infraestrutura.filter((_, idx) => idx !== i))}>
-                  <X className="w-3 h-3" />
-                </button>
+                <button type="button" onClick={() => set('infraestrutura', form.infraestrutura.filter((_, idx) => idx !== i))}><X className="w-3 h-3" /></button>
               </span>
             ))}
           </div>
@@ -672,9 +738,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
             {form.outrasCaracteristicas.map((item, i) => (
               <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-accent text-accent-foreground text-xs font-medium">
                 {item}
-                <button type="button" onClick={() => set('outrasCaracteristicas', form.outrasCaracteristicas.filter((_, idx) => idx !== i))}>
-                  <X className="w-3 h-3" />
-                </button>
+                <button type="button" onClick={() => set('outrasCaracteristicas', form.outrasCaracteristicas.filter((_, idx) => idx !== i))}><X className="w-3 h-3" /></button>
               </span>
             ))}
           </div>
@@ -688,44 +752,23 @@ export function ImovelForm({ editId }: { editId?: string }) {
       {/* ===== BLOCO 5: DESCRIÇÃO ===== */}
       <div className="bg-card border border-border rounded-xl p-5">
         <SectionHeader icon={FileText} title="Descrição" />
-        <Textarea
-          placeholder="Descreva o imóvel com o máximo de detalhes: localização, diferenciais, infraestrutura do condomínio, vista, acabamentos, etc."
-          value={form.descricao}
-          onChange={e => set('descricao', e.target.value)}
-          rows={6}
-          className="resize-y"
-        />
+        <Textarea placeholder="Descreva o imóvel com o máximo de detalhes..." value={form.descricao} onChange={e => set('descricao', e.target.value)} rows={6} className="resize-y" />
       </div>
 
       {/* ===== BLOCO 6: FOTOS ===== */}
       <div className="bg-card border border-border rounded-xl p-5">
         <SectionHeader icon={Image} title="Fotos do Imóvel" />
-
         <div className="flex flex-wrap gap-3 mb-4">
-          {/* Existing images (from DB) */}
           {existingImages.map((src, i) => (
             <div key={`existing-${i}`} className="relative w-24 h-24 rounded-lg overflow-hidden border border-border group">
               <img src={src} alt="" className="w-full h-full object-cover" />
-              <button
-                type="button"
-                onClick={() => removeExistingImage(i)}
-                className="absolute top-1 right-1 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <X className="w-3 h-3" />
-              </button>
+              <button type="button" onClick={() => removeExistingImage(i)} className="absolute top-1 right-1 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"><X className="w-3 h-3" /></button>
             </div>
           ))}
-          {/* New images (not yet uploaded) */}
           {imagePreviews.map((src, i) => (
             <div key={`new-${i}`} className="relative w-24 h-24 rounded-lg overflow-hidden border border-primary/30 group">
               <img src={src} alt="" className="w-full h-full object-cover" />
-              <button
-                type="button"
-                onClick={() => removeImage(i)}
-                className="absolute top-1 right-1 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <X className="w-3 h-3" />
-              </button>
+              <button type="button" onClick={() => removeImage(i)} className="absolute top-1 right-1 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"><X className="w-3 h-3" /></button>
               <span className="absolute bottom-1 left-1 text-[8px] bg-primary text-primary-foreground px-1 rounded">Nova</span>
             </div>
           ))}
@@ -735,15 +778,13 @@ export function ImovelForm({ editId }: { editId?: string }) {
             <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageChange} />
           </label>
         </div>
-        <p className="text-xs text-muted-foreground">Arraste ou clique para adicionar fotos. Formatos: JPG, PNG, WebP.</p>
       </div>
 
-      {/* Submit */}
       <div className="flex justify-end gap-3 pb-6">
         <Button type="button" variant="outline" onClick={() => navigate('/imoveis')}>Cancelar</Button>
         <Button type="submit" disabled={loading} className="gap-2 px-8">
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-          {loading ? 'Salvando...' : isEdit ? 'Salvar Alterações' : 'Cadastrar Imóvel'}
+          {loading ? 'Salvando...' : isEdit ? 'Salvar' : 'Cadastrar'}
         </Button>
       </div>
     </form>
