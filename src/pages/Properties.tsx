@@ -1635,7 +1635,7 @@ function PropertyRow({
             <span className="truncate">{property.city}{property.neighborhood ? ` • ${property.neighborhood}` : ""} • {property.address}</span>
           </button>
 
-          {/* Ver dados completos */}
+          {/* Ver dados completos + Editar */}
           <div className="flex items-center gap-2 mt-1 flex-wrap">
             <button
               onClick={() => onSelect?.(property)}
@@ -1643,6 +1643,13 @@ function PropertyRow({
             >
               <Eye className="w-3.5 h-3.5" /> Ver dados completos
             </button>
+            <Link
+              to={`/editar-imovel/${property.id}`}
+              onClick={(e) => e.stopPropagation()}
+              className="py-1.5 px-3 rounded-lg bg-amber-500/10 text-amber-600 text-[11px] font-bold hover:bg-amber-500/20 transition-colors flex items-center justify-center gap-1.5"
+            >
+              <Pencil className="w-3.5 h-3.5" /> Editar
+            </Link>
           </div>
         </div>
 
