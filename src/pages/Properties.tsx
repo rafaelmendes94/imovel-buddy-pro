@@ -1240,8 +1240,19 @@ function PropertyCard({
           </a>
         </div>
 
-        {/* Status change bar */}
-        <StatusBar currentStatus={property.status} onChangeStatus={handleStatusChange} />
+        {/* Edit + Status */}
+        <div className="flex items-center gap-2 pt-2 border-t border-border">
+          <Link
+            to={`/editar-imovel/${property.id}`}
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-amber-500/10 text-amber-600 text-[11px] font-bold hover:bg-amber-500/20 transition-colors flex-1 justify-center"
+          >
+            <Pencil className="w-3 h-3" /> Editar
+          </Link>
+          <div className="flex-1">
+            <StatusBar currentStatus={property.status} onChangeStatus={handleStatusChange} />
+          </div>
+        </div>
       </div>
     </div>
   );
