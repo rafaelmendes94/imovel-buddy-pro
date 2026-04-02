@@ -576,15 +576,15 @@ export function ImovelForm({ editId }: { editId?: string }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-5xl mx-auto space-y-6 p-4 sm:p-6">
-      <div className="flex items-center justify-between">
+    <form onSubmit={handleSubmit} className="max-w-5xl mx-auto space-y-4 sm:space-y-6 p-3 sm:p-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <BackButton />
-          <h1 className="text-2xl font-black text-foreground mt-2">
+          <h1 className="text-xl sm:text-2xl font-black text-foreground mt-2">
             {isEdit ? 'Editar Imóvel' : 'Cadastrar Novo Imóvel'}
           </h1>
         </div>
-        <Button type="submit" disabled={loading} className="gap-2">
+        <Button type="submit" disabled={loading} className="gap-2 w-full sm:w-auto">
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           {loading ? 'Salvando...' : isEdit ? 'Salvar' : 'Cadastrar'}
         </Button>
