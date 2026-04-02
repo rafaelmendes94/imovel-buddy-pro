@@ -857,9 +857,9 @@ export function ImovelForm({ editId }: { editId?: string }) {
       </div>
 
       {/* ===== BLOCO 5B: LINKS DE MÍDIA ===== */}
-      <div className="bg-card border border-border rounded-xl p-5">
+      <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
         <SectionHeader icon={Play} title="Vídeo e Material" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><Play className="w-3.5 h-3.5" /> Link do Vídeo</Label>
             <Input placeholder="https://youtube.com/..." value={form.linkVideo} onChange={e => set('linkVideo', e.target.value)} />
