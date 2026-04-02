@@ -22,6 +22,7 @@ import AdminClientes from "./pages/admin/AdminClientes";
 import AdminPlanos from "./pages/admin/AdminPlanos";
 import AdminCargos from "./pages/admin/AdminCargos";
 import AdminBrick from "./pages/admin/AdminBrick";
+import AdminOpcoes from "./pages/admin/AdminOpcoes";
 
 // Broker pages
 import BrokerDashboard from "./pages/broker/BrokerDashboard";
