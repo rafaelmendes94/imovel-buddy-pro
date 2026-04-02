@@ -451,15 +451,21 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
         )}
 
         {/* Action bar */}
-        <div className="flex items-center gap-2 px-5 py-3 bg-amber-50/50 border-b border-amber-100">
+        <div className="flex items-center gap-2 px-5 py-3 bg-amber-50/50 border-b border-amber-100 flex-wrap">
+          <Link to={`/editar-imovel/${property.id}`} onClick={onClose} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
+            <Pencil className="w-4 h-4 text-amber-500" /> Editar
+          </Link>
           <button onClick={handleShare} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
             <Share2 className="w-4 h-4 text-amber-500" /> Compartilhar
           </button>
           <button onClick={handleDownload} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
             <Download className="w-4 h-4 text-blue-500" /> Baixar Ficha
           </button>
-          <button onClick={handleMaterialDownload} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
-            <Download className="w-4 h-4 text-purple-500" /> Material Completo
+          {materialUrl && (
+            <button onClick={handleMaterialDownload} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
+              <Download className="w-4 h-4 text-purple-500" /> Material Completo
+            </button>
+          )}
           </button>
         </div>
 
