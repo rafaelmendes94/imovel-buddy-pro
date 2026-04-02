@@ -13,6 +13,8 @@ import { AppLayout } from '@/components/AppLayout';
 import { BackButton } from '@/components/BackButton';
 import { QuickPick } from '@/components/QuickPick';
 import { CepAutoFill, type AddressData } from '@/components/CepAutoFill';
+import { InfraToggle } from '@/components/InfraToggle';
+import { useSystemOptions } from '@/hooks/useSystemOptions';
 import {
   Building2, MapPin, BedDouble, Bath, Car, Ruler, User, Phone, DollarSign,
   Percent, Gift, Home, Sparkles, Save, Image, Plus, X, Loader2,
@@ -215,6 +217,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
+  const { values: infraOptions } = useSystemOptions("infraestrutura");
 
   const isEdit = !!editId;
   const set = (field: keyof FormData, value: any) => setForm(prev => ({ ...prev, [field]: value }));
@@ -725,21 +728,13 @@ export function ImovelForm({ editId }: { editId?: string }) {
           />
         </div>
 
-        <div className="mb-4">
-          <Label className="text-xs font-semibold mb-2 block">Infraestrutura</Label>
-          <div className="flex flex-wrap gap-1.5 mb-2">
-            {form.infraestrutura.map((item, i) => (
-              <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
-                {item}
-                <button type="button" onClick={() => set('infraestrutura', form.infraestrutura.filter((_, idx) => idx !== i))}><X className="w-3 h-3" /></button>
-              </span>
-            ))}
-          </div>
-          <div className="flex gap-2">
-            <Input placeholder="Ex: Piscina, Churrasqueira..." value={newInfra} onChange={e => setNewInfra(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addInfra(); } }} className="max-w-xs" />
-            <Button type="button" variant="outline" size="sm" onClick={addInfra}><Plus className="w-3.5 h-3.5" /></Button>
-          </div>
-        </div>
+        <InfraToggle
+          label="Infraestrutura"
+          options={infraOptions}
+          selected={form.infraestrutura}
+          onChange={(sel) => set('infraestrutura', sel)}
+          allowCustom
+        />
 
         <div>
           <Label className="text-xs font-semibold mb-2 block">Outras Características</Label>
