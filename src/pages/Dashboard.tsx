@@ -1,6 +1,8 @@
 import { AppLayout } from "@/components/AppLayout";
+import { AdminLayout } from "@/components/AdminLayout";
 import { BackButton } from "@/components/BackButton";
 import { MetricCard } from "@/components/MetricCard";
+import { useAuth } from "@/hooks/useAuth";
 import {
   Building2,
   Users,
