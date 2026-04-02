@@ -59,6 +59,9 @@ import ConstrutoraAvaliacoes from "./pages/ConstrutoraAvaliacoes";
 import Brick from "./pages/Brick";
 import BrickStore from "./pages/BrickStore";
 import Empreendimentos from "./pages/Empreendimentos";
+import CadastroEdificio from "./pages/CadastroEdificio";
+import CadastroCondominio from "./pages/CadastroCondominio";
+import CadastroEmpreendimento from "./pages/CadastroEmpreendimento";
 
 const queryClient = new QueryClient();
 
