@@ -118,6 +118,7 @@ const App = () => (
             <Route path="/construtoras/:id" element={<AuthGuard><ConstrutoraDetail /></AuthGuard>} />
             <Route path="/construtoras/:id/avaliacoes" element={<AuthGuard><ConstrutoraAvaliacoes /></AuthGuard>} />
             <Route path="/brick" element={<AuthGuard><Brick /></AuthGuard>} />
+            <Route path="/empreendimentos" element={<AuthGuard><Empreendimentos /></AuthGuard>} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>

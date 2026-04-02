@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Building2, Users, FileText, Settings,
   ChevronLeft, ChevronRight, Building, Camera, Fence,
   Globe, ClipboardCheck, Wallet, Table2, FileSignature,
-  Clapperboard, Landmark, HardHat, ShoppingBag,
+  Clapperboard, Landmark, Landmark as Landmark2, HardHat, ShoppingBag,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import logoImg from "@/assets/logo.png";
