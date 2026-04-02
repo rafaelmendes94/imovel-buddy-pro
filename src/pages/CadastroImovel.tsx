@@ -18,7 +18,8 @@ import { useSystemOptions } from '@/hooks/useSystemOptions';
 import {
   Building2, MapPin, BedDouble, Bath, Car, Ruler, User, Phone, DollarSign,
   Percent, Gift, Home, Sparkles, Save, Image, Plus, X, Loader2,
-  Hash, FileText, Eye, Key, Calendar, Building, Fence, Landmark, Search, Brain, Wand2
+  Hash, FileText, Eye, Key, Calendar, Building, Fence, Landmark, Search, Brain, Wand2,
+  Play, FolderDown
 } from 'lucide-react';
 
 const tiposImovel = ["Apartamento", "Casa", "Comercial", "Terreno", "Lote", "Condomínio"];
