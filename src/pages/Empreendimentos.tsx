@@ -74,7 +74,7 @@ export default function Empreendimentos() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
             {filtered.map((emp) => (
-              <div key={emp.id} className="elevated-card rounded-xl overflow-hidden group">
+              <div key={emp.id} className="elevated-card rounded-xl overflow-hidden group cursor-pointer" onClick={() => navigate(`/empreendimentos/${emp.id}`)}>
                 <div className="relative h-44 overflow-hidden">
                   <img src={emp.imagem_url || "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&h=300&fit=crop"} alt={emp.nome} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   <span className={cn("absolute top-3 left-3 px-2.5 py-1 rounded-md text-[11px] font-semibold border", statusColors[emp.status] || "bg-muted text-muted-foreground")}>{emp.status}</span>
