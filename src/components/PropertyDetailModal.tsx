@@ -358,15 +358,20 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
           </div>
           {/* Action buttons in header */}
           <div className="flex items-center gap-1.5 flex-shrink-0">
+            <Link to={`/editar-imovel/${property.id}`} onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-amber-600" title="Editar imóvel">
+              <Pencil className="w-4.5 h-4.5" />
+            </Link>
             <button onClick={handleShare} className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-amber-600" title="Compartilhar">
               <Share2 className="w-4.5 h-4.5" />
             </button>
             <button onClick={handleDownload} className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-blue-600" title="Baixar ficha">
               <Download className="w-4.5 h-4.5" />
             </button>
-            <button onClick={handleMaterialDownload} className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-purple-600" title="Material Completo">
-              <Download className="w-4.5 h-4.5" />
-            </button>
+            {materialUrl && (
+              <button onClick={handleMaterialDownload} className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-purple-600" title="Material Completo">
+                <Download className="w-4.5 h-4.5" />
+              </button>
+            )}
             <button onClick={handleClose} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
               <X className="w-5 h-5 text-gray-500" />
             </button>
