@@ -95,6 +95,8 @@ export interface FormData {
   edificio_id: string;
   condominio_id: string;
   empreendimento_id: string;
+  linkVideo: string;
+  linkMaterial: string;
 }
 
 export const initialForm: FormData = {
