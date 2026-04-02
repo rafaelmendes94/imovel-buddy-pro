@@ -217,6 +217,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
+  const { values: infraOptions } = useSystemOptions("infraestrutura");
 
   const isEdit = !!editId;
   const set = (field: keyof FormData, value: any) => setForm(prev => ({ ...prev, [field]: value }));
