@@ -248,6 +248,8 @@ export default function Properties() {
         bonusExpiry: row.bonus_validade || "",
         padrao: (row.padrao as Property["padrao"]) || undefined,
         outrasCaracteristicas: row.outras_caracteristicas || [],
+        linkVideo: (row as any).link_video || "",
+        linkMaterial: (row as any).link_material || "",
       }));
 
       setPropertyList(mapped);
