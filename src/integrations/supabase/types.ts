@@ -94,14 +94,22 @@ export type Database = {
       condominios: {
         Row: {
           amenidades: string[] | null
+          ano_construcao: string | null
+          bairro: string | null
+          cep: string | null
           cidade: string | null
+          complemento: string | null
+          construtora: string | null
           created_at: string | null
+          descricao: string | null
           endereco: string | null
+          estado: string | null
           id: string
           imagem_url: string | null
           latitude: number | null
           longitude: number | null
           nome: string
+          numero: string | null
           taxa_condominio: number | null
           tipo: string | null
           total_unidades: number | null
@@ -110,14 +118,22 @@ export type Database = {
         }
         Insert: {
           amenidades?: string[] | null
+          ano_construcao?: string | null
+          bairro?: string | null
+          cep?: string | null
           cidade?: string | null
+          complemento?: string | null
+          construtora?: string | null
           created_at?: string | null
+          descricao?: string | null
           endereco?: string | null
+          estado?: string | null
           id?: string
           imagem_url?: string | null
           latitude?: number | null
           longitude?: number | null
           nome: string
+          numero?: string | null
           taxa_condominio?: number | null
           tipo?: string | null
           total_unidades?: number | null
@@ -126,14 +142,22 @@ export type Database = {
         }
         Update: {
           amenidades?: string[] | null
+          ano_construcao?: string | null
+          bairro?: string | null
+          cep?: string | null
           cidade?: string | null
+          complemento?: string | null
+          construtora?: string | null
           created_at?: string | null
+          descricao?: string | null
           endereco?: string | null
+          estado?: string | null
           id?: string
           imagem_url?: string | null
           latitude?: number | null
           longitude?: number | null
           nome?: string
+          numero?: string | null
           taxa_condominio?: number | null
           tipo?: string | null
           total_unidades?: number | null
@@ -462,17 +486,22 @@ export type Database = {
       }
       empreendimentos: {
         Row: {
+          bairro: string | null
+          cep: string | null
           cidade: string | null
+          complemento: string | null
           construtora: string | null
           created_at: string | null
           descricao: string | null
           endereco: string | null
+          estado: string | null
           id: string
           imagem_url: string | null
           infraestrutura: string[] | null
           latitude: number | null
           longitude: number | null
           nome: string
+          numero: string | null
           previsao_entrega: string | null
           status: string | null
           tipo: string | null
@@ -480,17 +509,22 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          bairro?: string | null
+          cep?: string | null
           cidade?: string | null
+          complemento?: string | null
           construtora?: string | null
           created_at?: string | null
           descricao?: string | null
           endereco?: string | null
+          estado?: string | null
           id?: string
           imagem_url?: string | null
           infraestrutura?: string[] | null
           latitude?: number | null
           longitude?: number | null
           nome: string
+          numero?: string | null
           previsao_entrega?: string | null
           status?: string | null
           tipo?: string | null
@@ -498,17 +532,22 @@ export type Database = {
           user_id: string
         }
         Update: {
+          bairro?: string | null
+          cep?: string | null
           cidade?: string | null
+          complemento?: string | null
           construtora?: string | null
           created_at?: string | null
           descricao?: string | null
           endereco?: string | null
+          estado?: string | null
           id?: string
           imagem_url?: string | null
           infraestrutura?: string[] | null
           latitude?: number | null
           longitude?: number | null
           nome?: string
+          numero?: string | null
           previsao_entrega?: string | null
           status?: string | null
           tipo?: string | null
