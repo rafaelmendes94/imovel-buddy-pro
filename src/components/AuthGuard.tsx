@@ -28,7 +28,7 @@ export function AuthGuard({ children, requiredRoles, allowBlocked = false }: Aut
     if (!hasRole) {
       // Redirect to appropriate panel
       if (roles.includes("super_admin") || roles.includes("admin_staff")) {
-        return <Navigate to="/admin/dashboard" replace />;
+        return <Navigate to="/dashboard" replace />;
       }
       return <Navigate to="/painel" replace />;
     }
