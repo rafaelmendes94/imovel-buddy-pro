@@ -11,7 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import logoImg from "@/assets/logo.png";
 
 const adminItems = [
-  { icon: LayoutDashboard, label: "Dashboard Admin", path: "/admin/dashboard", moduleKey: "dashboard_admin" },
+  { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard", moduleKey: "dashboard_admin" },
   { icon: UserCog, label: "Funcionários", path: "/admin/funcionarios", moduleKey: "funcionarios" },
   { icon: Briefcase, label: "Cargos e Funções", path: "/admin/cargos", moduleKey: "funcionarios" },
   { icon: Users, label: "Clientes", path: "/admin/clientes", moduleKey: "clientes" },

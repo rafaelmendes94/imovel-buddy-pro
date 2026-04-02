@@ -246,6 +246,6 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </div>
       </div>
-    </AppLayout>
+    </Layout>
   );
 }
