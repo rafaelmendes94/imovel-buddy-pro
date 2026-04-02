@@ -206,16 +206,13 @@ export default function Empreendimentos() {
                   </div>
                 </div>
 
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-2 block">Infraestrutura</label>
-                  <div className="flex flex-wrap gap-2">
-                    {allInfra.map(a => (
-                      <button key={a} type="button" onClick={() => toggleInfra(a)} className={cn("px-2.5 py-1 rounded-md text-xs font-medium border transition-all", form.infraestrutura.includes(a) ? "bg-primary/10 text-primary border-primary/30" : "bg-muted/50 text-muted-foreground border-transparent hover:bg-muted")}>
-                        {a}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                <QuickSelect
+                  label="Infraestrutura"
+                  options={infraOptions}
+                  selected={form.infraestrutura}
+                  onChange={(sel) => setForm(f => ({ ...f, infraestrutura: sel }))}
+                  allowCustom
+                />
               </div>
               <div className="flex justify-end gap-3 p-5 border-t border-border">
                 <button onClick={() => setShowForm(false)} className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium hover:bg-muted transition-colors">Cancelar</button>
