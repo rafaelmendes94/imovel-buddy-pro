@@ -70,13 +70,19 @@ export default function AdminIA() {
     try {
       const { data, error } = await supabase.functions.invoke("generate-description", {
         body: {
-          titulo: "Teste IA",
-          tipo: "Apartamento",
-          quartos: 2,
-          banheiros: 1,
-          area: 60,
-          cidade: "São Paulo",
-          bairro: "Centro",
+          property: {
+            title: "Teste IA",
+            type: "Apartamento",
+            status: "disponível",
+            price: 500000,
+            address: "Rua Teste, 100",
+            city: "Capão da Canoa",
+            area: 60,
+            bedrooms: 2,
+            bathrooms: 1,
+            parking: 1,
+          },
+          style: "informativa",
         },
       });
       if (error || data?.error) {
