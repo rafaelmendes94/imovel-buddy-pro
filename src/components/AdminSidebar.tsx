@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Users, UserCog, CreditCard, LogOut, Crown,
   Building2, Building, Fence, Camera, ClipboardCheck, Wallet,
   Table2, FileSignature, Clapperboard, Globe, Landmark, Settings,
-  FileText, Map, Briefcase, ShoppingBag,
+  FileText, Map, Briefcase, ShoppingBag, Brain,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -17,6 +17,7 @@ const adminItems = [
   { icon: Users, label: "Clientes", path: "/admin/clientes", moduleKey: "clientes" },
   { icon: CreditCard, label: "Planos", path: "/admin/planos", moduleKey: "planos" },
   { icon: Settings, label: "Opções do Sistema", path: "/admin/opcoes", moduleKey: "dashboard_admin" },
+  { icon: Brain, label: "Configuração IA", path: "/admin/ia", moduleKey: "dashboard_admin" },
 ];
 
 const operationalItems = [

@@ -1,4 +1,13 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+
+async function getAIModel(): Promise<string> {
+  try {
+    const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    const { data } = await supabase.from("system_settings").select("value").eq("key", "ai_model").maybeSingle();
+    return data?.value || "google/gemini-3-flash-preview";
+  } catch { return "google/gemini-3-flash-preview"; }
+}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -73,6 +82,8 @@ Gere descrições em português brasileiro, profissionais e atrativas.
 NÃO inclua o preço na descrição (ele já aparece separado no anúncio).
 NÃO invente informações que não foram fornecidas nos dados.`;
 
+    const aiModel = await getAIModel();
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -80,7 +91,7 @@ NÃO invente informações que não foram fornecidas nos dados.`;
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: aiModel,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: `${stylePrompt}\n\n${propertyInfo}` },
