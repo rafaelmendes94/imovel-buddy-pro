@@ -1,13 +1,13 @@
 import { useParams } from 'react-router-dom';
-import { SmartLayout } from '@/components/SmartLayout';
+import { AppLayout } from '@/components/AppLayout';
 import { ImovelForm } from './CadastroImovel';
 
 export default function EditarImovel() {
   const { id } = useParams<{ id: string }>();
 
   return (
-    <SmartLayout>
+    <AppLayout>
       <ImovelForm editId={id} />
-    </SmartLayout>
+    </AppLayout>
   );
 }

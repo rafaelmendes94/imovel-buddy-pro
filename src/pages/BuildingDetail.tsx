@@ -1,8 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { MiniMap } from "@/components/MiniMap";
-import { SmartLayout } from "@/components/SmartLayout";
+import { AppLayout } from "@/components/AppLayout";
 import { formatCurrency } from "@/data/mockData";
 import {
   ArrowLeft,
@@ -217,59 +216,17 @@ export default function BuildingDetail() {
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
-  const [building, setBuilding] = useState<BuildingInfo | null>(null);
-  const [loadingBuilding, setLoadingBuilding] = useState(true);
-
-  useEffect(() => {
-    if (!id) return;
-    const load = async () => {
-      setLoadingBuilding(true);
-      const { data } = await supabase.from('edificios').select('*').eq('id', id).maybeSingle();
-      if (data) {
-        // Load linked properties
-        const { data: props } = await supabase.from('imoveis').select('*').eq('edificio_id', id);
-        const units: Unit[] = (props || []).map((p: any) => ({
-          id: p.id, number: p.unidade || p.titulo, floor: 0, type: p.tipo,
-          area: Number(p.area), bedrooms: p.quartos, bathrooms: p.banheiros, parking: p.vagas,
-          price: Number(p.preco),
-          status: p.status as Unit["status"],
-          buyer: p.proprietario || undefined,
-        }));
-        setBuilding({
-          id: data.id, name: data.nome, address: data.endereco || '', city: data.cidade || '',
-          floors: data.andares || 0, totalUnits: data.total_unidades || 0,
-          builder: data.construtora || '', yearBuilt: data.ano_construcao || '', status: data.status || '',
-          image: data.imagem_url || "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&h=500&fit=crop",
-          amenities: data.infraestrutura || [], infrastructure: data.infraestrutura || [],
-          infraPhotos: [], videoUrl: "", downloadUrl: "#",
-          units, lat: Number(data.latitude) || 0, lng: Number(data.longitude) || 0,
-        });
-      }
-      setLoadingBuilding(false);
-    };
-    load();
-  }, [id]);
-
-  if (loadingBuilding) {
-    return (
-      <SmartLayout>
-        <div className="p-8 text-center text-muted-foreground">
-          <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p>Carregando edifício...</p>
-        </div>
-      </SmartLayout>
-    );
-  }
+  const building = mockBuildings[id || ""];
 
   if (!building) {
     return (
-      <SmartLayout>
+      <AppLayout>
         <div className="p-8 text-center text-muted-foreground">
           <Building className="w-16 h-16 mx-auto mb-4 opacity-40" />
           <p className="text-lg">Edifício não encontrado</p>
           <Link to="/edificios" className="text-accent hover:underline mt-2 inline-block">Voltar</Link>
         </div>
-      </SmartLayout>
+      </AppLayout>
     );
   }
 
@@ -290,7 +247,7 @@ export default function BuildingDetail() {
     : building.units;
 
   return (
-    <SmartLayout>
+    <AppLayout>
       <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
         {/* Header with actions */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -613,6 +570,6 @@ export default function BuildingDetail() {
           </div>
         )}
       </div>
-    </SmartLayout>
+    </AppLayout>
   );
 }

@@ -1,11 +1,13 @@
 import { useState, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
-  ChevronLeft, ChevronRight, GripVertical,
+  LayoutDashboard, Building2, Users, FileText, Settings,
+  ChevronLeft, ChevronRight, Home, Building, Camera, Fence,
+  Globe, ClipboardCheck, Wallet, Table2, FileSignature,
+  Clapperboard, GripVertical, Landmark, HardHat, ShoppingBag,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import logoImg from "@/assets/logo.png";
-import { CORE_NAV_ITEMS } from "@/config/coreNavigation";
 
 interface NavItem {
   icon: React.ComponentType<{ className?: string }>;
@@ -13,7 +15,25 @@ interface NavItem {
   path: string;
 }
 
-const defaultNavItems: NavItem[] = CORE_NAV_ITEMS;
+const defaultNavItems: NavItem[] = [
+  { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
+  { icon: FileText, label: "Relatórios", path: "/relatorios" },
+  { icon: Globe, label: "Site", path: "/site-editor" },
+  { icon: Building2, label: "Imóveis", path: "/imoveis" },
+  { icon: Building, label: "Edifícios", path: "/edificios" },
+  { icon: Fence, label: "Condomínios", path: "/condominios" },
+  { icon: Camera, label: "Fotos da Cidade", path: "/fotos-cidade" },
+  { icon: ClipboardCheck, label: "Avaliações", path: "/avaliacoes" },
+  { icon: Wallet, label: "Financeiro", path: "/financeiro" },
+  { icon: Table2, label: "Tabelas", path: "/tabelas" },
+  { icon: FileSignature, label: "Contratos", path: "/contratos" },
+  { icon: Clapperboard, label: "Material Extra", path: "/videomaker" },
+  { icon: Users, label: "Corretores", path: "/corretores" },
+  { icon: Landmark, label: "Imobiliárias", path: "/imobiliarias" },
+  { icon: HardHat, label: "Construtoras", path: "/construtoras" },
+  { icon: ShoppingBag, label: "Brick", path: "/brick" },
+  { icon: Settings, label: "Configurações", path: "/configuracoes" },
+];
 
 function loadSavedOrder(): NavItem[] {
   try {

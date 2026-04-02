@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import {
   X, MapPin, BedDouble, Bath, Car, Ruler, Phone, Waves, Paintbrush,
@@ -35,8 +35,6 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
   const [showAIOptions, setShowAIOptions] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [editingBlock, setEditingBlock] = useState<string | null>(null);
-  const [linkedEdificio, setLinkedEdificio] = useState<any>(null);
-  const [linkedCondominio, setLinkedCondominio] = useState<any>(null);
 
   // Block ordering with drag support
   const defaultBlockOrder = ["identificacao", "valor", "proprietario", "caracteristicas"];
@@ -78,18 +76,6 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
     setOverBlockIdx(null);
   };
   const handleBlockDragEnd = () => { setDragBlockIdx(null); setOverBlockIdx(null); };
-
-  // Fetch linked edificio/condominio
-  useEffect(() => {
-    if (!property) { setLinkedEdificio(null); setLinkedCondominio(null); return; }
-    const p = property as any;
-    if (p.edificio_id || p.edificioId) {
-      supabase.from('edificios').select('*').eq('id', p.edificio_id || p.edificioId).maybeSingle().then(({ data }) => setLinkedEdificio(data));
-    } else { setLinkedEdificio(null); }
-    if (p.condominio_id || p.condominioId) {
-      supabase.from('condominios').select('*').eq('id', p.condominio_id || p.condominioId).maybeSingle().then(({ data }) => setLinkedCondominio(data));
-    } else { setLinkedCondominio(null); }
-  }, [property]);
 
   if (!property) return null;
 
@@ -491,56 +477,6 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
             </div>
           )}
 
-          {/* Linked Edificio / Condominio info */}
-          {linkedEdificio && (
-            <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-2">
-              <div className="flex items-center justify-between">
-                <h4 className="text-sm font-bold text-blue-900 flex items-center gap-1.5">
-                  <Building2 className="w-4 h-4" /> Edifício: {linkedEdificio.nome}
-                </h4>
-                <Link to={`/edificios/${linkedEdificio.id}`} onClick={onClose}
-                  className="text-[11px] font-bold text-blue-600 hover:underline">Ver detalhes →</Link>
-              </div>
-              <div className="flex flex-wrap gap-3 text-xs text-blue-800">
-                <span>{linkedEdificio.andares} andares</span>
-                <span>{linkedEdificio.total_unidades} unidades</span>
-                {linkedEdificio.construtora && <span>Construtora: {linkedEdificio.construtora}</span>}
-                {linkedEdificio.ano_construcao && <span>Ano: {linkedEdificio.ano_construcao}</span>}
-              </div>
-              {linkedEdificio.infraestrutura?.length > 0 && (
-                <div className="flex flex-wrap gap-1.5">
-                  {linkedEdificio.infraestrutura.map((i: string) => (
-                    <span key={i} className="px-2 py-0.5 rounded text-[10px] font-medium bg-blue-100 text-blue-700">{i}</span>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {linkedCondominio && (
-            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 space-y-2">
-              <div className="flex items-center justify-between">
-                <h4 className="text-sm font-bold text-emerald-900 flex items-center gap-1.5">
-                  <Building2 className="w-4 h-4" /> Condomínio: {linkedCondominio.nome}
-                </h4>
-                <Link to={`/condominios/${linkedCondominio.id}`} onClick={onClose}
-                  className="text-[11px] font-bold text-emerald-600 hover:underline">Ver detalhes →</Link>
-              </div>
-              <div className="flex flex-wrap gap-3 text-xs text-emerald-800">
-                <span>Tipo: {linkedCondominio.tipo}</span>
-                <span>{linkedCondominio.total_unidades} unidades</span>
-                {Number(linkedCondominio.taxa_condominio) > 0 && <span>Taxa: {formatCurrency(Number(linkedCondominio.taxa_condominio))}/mês</span>}
-              </div>
-              {linkedCondominio.amenidades?.length > 0 && (
-                <div className="flex flex-wrap gap-1.5">
-                  {linkedCondominio.amenidades.map((a: string) => (
-                    <span key={a} className="px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-100 text-emerald-700">{a}</span>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
           {/* Location - editable */}
           <a
             href={googleMapsUrl}
@@ -800,7 +736,6 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                 { id: "keysLocation", label: "Chaves do Imóvel", render: () => editingBlock === "proprietario" ? <EditableField field="keysLocation" value={property.keysLocation || ""} label="chaves" /> : <span className="text-sm font-medium text-foreground">{property.keysLocation || "—"}</span> },
                 { id: "exclusivity", label: "Exclusividade", render: () => editingBlock === "proprietario" ? <EditableField field="exclusivityTerm" value={property.exclusivityTerm || ""} label="exclusividade" /> : <span className="text-sm font-medium text-foreground">{property.exclusivityTerm || "—"}</span> },
                 { id: "broker", label: "Corretor", render: () => editingBlock === "proprietario" ? <EditableField field="broker" value={property.broker} label="corretor" /> : <span className="text-sm font-medium text-foreground">{property.broker}</span> },
-                { id: "imobiliaria", label: "Imobiliária", render: () => <span className="text-sm font-medium text-foreground">{(property as any).imobiliariaNome || "—"}</span> },
               ];
 
               return blockWrapper("proprietario",

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { SmartLayout } from "@/components/SmartLayout";
+import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -164,7 +164,7 @@ export default function Brick() {
   });
 
   return (
-    <SmartLayout>
+    <AppLayout>
       <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -340,6 +340,6 @@ export default function Brick() {
           </div>
         )}
       </div>
-    </SmartLayout>
+    </AppLayout>
   );
 }

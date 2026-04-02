@@ -1,5 +1,5 @@
 import React from "react";
-import { SmartLayout } from "@/components/SmartLayout";
+import { AppLayout } from "@/components/AppLayout";
 import { BackButton } from "@/components/BackButton";
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -402,7 +402,7 @@ export default function Financeiro() {
   };
 
   return (
-    <SmartLayout>
+    <AppLayout>
       <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
         {/* Header */}
         <BackButton />
@@ -944,6 +944,6 @@ export default function Financeiro() {
           </DialogContent>
         </Dialog>
       </div>
-    </SmartLayout>
+    </AppLayout>
   );
 }

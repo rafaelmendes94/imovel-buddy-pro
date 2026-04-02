@@ -1,4 +1,4 @@
-import { SmartLayout } from "@/components/SmartLayout";
+import { AppLayout } from "@/components/AppLayout";
 import { BackButton } from "@/components/BackButton";
 import { brokers, formatCurrency } from "@/data/mockData";
 import { Plus, Mail, Phone, Award, Search } from "lucide-react";
@@ -13,7 +13,7 @@ export default function Brokers() {
   );
 
   return (
-    <SmartLayout>
+    <AppLayout>
       <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
         <BackButton />
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -101,6 +101,6 @@ export default function Brokers() {
           ))}
         </div>
       </div>
-    </SmartLayout>
+    </AppLayout>
   );
 }

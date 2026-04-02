@@ -1,6 +1,5 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate, useLocation } from "react-router-dom";
-import { DEFAULT_PROTECTED_ROUTE } from "@/config/coreNavigation";
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -27,7 +26,11 @@ export function AuthGuard({ children, requiredRoles, allowBlocked = false }: Aut
   if (requiredRoles && requiredRoles.length > 0) {
     const hasRole = requiredRoles.some(r => roles.includes(r));
     if (!hasRole) {
-      return <Navigate to={DEFAULT_PROTECTED_ROUTE} replace />;
+      // Redirect to appropriate panel
+      if (roles.includes("super_admin") || roles.includes("admin_staff")) {
+        return <Navigate to="/admin/dashboard" replace />;
+      }
+      return <Navigate to="/painel" replace />;
     }
   }
 

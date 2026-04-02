@@ -1,26 +1,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
-
-async function getAIConfig() {
-  const sb = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-  );
-  const { data } = await sb.from("system_settings").select("key, value").in("key", ["gemini_api_key", "ai_model"]);
-  let apiKey = "";
-  let model = "gemini-2.0-flash";
-  for (const r of data || []) {
-    if (r.key === "gemini_api_key") apiKey = r.value;
-    if (r.key === "ai_model") model = r.value;
-  }
-  return { apiKey, model };
-}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -30,14 +14,9 @@ serve(async (req) => {
   try {
     const { property, style } = await req.json();
 
-    const { apiKey, model } = await getAIConfig();
-
-    // Fallback to Lovable AI if no Gemini key configured
-    const useLovable = !apiKey;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-
-    if (useLovable && !LOVABLE_API_KEY) {
-      throw new Error("Nenhuma API de IA configurada. Configure a API Key do Gemini nas configurações.");
+    if (!LOVABLE_API_KEY) {
+      throw new Error("LOVABLE_API_KEY is not configured");
     }
 
     const stylePrompts: Record<string, string> = {
@@ -94,55 +73,41 @@ Gere descrições em português brasileiro, profissionais e atrativas.
 NÃO inclua o preço na descrição (ele já aparece separado no anúncio).
 NÃO invente informações que não foram fornecidas nos dados.`;
 
-    let url: string;
-    let headers: Record<string, string>;
-    let body: any;
-
-    if (useLovable) {
-      url = "https://ai.gateway.lovable.dev/v1/chat/completions";
-      headers = { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" };
-      body = {
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: `${stylePrompt}\n\n${propertyInfo}` },
         ],
-      };
-    } else {
-      url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-      headers = { "Content-Type": "application/json" };
-      body = {
-        system_instruction: { parts: [{ text: systemPrompt }] },
-        contents: [{ role: "user", parts: [{ text: `${stylePrompt}\n\n${propertyInfo}` }] }],
-      };
-    }
-
-    const response = await fetch(url, { method: "POST", headers, body: JSON.stringify(body) });
+      }),
+    });
 
     if (!response.ok) {
       if (response.status === 429) {
         return new Response(JSON.stringify({ error: "Limite de requisições excedido. Tente novamente em instantes." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 429,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Créditos insuficientes." }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        return new Response(JSON.stringify({ error: "Créditos insuficientes. Adicione créditos ao workspace." }), {
+          status: 402,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       const text = await response.text();
-      console.error("AI error:", response.status, text);
+      console.error("AI gateway error:", response.status, text);
       throw new Error("Erro ao gerar descrição");
     }
 
     const data = await response.json();
-    let description = "";
-
-    if (useLovable) {
-      description = data.choices?.[0]?.message?.content || "";
-    } else {
-      description = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-    }
+    const description = data.choices?.[0]?.message?.content || "";
 
     return new Response(JSON.stringify({ description }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

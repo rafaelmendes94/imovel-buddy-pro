@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { SmartLayout } from "@/components/SmartLayout";
+import { AppLayout } from "@/components/AppLayout";
 import { BackButton } from "@/components/BackButton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -186,7 +186,7 @@ export default function Reports() {
   }, []);
 
   return (
-    <SmartLayout>
+    <AppLayout>
       <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-5">
         {/* Header */}
         <BackButton />
@@ -435,7 +435,7 @@ export default function Reports() {
           </DialogContent>
         </Dialog>
       </div>
-    </SmartLayout>
+    </AppLayout>
   );
 }
 

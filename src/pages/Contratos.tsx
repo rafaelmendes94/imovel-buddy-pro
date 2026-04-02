@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { BackButton } from "@/components/BackButton";
 import { useSearchParams } from "react-router-dom";
-import { SmartLayout } from "@/components/SmartLayout";
+import { AppLayout } from "@/components/AppLayout";
 import {
   FileText, ScrollText, Receipt, CreditCard, FileSignature, ShieldCheck,
   Sparkles, Loader2, Download, Copy, ArrowLeft, ChevronRight, Pencil, Check, X,
@@ -321,7 +321,7 @@ export default function Contratos() {
   };
 
   return (
-    <SmartLayout>
+    <AppLayout>
       <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
         <BackButton />
         {/* Header */}
@@ -492,6 +492,6 @@ export default function Contratos() {
           </div>
         )}
       </div>
-    </SmartLayout>
+    </AppLayout>
   );
 }

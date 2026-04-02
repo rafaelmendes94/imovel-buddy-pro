@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { SmartLayout } from "@/components/SmartLayout";
+import { AppLayout } from "@/components/AppLayout";
 import { BackButton } from "@/components/BackButton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -133,7 +133,7 @@ export default function Construtoras() {
   const tabs = ["Dados Gerais", "Contato & Redes", "Personalização"];
 
   return (
-    <SmartLayout>
+    <AppLayout>
       <div className="p-4 sm:p-6 lg:p-8 space-y-6">
         <BackButton />
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -333,6 +333,6 @@ export default function Construtoras() {
           </motion.div>
         )}
       </div>
-    </SmartLayout>
+    </AppLayout>
   );
 }

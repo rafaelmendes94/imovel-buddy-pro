@@ -1,4 +1,4 @@
-import { SmartLayout } from "@/components/SmartLayout";
+import { AppLayout } from "@/components/AppLayout";
 import { BackButton } from "@/components/BackButton";
 import { MetricCard } from "@/components/MetricCard";
 import {
@@ -46,7 +46,7 @@ export default function Dashboard() {
   const qtdVendas = salesRecords.length;
 
   return (
-    <SmartLayout>
+    <AppLayout>
       <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
         {/* Header */}
         <BackButton />
@@ -240,6 +240,6 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </div>
       </div>
-    </SmartLayout>
+    </AppLayout>
   );
 }

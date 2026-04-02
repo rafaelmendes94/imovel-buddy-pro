@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { SmartLayout } from "@/components/SmartLayout";
+import { AppLayout } from "@/components/AppLayout";
 import { BackButton } from "@/components/BackButton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -331,7 +331,7 @@ export default function VideoMaker() {
   const selectedDateEvents = selectedAgendaDate ? getEventsForDate(selectedAgendaDate) : [];
 
   return (
-    <SmartLayout>
+    <AppLayout>
       <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
         <BackButton />
         <div className="flex items-center justify-between">
@@ -792,7 +792,7 @@ export default function VideoMaker() {
           </TabsContent>
         </Tabs>
       </div>
-    </SmartLayout>
+    </AppLayout>
   );
 }
 
