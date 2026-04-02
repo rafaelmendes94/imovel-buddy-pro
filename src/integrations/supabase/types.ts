@@ -528,8 +528,10 @@ export type Database = {
           bonus: number | null
           bonus_validade: string | null
           box: string | null
+          cep: string | null
           cidade: string
           comissao: number | null
+          complemento: string | null
           condicao: string | null
           condicoes_pagamento: string[] | null
           condominio_id: string | null
@@ -545,6 +547,7 @@ export type Database = {
           empreendimento: string | null
           empreendimento_id: string | null
           endereco: string
+          estado: string | null
           id: string
           imagens: string[] | null
           imobiliaria_nome: string | null
@@ -553,6 +556,7 @@ export type Database = {
           local_chaves: string | null
           longitude: number | null
           lote: string | null
+          numero: string | null
           outras_caracteristicas: string[] | null
           padrao: string | null
           posicao_predio: string | null
@@ -585,8 +589,10 @@ export type Database = {
           bonus?: number | null
           bonus_validade?: string | null
           box?: string | null
+          cep?: string | null
           cidade?: string
           comissao?: number | null
+          complemento?: string | null
           condicao?: string | null
           condicoes_pagamento?: string[] | null
           condominio_id?: string | null
@@ -602,6 +608,7 @@ export type Database = {
           empreendimento?: string | null
           empreendimento_id?: string | null
           endereco?: string
+          estado?: string | null
           id?: string
           imagens?: string[] | null
           imobiliaria_nome?: string | null
@@ -610,6 +617,7 @@ export type Database = {
           local_chaves?: string | null
           longitude?: number | null
           lote?: string | null
+          numero?: string | null
           outras_caracteristicas?: string[] | null
           padrao?: string | null
           posicao_predio?: string | null
@@ -642,8 +650,10 @@ export type Database = {
           bonus?: number | null
           bonus_validade?: string | null
           box?: string | null
+          cep?: string | null
           cidade?: string
           comissao?: number | null
+          complemento?: string | null
           condicao?: string | null
           condicoes_pagamento?: string[] | null
           condominio_id?: string | null
@@ -659,6 +669,7 @@ export type Database = {
           empreendimento?: string | null
           empreendimento_id?: string | null
           endereco?: string
+          estado?: string | null
           id?: string
           imagens?: string[] | null
           imobiliaria_nome?: string | null
@@ -667,6 +678,7 @@ export type Database = {
           local_chaves?: string | null
           longitude?: number | null
           lote?: string | null
+          numero?: string | null
           outras_caracteristicas?: string[] | null
           padrao?: string | null
           posicao_predio?: string | null
