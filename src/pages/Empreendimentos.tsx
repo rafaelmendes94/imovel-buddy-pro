@@ -75,12 +75,8 @@ export default function Empreendimentos() {
     (e.cidade || "").toLowerCase().includes(search.toLowerCase())
   );
 
-  const toggleInfra = (item: string) => {
-    setForm(f => ({
-      ...f,
-      infraestrutura: f.infraestrutura.includes(item) ? f.infraestrutura.filter(x => x !== item) : [...f.infraestrutura, item],
-    }));
-  };
+
+
 
   const handleSubmit = async () => {
     if (!form.nome || !user) return;
