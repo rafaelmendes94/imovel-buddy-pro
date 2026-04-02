@@ -56,6 +56,7 @@ import ConstrutoraDetail from "./pages/ConstrutoraDetail";
 import ConstrutoraAvaliacoes from "./pages/ConstrutoraAvaliacoes";
 import Brick from "./pages/Brick";
 import BrickStore from "./pages/BrickStore";
+import Empreendimentos from "./pages/Empreendimentos";
 
 const queryClient = new QueryClient();
 
