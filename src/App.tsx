@@ -126,6 +126,12 @@ const App = () => (
             <Route path="/construtoras/:id/avaliacoes" element={<AuthGuard><ConstrutoraAvaliacoes /></AuthGuard>} />
             <Route path="/brick" element={<AuthGuard><Brick /></AuthGuard>} />
             <Route path="/empreendimentos" element={<AuthGuard><Empreendimentos /></AuthGuard>} />
+            <Route path="/cadastro-edificio" element={<AuthGuard><CadastroEdificio /></AuthGuard>} />
+            <Route path="/editar-edificio/:id" element={<AuthGuard><CadastroEdificio /></AuthGuard>} />
+            <Route path="/cadastro-condominio" element={<AuthGuard><CadastroCondominio /></AuthGuard>} />
+            <Route path="/editar-condominio/:id" element={<AuthGuard><CadastroCondominio /></AuthGuard>} />
+            <Route path="/cadastro-empreendimento" element={<AuthGuard><CadastroEmpreendimento /></AuthGuard>} />
+            <Route path="/editar-empreendimento/:id" element={<AuthGuard><CadastroEmpreendimento /></AuthGuard>} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>
