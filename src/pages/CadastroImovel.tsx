@@ -13,6 +13,8 @@ import { AppLayout } from '@/components/AppLayout';
 import { BackButton } from '@/components/BackButton';
 import { QuickPick } from '@/components/QuickPick';
 import { CepAutoFill, type AddressData } from '@/components/CepAutoFill';
+import { InfraToggle } from '@/components/InfraToggle';
+import { useSystemOptions } from '@/hooks/useSystemOptions';
 import {
   Building2, MapPin, BedDouble, Bath, Car, Ruler, User, Phone, DollarSign,
   Percent, Gift, Home, Sparkles, Save, Image, Plus, X, Loader2,
