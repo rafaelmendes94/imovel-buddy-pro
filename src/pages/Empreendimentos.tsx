@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { BackButton } from "@/components/BackButton";
 import { QuickPick } from "@/components/QuickPick";
-import { QuickSelect } from "@/components/QuickSelect";
+import { InfraToggle } from "@/components/InfraToggle";
 import { CepAutoFill, type AddressData } from "@/components/CepAutoFill";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
