@@ -160,7 +160,7 @@ export default function EmpreendimentoDetail() {
             ) : (
               <>
                 <p className="text-sm text-muted-foreground mb-3">{imoveis.length} imóvel(is)</p>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
                   {imoveis.map((im) => {
                     const imgs = im.imagens && im.imagens.length > 0 ? im.imagens : ["https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=300&fit=crop"];
                     const conditions = im.condicoes_pagamento || [];
