@@ -2,10 +2,12 @@ import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { BackButton } from "@/components/BackButton";
 import { QuickPick } from "@/components/QuickPick";
+import { QuickSelect } from "@/components/QuickSelect";
 import { CepAutoFill, type AddressData } from "@/components/CepAutoFill";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useSystemOptions } from "@/hooks/useSystemOptions";
 import { cn } from "@/lib/utils";
 import {
   Landmark, Plus, Search, MapPin, X, Save, Edit, Trash2, Loader2, Calendar, Building2,
@@ -15,7 +17,6 @@ import { Textarea } from "@/components/ui/textarea";
 
 const statusOptions = ["Lançamento", "Em construção", "Pronto", "Em vendas"];
 const tipoOptions = ["Residencial", "Comercial", "Misto", "Loteamento"];
-const allInfra = ["Piscina", "Academia", "Salão de Festas", "Playground", "Quadra", "Churrasqueira", "Segurança 24h", "Portaria", "Área Verde", "Coworking"];
 
 const statusColors: Record<string, string> = {
   "Em construção": "bg-warning/10 text-warning border-warning/30",
