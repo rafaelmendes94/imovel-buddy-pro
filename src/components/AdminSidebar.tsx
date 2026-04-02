@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Users, UserCog, CreditCard, LogOut, Crown,
   Building2, Building, Fence, Camera, ClipboardCheck, Wallet,
   Table2, FileSignature, Clapperboard, Globe, Landmark, Settings,
-  FileText, Map, Briefcase, ShoppingBag,
+  FileText, Map, Briefcase, ShoppingBag, Brain,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
