@@ -19,7 +19,7 @@ const adminItems = [
 ];
 
 const operationalItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard", moduleKey: "dashboard" },
+  { icon: FileText, label: "Relatórios", path: "/relatorios", moduleKey: "relatorios" },
   { icon: FileText, label: "Relatórios", path: "/relatorios", moduleKey: "relatorios" },
   { icon: Globe, label: "Site", path: "/site-editor", moduleKey: "site_editor" },
   { icon: Building2, label: "Imóveis", path: "/imoveis", moduleKey: "imoveis" },

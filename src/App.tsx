@@ -16,7 +16,7 @@ import PartnerDetail from "./pages/PartnerDetail";
 import ConstrutoraSite from "./pages/ConstrutoraSite";
 
 // Admin pages
-import AdminDashboard from "./pages/admin/AdminDashboard";
+// AdminDashboard removed - using unified Dashboard
 import AdminFuncionarios from "./pages/admin/AdminFuncionarios";
 import AdminClientes from "./pages/admin/AdminClientes";
 import AdminPlanos from "./pages/admin/AdminPlanos";
