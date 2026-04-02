@@ -84,7 +84,8 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
   const broker = brokerInfo?.[property.broker];
   const whatsappMessage = encodeURIComponent(`Olá! Tenho interesse no imóvel: ${property.title} - ${formatCurrency(property.price)}`);
   const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${property.address}, ${property.city}`)}`;
-  const videoUrl = "https://www.youtube.com/embed/dQw4w9WgXcQ";
+  const videoUrl = property.linkVideo || "";
+  const materialUrl = property.linkMaterial || "";
 
   const ownerProperties = allProperties
     .filter((p) => p.id !== property.id && p.owner && property.owner && p.owner === property.owner)
@@ -270,8 +271,12 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
 
   // -- Download material completo --
   const handleMaterialDownload = () => {
-    toast.info("Preparando material completo...", { description: "Fotos, plantas, documentos e fichas do imóvel." });
-    window.open(`https://drive.google.com/drive/search?q=${encodeURIComponent(property.title + " material")}`, "_blank");
+    if (materialUrl) {
+      window.open(materialUrl, "_blank");
+      toast.success("Abrindo material completo...");
+    } else {
+      toast.info("Nenhum link de material cadastrado para este imóvel.");
+    }
   };
 
   // -- Editable field component --
@@ -353,15 +358,20 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
           </div>
           {/* Action buttons in header */}
           <div className="flex items-center gap-1.5 flex-shrink-0">
+            <Link to={`/editar-imovel/${property.id}`} onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-amber-600" title="Editar imóvel">
+              <Pencil className="w-4.5 h-4.5" />
+            </Link>
             <button onClick={handleShare} className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-amber-600" title="Compartilhar">
               <Share2 className="w-4.5 h-4.5" />
             </button>
             <button onClick={handleDownload} className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-blue-600" title="Baixar ficha">
               <Download className="w-4.5 h-4.5" />
             </button>
-            <button onClick={handleMaterialDownload} className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-purple-600" title="Material Completo">
-              <Download className="w-4.5 h-4.5" />
-            </button>
+            {materialUrl && (
+              <button onClick={handleMaterialDownload} className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-purple-600" title="Material Completo">
+                <Download className="w-4.5 h-4.5" />
+              </button>
+            )}
             <button onClick={handleClose} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
               <X className="w-5 h-5 text-gray-500" />
             </button>
@@ -441,16 +451,21 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
         )}
 
         {/* Action bar */}
-        <div className="flex items-center gap-2 px-5 py-3 bg-amber-50/50 border-b border-amber-100">
+        <div className="flex items-center gap-2 px-5 py-3 bg-amber-50/50 border-b border-amber-100 flex-wrap">
+          <Link to={`/editar-imovel/${property.id}`} onClick={onClose} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
+            <Pencil className="w-4 h-4 text-amber-500" /> Editar
+          </Link>
           <button onClick={handleShare} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
             <Share2 className="w-4 h-4 text-amber-500" /> Compartilhar
           </button>
           <button onClick={handleDownload} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
             <Download className="w-4 h-4 text-blue-500" /> Baixar Ficha
           </button>
-          <button onClick={handleMaterialDownload} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
-            <Download className="w-4 h-4 text-purple-500" /> Material Completo
-          </button>
+          {materialUrl && (
+            <button onClick={handleMaterialDownload} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
+              <Download className="w-4 h-4 text-purple-500" /> Material Completo
+            </button>
+          )}
         </div>
 
         {/* Content */}
@@ -895,19 +910,21 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
           })}
 
           {/* Video section */}
-          <div className="rounded-xl overflow-hidden border border-gray-200">
-            <button onClick={() => setShowVideo(!showVideo)} className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors">
-              <span className="flex items-center gap-2 text-sm font-bold text-gray-800">
-                <Play className="w-4 h-4 text-red-500" /> Vídeo do Imóvel
-              </span>
-              <ChevronRight className={cn("w-4 h-4 text-gray-400 transition-transform", showVideo && "rotate-90")} />
-            </button>
-            {showVideo && (
-              <div className="aspect-video bg-black">
-                <iframe src={videoUrl} title="Vídeo do imóvel" className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
-              </div>
-            )}
-          </div>
+          {videoUrl && (
+            <div className="rounded-xl overflow-hidden border border-gray-200">
+              <button onClick={() => setShowVideo(!showVideo)} className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors">
+                <span className="flex items-center gap-2 text-sm font-bold text-gray-800">
+                  <Play className="w-4 h-4 text-red-500" /> Vídeo do Imóvel
+                </span>
+                <ChevronRight className={cn("w-4 h-4 text-gray-400 transition-transform", showVideo && "rotate-90")} />
+              </button>
+              {showVideo && (
+                <div className="aspect-video bg-black">
+                  <iframe src={videoUrl} title="Vídeo do imóvel" className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Broker + WhatsApp */}
           <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">

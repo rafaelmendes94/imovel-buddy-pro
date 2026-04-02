@@ -18,7 +18,8 @@ import { useSystemOptions } from '@/hooks/useSystemOptions';
 import {
   Building2, MapPin, BedDouble, Bath, Car, Ruler, User, Phone, DollarSign,
   Percent, Gift, Home, Sparkles, Save, Image, Plus, X, Loader2,
-  Hash, FileText, Eye, Key, Calendar, Building, Fence, Landmark, Search, Brain, Wand2
+  Hash, FileText, Eye, Key, Calendar, Building, Fence, Landmark, Search, Brain, Wand2,
+  Play, FolderDown
 } from 'lucide-react';
 
 const tiposImovel = ["Apartamento", "Casa", "Comercial", "Terreno", "Lote", "Condomínio"];
@@ -94,6 +95,8 @@ export interface FormData {
   edificio_id: string;
   condominio_id: string;
   empreendimento_id: string;
+  linkVideo: string;
+  linkMaterial: string;
 }
 
 export const initialForm: FormData = {
@@ -110,6 +113,7 @@ export const initialForm: FormData = {
   condicoesPagemento: [], infraestrutura: [], outrasCaracteristicas: [],
   latitude: '', longitude: '',
   edificio_id: '', condominio_id: '', empreendimento_id: '',
+  linkVideo: '', linkMaterial: '',
 };
 
 function SectionHeader({ icon: Icon, title }: { icon: any; title: string }) {
@@ -371,6 +375,8 @@ export function ImovelForm({ editId }: { editId?: string }) {
         edificio_id: data.edificio_id || '',
         condominio_id: data.condominio_id || '',
         empreendimento_id: data.empreendimento_id || '',
+        linkVideo: (data as any).link_video || '',
+        linkMaterial: (data as any).link_material || '',
       });
       setExistingImages(data.imagens || []);
       setLoadingData(false);
@@ -518,6 +524,8 @@ export function ImovelForm({ editId }: { editId?: string }) {
         edificio_id: form.edificio_id || null,
         condominio_id: form.condominio_id || null,
         empreendimento_id: form.empreendimento_id || null,
+        link_video: form.linkVideo || '',
+        link_material: form.linkMaterial || '',
       } as any;
 
       if (isEdit) {
@@ -845,6 +853,21 @@ export function ImovelForm({ editId }: { editId?: string }) {
         <SectionHeader icon={FileText} title="Descrição" />
         <DescriptionAI form={form} onGenerated={(text) => set('descricao', text)} />
         <Textarea placeholder="Descreva o imóvel com o máximo de detalhes..." value={form.descricao} onChange={e => set('descricao', e.target.value)} rows={6} className="resize-y" />
+      </div>
+
+      {/* ===== BLOCO 5B: LINKS DE MÍDIA ===== */}
+      <div className="bg-card border border-border rounded-xl p-5">
+        <SectionHeader icon={Play} title="Vídeo e Material" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <Label className="text-xs flex items-center gap-1"><Play className="w-3.5 h-3.5" /> Link do Vídeo</Label>
+            <Input placeholder="https://youtube.com/..." value={form.linkVideo} onChange={e => set('linkVideo', e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs flex items-center gap-1"><FolderDown className="w-3.5 h-3.5" /> Link Material Completo</Label>
+            <Input placeholder="https://drive.google.com/..." value={form.linkMaterial} onChange={e => set('linkMaterial', e.target.value)} />
+          </div>
+        </div>
       </div>
 
       {/* ===== BLOCO 6: FOTOS ===== */}

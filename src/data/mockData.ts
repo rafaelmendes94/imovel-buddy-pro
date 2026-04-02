@@ -50,6 +50,8 @@ export interface Property {
   views?: number;
   padrao?: "Econômico" | "Médio Padrão" | "Alto Padrão" | "Luxo";
   outrasCaracteristicas?: string[];
+  linkVideo?: string;
+  linkMaterial?: string;
 }
 
 export interface Broker {

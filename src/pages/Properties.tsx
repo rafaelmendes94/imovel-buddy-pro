@@ -248,6 +248,8 @@ export default function Properties() {
         bonusExpiry: row.bonus_validade || "",
         padrao: (row.padrao as Property["padrao"]) || undefined,
         outrasCaracteristicas: row.outras_caracteristicas || [],
+        linkVideo: (row as any).link_video || "",
+        linkMaterial: (row as any).link_material || "",
       }));
 
       setPropertyList(mapped);
@@ -1238,8 +1240,19 @@ function PropertyCard({
           </a>
         </div>
 
-        {/* Status change bar */}
-        <StatusBar currentStatus={property.status} onChangeStatus={handleStatusChange} />
+        {/* Edit + Status */}
+        <div className="flex items-center gap-2 pt-2 border-t border-border">
+          <Link
+            to={`/editar-imovel/${property.id}`}
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-amber-500/10 text-amber-600 text-[11px] font-bold hover:bg-amber-500/20 transition-colors flex-1 justify-center"
+          >
+            <Pencil className="w-3 h-3" /> Editar
+          </Link>
+          <div className="flex-1">
+            <StatusBar currentStatus={property.status} onChangeStatus={handleStatusChange} />
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -1633,7 +1646,7 @@ function PropertyRow({
             <span className="truncate">{property.city}{property.neighborhood ? ` • ${property.neighborhood}` : ""} • {property.address}</span>
           </button>
 
-          {/* Ver dados completos */}
+          {/* Ver dados completos + Editar */}
           <div className="flex items-center gap-2 mt-1 flex-wrap">
             <button
               onClick={() => onSelect?.(property)}
@@ -1641,6 +1654,13 @@ function PropertyRow({
             >
               <Eye className="w-3.5 h-3.5" /> Ver dados completos
             </button>
+            <Link
+              to={`/editar-imovel/${property.id}`}
+              onClick={(e) => e.stopPropagation()}
+              className="py-1.5 px-3 rounded-lg bg-amber-500/10 text-amber-600 text-[11px] font-bold hover:bg-amber-500/20 transition-colors flex items-center justify-center gap-1.5"
+            >
+              <Pencil className="w-3.5 h-3.5" /> Editar
+            </Link>
           </div>
         </div>
 
