@@ -895,7 +895,7 @@ export default function Properties() {
           </div>
         ) : view === "list" ? (
           <div className="space-y-3">
-            {sorted.map((property) => (
+            {paginated.map((property) => (
               <PropertyRow
                 key={property.id}
                 property={property}
