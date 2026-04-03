@@ -1627,10 +1627,6 @@ function PropertyRow({
 
           {/* Row 3: Type + Specs (inline) */}
           <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-            <span className="flex items-center gap-0.5 text-primary font-semibold bg-primary/10 px-1.5 py-0.5 rounded whitespace-nowrap text-[10px]">
-              {property.type === "Apartamento" ? <Building2 className="w-3 h-3" /> : property.type === "Casa" ? <Home className="w-3 h-3" /> : property.type === "Terreno" ? <TreePine className="w-3 h-3" /> : <Building2 className="w-3 h-3" />}
-              {property.type}
-            </span>
             {property.bedrooms > 0 && <span className="flex items-center gap-0.5 whitespace-nowrap"><BedDouble className="w-3 h-3" />{property.bedrooms}</span>}
             {property.bathrooms > 0 && <span className="flex items-center gap-0.5 whitespace-nowrap"><Bath className="w-3 h-3" />{property.bathrooms}</span>}
             {property.parking > 0 && <span className="flex items-center gap-0.5 whitespace-nowrap"><Car className="w-3 h-3" />{property.parking}</span>}
