@@ -162,9 +162,8 @@ export default function Properties() {
   };
 
   const [viewingTerm, setViewingTerm] = useState<string | null>(null);
-  const [favoriteIds, setFavoriteIds] = useState<string[]>(() => {
-    try { return JSON.parse(localStorage.getItem("mv-favorites") || "[]"); } catch { return []; }
-  });
+  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
+  const [showFavoritesModal, setShowFavoritesModal] = useState(false);
   const [routeIds, setRouteIds] = useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem("mv-route-ids") || "[]"); } catch { return []; }
   });
