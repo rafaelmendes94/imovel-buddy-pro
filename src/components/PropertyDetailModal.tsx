@@ -339,27 +339,15 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                 <EditableField field="code" value={property.code} label="código" />
               </span>
             )}
-            <select
-              value={property.status}
-              onChange={(e) => {
+            <StatusSelectWithConfirm
+              currentStatus={property.status}
+              onConfirm={(newStatus) => {
                 if (onUpdateProperty) {
-                  updateProperty({ ...property, status: e.target.value as Property["status"] });
+                  updateProperty({ ...property, status: newStatus as Property["status"] });
                   toast.success("Status atualizado!");
                 }
               }}
-              className={cn(
-                "px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide flex-shrink-0 cursor-pointer border-0 focus:outline-none focus:ring-2 focus:ring-amber-400",
-                property.status === "Disponível" ? "bg-emerald-500 text-white" :
-                property.status === "Vendido" ? "bg-red-500 text-white" :
-                property.status === "Reservado" ? "bg-amber-500 text-white" :
-                property.status === "Alugado" ? "bg-blue-500 text-white" :
-                "bg-gray-500 text-white"
-              )}
-            >
-              {(["Disponível", "Vendido", "Reservado", "Alugado", "Suspenso"] as const).map(s => (
-                <option key={s} value={s} className="text-gray-900 bg-white">{s}</option>
-              ))}
-            </select>
+            />
           </div>
           {/* Action buttons in header */}
           <TooltipProvider delayDuration={200}>
