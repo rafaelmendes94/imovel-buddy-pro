@@ -144,6 +144,9 @@ export default function Properties() {
   const [filterCode, setFilterCode] = useState("");
   const [filterParking, setFilterParking] = useState("");
   const [sortBy, setSortBy] = useState<"default" | "price-asc" | "price-desc" | "name-asc" | "name-desc" | "updated" | "created">("default");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const ITEMS_PER_PAGE = 30;
 
   // Restore selected property from URL param
   const propertyIdFromUrl = searchParams.get("property");
