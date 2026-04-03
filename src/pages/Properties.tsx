@@ -1508,7 +1508,7 @@ function PropertyRow({
     <div className={cn("elevated-card rounded-xl relative overflow-hidden transition-all duration-300", animatePulse && "animate-sold-pulse")}>
       {showCelebration && <SoldCelebration />}
 
-      <div className="flex flex-col md:flex-row md:items-start md:overflow-x-auto">
+      <div className="flex flex-col md:flex-row md:items-stretch">
 
         {/* ── COL 1: Foto com carrossel ── */}
         <div className="relative w-full md:w-[200px] h-[200px] flex-shrink-0">
@@ -1541,7 +1541,7 @@ function PropertyRow({
         </div>
 
         {/* ── COL 2: Identidade + Dados Técnicos ── */}
-        <div className="flex-1 min-w-0 md:border-r border-border px-4 py-2 flex flex-col justify-start gap-1">
+        <div className="flex-1 min-w-0 md:border-r border-border px-4 py-2 flex flex-col justify-start gap-1 overflow-hidden">
           {/* Row 1: Title + Code + Site/Destaque toggles */}
           <div className="flex items-center gap-2 min-w-0">
             <h3
@@ -1665,7 +1665,7 @@ function PropertyRow({
         </div>
 
         {/* ── COL 3: Financeiro ── */}
-        <div className="w-full md:w-[220px] flex-shrink-0 md:border-r border-border px-3 py-2 flex flex-col justify-start gap-0.5" onClick={(e) => e.stopPropagation()}>
+        <div className="w-full md:w-[220px] flex-shrink-0 md:border-r border-border px-3 py-2 flex flex-col justify-start gap-0.5 overflow-hidden" onClick={(e) => e.stopPropagation()}>
           {/* Main price */}
           <div className="flex items-center gap-1.5 mb-0.5">
             <Banknote className="w-3.5 h-3.5 text-primary" />
