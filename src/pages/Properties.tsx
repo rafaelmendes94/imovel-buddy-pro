@@ -1037,6 +1037,63 @@ export default function Properties() {
         )}
       </div>
 
+      {/* Favorites Modal */}
+      {showFavoritesModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[1500] flex items-center justify-center p-4" onClick={() => setShowFavoritesModal(false)}>
+          <div className="bg-card rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+              <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+                <Heart className="w-5 h-5 text-accent fill-current" /> Meus Favoritos ({favoriteIds.length})
+              </h3>
+              <button onClick={() => setShowFavoritesModal(false)} className="p-2 rounded-lg hover:bg-muted transition-colors">
+                <X className="w-5 h-5 text-muted-foreground" />
+              </button>
+            </div>
+            <div className="overflow-y-auto p-4">
+              {favoritedProperties.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <Heart className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                  <p>Nenhum imóvel favoritado</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  {favoritedProperties.map((p) => (
+                    <div
+                      key={p.id}
+                      onClick={() => { setShowFavoritesModal(false); setSelectedProperty(p); }}
+                      className="bg-background rounded-xl border border-border overflow-hidden cursor-pointer hover:shadow-md transition-shadow group"
+                    >
+                      <div className="relative h-36 overflow-hidden">
+                        <img src={p.images?.[0] || p.image} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                        <p className="absolute bottom-2 left-3 text-base font-bold text-white drop-shadow">{formatCurrency(p.price)}</p>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); toggleFavorite(p.id); }}
+                          className="absolute top-2 right-2 p-1.5 rounded-full bg-white/90 text-accent hover:bg-white transition-colors"
+                        >
+                          <Heart className="w-4 h-4 fill-current" />
+                        </button>
+                      </div>
+                      <div className="p-3 space-y-1">
+                        <h4 className="font-bold text-sm text-foreground truncate">{p.title}</h4>
+                        <p className="text-xs text-muted-foreground flex items-center gap-1 truncate">
+                          <MapPin className="w-3 h-3 flex-shrink-0" /> {p.address}, {p.city}
+                        </p>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                          {p.bedrooms > 0 && <span className="flex items-center gap-0.5"><BedDouble className="w-3 h-3" /> {p.bedrooms}</span>}
+                          {p.area > 0 && <span className="flex items-center gap-0.5"><Ruler className="w-3 h-3" /> {p.area}m²</span>}
+                          {p.parking > 0 && <span className="flex items-center gap-0.5"><Car className="w-3 h-3" /> {p.parking}</span>}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Mobile Filters Modal */}
       {showMobileFilters && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[1500] flex items-end sm:hidden" onClick={() => setShowMobileFilters(false)}>
