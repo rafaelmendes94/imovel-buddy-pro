@@ -141,3 +141,7 @@
 .animate-scroll:hover {
   animation-play-state: paused;
 }
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
