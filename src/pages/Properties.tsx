@@ -250,6 +250,7 @@ export default function Properties() {
         outrasCaracteristicas: row.outras_caracteristicas || [],
         linkVideo: (row as any).link_video || "",
         linkMaterial: (row as any).link_material || "",
+        link360: (row as any).link_360 || "",
       }));
 
       setPropertyList(mapped);

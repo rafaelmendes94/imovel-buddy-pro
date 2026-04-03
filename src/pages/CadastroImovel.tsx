@@ -529,6 +529,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         empreendimento_id: form.empreendimento_id || null,
         link_video: form.linkVideo || '',
         link_material: form.linkMaterial || '',
+        link_360: form.link360 || '',
       } as any;
 
       if (isEdit) {
