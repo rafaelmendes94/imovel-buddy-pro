@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useGoogleMapsLoader } from "@/hooks/useGoogleMapsLoader";
 import {
   MapPin, Loader2, Search, X, Filter, Building2, Home, Fence, Landmark,
   BedDouble, Bath, Car, Ruler, Eye,
@@ -39,8 +40,10 @@ export default function Maps() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<any>(null);
-  const markersRef = useRef<any[]>([]);
+  const mapInstanceRef = useRef<google.maps.Map | null>(null);
+  const markersRef = useRef<google.maps.marker.AdvancedMarkerElement[]>([]);
+  const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
+  const { ready: mapsReady, loading: mapsLoading } = useGoogleMapsLoader();
 
   const [imoveis, setImoveis] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,7 +53,6 @@ export default function Maps() {
   const [showFilters, setShowFilters] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<any | null>(null);
 
-  // Load real properties
   useEffect(() => {
     if (!user) return;
     const load = async () => {
@@ -65,7 +67,6 @@ export default function Maps() {
     load();
   }, [user]);
 
-  // Filter properties
   const filtered = imoveis.filter((im) => {
     if (filterType && im.tipo !== filterType) return false;
     if (filterStatus && im.status !== filterStatus) return false;
@@ -77,60 +78,58 @@ export default function Maps() {
     return true;
   });
 
-  // Only properties with valid coordinates
   const mappable = filtered.filter((im) => im.latitude && im.longitude && (Number(im.latitude) !== 0 || Number(im.longitude) !== 0));
 
   const initMap = useCallback(() => {
-    const L = (window as any).L;
-    if (!L || !mapRef.current) return;
+    if (!mapsReady || !mapRef.current) return;
 
     // Cleanup
-    if (mapInstanceRef.current) {
-      mapInstanceRef.current.remove();
-      mapInstanceRef.current = null;
-      markersRef.current = [];
-    }
+    markersRef.current.forEach(m => m.map = null);
+    markersRef.current = [];
 
-    const center: [number, number] = mappable.length > 0
-      ? [Number(mappable[0].latitude), Number(mappable[0].longitude)]
-      : [-29.75, -50.10];
+    const center = mappable.length > 0
+      ? { lat: Number(mappable[0].latitude), lng: Number(mappable[0].longitude) }
+      : { lat: -29.75, lng: -50.10 };
 
-    const map = L.map(mapRef.current, { zoomControl: false }).setView(center, mappable.length > 1 ? 12 : 15);
+    const map = new google.maps.Map(mapRef.current, {
+      center,
+      zoom: mappable.length > 1 ? 12 : 15,
+      mapId: "DASHBOARD_MAP",
+      zoomControl: true,
+      zoomControlOptions: { position: google.maps.ControlPosition.RIGHT_BOTTOM },
+      streetViewControl: false,
+      mapTypeControl: false,
+      fullscreenControl: false,
+    });
     mapInstanceRef.current = map;
-    L.control.zoom({ position: "bottomright" }).addTo(map);
-
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
-      attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
-      maxZoom: 19,
-      subdomains: "abcd",
-    }).addTo(map);
+    infoWindowRef.current = new google.maps.InfoWindow();
 
     mappable.forEach((im) => {
       const cfg = typeConfig[im.tipo] || defaultCfg;
       const shortPrice = formatShortPrice(im.preco);
 
-      const icon = L.divIcon({
-        className: "",
-        html: `<div style="display:flex;flex-direction:column;align-items:center;transform:translate(-50%,-100%);cursor:pointer;">
-          <div style="background:${cfg.color};border-radius:6px 6px 6px 0;padding:2px 6px;box-shadow:0 2px 8px rgba(0,0,0,0.25);display:flex;align-items:center;gap:3px;white-space:nowrap;">
-            <span style="font-size:10px;line-height:1;">${cfg.emoji}</span>
-            <span style="font-size:9px;font-weight:800;color:#fff;letter-spacing:0.2px;">${shortPrice}</span>
-          </div>
-          <div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid ${cfg.color};"></div>
-        </div>`,
-        iconSize: [0, 0],
-        iconAnchor: [0, 0],
-      });
+      const pinEl = document.createElement("div");
+      pinEl.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;cursor:pointer;">
+        <div style="background:${cfg.color};border-radius:6px 6px 6px 0;padding:2px 6px;box-shadow:0 2px 8px rgba(0,0,0,0.25);display:flex;align-items:center;gap:3px;white-space:nowrap;">
+          <span style="font-size:10px;line-height:1;">${cfg.emoji}</span>
+          <span style="font-size:9px;font-weight:800;color:#fff;letter-spacing:0.2px;">${shortPrice}</span>
+        </div>
+        <div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid ${cfg.color};"></div>
+      </div>`;
 
-      const marker = L.marker([Number(im.latitude), Number(im.longitude)], { icon }).addTo(map);
+      const marker = new google.maps.marker.AdvancedMarkerElement({
+        position: { lat: Number(im.latitude), lng: Number(im.longitude) },
+        map,
+        content: pinEl,
+      });
       markersRef.current.push(marker);
 
       const imgs = im.imagens && im.imagens.length > 0 ? im.imagens : [];
       const mainImg = imgs[0] || "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=250&fit=crop";
       const address = [im.endereco, im.numero, im.bairro].filter(Boolean).join(", ");
 
-      const popup = L.popup({ className: "clean-popup", maxWidth: 300, minWidth: 280, closeButton: true })
-        .setContent(`
+      marker.addListener("click", () => {
+        const popupContent = `
         <div style="width:280px;font-family:system-ui,-apple-system,sans-serif;padding:0;">
           <img src="${mainImg}" alt="${im.titulo}" style="width:100%;height:140px;object-fit:cover;border-radius:8px 8px 0 0;display:block;" />
           <div style="padding:12px;">
@@ -149,92 +148,41 @@ export default function Maps() {
             </div>
             <div style="display:flex;align-items:center;justify-content:space-between;">
               <p style="font-size:18px;font-weight:800;color:${cfg.color};margin:0;">${formatCurrency(im.preco)}</p>
-              <span data-imovel-id="${im.id}" style="font-size:11px;color:${cfg.color};cursor:pointer;font-weight:700;text-decoration:underline;padding:4px 8px;">Ver mais →</span>
+              <span id="gmaps-ver-${im.id}" style="font-size:11px;color:${cfg.color};cursor:pointer;font-weight:700;text-decoration:underline;padding:4px 8px;">Ver mais →</span>
             </div>
           </div>
-        </div>
-      `);
+        </div>`;
 
-      marker.bindPopup(popup);
+        infoWindowRef.current!.setContent(popupContent);
+        infoWindowRef.current!.open(map, marker);
 
-      marker.on("popupopen", () => {
         setTimeout(() => {
-          const container = marker.getPopup()?.getElement();
-          if (!container) return;
-          const btn = container.querySelector(`[data-imovel-id="${im.id}"]`);
-          if (btn) {
-            (btn as HTMLElement).addEventListener("click", () => {
-              setSelectedProperty(im);
-            });
-          }
-        }, 10);
+          const btn = document.getElementById(`gmaps-ver-${im.id}`);
+          btn?.addEventListener("click", () => setSelectedProperty(im));
+        }, 100);
       });
     });
 
-    // Fit bounds
     if (mappable.length > 1) {
-      const bounds = L.latLngBounds(mappable.map((im: any) => [Number(im.latitude), Number(im.longitude)]));
-      map.fitBounds(bounds, { padding: [40, 40] });
+      const bounds = new google.maps.LatLngBounds();
+      mappable.forEach((im) => bounds.extend({ lat: Number(im.latitude), lng: Number(im.longitude) }));
+      map.fitBounds(bounds, 40);
     }
+  }, [mappable, mapsReady]);
 
-    // Custom popup style
-    if (!document.querySelector('#map-popup-style')) {
-      const style = document.createElement("style");
-      style.id = 'map-popup-style';
-      style.textContent = `
-        .clean-popup .leaflet-popup-content-wrapper {
-          border-radius: 12px !important;
-          padding: 0 !important;
-          box-shadow: 0 8px 30px rgba(0,0,0,0.15) !important;
-          overflow: hidden;
-          border: 1px solid #e2e8f0;
-        }
-        .clean-popup .leaflet-popup-content { margin: 0 !important; line-height: 1.4 !important; }
-        .clean-popup .leaflet-popup-tip { box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important; border: 1px solid #e2e8f0; }
-        .clean-popup .leaflet-popup-close-button {
-          color: #fff !important; font-size: 20px !important; width: 28px !important; height: 28px !important;
-          top: 4px !important; right: 4px !important; background: rgba(0,0,0,0.3); border-radius: 50%;
-          display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0;
-        }
-        .clean-popup .leaflet-popup-close-button:hover { background: rgba(0,0,0,0.5); color: #fff !important; }
-      `;
-      document.head.appendChild(style);
-    }
-  }, [mappable]);
-
-  // Load Leaflet & init map
   useEffect(() => {
-    if (loading || mappable.length === 0) return;
-
-    const L = (window as any).L;
-    if (L) {
-      initMap();
-    } else {
-      const link = document.createElement("link");
-      link.rel = "stylesheet";
-      link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-      document.head.appendChild(link);
-
-      const script = document.createElement("script");
-      script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
-      script.onload = () => initMap();
-      document.head.appendChild(script);
-    }
-
+    if (loading || mappable.length === 0 || !mapsReady) return;
+    initMap();
     return () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
-        mapInstanceRef.current = null;
-        markersRef.current = [];
-      }
+      markersRef.current.forEach(m => m.map = null);
+      markersRef.current = [];
     };
-  }, [loading, initMap]);
+  }, [loading, initMap, mapsReady]);
 
-  // Get unique types and statuses for filters
   const types = [...new Set(imoveis.map((im) => im.tipo).filter(Boolean))];
   const statuses = [...new Set(imoveis.map((im) => im.status).filter(Boolean))];
 
-  if (loading) {
+  if (loading || mapsLoading) {
     return (
       <AppLayout>
         <div className="flex items-center justify-center py-32">
@@ -247,7 +195,6 @@ export default function Maps() {
   return (
     <AppLayout>
       <div className="p-4 sm:p-6 lg:p-8 space-y-4">
-        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Mapa de Imóveis</h1>
@@ -255,16 +202,10 @@ export default function Maps() {
           </div>
         </div>
 
-        {/* Search + Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Buscar por título, endereço, bairro..."
-              className="pl-9"
-            />
+            <Input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Buscar por título, endereço, bairro..." className="pl-9" />
             {searchTerm && (
               <button onClick={() => setSearchTerm("")} className="absolute right-3 top-1/2 -translate-y-1/2">
                 <X className="w-4 h-4 text-muted-foreground" />
@@ -301,11 +242,9 @@ export default function Maps() {
           </div>
         )}
 
-        {/* Map */}
         {mappable.length > 0 ? (
           <div className="rounded-xl overflow-hidden relative border border-border shadow-sm h-[500px] sm:h-[650px]">
-            {/* Count badge */}
-            <div className="absolute top-4 left-4 z-[1000]">
+            <div className="absolute top-4 left-4 z-10">
               <div className="bg-card/95 backdrop-blur-sm rounded-lg shadow-lg px-3 py-2 border border-border flex items-center gap-2">
                 <MapPin className="w-3.5 h-3.5 text-accent" />
                 <span className="text-[11px] font-bold text-foreground">{mappable.length} imóveis no mapa</span>
@@ -321,11 +260,9 @@ export default function Maps() {
           </div>
         )}
 
-        {/* Property detail side panel */}
         {selectedProperty && (
           <div className="fixed inset-0 z-50 bg-foreground/50 flex items-center justify-center p-4" onClick={() => setSelectedProperty(null)}>
             <div className="bg-card rounded-xl border border-border shadow-2xl w-full max-w-lg animate-scale-in max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-              {/* Image */}
               <div className="relative h-56">
                 <img
                   src={(selectedProperty.imagens && selectedProperty.imagens.length > 0 ? selectedProperty.imagens[0] : null) || "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&h=400&fit=crop"}
@@ -340,7 +277,6 @@ export default function Maps() {
                 </div>
               </div>
 
-              {/* Content */}
               <div className="p-5 space-y-4">
                 <div>
                   <div className="flex items-center gap-2 mb-2">
