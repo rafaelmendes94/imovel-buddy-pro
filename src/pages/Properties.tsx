@@ -1894,6 +1894,10 @@ function PropertyRow({
             onClick={() => onDuplicate?.(property.id)}
             className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors" title="Duplicar imóvel"
           ><Copy className="w-3.5 h-3.5 text-foreground" /></button>
+          <button
+            onClick={() => onDelete?.(property.id)}
+            className="w-8 h-8 rounded-lg bg-destructive/10 flex items-center justify-center hover:bg-destructive/20 transition-colors" title="Excluir imóvel"
+          ><Trash2 className="w-3.5 h-3.5 text-destructive" /></button>
         </div>
       </div>
     </div>
