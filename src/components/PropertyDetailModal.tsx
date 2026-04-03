@@ -404,25 +404,8 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
     );
   };
 
-  // Lock body scroll when modal is open
-  const lockBodyScroll = () => {
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = ''; };
-  };
-  // Using a ref-based approach to lock on mount
-  const lockRef = useRef(false);
-  if (!lockRef.current) {
-    lockRef.current = true;
-    document.body.style.overflow = 'hidden';
-  }
-
-  const handleCloseWithUnlock = () => {
-    document.body.style.overflow = '';
-    handleClose();
-  };
-
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[2000] flex items-start justify-center overflow-y-auto overflow-x-hidden p-0 sm:p-4 sm:pt-6 sm:pb-8" onClick={handleCloseWithUnlock}>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[2000] flex items-start justify-center overflow-y-auto overflow-x-hidden p-0 sm:p-4 sm:pt-6 sm:pb-8" onClick={handleClose}>
       <div className="bg-white sm:rounded-2xl shadow-2xl w-full max-w-5xl min-h-screen sm:min-h-0 animate-in fade-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
 
         {/* Header */}
