@@ -12,6 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { AppLayout } from '@/components/AppLayout';
 import { BackButton } from '@/components/BackButton';
 import { QuickPick } from '@/components/QuickPick';
+import { QuickPickWithConfirm } from '@/components/QuickPickWithConfirm';
 import { CepAutoFill, type AddressData } from '@/components/CepAutoFill';
 import { InfraToggle } from '@/components/InfraToggle';
 import { useSystemOptions } from '@/hooks/useSystemOptions';
@@ -614,7 +615,13 @@ export function ImovelForm({ editId }: { editId?: string }) {
         </div>
 
         <QuickPick label="Tipo do Imóvel" options={tiposImovel} value={form.tipo} onChange={(v) => set('tipo', v)} icon={<Home className="w-3.5 h-3.5" />} className="mb-4" />
-        <QuickPick label="Status" options={statusOptions} value={form.status} onChange={(v) => set('status', v)} className="mb-4" />
+        <QuickPickWithConfirm
+          label="Status"
+          options={statusOptions}
+          value={form.status}
+          onChange={(v) => set('status', v)}
+          className="mb-4"
+        />
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-4">
           <QuickPick label="Dormitórios" options={[0, 1, 2, 3, 4, "5+"]} value={form.quartos} onChange={(v) => set('quartos', v === "5+" ? 5 : Number(v))} icon={<BedDouble className="w-3.5 h-3.5" />} />

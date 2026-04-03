@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { Link } from "react-router-dom";
 import {
   X, MapPin, BedDouble, Bath, Car, Ruler, Phone, Waves, Paintbrush,
@@ -6,8 +6,12 @@ import {
   CreditCard, Navigation, Share2, Heart, Maximize2, Download, Key,
   Pencil, Check, HardDrive, Flame, TrendingUp, Eye, EyeOff, User,
   Sparkles, Loader2, Target, Zap, FileText, MapPinned, DollarSign,
-  Gift, Percent, FileCheck, Hash, Scan
+  Gift, Percent, FileCheck, Hash, Scan, AlertTriangle
 } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { formatCurrency, type Property } from "@/data/mockData";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -24,6 +28,68 @@ interface PropertyDetailModalProps {
   onUpdateProperty?: (updated: Property) => void;
   onFilterByTitle?: (title: string) => void;
   onFilterByCondition?: (cond: string) => void;
+}
+
+const statusColors: Record<string, string> = {
+  "Disponível": "bg-emerald-500 text-white",
+  "Vendido": "bg-red-500 text-white",
+  "Reservado": "bg-amber-500 text-white",
+  "Alugado": "bg-blue-500 text-white",
+  "Suspenso": "bg-gray-500 text-white",
+};
+
+function StatusSelectWithConfirm({ currentStatus, onConfirm }: { currentStatus: string; onConfirm: (s: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const [pendingStatus, setPendingStatus] = useState("");
+  const selectRef = useRef<HTMLSelectElement>(null);
+
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newVal = e.target.value;
+    if (newVal === currentStatus) return;
+    setPendingStatus(newVal);
+    setOpen(true);
+    // Reset select visually
+    if (selectRef.current) selectRef.current.value = currentStatus;
+  };
+
+  return (
+    <>
+      <select
+        ref={selectRef}
+        defaultValue={currentStatus}
+        onChange={handleChange}
+        className={cn(
+          "px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide flex-shrink-0 cursor-pointer border-0 focus:outline-none focus:ring-2 focus:ring-amber-400",
+          statusColors[currentStatus] || "bg-gray-500 text-white"
+        )}
+      >
+        {(["Disponível", "Vendido", "Reservado", "Alugado", "Suspenso"] as const).map(s => (
+          <option key={s} value={s} className="text-gray-900 bg-white">{s}</option>
+        ))}
+      </select>
+
+      <AlertDialog open={open} onOpenChange={setOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-amber-500" />
+              Confirmar alteração de status
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Deseja alterar o status de <strong className="text-foreground">{currentStatus}</strong> para{" "}
+              <strong className="text-foreground">{pendingStatus}</strong>?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={() => onConfirm(pendingStatus)}>
+              Confirmar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
 }
 
 export function PropertyDetailModal({ property, onClose, allProperties, brokerInfo, onSelectSimilar, onUpdateProperty, onFilterByTitle, onFilterByCondition }: PropertyDetailModalProps) {
@@ -335,27 +401,15 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                 <EditableField field="code" value={property.code} label="código" />
               </span>
             )}
-            <select
-              value={property.status}
-              onChange={(e) => {
+            <StatusSelectWithConfirm
+              currentStatus={property.status}
+              onConfirm={(newStatus) => {
                 if (onUpdateProperty) {
-                  updateProperty({ ...property, status: e.target.value as Property["status"] });
+                  updateProperty({ ...property, status: newStatus as Property["status"] });
                   toast.success("Status atualizado!");
                 }
               }}
-              className={cn(
-                "px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide flex-shrink-0 cursor-pointer border-0 focus:outline-none focus:ring-2 focus:ring-amber-400",
-                property.status === "Disponível" ? "bg-emerald-500 text-white" :
-                property.status === "Vendido" ? "bg-red-500 text-white" :
-                property.status === "Reservado" ? "bg-amber-500 text-white" :
-                property.status === "Alugado" ? "bg-blue-500 text-white" :
-                "bg-gray-500 text-white"
-              )}
-            >
-              {(["Disponível", "Vendido", "Reservado", "Alugado", "Suspenso"] as const).map(s => (
-                <option key={s} value={s} className="text-gray-900 bg-white">{s}</option>
-              ))}
-            </select>
+            />
           </div>
           {/* Action buttons in header */}
           <TooltipProvider delayDuration={200}>
