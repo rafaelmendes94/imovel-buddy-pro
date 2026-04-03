@@ -167,8 +167,8 @@ export default function Properties() {
   const [routeIds, setRouteIds] = useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem("mv-route-ids") || "[]"); } catch { return []; }
   });
-  const [filterFreshness, setFilterFreshness] = useState<"all" | "30" | "60" | "90">("all");
-  const [showInactive, setShowInactive] = useState(false);
+  const catScrollRef = useRef<HTMLDivElement>(null);
+  const [categories, setCategories] = useState(getSavedCategoryOrder);
   const [categories, setCategories] = useState(getSavedCategoryOrder);
   const dragCatRef = useRef<number | null>(null);
 
