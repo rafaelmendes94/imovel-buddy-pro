@@ -1100,12 +1100,6 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
 
         {/* Action Buttons */}
         <div className="flex items-center justify-center gap-3 pt-6 pb-4">
-          <button
-            onClick={onClose}
-            className="flex items-center gap-2 px-5 py-3 rounded-full bg-muted text-muted-foreground text-sm font-bold shadow-lg hover:bg-muted/80 transition-all border border-border"
-          >
-            <ChevronLeft className="w-4 h-4" /> Voltar
-          </button>
           {hasChanges && (
             <button
               onClick={handleConfirmUpdate}
