@@ -592,6 +592,7 @@ export type Database = {
           imobiliaria_nome: string | null
           infraestrutura: string[] | null
           latitude: number | null
+          link_360: string | null
           link_material: string | null
           link_video: string | null
           local_chaves: string | null
@@ -655,6 +656,7 @@ export type Database = {
           imobiliaria_nome?: string | null
           infraestrutura?: string[] | null
           latitude?: number | null
+          link_360?: string | null
           link_material?: string | null
           link_video?: string | null
           local_chaves?: string | null
@@ -718,6 +720,7 @@ export type Database = {
           imobiliaria_nome?: string | null
           infraestrutura?: string[] | null
           latitude?: number | null
+          link_360?: string | null
           link_material?: string | null
           link_video?: string | null
           local_chaves?: string | null
