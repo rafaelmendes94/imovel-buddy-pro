@@ -262,6 +262,17 @@ export default function Properties() {
     fetchProperties();
   }, []);
 
+  // Load favorites from DB
+  useEffect(() => {
+    const loadFavorites = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase.from("favorites").select("imovel_id").eq("user_id", user.id);
+      if (data) setFavoriteIds(data.map(f => f.imovel_id));
+    };
+    loadFavorites();
+  }, []);
+
   useEffect(() => {
     if (!propertyIdFromUrl || propertyList.length === 0) return;
     const found = propertyList.find((p) => p.id === propertyIdFromUrl) || null;
@@ -276,12 +287,19 @@ export default function Properties() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const toggleFavorite = (id: string) => {
-    setFavoriteIds((prev) => {
-      const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
-      localStorage.setItem("mv-favorites", JSON.stringify(next));
-      return next;
-    });
+  const toggleFavorite = async (id: string) => {
+    const isFav = favoriteIds.includes(id);
+    // Optimistic update
+    setFavoriteIds(prev => isFav ? prev.filter(x => x !== id) : [...prev, id]);
+    
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    
+    if (isFav) {
+      await supabase.from("favorites").delete().eq("user_id", user.id).eq("imovel_id", id);
+    } else {
+      await supabase.from("favorites").insert({ user_id: user.id, imovel_id: id });
+    }
   };
 
   const toggleRoute = (id: string) => {
