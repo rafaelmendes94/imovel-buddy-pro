@@ -1687,6 +1687,12 @@ function PropertyRow({
             >
               <Pencil className="w-3.5 h-3.5" /> Editar
             </Link>
+            <button
+              onClick={(e) => { e.stopPropagation(); onDelete?.(property.id); }}
+              className="py-1.5 px-3 rounded-lg bg-destructive/10 text-destructive text-[11px] font-bold hover:bg-destructive/20 transition-colors flex items-center justify-center gap-1.5"
+            >
+              <Trash2 className="w-3.5 h-3.5" /> Excluir
+            </button>
           </div>
         </div>
 
