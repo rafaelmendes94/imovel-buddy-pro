@@ -1477,7 +1477,7 @@ const cleanEmpreendimentoName = (name: string) => name.replace(/^(Ed\.\s*|Cond\.
 
 // ---- PropertyRow (redesigned) ----
 function PropertyRow({
-  property, onStatusChange, onSelect, isFavorited, onToggleFavorite, isInRoute, onToggleRoute, onFilterByTitle, onFilterByCondition, onFilterByOwner, onPriceChange, allProperties, onDealLabelChange, onNavigateToValuation, onNavigateToContract, onQuickUpdate, onDuplicate,
+  property, onStatusChange, onSelect, isFavorited, onToggleFavorite, isInRoute, onToggleRoute, onFilterByTitle, onFilterByCondition, onFilterByOwner, onPriceChange, allProperties, onDealLabelChange, onNavigateToValuation, onNavigateToContract, onQuickUpdate, onDuplicate, onDelete,
 }: {
   property: Property;
   onStatusChange: (id: string, status: Property["status"]) => void;
@@ -1496,6 +1496,7 @@ function PropertyRow({
   onNavigateToContract?: (p: Property) => void;
   onQuickUpdate?: (id: string) => void;
   onDuplicate?: (id: string) => void;
+  onDelete?: (id: string) => void;
 }) {
   const dealScore = useMemo(() => analyzeDealScore(property, allProperties || []), [property, allProperties]);
   const [showCelebration, setShowCelebration] = useState(false);
