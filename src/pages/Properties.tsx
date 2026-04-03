@@ -162,14 +162,14 @@ export default function Properties() {
   };
 
   const [viewingTerm, setViewingTerm] = useState<string | null>(null);
-  const [favoriteIds, setFavoriteIds] = useState<string[]>(() => {
-    try { return JSON.parse(localStorage.getItem("mv-favorites") || "[]"); } catch { return []; }
-  });
+  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
+  const [showFavoritesModal, setShowFavoritesModal] = useState(false);
   const [routeIds, setRouteIds] = useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem("mv-route-ids") || "[]"); } catch { return []; }
   });
   const [filterFreshness, setFilterFreshness] = useState<"all" | "30" | "60" | "90">("all");
   const [showInactive, setShowInactive] = useState(false);
+  const catScrollRef = useRef<HTMLDivElement>(null);
   const [categories, setCategories] = useState(getSavedCategoryOrder);
   const dragCatRef = useRef<number | null>(null);
 
@@ -262,6 +262,17 @@ export default function Properties() {
     fetchProperties();
   }, []);
 
+  // Load favorites from DB
+  useEffect(() => {
+    const loadFavorites = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase.from("favorites").select("imovel_id").eq("user_id", user.id);
+      if (data) setFavoriteIds(data.map(f => f.imovel_id));
+    };
+    loadFavorites();
+  }, []);
+
   useEffect(() => {
     if (!propertyIdFromUrl || propertyList.length === 0) return;
     const found = propertyList.find((p) => p.id === propertyIdFromUrl) || null;
@@ -276,12 +287,19 @@ export default function Properties() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const toggleFavorite = (id: string) => {
-    setFavoriteIds((prev) => {
-      const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
-      localStorage.setItem("mv-favorites", JSON.stringify(next));
-      return next;
-    });
+  const toggleFavorite = async (id: string) => {
+    const isFav = favoriteIds.includes(id);
+    // Optimistic update
+    setFavoriteIds(prev => isFav ? prev.filter(x => x !== id) : [...prev, id]);
+    
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    
+    if (isFav) {
+      await supabase.from("favorites").delete().eq("user_id", user.id).eq("imovel_id", id);
+    } else {
+      await supabase.from("favorites").insert({ user_id: user.id, imovel_id: id });
+    }
   };
 
   const toggleRoute = (id: string) => {
@@ -828,60 +846,85 @@ export default function Properties() {
           )}
         </div>
 
-        {/* Category + Sort Bar */}
-        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide bg-card border border-border rounded-lg px-3 py-2" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-          {categories.map((cat, idx) => (
-            <button
-              key={cat.key}
-              draggable
-              onDragStart={() => handleCatDragStart(idx)}
-              onDragOver={(e) => handleCatDragOver(e, idx)}
-              onDragEnd={handleCatDragEnd}
-              onClick={() => setActiveCategory(cat.key)}
-              className={cn(
-                "flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold whitespace-nowrap transition-all cursor-grab active:cursor-grabbing",
-                activeCategory === cat.key
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "bg-secondary text-secondary-foreground hover:bg-muted"
-              )}
-            >
-              <cat.icon className="w-3 h-3" />
-              {cat.label}
-            </button>
-          ))}
-          <div className="w-px h-5 bg-border mx-1 flex-shrink-0" />
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mr-1 whitespace-nowrap">Ordenar:</span>
-          {([
-            { key: "default", label: "Padrão" },
-            { key: "price-desc", label: "Maior Valor" },
-            { key: "price-asc", label: "Menor Valor" },
-            { key: "name-asc", label: "A → Z Edifício" },
-            { key: "name-desc", label: "Z → A Edifício" },
-            { key: "updated", label: "Últ. Atualizados" },
-            { key: "created", label: "Últ. Incluídos" },
-          ] as { key: typeof sortBy; label: string }[]).map((s) => (
-            <button
-              key={s.key}
-              onClick={() => setSortBy(s.key)}
-              className={cn(
-                "px-2.5 py-1 rounded-md text-[11px] font-semibold transition-colors",
-                sortBy === s.key
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground hover:bg-secondary"
-              )}
-            >
-              {s.label}
-            </button>
-          ))}
+        {/* Category + Sort Bar with carousel arrows */}
+        <div className="relative">
+          <button
+            onClick={() => catScrollRef.current?.scrollBy({ left: -200, behavior: 'smooth' })}
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-card border border-border shadow-md flex items-center justify-center hover:bg-muted transition-colors -ml-1"
+          >
+            <ChevronLeft className="w-4 h-4 text-foreground" />
+          </button>
+          <div
+            ref={catScrollRef}
+            className="flex items-center gap-2 overflow-x-auto scrollbar-hide bg-card border border-border rounded-lg px-8 py-2"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {categories.map((cat, idx) => (
+              <button
+                key={cat.key}
+                draggable
+                onDragStart={() => handleCatDragStart(idx)}
+                onDragOver={(e) => handleCatDragOver(e, idx)}
+                onDragEnd={handleCatDragEnd}
+                onClick={() => setActiveCategory(cat.key)}
+                className={cn(
+                  "flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold whitespace-nowrap transition-all cursor-grab active:cursor-grabbing",
+                  activeCategory === cat.key
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "bg-secondary text-secondary-foreground hover:bg-muted"
+                )}
+              >
+                <cat.icon className="w-3 h-3" />
+                {cat.label}
+              </button>
+            ))}
+            <div className="w-px h-5 bg-border mx-1 flex-shrink-0" />
+            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mr-1 whitespace-nowrap">Ordenar:</span>
+            {([
+              { key: "default", label: "Padrão" },
+              { key: "price-desc", label: "Maior Valor" },
+              { key: "price-asc", label: "Menor Valor" },
+              { key: "name-asc", label: "A → Z Edifício" },
+              { key: "name-desc", label: "Z → A Edifício" },
+              { key: "updated", label: "Últ. Atualizados" },
+              { key: "created", label: "Últ. Incluídos" },
+            ] as { key: typeof sortBy; label: string }[]).map((s) => (
+              <button
+                key={s.key}
+                onClick={() => setSortBy(s.key)}
+                className={cn(
+                  "px-2.5 py-1 rounded-md text-[11px] font-semibold transition-colors whitespace-nowrap",
+                  sortBy === s.key
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground hover:bg-secondary"
+                )}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => catScrollRef.current?.scrollBy({ left: 200, behavior: 'smooth' })}
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-card border border-border shadow-md flex items-center justify-center hover:bg-muted transition-colors -mr-1"
+          >
+            <ChevronRight className="w-4 h-4 text-foreground" />
+          </button>
         </div>
 
-        {/* Results count */}
+        {/* Results count + Favorites button */}
         <div className="flex items-center gap-2 px-1">
           <span className="text-sm font-semibold text-muted-foreground">
             {sorted.length} imóvel(is)
             {sorted.length > ITEMS_PER_PAGE && ` • Página ${currentPage} de ${totalPages}`}
           </span>
-          {favoriteIds.length > 0 && <span className="text-sm text-accent font-medium">♥ {favoriteIds.length}</span>}
+          {favoriteIds.length > 0 && (
+            <button
+              onClick={() => setShowFavoritesModal(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent/10 border border-accent/20 text-accent text-sm font-semibold hover:bg-accent/20 transition-colors"
+            >
+              <Heart className="w-3.5 h-3.5 fill-current" /> {favoriteIds.length} Favorito{favoriteIds.length !== 1 ? "s" : ""}
+            </button>
+          )}
         </div>
 
         {/* Content */}
@@ -993,6 +1036,63 @@ export default function Properties() {
           </div>
         )}
       </div>
+
+      {/* Favorites Modal */}
+      {showFavoritesModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[1500] flex items-center justify-center p-4" onClick={() => setShowFavoritesModal(false)}>
+          <div className="bg-card rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+              <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+                <Heart className="w-5 h-5 text-accent fill-current" /> Meus Favoritos ({favoriteIds.length})
+              </h3>
+              <button onClick={() => setShowFavoritesModal(false)} className="p-2 rounded-lg hover:bg-muted transition-colors">
+                <X className="w-5 h-5 text-muted-foreground" />
+              </button>
+            </div>
+            <div className="overflow-y-auto p-4">
+              {favoritedProperties.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <Heart className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                  <p>Nenhum imóvel favoritado</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  {favoritedProperties.map((p) => (
+                    <div
+                      key={p.id}
+                      onClick={() => { setShowFavoritesModal(false); setSelectedProperty(p); }}
+                      className="bg-background rounded-xl border border-border overflow-hidden cursor-pointer hover:shadow-md transition-shadow group"
+                    >
+                      <div className="relative h-36 overflow-hidden">
+                        <img src={p.images?.[0] || p.image} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                        <p className="absolute bottom-2 left-3 text-base font-bold text-white drop-shadow">{formatCurrency(p.price)}</p>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); toggleFavorite(p.id); }}
+                          className="absolute top-2 right-2 p-1.5 rounded-full bg-white/90 text-accent hover:bg-white transition-colors"
+                        >
+                          <Heart className="w-4 h-4 fill-current" />
+                        </button>
+                      </div>
+                      <div className="p-3 space-y-1">
+                        <h4 className="font-bold text-sm text-foreground truncate">{p.title}</h4>
+                        <p className="text-xs text-muted-foreground flex items-center gap-1 truncate">
+                          <MapPin className="w-3 h-3 flex-shrink-0" /> {p.address}, {p.city}
+                        </p>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                          {p.bedrooms > 0 && <span className="flex items-center gap-0.5"><BedDouble className="w-3 h-3" /> {p.bedrooms}</span>}
+                          {p.area > 0 && <span className="flex items-center gap-0.5"><Ruler className="w-3 h-3" /> {p.area}m²</span>}
+                          {p.parking > 0 && <span className="flex items-center gap-0.5"><Car className="w-3 h-3" /> {p.parking}</span>}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Mobile Filters Modal */}
       {showMobileFilters && (
