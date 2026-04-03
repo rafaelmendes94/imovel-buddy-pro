@@ -419,9 +419,9 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
       <div className="bg-white sm:rounded-2xl shadow-2xl w-full max-w-5xl min-h-screen sm:min-h-0 animate-in fade-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
 
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-100">
-          <div className="flex items-center gap-3 min-w-0 flex-1">
-            <h2 className="text-lg font-bold text-gray-900 truncate">
+        <div className="flex flex-wrap items-center gap-2 p-3 sm:p-4 border-b border-gray-100">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <h2 className="text-sm sm:text-lg font-bold text-gray-900 truncate">
               <span
                 className="cursor-pointer hover:text-amber-600 transition-colors"
                 onClick={() => onFilterByTitle?.(property.title)}
@@ -431,7 +431,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
               </span>
             </h2>
             {property.code && (
-              <span className="text-[11px] font-black text-gray-500 bg-gray-100 px-2 py-0.5 rounded flex-shrink-0">
+              <span className="text-[10px] sm:text-[11px] font-black text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded flex-shrink-0">
                 <EditableField field="code" value={property.code} label="código" />
               </span>
             )}
