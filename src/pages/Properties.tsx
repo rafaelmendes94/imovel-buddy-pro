@@ -1665,7 +1665,7 @@ function PropertyRow({
         </div>
 
         {/* ── COL 3: Financeiro ── */}
-        <div className="w-full md:w-[220px] flex-shrink-0 md:border-r border-border px-3 py-2 flex flex-col justify-start gap-0.5" onClick={(e) => e.stopPropagation()}>
+        <div className="w-full md:w-[220px] flex-shrink-0 md:border-r border-border px-3 py-2 flex flex-col justify-start gap-0.5 overflow-hidden" onClick={(e) => e.stopPropagation()}>
           {/* Main price */}
           <div className="flex items-center gap-1.5 mb-0.5">
             <Banknote className="w-3.5 h-3.5 text-primary" />
