@@ -16,7 +16,7 @@ import {
   Phone, Heart, FileCheck, Eye, Repeat, CreditCard, DollarSign, Ban,
   Share2, CalendarCheck, CalendarClock, AlertTriangle, Pencil, Image,
   FolderDown, User, ShieldCheck, Percent, Gift, BarChart3, FileSignature,
-  TrendingUp, Wallet, RefreshCw, ArrowUp, ArrowDown, Banknote, Copy, Maximize2, Scan, Route, Globe,
+  TrendingUp, Wallet, RefreshCw, ArrowUp, ArrowDown, Banknote, Copy, Maximize2, Scan, Route, Globe, Trash2,
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -297,6 +297,19 @@ export default function Properties() {
 
   const handleStatusChange = (propertyId: string, newStatus: Property["status"]) => {
     setPropertyList((prev) => prev.map((p) => (p.id === propertyId ? { ...p, status: newStatus } : p)));
+  };
+
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+
+  const handleDelete = async (propertyId: string) => {
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(propertyId);
+    if (isUuid) {
+      const { error } = await supabase.from("imoveis").delete().eq("id", propertyId);
+      if (error) { toast.error("Erro ao excluir imóvel"); return; }
+    }
+    setPropertyList((prev) => prev.filter((p) => p.id !== propertyId));
+    setDeleteConfirmId(null);
+    toast.success("Imóvel excluído com sucesso!");
   };
 
   const handlePriceChange = (propertyId: string, field: "price" | "priceInstallment", value: number) => {
@@ -859,6 +872,7 @@ export default function Properties() {
                 onFilterByTitle={(title) => { setSearch(title.split(" ").slice(0, 2).join(" ")); setActiveCategory("todos"); }}
                 onFilterByCondition={(cond) => { setFilterCondition(cond); setShowFilters(true); setActiveCategory("todos"); }}
                 onFilterByOwner={(owner) => { setFilterOwner(owner); setShowFilters(true); setActiveCategory("todos"); }}
+                onDelete={(id) => setDeleteConfirmId(id)}
               />
             ))}
           </div>
@@ -884,6 +898,7 @@ export default function Properties() {
                 onNavigateToContract={handleNavigateToContract}
                 onQuickUpdate={handleQuickUpdate}
                 onDuplicate={handleDuplicate}
+                onDelete={(id) => setDeleteConfirmId(id)}
               />
             ))}
           </div>
@@ -921,7 +936,35 @@ export default function Properties() {
         onFilterByCondition={(cond) => { setSelectedProperty(null); setFilterCondition(cond); setShowFilters(true); setActiveCategory("todos"); }}
       />
 
-      {/* Term Viewer Modal */}
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmId && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setDeleteConfirmId(null)}>
+          <div className="bg-card rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center">
+                <Trash2 className="w-5 h-5 text-destructive" />
+              </div>
+              <div>
+                <h3 className="font-bold text-foreground">Excluir imóvel</h3>
+                <p className="text-sm text-muted-foreground">Esta ação não pode ser desfeita.</p>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Tem certeza que deseja excluir o imóvel <strong className="text-foreground">{propertyList.find(p => p.id === deleteConfirmId)?.title}</strong>?
+            </p>
+            <div className="flex items-center gap-2 justify-end">
+              <button onClick={() => setDeleteConfirmId(null)} className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted transition-colors">
+                Cancelar
+              </button>
+              <button onClick={() => handleDelete(deleteConfirmId)} className="px-4 py-2 rounded-lg text-sm font-bold bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors">
+                Excluir
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
       {viewingTerm && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setViewingTerm(null)}>
           <div className="relative bg-card rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
@@ -1064,7 +1107,7 @@ function SoldCelebration() {
 
 // ---- PropertyCard (enhanced) ----
 function PropertyCard({
-  property, onStatusChange, onSelect, onViewTerm, isFavorited, onToggleFavorite, isInRoute, onToggleRoute, onFilterByTitle, onFilterByCondition,
+  property, onStatusChange, onSelect, onViewTerm, isFavorited, onToggleFavorite, isInRoute, onToggleRoute, onFilterByTitle, onFilterByCondition, onDelete,
 }: {
   property: Property;
   onStatusChange: (id: string, status: Property["status"]) => void;
@@ -1077,6 +1120,7 @@ function PropertyCard({
   onFilterByTitle?: (title: string) => void;
   onFilterByCondition?: (cond: string) => void;
   onFilterByOwner?: (owner: string) => void;
+  onDelete?: (id: string) => void;
 }) {
   const [showCelebration, setShowCelebration] = useState(false);
   const [animatePulse, setAnimatePulse] = useState(false);
@@ -1240,15 +1284,21 @@ function PropertyCard({
           </a>
         </div>
 
-        {/* Edit + Status */}
+        {/* Edit + Delete + Status */}
         <div className="flex items-center gap-2 pt-2 border-t border-border">
           <Link
             to={`/editar-imovel/${property.id}`}
             onClick={(e) => e.stopPropagation()}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-amber-500/10 text-amber-600 text-[11px] font-bold hover:bg-amber-500/20 transition-colors flex-1 justify-center"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-amber-500/10 text-amber-600 text-[11px] font-bold hover:bg-amber-500/20 transition-colors"
           >
             <Pencil className="w-3 h-3" /> Editar
           </Link>
+          <button
+            onClick={(e) => { e.stopPropagation(); onDelete?.(property.id); }}
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-destructive/10 text-destructive text-[11px] font-bold hover:bg-destructive/20 transition-colors"
+          >
+            <Trash2 className="w-3 h-3" /> Excluir
+          </button>
           <div className="flex-1">
             <StatusBar currentStatus={property.status} onChangeStatus={handleStatusChange} />
           </div>
@@ -1455,7 +1505,7 @@ const cleanEmpreendimentoName = (name: string) => name.replace(/^(Ed\.\s*|Cond\.
 
 // ---- PropertyRow (redesigned) ----
 function PropertyRow({
-  property, onStatusChange, onSelect, isFavorited, onToggleFavorite, isInRoute, onToggleRoute, onFilterByTitle, onFilterByCondition, onFilterByOwner, onPriceChange, allProperties, onDealLabelChange, onNavigateToValuation, onNavigateToContract, onQuickUpdate, onDuplicate,
+  property, onStatusChange, onSelect, isFavorited, onToggleFavorite, isInRoute, onToggleRoute, onFilterByTitle, onFilterByCondition, onFilterByOwner, onPriceChange, allProperties, onDealLabelChange, onNavigateToValuation, onNavigateToContract, onQuickUpdate, onDuplicate, onDelete,
 }: {
   property: Property;
   onStatusChange: (id: string, status: Property["status"]) => void;
@@ -1474,6 +1524,7 @@ function PropertyRow({
   onNavigateToContract?: (p: Property) => void;
   onQuickUpdate?: (id: string) => void;
   onDuplicate?: (id: string) => void;
+  onDelete?: (id: string) => void;
 }) {
   const dealScore = useMemo(() => analyzeDealScore(property, allProperties || []), [property, allProperties]);
   const [showCelebration, setShowCelebration] = useState(false);
@@ -1664,6 +1715,12 @@ function PropertyRow({
             >
               <Pencil className="w-3.5 h-3.5" /> Editar
             </Link>
+            <button
+              onClick={(e) => { e.stopPropagation(); onDelete?.(property.id); }}
+              className="py-1.5 px-3 rounded-lg bg-destructive/10 text-destructive text-[11px] font-bold hover:bg-destructive/20 transition-colors flex items-center justify-center gap-1.5"
+            >
+              <Trash2 className="w-3.5 h-3.5" /> Excluir
+            </button>
           </div>
         </div>
 
@@ -1865,6 +1922,10 @@ function PropertyRow({
             onClick={() => onDuplicate?.(property.id)}
             className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors" title="Duplicar imóvel"
           ><Copy className="w-3.5 h-3.5 text-foreground" /></button>
+          <button
+            onClick={() => onDelete?.(property.id)}
+            className="w-8 h-8 rounded-lg bg-destructive/10 flex items-center justify-center hover:bg-destructive/20 transition-colors" title="Excluir imóvel"
+          ><Trash2 className="w-3.5 h-3.5 text-destructive" /></button>
         </div>
       </div>
     </div>
