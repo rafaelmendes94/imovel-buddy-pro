@@ -284,7 +284,7 @@ export const properties: Property[] = [
     code: "MV06",
     title: "Apartamento Praia de Atlântida",
     address: "Av. Central, 200",
-    neighborhood: "Atlântida",
+    neighborhood: "Atlântida Sul",
     city: "Xangri-lá",
     type: "Apartamento",
     status: "Vendido",
