@@ -18,7 +18,7 @@ export function MiniMap({ lat, lng, name, height = "250px", zoom = 15 }: MiniMap
   useEffect(() => {
     if (!ready || !mapRef.current) return;
 
-    const map = new google.maps.Map(mapRef.current, {
+    const map = new (window as any).google.maps.Map(mapRef.current, {
       center: { lat, lng },
       zoom,
       mapId: "MINI_MAP",
@@ -30,13 +30,13 @@ export function MiniMap({ lat, lng, name, height = "250px", zoom = 15 }: MiniMap
     });
     mapInstanceRef.current = map;
 
-    const marker = new google.maps.marker.AdvancedMarkerElement({
+    const marker = new (window as any).google.maps.marker.AdvancedMarkerElement({
       position: { lat, lng },
       map,
       title: name,
     });
 
-    const infoWindow = new google.maps.InfoWindow({ content: `<b>${name}</b>` });
+    const infoWindow = new (window as any).google.maps.InfoWindow({ content: `<b>${name}</b>` });
     infoWindow.open(map, marker);
 
     return () => {

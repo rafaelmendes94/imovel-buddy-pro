@@ -91,18 +91,18 @@ export default function Maps() {
       ? { lat: Number(mappable[0].latitude), lng: Number(mappable[0].longitude) }
       : { lat: -29.75, lng: -50.10 };
 
-    const map = new google.maps.Map(mapRef.current, {
+    const map = new (window as any).google.maps.Map(mapRef.current, {
       center,
       zoom: mappable.length > 1 ? 12 : 15,
       mapId: "DASHBOARD_MAP",
       zoomControl: true,
-      zoomControlOptions: { position: google.maps.ControlPosition.RIGHT_BOTTOM },
+      zoomControlOptions: { position: ((window as any).google.maps.ControlPosition).RIGHT_BOTTOM },
       streetViewControl: false,
       mapTypeControl: false,
       fullscreenControl: false,
     });
     mapInstanceRef.current = map;
-    infoWindowRef.current = new google.maps.InfoWindow();
+    infoWindowRef.current = new (window as any).google.maps.InfoWindow();
 
     mappable.forEach((im) => {
       const cfg = typeConfig[im.tipo] || defaultCfg;
@@ -117,7 +117,7 @@ export default function Maps() {
         <div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid ${cfg.color};"></div>
       </div>`;
 
-      const marker = new google.maps.marker.AdvancedMarkerElement({
+      const marker = new (window as any).google.maps.marker.AdvancedMarkerElement({
         position: { lat: Number(im.latitude), lng: Number(im.longitude) },
         map,
         content: pinEl,
@@ -164,7 +164,7 @@ export default function Maps() {
     });
 
     if (mappable.length > 1) {
-      const bounds = new google.maps.LatLngBounds();
+      const bounds = new (window as any).google.maps.LatLngBounds();
       mappable.forEach((im) => bounds.extend({ lat: Number(im.latitude), lng: Number(im.longitude) }));
       map.fitBounds(bounds, 40);
     }

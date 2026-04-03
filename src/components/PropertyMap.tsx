@@ -36,18 +36,18 @@ export function PropertyMap({ properties, onSelectProperty }: PropertyMapProps) 
       ? { lat: properties[0].lat, lng: properties[0].lng }
       : { lat: -23.55, lng: -46.63 };
 
-    const map = new google.maps.Map(mapRef.current, {
+    const map = new (window as any).google.maps.Map(mapRef.current, {
       center,
       zoom: 11,
       mapId: "PROPERTY_MAP",
       zoomControl: true,
-      zoomControlOptions: { position: google.maps.ControlPosition.RIGHT_BOTTOM },
+      zoomControlOptions: { position: ((window as any).google.maps.ControlPosition).RIGHT_BOTTOM },
       streetViewControl: false,
       mapTypeControl: false,
       fullscreenControl: false,
     });
     mapInstanceRef.current = map;
-    infoWindowRef.current = new google.maps.InfoWindow();
+    infoWindowRef.current = new (window as any).google.maps.InfoWindow();
 
     // Clear old markers
     markersRef.current.forEach(m => m.map = null);
@@ -66,7 +66,7 @@ export function PropertyMap({ properties, onSelectProperty }: PropertyMapProps) 
         <div style="width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid ${cfg.color};"></div>
       </div>`;
 
-      const marker = new google.maps.marker.AdvancedMarkerElement({
+      const marker = new (window as any).google.maps.marker.AdvancedMarkerElement({
         position: { lat: property.lat, lng: property.lng },
         map,
         content: pinEl,
@@ -110,7 +110,7 @@ export function PropertyMap({ properties, onSelectProperty }: PropertyMapProps) 
 
     // Fit bounds
     if (properties.length > 1) {
-      const bounds = new google.maps.LatLngBounds();
+      const bounds = new (window as any).google.maps.LatLngBounds();
       properties.forEach(p => bounds.extend({ lat: p.lat, lng: p.lng }));
       map.fitBounds(bounds, 40);
     }
