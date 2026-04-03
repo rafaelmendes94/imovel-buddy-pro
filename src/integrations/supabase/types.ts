@@ -106,6 +106,7 @@ export type Database = {
           estado: string | null
           id: string
           imagem_url: string | null
+          implantacao_url: string | null
           latitude: number | null
           longitude: number | null
           nome: string
@@ -130,6 +131,7 @@ export type Database = {
           estado?: string | null
           id?: string
           imagem_url?: string | null
+          implantacao_url?: string | null
           latitude?: number | null
           longitude?: number | null
           nome: string
@@ -154,6 +156,7 @@ export type Database = {
           estado?: string | null
           id?: string
           imagem_url?: string | null
+          implantacao_url?: string | null
           latitude?: number | null
           longitude?: number | null
           nome?: string
@@ -497,8 +500,11 @@ export type Database = {
           estado: string | null
           id: string
           imagem_url: string | null
+          imagens: string[] | null
           infraestrutura: string[] | null
           latitude: number | null
+          link_360: string | null
+          link_video: string | null
           longitude: number | null
           nome: string
           numero: string | null
@@ -520,8 +526,11 @@ export type Database = {
           estado?: string | null
           id?: string
           imagem_url?: string | null
+          imagens?: string[] | null
           infraestrutura?: string[] | null
           latitude?: number | null
+          link_360?: string | null
+          link_video?: string | null
           longitude?: number | null
           nome: string
           numero?: string | null
@@ -543,8 +552,11 @@ export type Database = {
           estado?: string | null
           id?: string
           imagem_url?: string | null
+          imagens?: string[] | null
           infraestrutura?: string[] | null
           latitude?: number | null
+          link_360?: string | null
+          link_video?: string | null
           longitude?: number | null
           nome?: string
           numero?: string | null

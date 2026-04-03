@@ -12,7 +12,7 @@ import { QuickPick } from '@/components/QuickPick';
 import { CepAutoFill, type AddressData } from '@/components/CepAutoFill';
 import { InfraToggle } from '@/components/InfraToggle';
 import { useSystemOptions } from '@/hooks/useSystemOptions';
-import { Fence, MapPin, Layers, Save, Image, Loader2, Building2, FileText, Map, DollarSign } from 'lucide-react';
+import { Fence, MapPin, Layers, Save, Image, Loader2, Building2, FileText, Map, DollarSign, FileUp, Upload } from 'lucide-react';
 
 const typeOptions = ["Vertical", "Horizontal", "Misto"];
 
@@ -31,6 +31,7 @@ const initialForm = {
   total_unidades: 0, unidades_disponiveis: 0, taxa_condominio: 0,
   descricao: '', amenidades: [] as string[],
   imagem_url: '', latitude: '', longitude: '',
+  implantacao_url: '',
 };
 
 export default function CadastroCondominio() {
@@ -42,6 +43,7 @@ export default function CadastroCondominio() {
   const [form, setForm] = useState(initialForm);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(!!editId);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (editId) {
@@ -57,12 +59,30 @@ export default function CadastroCondominio() {
             descricao: (data as any).descricao || '', amenidades: data.amenidades || [],
             imagem_url: data.imagem_url || '', latitude: data.latitude ? String(data.latitude) : '',
             longitude: data.longitude ? String(data.longitude) : '',
+            implantacao_url: (data as any).implantacao_url || '',
           });
         }
         setLoading(false);
       });
     }
   }, [editId]);
+
+  const handleUploadImplantacao = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    setUploading(true);
+    const ext = file.name.split('.').pop();
+    const path = `implantacoes/${user.id}/${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from('site-assets').upload(path, file, { upsert: true });
+    if (error) {
+      toast({ title: "Erro ao enviar arquivo", description: error.message, variant: "destructive" });
+    } else {
+      const { data: urlData } = supabase.storage.from('site-assets').getPublicUrl(path);
+      setForm(f => ({ ...f, implantacao_url: urlData.publicUrl }));
+      toast({ title: "Arquivo enviado ✅" });
+    }
+    setUploading(false);
+  };
 
   const handleSubmit = async () => {
     if (!form.nome || !user) return;
@@ -75,6 +95,7 @@ export default function CadastroCondominio() {
       taxa_condominio: form.taxa_condominio, descricao: form.descricao, amenidades: form.amenidades,
       imagem_url: form.imagem_url,
       latitude: parseFloat(form.latitude) || 0, longitude: parseFloat(form.longitude) || 0,
+      implantacao_url: form.implantacao_url,
     };
     if (editId) {
       await supabase.from("condominios").update(payload).eq("id", editId);
@@ -152,6 +173,31 @@ export default function CadastroCondominio() {
         <section>
           <SectionHeader icon={Building2} title="Amenidades / Infraestrutura" />
           <InfraToggle label="Selecione as amenidades" options={infraOptions.length > 0 ? infraOptions : ["Piscina", "Academia", "Salão de Festas", "Playground", "Quadra", "Churrasqueira", "Segurança 24h", "Portaria", "Área Verde", "Sauna", "Spa"]} selected={form.amenidades} onChange={(sel) => setForm(f => ({ ...f, amenidades: sel }))} allowCustom />
+        </section>
+
+        <section>
+          <SectionHeader icon={FileUp} title="Implantação / Mapa de Lotes" />
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <label className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-accent text-accent-foreground text-sm font-semibold hover:opacity-90 transition-opacity cursor-pointer">
+                {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                {uploading ? "Enviando..." : "Enviar PDF / Imagem"}
+                <input type="file" accept=".pdf,.jpg,.jpeg,.png,.webp" className="hidden" onChange={handleUploadImplantacao} disabled={uploading} />
+              </label>
+              {form.implantacao_url && (
+                <a href={form.implantacao_url} target="_blank" rel="noopener noreferrer" className="text-xs text-accent hover:underline flex items-center gap-1">
+                  <FileUp className="w-3.5 h-3.5" /> Ver arquivo atual
+                </a>
+              )}
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Ou cole a URL diretamente</Label>
+              <Input value={form.implantacao_url} onChange={(e) => setForm({ ...form, implantacao_url: e.target.value })} placeholder="https://..." />
+            </div>
+            {form.implantacao_url && form.implantacao_url.match(/\.(jpg|jpeg|png|webp)$/i) && (
+              <img src={form.implantacao_url} alt="Implantação" className="mt-2 rounded-lg max-h-48 object-contain border border-border" />
+            )}
+          </div>
         </section>
 
         <section>

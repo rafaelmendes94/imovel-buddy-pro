@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency } from "@/data/mockData";
 import {
   ArrowLeft, Building2, MapPin, Home, Edit, Share2, ExternalLink, Loader2,
-  BedDouble, Bath, Car, Ruler, Layers, Wrench, Calendar,
+  BedDouble, Bath, Car, Ruler, Layers, Wrench, Calendar, Image, Video, Eye, Download, X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -31,8 +31,8 @@ export default function EmpreendimentoDetail() {
   const [emp, setEmp] = useState<any>(null);
   const [imoveis, setImoveis] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lightboxImg, setLightboxImg] = useState<string | null>(null);
 
-  // Support both /empreendimentos/:id (internal) and /empreendimento/:slug (public legacy)
   const isInternal = !!id;
 
   useEffect(() => {
@@ -75,10 +75,20 @@ export default function EmpreendimentoDetail() {
   }
 
   const fullAddress = [emp.endereco, emp.numero, emp.complemento, emp.bairro, emp.cidade, emp.estado].filter(Boolean).join(", ");
+  const gallery: string[] = emp.imagens || [];
+  const hasMedia = gallery.length > 0 || emp.link_video || emp.link_360;
 
   function shareWhatsApp() {
     const text = `🏗️ ${emp.nome}\n📍 ${fullAddress}\n🔗 ${window.location.href}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
+  }
+
+  function downloadImage(url: string) {
+    window.open(url, "_blank");
+  }
+
+  function downloadAll() {
+    gallery.forEach((url) => window.open(url, "_blank"));
   }
 
   return (
@@ -128,7 +138,8 @@ export default function EmpreendimentoDetail() {
         <Tabs defaultValue="info" className="space-y-4">
           <TabsList className="bg-secondary">
             <TabsTrigger value="info">Informações</TabsTrigger>
-            <TabsTrigger value="imoveis">Imóveis Vinculados ({imoveis.length})</TabsTrigger>
+            {hasMedia && <TabsTrigger value="midia">Mídia ({gallery.length})</TabsTrigger>}
+            <TabsTrigger value="imoveis">Imóveis ({imoveis.length})</TabsTrigger>
             <TabsTrigger value="localizacao">Localização</TabsTrigger>
           </TabsList>
 
@@ -150,6 +161,51 @@ export default function EmpreendimentoDetail() {
               </div>
             )}
           </TabsContent>
+
+          {hasMedia && (
+            <TabsContent value="midia" className="space-y-4">
+              {/* Links */}
+              <div className="flex flex-wrap gap-3">
+                {emp.link_video && (
+                  <a href={emp.link_video} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-destructive/10 text-destructive text-sm font-semibold hover:bg-destructive/20 transition-colors border border-destructive/20">
+                    <Video className="w-4 h-4" /> Vídeo
+                  </a>
+                )}
+                {emp.link_360 && (
+                  <a href={emp.link_360} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-info/10 text-info text-sm font-semibold hover:bg-info/20 transition-colors border border-info/20">
+                    <Eye className="w-4 h-4" /> Tour 360°
+                  </a>
+                )}
+                {gallery.length > 0 && (
+                  <button onClick={downloadAll} className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-accent/10 text-accent text-sm font-semibold hover:bg-accent/20 transition-colors border border-accent/20">
+                    <Download className="w-4 h-4" /> Baixar Todas ({gallery.length})
+                  </button>
+                )}
+              </div>
+
+              {/* Gallery Grid */}
+              {gallery.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                  {gallery.map((url, idx) => (
+                    <div key={idx} className="relative group rounded-xl overflow-hidden h-40 cursor-pointer" onClick={() => setLightboxImg(url)}>
+                      <img src={url} alt={`Foto ${idx + 1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                      <button onClick={(e) => { e.stopPropagation(); downloadImage(url); }} className="absolute bottom-2 right-2 w-8 h-8 rounded-lg bg-card/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Download className="w-4 h-4 text-foreground" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {gallery.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Image className="w-12 h-12 mx-auto mb-3 opacity-40" />
+                  <p>Nenhuma foto na galeria</p>
+                </div>
+              )}
+            </TabsContent>
+          )}
 
           <TabsContent value="imoveis" className="space-y-4">
             {imoveis.length === 0 ? (
@@ -183,13 +239,6 @@ export default function EmpreendimentoDetail() {
                         </div>
                         <div className="p-3.5 space-y-2.5 flex-1 flex flex-col">
                           <h4 className="font-bold text-card-foreground text-sm leading-tight uppercase">{im.titulo}</h4>
-                          {im.empreendimento && (
-                            <div className="flex flex-wrap items-center gap-1.5">
-                              <span className="text-[11px] font-bold text-card-foreground bg-muted px-2 py-0.5 rounded border border-border uppercase">{im.empreendimento}</span>
-                              {im.unidade && <span className="text-[11px] font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded">{im.unidade}</span>}
-                              {im.box && <span className="text-[11px] font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded">{im.box}</span>}
-                            </div>
-                          )}
                           <p className="text-xs text-muted-foreground flex items-center gap-1">
                             <MapPin className="w-3 h-3 flex-shrink-0" />
                             <span className="truncate">{im.endereco}, {im.cidade}</span>
@@ -243,6 +292,19 @@ export default function EmpreendimentoDetail() {
             )}
           </TabsContent>
         </Tabs>
+
+        {/* Lightbox */}
+        {lightboxImg && (
+          <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4" onClick={() => setLightboxImg(null)}>
+            <button className="absolute top-4 right-4 w-10 h-10 rounded-full bg-card/80 flex items-center justify-center" onClick={() => setLightboxImg(null)}>
+              <X className="w-5 h-5 text-foreground" />
+            </button>
+            <img src={lightboxImg} alt="Ampliada" className="max-w-full max-h-[90vh] object-contain rounded-xl" onClick={(e) => e.stopPropagation()} />
+            <a href={lightboxImg} target="_blank" rel="noopener noreferrer" className="absolute bottom-6 right-6 flex items-center gap-2 px-4 py-2 rounded-lg bg-card/80 text-foreground text-sm font-semibold hover:bg-card transition-colors" onClick={(e) => e.stopPropagation()}>
+              <Download className="w-4 h-4" /> Baixar
+            </a>
+          </div>
+        )}
       </div>
     </AppLayout>
   );
