@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency } from "@/data/mockData";
 import {
   ArrowLeft, Fence, MapPin, Home, Edit, Share2, ExternalLink, Loader2,
-  BedDouble, Bath, Car, Ruler, Layers, Wrench, Calendar,
+  BedDouble, Bath, Car, Ruler, Layers, Wrench, Calendar, FileUp, Download,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -63,6 +63,8 @@ export default function CondominiumDetail() {
   }
 
   const fullAddress = [condo.endereco, condo.numero, condo.complemento, condo.bairro, condo.cidade, condo.estado].filter(Boolean).join(", ");
+  const implantacaoUrl = (condo as any).implantacao_url || '';
+  const isPdf = implantacaoUrl.match(/\.pdf$/i);
 
   function shareWhatsApp() {
     const text = `🏘️ ${condo.nome}\n📍 ${fullAddress}\n🔗 ${window.location.href}`;
@@ -115,7 +117,8 @@ export default function CondominiumDetail() {
         <Tabs defaultValue="info" className="space-y-4">
           <TabsList className="bg-secondary">
             <TabsTrigger value="info">Informações</TabsTrigger>
-            <TabsTrigger value="imoveis">Imóveis Vinculados ({imoveis.length})</TabsTrigger>
+            <TabsTrigger value="imoveis">Imóveis ({imoveis.length})</TabsTrigger>
+            {implantacaoUrl && <TabsTrigger value="implantacao">Implantação</TabsTrigger>}
             <TabsTrigger value="localizacao">Localização</TabsTrigger>
           </TabsList>
 
@@ -170,13 +173,6 @@ export default function CondominiumDetail() {
                         </div>
                         <div className="p-3.5 space-y-2.5 flex-1 flex flex-col">
                           <h4 className="font-bold text-card-foreground text-sm leading-tight uppercase">{im.titulo}</h4>
-                          {im.empreendimento && (
-                            <div className="flex flex-wrap items-center gap-1.5">
-                              <span className="text-[11px] font-bold text-card-foreground bg-muted px-2 py-0.5 rounded border border-border uppercase">{im.empreendimento}</span>
-                              {im.unidade && <span className="text-[11px] font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded">{im.unidade}</span>}
-                              {im.box && <span className="text-[11px] font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded">{im.box}</span>}
-                            </div>
-                          )}
                           <p className="text-xs text-muted-foreground flex items-center gap-1">
                             <MapPin className="w-3 h-3 flex-shrink-0" />
                             <span className="truncate">{im.endereco}, {im.cidade}</span>
@@ -206,6 +202,24 @@ export default function CondominiumDetail() {
               </>
             )}
           </TabsContent>
+
+          {implantacaoUrl && (
+            <TabsContent value="implantacao" className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                  <FileUp className="w-4 h-4 text-accent" /> Implantação / Mapa de Lotes
+                </h3>
+                <a href={implantacaoUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 rounded-lg bg-accent/10 text-accent text-sm font-semibold hover:bg-accent/20 transition-colors border border-accent/20">
+                  <Download className="w-4 h-4" /> Baixar
+                </a>
+              </div>
+              {isPdf ? (
+                <iframe src={implantacaoUrl} className="w-full h-[600px] rounded-xl border border-border" title="Implantação PDF" />
+              ) : (
+                <img src={implantacaoUrl} alt="Implantação" className="w-full rounded-xl border border-border object-contain max-h-[600px]" />
+              )}
+            </TabsContent>
+          )}
 
           <TabsContent value="localizacao" className="space-y-3">
             {Number(condo.latitude) !== 0 && Number(condo.longitude) !== 0 ? (

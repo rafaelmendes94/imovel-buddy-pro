@@ -12,7 +12,7 @@ import { QuickPick } from '@/components/QuickPick';
 import { CepAutoFill, type AddressData } from '@/components/CepAutoFill';
 import { InfraToggle } from '@/components/InfraToggle';
 import { useSystemOptions } from '@/hooks/useSystemOptions';
-import { Landmark, MapPin, Layers, Save, Image, Loader2, Building2, FileText, Map, Calendar } from 'lucide-react';
+import { Landmark, MapPin, Layers, Save, Image, Loader2, Building2, FileText, Map, Calendar, Video, Eye, Plus, X, Download } from 'lucide-react';
 
 const statusOptions = ["Lançamento", "Em construção", "Pronto", "Em vendas"];
 const tipoOptions = ["Residencial", "Comercial", "Misto", "Loteamento"];
@@ -32,6 +32,7 @@ const initialForm = {
   total_unidades: 0, previsao_entrega: '',
   descricao: '', infraestrutura: [] as string[],
   imagem_url: '', latitude: '', longitude: '',
+  imagens: [] as string[], link_360: '', link_video: '',
 };
 
 export default function CadastroEmpreendimento() {
@@ -43,6 +44,7 @@ export default function CadastroEmpreendimento() {
   const [form, setForm] = useState(initialForm);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(!!editId);
+  const [newImageUrl, setNewImageUrl] = useState('');
 
   useEffect(() => {
     if (editId) {
@@ -57,6 +59,7 @@ export default function CadastroEmpreendimento() {
             descricao: data.descricao || '', infraestrutura: data.infraestrutura || [],
             imagem_url: data.imagem_url || '', latitude: data.latitude ? String(data.latitude) : '',
             longitude: data.longitude ? String(data.longitude) : '',
+            imagens: (data as any).imagens || [], link_360: (data as any).link_360 || '', link_video: (data as any).link_video || '',
           });
         }
         setLoading(false);
@@ -75,6 +78,7 @@ export default function CadastroEmpreendimento() {
       descricao: form.descricao, infraestrutura: form.infraestrutura,
       imagem_url: form.imagem_url,
       latitude: parseFloat(form.latitude) || 0, longitude: parseFloat(form.longitude) || 0,
+      imagens: form.imagens, link_360: form.link_360, link_video: form.link_video,
     };
     if (editId) {
       await supabase.from("empreendimentos").update(payload).eq("id", editId);
@@ -85,6 +89,17 @@ export default function CadastroEmpreendimento() {
     }
     setSaving(false);
     navigate("/empreendimentos");
+  };
+
+  const addImage = () => {
+    if (newImageUrl.trim()) {
+      setForm(f => ({ ...f, imagens: [...f.imagens, newImageUrl.trim()] }));
+      setNewImageUrl('');
+    }
+  };
+
+  const removeImage = (idx: number) => {
+    setForm(f => ({ ...f, imagens: f.imagens.filter((_, i) => i !== idx) }));
   };
 
   const addressData: AddressData = {
@@ -148,12 +163,49 @@ export default function CadastroEmpreendimento() {
         </section>
 
         <section>
-          <SectionHeader icon={Image} title="Imagem" />
+          <SectionHeader icon={Image} title="Imagem de Capa" />
           <div className="space-y-1.5">
-            <Label className="text-xs">URL da Imagem</Label>
+            <Label className="text-xs">URL da Imagem Principal</Label>
             <Input value={form.imagem_url} onChange={(e) => setForm({ ...form, imagem_url: e.target.value })} placeholder="https://..." />
           </div>
           {form.imagem_url && <img src={form.imagem_url} alt="Preview" className="mt-3 rounded-lg max-h-48 object-cover" />}
+        </section>
+
+        <section>
+          <SectionHeader icon={Image} title="Galeria de Fotos" />
+          <div className="flex gap-2 mb-3">
+            <Input value={newImageUrl} onChange={(e) => setNewImageUrl(e.target.value)} placeholder="Cole a URL da foto e clique +" className="flex-1" onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addImage())} />
+            <button type="button" onClick={addImage} className="flex items-center gap-1 px-3 py-2 rounded-lg bg-accent text-accent-foreground text-sm font-semibold hover:opacity-90 transition-opacity">
+              <Plus className="w-4 h-4" /> Adicionar
+            </button>
+          </div>
+          {form.imagens.length > 0 && (
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+              {form.imagens.map((url, idx) => (
+                <div key={idx} className="relative group rounded-lg overflow-hidden h-24">
+                  <img src={url} alt={`Foto ${idx + 1}`} className="w-full h-full object-cover" />
+                  <button type="button" onClick={() => removeImage(idx)} className="absolute top-1 right-1 w-6 h-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          {form.imagens.length === 0 && <p className="text-xs text-muted-foreground">Nenhuma foto na galeria</p>}
+        </section>
+
+        <section>
+          <SectionHeader icon={Video} title="Vídeo e Tour 360°" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label className="text-xs flex items-center gap-1"><Video className="w-3.5 h-3.5" /> Link do Vídeo</Label>
+              <Input value={form.link_video} onChange={(e) => setForm({ ...form, link_video: e.target.value })} placeholder="https://youtube.com/..." />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs flex items-center gap-1"><Eye className="w-3.5 h-3.5" /> Link Tour 360°</Label>
+              <Input value={form.link_360} onChange={(e) => setForm({ ...form, link_360: e.target.value })} placeholder="https://..." />
+            </div>
+          </div>
         </section>
 
         <section>
