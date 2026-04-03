@@ -98,6 +98,7 @@ export interface FormData {
   empreendimento_id: string;
   linkVideo: string;
   linkMaterial: string;
+  link360: string;
 }
 
 export const initialForm: FormData = {
