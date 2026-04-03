@@ -484,6 +484,13 @@ export default function Properties() {
     });
   }, [filtered, sortBy]);
 
+  // Pagination
+  const totalPages = Math.max(1, Math.ceil(sorted.length / ITEMS_PER_PAGE));
+  const paginated = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return sorted.slice(start, start + ITEMS_PER_PAGE);
+  }, [sorted, currentPage]);
+
   const favoritedProperties = propertyList.filter((p) => favoriteIds.includes(p.id));
   const routeProperties = propertyList.filter((p) => routeIds.includes(p.id));
 
