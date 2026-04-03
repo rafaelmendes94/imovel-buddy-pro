@@ -687,11 +687,23 @@ export default function Properties() {
                 </button>
               )}
             </div>
+            {/* Desktop filter toggle */}
             <button
               onClick={() => setShowFilters(!showFilters)}
               className={cn(
-                "flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors border",
+                "hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors border",
                 showFilters ? "bg-primary text-primary-foreground border-primary" : "bg-card text-foreground border-input hover:bg-muted"
+              )}
+            >
+              <SlidersHorizontal className="w-4 h-4" /> Filtros
+              {hasActiveFilters && <span className="w-2 h-2 rounded-full bg-accent" />}
+            </button>
+            {/* Mobile filter button */}
+            <button
+              onClick={() => setShowMobileFilters(true)}
+              className={cn(
+                "flex sm:hidden items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors border",
+                hasActiveFilters ? "bg-primary text-primary-foreground border-primary" : "bg-card text-foreground border-input hover:bg-muted"
               )}
             >
               <SlidersHorizontal className="w-4 h-4" /> Filtros
