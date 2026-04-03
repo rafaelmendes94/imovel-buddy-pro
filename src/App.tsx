@@ -11,6 +11,7 @@ import Login from "./pages/Login";
 import Registro from "./pages/Registro";
 import NotFound from "./pages/NotFound";
 import BrokerSite from "./pages/BrokerSite";
+import Home from "./pages/Home";
 import EmpreendimentoDetail from "./pages/EmpreendimentoDetail";
 import PartnerDetail from "./pages/PartnerDetail";
 import ConstrutoraSite from "./pages/ConstrutoraSite";
