@@ -358,25 +358,52 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
             </select>
           </div>
           {/* Action buttons in header */}
-          <div className="flex items-center gap-1.5 flex-shrink-0">
-            <Link to={`/editar-imovel/${property.id}`} onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-amber-600" title="Editar imóvel">
-              <Pencil className="w-4.5 h-4.5" />
-            </Link>
-            <button onClick={handleShare} className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-amber-600" title="Compartilhar">
-              <Share2 className="w-4.5 h-4.5" />
-            </button>
-            <button onClick={handleDownload} className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-blue-600" title="Baixar ficha">
-              <Download className="w-4.5 h-4.5" />
-            </button>
-            {materialUrl && (
-              <button onClick={handleMaterialDownload} className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-purple-600" title="Material Completo">
-                <Download className="w-4.5 h-4.5" />
-              </button>
-            )}
-            <button onClick={handleClose} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
-              <X className="w-5 h-5 text-gray-500" />
-            </button>
-          </div>
+          <TooltipProvider delayDuration={200}>
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link to={`/editar-imovel/${property.id}`} onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-amber-600">
+                    <Pencil className="w-4.5 h-4.5" />
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent><p>Editar imóvel</p></TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button onClick={handleShare} className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-amber-600">
+                    <Share2 className="w-4.5 h-4.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent><p>Compartilhar</p></TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button onClick={handleDownload} className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-blue-600">
+                    <Download className="w-4.5 h-4.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent><p>Baixar ficha</p></TooltipContent>
+              </Tooltip>
+              {materialUrl && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button onClick={handleMaterialDownload} className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-purple-600">
+                      <Download className="w-4.5 h-4.5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent><p>Material Completo</p></TooltipContent>
+                </Tooltip>
+              )}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button onClick={handleClose} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                    <X className="w-5 h-5 text-gray-500" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent><p>Fechar</p></TooltipContent>
+              </Tooltip>
+            </div>
+          </TooltipProvider>
         </div>
 
         {/* Main image gallery */}
