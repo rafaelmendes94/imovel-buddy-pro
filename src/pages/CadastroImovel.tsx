@@ -379,6 +379,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         empreendimento_id: data.empreendimento_id || '',
         linkVideo: (data as any).link_video || '',
         linkMaterial: (data as any).link_material || '',
+        link360: (data as any).link_360 || '',
       });
       setExistingImages(data.imagens || []);
       setLoadingData(false);
