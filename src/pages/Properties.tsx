@@ -1508,7 +1508,7 @@ function PropertyRow({
     <div className={cn("elevated-card rounded-xl relative overflow-hidden transition-all duration-300", animatePulse && "animate-sold-pulse")}>
       {showCelebration && <SoldCelebration />}
 
-      <div className="flex flex-col md:flex-row md:items-start md:overflow-x-auto">
+      <div className="flex flex-col md:flex-row md:items-stretch">
 
         {/* ── COL 1: Foto com carrossel ── */}
         <div className="relative w-full md:w-[200px] h-[200px] flex-shrink-0">
