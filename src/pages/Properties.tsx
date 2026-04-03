@@ -788,7 +788,7 @@ export default function Properties() {
         </div>
 
         {/* Category + Sort Bar */}
-        <div className="flex items-center gap-2 overflow-x-auto bg-card border border-border rounded-lg px-3 py-2">
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide bg-card border border-border rounded-lg px-3 py-2" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
           {categories.map((cat, idx) => (
             <button
               key={cat.key}
