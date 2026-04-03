@@ -1094,7 +1094,7 @@ function PropertyCard({
   };
 
   return (
-    <div className={cn("elevated-card rounded-xl overflow-hidden relative transition-all duration-300", animatePulse && "animate-sold-pulse")}>
+    <div className={cn("elevated-card rounded-xl overflow-hidden relative transition-all duration-300 group/card", animatePulse && "animate-sold-pulse")}>
       {showCelebration && <SoldCelebration />}
 
       <div className="relative cursor-pointer" onClick={() => onSelect?.(property)}>
