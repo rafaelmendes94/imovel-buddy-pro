@@ -92,8 +92,7 @@ function StatusSelectWithConfirm({ currentStatus, onConfirm }: { currentStatus: 
   );
 }
 
-
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+export function PropertyDetailModal({ property, onClose, allProperties, brokerInfo, onSelectSimilar, onUpdateProperty, onFilterByTitle, onFilterByCondition }: PropertyDetailModalProps) {
   const [showVideo, setShowVideo] = useState(false);
   const [editingField, setEditingField] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<Record<string, string>>({});
