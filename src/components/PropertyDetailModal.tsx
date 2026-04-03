@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { Link } from "react-router-dom";
 import {
   X, MapPin, BedDouble, Bath, Car, Ruler, Phone, Waves, Paintbrush,
@@ -6,8 +6,12 @@ import {
   CreditCard, Navigation, Share2, Heart, Maximize2, Download, Key,
   Pencil, Check, HardDrive, Flame, TrendingUp, Eye, EyeOff, User,
   Sparkles, Loader2, Target, Zap, FileText, MapPinned, DollarSign,
-  Gift, Percent, FileCheck, Hash, Scan
+  Gift, Percent, FileCheck, Hash, Scan, AlertTriangle
 } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { formatCurrency, type Property } from "@/data/mockData";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
