@@ -300,19 +300,10 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
     }
   };
 
-  // -- Share --
-  const handleShare = async () => {
-    const shareData = {
-      title: property.title,
-      text: `${property.title} - ${formatCurrency(property.price)}\n${property.address}, ${property.city}\n${property.bedrooms} quartos • ${property.area}m²`,
-      url: window.location.href,
-    };
-    if (navigator.share) {
-      try { await navigator.share(shareData); } catch { /* user cancelled */ }
-    } else {
-      await navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`);
-      toast.success("Link copiado para a área de transferência!");
-    }
+  // -- Share via WhatsApp --
+  const handleShare = () => {
+    const text = `🏠 *${property.title}*\n💰 ${formatCurrency(property.price)}\n📍 ${property.address}, ${property.city}\n🛏 ${property.bedrooms} quartos • 🚿 ${property.bathrooms} banheiros • 📐 ${property.area}m²\n\n🔗 ${window.location.href}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
   };
 
   // -- Download ficha --
