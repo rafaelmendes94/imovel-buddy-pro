@@ -1541,7 +1541,7 @@ function PropertyRow({
         </div>
 
         {/* ── COL 2: Identidade + Dados Técnicos ── */}
-        <div className="flex-1 min-w-0 md:border-r border-border px-4 py-2 flex flex-col justify-start gap-1">
+        <div className="flex-1 min-w-0 md:border-r border-border px-4 py-2 flex flex-col justify-start gap-1 overflow-hidden">
           {/* Row 1: Title + Code + Site/Destaque toggles */}
           <div className="flex items-center gap-2 min-w-0">
             <h3
