@@ -1,0 +1,1 @@
+ALTER TABLE public.imoveis ADD COLUMN link_360 text DEFAULT ''::text;

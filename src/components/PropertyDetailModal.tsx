@@ -153,6 +153,23 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
   const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${property.address}, ${property.city}`)}`;
   const videoUrl = property.linkVideo || "";
   const materialUrl = property.linkMaterial || "";
+  const link360 = property.link360 || "";
+
+  // Convert YouTube URL to embed URL
+  const getYoutubeEmbedUrl = (url: string): string | null => {
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+      /youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/,
+    ];
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match) return `https://www.youtube.com/embed/${match[1]}`;
+    }
+    return null;
+  };
+
+  const youtubeEmbed = videoUrl ? getYoutubeEmbedUrl(videoUrl) : null;
+  const isEmbeddableVideo = !!youtubeEmbed;
 
   const ownerProperties = allProperties
     .filter((p) => p.id !== property.id && p.owner && property.owner && p.owner === property.owner)
@@ -1001,8 +1018,38 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                 <ChevronRight className={cn("w-4 h-4 text-gray-400 transition-transform", showVideo && "rotate-90")} />
               </button>
               {showVideo && (
-                <div className="aspect-video bg-black">
-                  <iframe src={videoUrl} title="Vídeo do imóvel" className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+                isEmbeddableVideo ? (
+                  <div className="aspect-video bg-black">
+                    <iframe src={youtubeEmbed!} title="Vídeo do imóvel" className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+                  </div>
+                ) : (
+                  <div className="p-4 bg-white">
+                    <a href={videoUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-primary hover:underline font-medium">
+                      <ExternalLink className="w-4 h-4" /> {videoUrl}
+                    </a>
+                  </div>
+                )
+              )}
+            </div>
+          )}
+
+          {/* Tour 360 section */}
+          {link360 && (
+            <div className="rounded-xl overflow-hidden border border-gray-200">
+              <div className="flex items-center justify-between p-4 bg-gray-50">
+                <span className="flex items-center gap-2 text-sm font-bold text-gray-800">
+                  <Eye className="w-4 h-4 text-blue-500" /> Tour Virtual 360°
+                </span>
+              </div>
+              {link360.startsWith("<") ? (
+                <div className="aspect-video" dangerouslySetInnerHTML={{ __html: link360 }} />
+              ) : link360.includes("http") ? (
+                <div className="aspect-video">
+                  <iframe src={link360} title="Tour 360°" className="w-full h-full border-0" allowFullScreen />
+                </div>
+              ) : (
+                <div className="p-4 bg-white">
+                  <p className="text-sm text-muted-foreground">{link360}</p>
                 </div>
               )}
             </div>

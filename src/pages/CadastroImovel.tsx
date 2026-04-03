@@ -98,6 +98,7 @@ export interface FormData {
   empreendimento_id: string;
   linkVideo: string;
   linkMaterial: string;
+  link360: string;
 }
 
 export const initialForm: FormData = {
@@ -114,7 +115,7 @@ export const initialForm: FormData = {
   condicoesPagemento: [], infraestrutura: [], outrasCaracteristicas: [],
   latitude: '', longitude: '',
   edificio_id: '', condominio_id: '', empreendimento_id: '',
-  linkVideo: '', linkMaterial: '',
+  linkVideo: '', linkMaterial: '', link360: '',
 };
 
 function SectionHeader({ icon: Icon, title }: { icon: any; title: string }) {
@@ -378,6 +379,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         empreendimento_id: data.empreendimento_id || '',
         linkVideo: (data as any).link_video || '',
         linkMaterial: (data as any).link_material || '',
+        link360: (data as any).link_360 || '',
       });
       setExistingImages(data.imagens || []);
       setLoadingData(false);
@@ -527,6 +529,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         empreendimento_id: form.empreendimento_id || null,
         link_video: form.linkVideo || '',
         link_material: form.linkMaterial || '',
+        link_360: form.link360 || '',
       } as any;
 
       if (isEdit) {
@@ -874,6 +877,10 @@ export function ImovelForm({ editId }: { editId?: string }) {
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><FolderDown className="w-3.5 h-3.5" /> Link Material Completo</Label>
             <Input placeholder="https://drive.google.com/..." value={form.linkMaterial} onChange={e => set('linkMaterial', e.target.value)} />
+          </div>
+          <div className="space-y-1.5 sm:col-span-2">
+            <Label className="text-xs flex items-center gap-1"><Eye className="w-3.5 h-3.5" /> Tour 360° (embed ou link)</Label>
+            <Input placeholder="https://kuula.co/... ou código embed" value={form.link360} onChange={e => set('link360', e.target.value)} />
           </div>
         </div>
       </div>

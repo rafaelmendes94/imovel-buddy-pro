@@ -52,6 +52,7 @@ export interface Property {
   outrasCaracteristicas?: string[];
   linkVideo?: string;
   linkMaterial?: string;
+  link360?: string;
 }
 
 export interface Broker {
