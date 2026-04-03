@@ -1,4 +1,6 @@
 import { useEffect, useRef } from "react";
+import { useGoogleMapsLoader } from "@/hooks/useGoogleMapsLoader";
+import { Loader2 } from "lucide-react";
 
 interface MiniMapProps {
   lat: number;
@@ -10,74 +12,45 @@ interface MiniMapProps {
 
 export function MiniMap({ lat, lng, name, height = "250px", zoom = 15 }: MiniMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<any>(null);
+  const mapInstanceRef = useRef<google.maps.Map | null>(null);
+  const { ready, loading } = useGoogleMapsLoader();
 
   useEffect(() => {
-    if (!mapRef.current) return;
+    if (!ready || !mapRef.current) return;
 
-    // Clean up previous map
-    if (mapInstanceRef.current) {
-      mapInstanceRef.current.remove();
-      mapInstanceRef.current = null;
-    }
+    const map = new google.maps.Map(mapRef.current, {
+      center: { lat, lng },
+      zoom,
+      mapId: "MINI_MAP",
+      mapTypeId: "hybrid",
+      zoomControl: true,
+      streetViewControl: false,
+      mapTypeControl: false,
+      fullscreenControl: false,
+    });
+    mapInstanceRef.current = map;
 
-    const L = (window as any).L;
+    const marker = new google.maps.marker.AdvancedMarkerElement({
+      position: { lat, lng },
+      map,
+      title: name,
+    });
 
-    const initMap = () => {
-      const L = (window as any).L;
-      if (!L || !mapRef.current) return;
-
-      const map = L.map(mapRef.current).setView([lat, lng], zoom);
-      mapInstanceRef.current = map;
-
-      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
-        attribution: '&copy; Esri, Maxar, Earthstar Geographics',
-        maxZoom: 19,
-      }).addTo(map);
-
-      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}", {
-        maxZoom: 19,
-      }).addTo(map);
-
-      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}", {
-        maxZoom: 19,
-      }).addTo(map);
-
-      L.marker([lat, lng]).addTo(map).bindPopup(`<b>${name}</b>`).openPopup();
-    };
-
-    if (L) {
-      initMap();
-    } else {
-      // Load Leaflet if not already loaded
-      const existingLink = document.querySelector('link[href*="leaflet"]');
-      if (!existingLink) {
-        const link = document.createElement("link");
-        link.rel = "stylesheet";
-        link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-        document.head.appendChild(link);
-      }
-
-      const existingScript = document.querySelector('script[src*="leaflet"]');
-      if (!existingScript) {
-        const script = document.createElement("script");
-        script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
-        script.onload = initMap;
-        document.head.appendChild(script);
-      } else {
-        existingScript.addEventListener("load", initMap);
-        // If script already loaded, try init
-        setTimeout(initMap, 100);
-      }
-    }
+    const infoWindow = new google.maps.InfoWindow({ content: `<b>${name}</b>` });
+    infoWindow.open(map, marker);
 
     return () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
-        mapInstanceRef.current = null;
-      }
+      marker.map = null;
     };
-  }, [lat, lng, name, zoom]);
+  }, [ready, lat, lng, name, zoom]);
+
+  if (loading) {
+    return (
+      <div className="rounded-xl overflow-hidden border border-border flex items-center justify-center bg-muted" style={{ height }}>
+        <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-xl overflow-hidden border border-border" style={{ height }}>
