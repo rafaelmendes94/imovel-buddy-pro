@@ -898,6 +898,7 @@ export default function Properties() {
                 onNavigateToContract={handleNavigateToContract}
                 onQuickUpdate={handleQuickUpdate}
                 onDuplicate={handleDuplicate}
+                onDelete={(id) => setDeleteConfirmId(id)}
               />
             ))}
           </div>
