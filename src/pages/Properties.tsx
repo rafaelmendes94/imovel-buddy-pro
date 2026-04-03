@@ -936,7 +936,35 @@ export default function Properties() {
         onFilterByCondition={(cond) => { setSelectedProperty(null); setFilterCondition(cond); setShowFilters(true); setActiveCategory("todos"); }}
       />
 
-      {/* Term Viewer Modal */}
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmId && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setDeleteConfirmId(null)}>
+          <div className="bg-card rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center">
+                <Trash2 className="w-5 h-5 text-destructive" />
+              </div>
+              <div>
+                <h3 className="font-bold text-foreground">Excluir imóvel</h3>
+                <p className="text-sm text-muted-foreground">Esta ação não pode ser desfeita.</p>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Tem certeza que deseja excluir o imóvel <strong className="text-foreground">{propertyList.find(p => p.id === deleteConfirmId)?.title}</strong>?
+            </p>
+            <div className="flex items-center gap-2 justify-end">
+              <button onClick={() => setDeleteConfirmId(null)} className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted transition-colors">
+                Cancelar
+              </button>
+              <button onClick={() => handleDelete(deleteConfirmId)} className="px-4 py-2 rounded-lg text-sm font-bold bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors">
+                Excluir
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
       {viewingTerm && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setViewingTerm(null)}>
           <div className="relative bg-card rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
