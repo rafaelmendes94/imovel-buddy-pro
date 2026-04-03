@@ -12,6 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { AppLayout } from '@/components/AppLayout';
 import { BackButton } from '@/components/BackButton';
 import { QuickPick } from '@/components/QuickPick';
+import { QuickPickWithConfirm } from '@/components/QuickPickWithConfirm';
 import { CepAutoFill, type AddressData } from '@/components/CepAutoFill';
 import { InfraToggle } from '@/components/InfraToggle';
 import { useSystemOptions } from '@/hooks/useSystemOptions';
