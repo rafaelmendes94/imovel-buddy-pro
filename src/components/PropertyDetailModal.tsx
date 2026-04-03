@@ -144,6 +144,13 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
   };
   const handleBlockDragEnd = () => { setDragBlockIdx(null); setOverBlockIdx(null); };
 
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (!property) return;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, [property]);
+
   if (!property) return null;
 
   const images = property.images && property.images.length > 0 ? property.images : [property.image];
