@@ -1511,7 +1511,7 @@ function PropertyRow({
       <div className="flex flex-col md:flex-row md:items-stretch">
 
         {/* ── COL 1: Foto com carrossel ── */}
-        <div className="relative w-full md:w-[200px] h-[200px] flex-shrink-0">
+        <div className="relative w-full md:w-[220px] h-[200px] md:h-auto flex-shrink-0">
           <RowCarousel images={property.images.length > 0 ? property.images : [property.image]} />
           {ownerTypeInfo && (
             <span className={cn("absolute top-2 left-2 z-10 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wide shadow-sm", ownerTypeInfo.color)}>
