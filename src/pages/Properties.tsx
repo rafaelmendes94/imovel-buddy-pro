@@ -867,6 +867,7 @@ export default function Properties() {
         <div className="flex items-center gap-2 px-1">
           <span className="text-sm font-semibold text-muted-foreground">
             {sorted.length} imóvel(is)
+            {sorted.length > ITEMS_PER_PAGE && ` • Página ${currentPage} de ${totalPages}`}
           </span>
           {favoriteIds.length > 0 && <span className="text-sm text-accent font-medium">♥ {favoriteIds.length}</span>}
         </div>
@@ -874,7 +875,7 @@ export default function Properties() {
         {/* Content */}
         {view === "grid" ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
-            {sorted.map((property) => (
+            {paginated.map((property) => (
               <PropertyCard
                 key={property.id}
                 property={property}
