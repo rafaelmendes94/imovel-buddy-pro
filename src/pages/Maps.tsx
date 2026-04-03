@@ -40,9 +40,9 @@ export default function Maps() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<google.maps.Map | null>(null);
-  const markersRef = useRef<google.maps.marker.AdvancedMarkerElement[]>([]);
-  const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
+  const mapInstanceRef = useRef<any>(null);
+  const markersRef = useRef<any[]>([]);
+  const infoWindowRef = useRef<any>(null);
   const { ready: mapsReady, loading: mapsLoading } = useGoogleMapsLoader();
 
   const [imoveis, setImoveis] = useState<any[]>([]);

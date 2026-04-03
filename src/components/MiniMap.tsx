@@ -12,7 +12,7 @@ interface MiniMapProps {
 
 export function MiniMap({ lat, lng, name, height = "250px", zoom = 15 }: MiniMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<google.maps.Map | null>(null);
+  const mapInstanceRef = useRef<any>(null);
   const { ready, loading } = useGoogleMapsLoader();
 
   useEffect(() => {
