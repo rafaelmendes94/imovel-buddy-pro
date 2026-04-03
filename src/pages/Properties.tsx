@@ -846,60 +846,85 @@ export default function Properties() {
           )}
         </div>
 
-        {/* Category + Sort Bar */}
-        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide bg-card border border-border rounded-lg px-3 py-2" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-          {categories.map((cat, idx) => (
-            <button
-              key={cat.key}
-              draggable
-              onDragStart={() => handleCatDragStart(idx)}
-              onDragOver={(e) => handleCatDragOver(e, idx)}
-              onDragEnd={handleCatDragEnd}
-              onClick={() => setActiveCategory(cat.key)}
-              className={cn(
-                "flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold whitespace-nowrap transition-all cursor-grab active:cursor-grabbing",
-                activeCategory === cat.key
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "bg-secondary text-secondary-foreground hover:bg-muted"
-              )}
-            >
-              <cat.icon className="w-3 h-3" />
-              {cat.label}
-            </button>
-          ))}
-          <div className="w-px h-5 bg-border mx-1 flex-shrink-0" />
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mr-1 whitespace-nowrap">Ordenar:</span>
-          {([
-            { key: "default", label: "Padrão" },
-            { key: "price-desc", label: "Maior Valor" },
-            { key: "price-asc", label: "Menor Valor" },
-            { key: "name-asc", label: "A → Z Edifício" },
-            { key: "name-desc", label: "Z → A Edifício" },
-            { key: "updated", label: "Últ. Atualizados" },
-            { key: "created", label: "Últ. Incluídos" },
-          ] as { key: typeof sortBy; label: string }[]).map((s) => (
-            <button
-              key={s.key}
-              onClick={() => setSortBy(s.key)}
-              className={cn(
-                "px-2.5 py-1 rounded-md text-[11px] font-semibold transition-colors",
-                sortBy === s.key
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground hover:bg-secondary"
-              )}
-            >
-              {s.label}
-            </button>
-          ))}
+        {/* Category + Sort Bar with carousel arrows */}
+        <div className="relative">
+          <button
+            onClick={() => catScrollRef.current?.scrollBy({ left: -200, behavior: 'smooth' })}
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-card border border-border shadow-md flex items-center justify-center hover:bg-muted transition-colors -ml-1"
+          >
+            <ChevronLeft className="w-4 h-4 text-foreground" />
+          </button>
+          <div
+            ref={catScrollRef}
+            className="flex items-center gap-2 overflow-x-auto scrollbar-hide bg-card border border-border rounded-lg px-8 py-2"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {categories.map((cat, idx) => (
+              <button
+                key={cat.key}
+                draggable
+                onDragStart={() => handleCatDragStart(idx)}
+                onDragOver={(e) => handleCatDragOver(e, idx)}
+                onDragEnd={handleCatDragEnd}
+                onClick={() => setActiveCategory(cat.key)}
+                className={cn(
+                  "flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold whitespace-nowrap transition-all cursor-grab active:cursor-grabbing",
+                  activeCategory === cat.key
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "bg-secondary text-secondary-foreground hover:bg-muted"
+                )}
+              >
+                <cat.icon className="w-3 h-3" />
+                {cat.label}
+              </button>
+            ))}
+            <div className="w-px h-5 bg-border mx-1 flex-shrink-0" />
+            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mr-1 whitespace-nowrap">Ordenar:</span>
+            {([
+              { key: "default", label: "Padrão" },
+              { key: "price-desc", label: "Maior Valor" },
+              { key: "price-asc", label: "Menor Valor" },
+              { key: "name-asc", label: "A → Z Edifício" },
+              { key: "name-desc", label: "Z → A Edifício" },
+              { key: "updated", label: "Últ. Atualizados" },
+              { key: "created", label: "Últ. Incluídos" },
+            ] as { key: typeof sortBy; label: string }[]).map((s) => (
+              <button
+                key={s.key}
+                onClick={() => setSortBy(s.key)}
+                className={cn(
+                  "px-2.5 py-1 rounded-md text-[11px] font-semibold transition-colors whitespace-nowrap",
+                  sortBy === s.key
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground hover:bg-secondary"
+                )}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => catScrollRef.current?.scrollBy({ left: 200, behavior: 'smooth' })}
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-card border border-border shadow-md flex items-center justify-center hover:bg-muted transition-colors -mr-1"
+          >
+            <ChevronRight className="w-4 h-4 text-foreground" />
+          </button>
         </div>
 
-        {/* Results count */}
+        {/* Results count + Favorites button */}
         <div className="flex items-center gap-2 px-1">
           <span className="text-sm font-semibold text-muted-foreground">
             {sorted.length} imóvel(is)
             {sorted.length > ITEMS_PER_PAGE && ` • Página ${currentPage} de ${totalPages}`}
           </span>
-          {favoriteIds.length > 0 && <span className="text-sm text-accent font-medium">♥ {favoriteIds.length}</span>}
+          {favoriteIds.length > 0 && (
+            <button
+              onClick={() => setShowFavoritesModal(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent/10 border border-accent/20 text-accent text-sm font-semibold hover:bg-accent/20 transition-colors"
+            >
+              <Heart className="w-3.5 h-3.5 fill-current" /> {favoriteIds.length} Favorito{favoriteIds.length !== 1 ? "s" : ""}
+            </button>
+          )}
         </div>
 
         {/* Content */}
