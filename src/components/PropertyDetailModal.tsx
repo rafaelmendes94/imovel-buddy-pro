@@ -153,6 +153,23 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
   const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${property.address}, ${property.city}`)}`;
   const videoUrl = property.linkVideo || "";
   const materialUrl = property.linkMaterial || "";
+  const link360 = property.link360 || "";
+
+  // Convert YouTube URL to embed URL
+  const getYoutubeEmbedUrl = (url: string): string | null => {
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+      /youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/,
+    ];
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match) return `https://www.youtube.com/embed/${match[1]}`;
+    }
+    return null;
+  };
+
+  const youtubeEmbed = videoUrl ? getYoutubeEmbedUrl(videoUrl) : null;
+  const isEmbeddableVideo = !!youtubeEmbed;
 
   const ownerProperties = allProperties
     .filter((p) => p.id !== property.id && p.owner && property.owner && p.owner === property.owner)
