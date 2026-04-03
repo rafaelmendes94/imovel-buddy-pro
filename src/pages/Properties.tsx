@@ -923,6 +923,54 @@ export default function Properties() {
           <PropertyMap properties={sorted} onSelectProperty={(p) => setSelectedProperty(p)} />
         )}
 
+        {/* Pagination */}
+        {sorted.length > ITEMS_PER_PAGE && view !== "map" && (
+          <div className="flex items-center justify-center gap-2 pt-4 pb-2">
+            <button
+              onClick={() => { setCurrentPage(p => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+              disabled={currentPage === 1}
+              className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium border border-input bg-card text-foreground hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" /> Anterior
+            </button>
+            <div className="flex items-center gap-1">
+              {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
+                let page: number;
+                if (totalPages <= 7) {
+                  page = i + 1;
+                } else if (currentPage <= 4) {
+                  page = i + 1;
+                } else if (currentPage >= totalPages - 3) {
+                  page = totalPages - 6 + i;
+                } else {
+                  page = currentPage - 3 + i;
+                }
+                return (
+                  <button
+                    key={page}
+                    onClick={() => { setCurrentPage(page); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                    className={cn(
+                      "w-9 h-9 rounded-lg text-sm font-semibold transition-colors",
+                      currentPage === page
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-card text-muted-foreground hover:bg-muted border border-input"
+                    )}
+                  >
+                    {page}
+                  </button>
+                );
+              })}
+            </div>
+            <button
+              onClick={() => { setCurrentPage(p => Math.min(totalPages, p + 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+              disabled={currentPage === totalPages}
+              className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium border border-input bg-card text-foreground hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              Próximo <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
         {filtered.length === 0 && (
           <div className="text-center py-16 text-muted-foreground">
             <Building2 className="w-12 h-12 mx-auto mb-3 opacity-40" />
@@ -933,6 +981,122 @@ export default function Properties() {
           </div>
         )}
       </div>
+
+      {/* Mobile Filters Modal */}
+      {showMobileFilters && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[1500] flex items-end sm:hidden" onClick={() => setShowMobileFilters(false)}>
+          <div className="bg-card rounded-t-2xl w-full max-h-[85vh] overflow-y-auto animate-in slide-in-from-bottom duration-300" onClick={(e) => e.stopPropagation()}>
+            <div className="sticky top-0 bg-card border-b border-border px-4 py-3 flex items-center justify-between z-10">
+              <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+                <SlidersHorizontal className="w-4 h-4" /> Filtros
+              </h3>
+              <button onClick={() => setShowMobileFilters(false)} className="p-2 rounded-lg hover:bg-muted">
+                <X className="w-5 h-5 text-muted-foreground" />
+              </button>
+            </div>
+            <div className="p-4 space-y-3">
+              <div>
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Empreendimento</label>
+                <select value={filterEmpreendimento} onChange={(e) => setFilterEmpreendimento(e.target.value)} className="w-full px-3 py-2.5 rounded-lg border border-input text-sm bg-background text-foreground">
+                  <option value="">Todos</option>
+                  {empreendimentos.map(e => <option key={e} value={e}>{e}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Tipo</label>
+                <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="w-full px-3 py-2.5 rounded-lg border border-input text-sm bg-background text-foreground">
+                  <option value="">Todos</option>
+                  {types.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Proprietário</label>
+                <select value={filterOwner} onChange={(e) => setFilterOwner(e.target.value)} className="w-full px-3 py-2.5 rounded-lg border border-input text-sm bg-background text-foreground">
+                  <option value="">Todos</option>
+                  {owners.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Cidade</label>
+                  <select value={filterCity} onChange={(e) => setFilterCity(e.target.value)} className="w-full px-3 py-2.5 rounded-lg border border-input text-sm bg-background text-foreground">
+                    <option value="">Todas</option>
+                    {cities.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Bairro</label>
+                  <select value={filterNeighborhood} onChange={(e) => setFilterNeighborhood(e.target.value)} className="w-full px-3 py-2.5 rounded-lg border border-input text-sm bg-background text-foreground">
+                    <option value="">Todos</option>
+                    {neighborhoods.map(n => <option key={n} value={n}>{n}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Rua</label>
+                <select value={filterStreet} onChange={(e) => setFilterStreet(e.target.value)} className="w-full px-3 py-2.5 rounded-lg border border-input text-sm bg-background text-foreground">
+                  <option value="">Todas</option>
+                  {streets.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Quartos</label>
+                  <select value={filterBedrooms} onChange={(e) => setFilterBedrooms(e.target.value)} className="w-full px-3 py-2.5 rounded-lg border border-input text-sm bg-background text-foreground">
+                    <option value="">-</option>
+                    <option value="1">1+</option><option value="2">2+</option><option value="3">3+</option><option value="4">4+</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Vagas</label>
+                  <select value={filterParking} onChange={(e) => setFilterParking(e.target.value)} className="w-full px-3 py-2.5 rounded-lg border border-input text-sm bg-background text-foreground">
+                    <option value="">-</option>
+                    <option value="1">1+</option><option value="2">2+</option><option value="3">3+</option>
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Preço mín.</label>
+                  <select value={filterPriceMin} onChange={(e) => setFilterPriceMin(e.target.value)} className="w-full px-3 py-2.5 rounded-lg border border-input text-sm bg-background text-foreground">
+                    <option value="">-</option>
+                    <option value="200000">200k</option><option value="500000">500k</option><option value="800000">800k</option><option value="1000000">1M</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Preço máx.</label>
+                  <select value={filterPriceMax} onChange={(e) => setFilterPriceMax(e.target.value)} className="w-full px-3 py-2.5 rounded-lg border border-input text-sm bg-background text-foreground">
+                    <option value="">-</option>
+                    <option value="500000">500k</option><option value="800000">800k</option><option value="1000000">1M</option><option value="1500000">1,5M</option><option value="2000000">2M</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Mostrar inativos</label>
+                <button
+                  onClick={() => setShowInactive(!showInactive)}
+                  className={cn(
+                    "w-full px-3 py-2.5 rounded-lg border text-sm font-medium transition-colors",
+                    showInactive ? "border-primary bg-primary/10 text-primary" : "border-input bg-background text-muted-foreground"
+                  )}
+                >
+                  {showInactive ? "✓ Sim" : "Não"}
+                </button>
+              </div>
+              <div className="flex gap-2 pt-2">
+                {hasActiveFilters && (
+                  <button onClick={() => { clearFilters(); setShowMobileFilters(false); }} className="flex-1 flex items-center justify-center gap-1.5 px-4 py-3 rounded-lg bg-muted text-muted-foreground text-sm font-semibold">
+                    <X className="w-4 h-4" /> Limpar
+                  </button>
+                )}
+                <button onClick={() => setShowMobileFilters(false)} className="flex-1 flex items-center justify-center gap-1.5 px-4 py-3 rounded-lg bg-primary text-primary-foreground text-sm font-bold">
+                  <Filter className="w-4 h-4" /> Aplicar ({sorted.length} imóveis)
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Floating tools */}
       <RoutePlanner properties={routeProperties} />
