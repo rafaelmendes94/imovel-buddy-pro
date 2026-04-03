@@ -299,6 +299,19 @@ export default function Properties() {
     setPropertyList((prev) => prev.map((p) => (p.id === propertyId ? { ...p, status: newStatus } : p)));
   };
 
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+
+  const handleDelete = async (propertyId: string) => {
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(propertyId);
+    if (isUuid) {
+      const { error } = await supabase.from("imoveis").delete().eq("id", propertyId);
+      if (error) { toast.error("Erro ao excluir imóvel"); return; }
+    }
+    setPropertyList((prev) => prev.filter((p) => p.id !== propertyId));
+    setDeleteConfirmId(null);
+    toast.success("Imóvel excluído com sucesso!");
+  };
+
   const handlePriceChange = (propertyId: string, field: "price" | "priceInstallment", value: number) => {
     setPropertyList((prev) => prev.map((p) => (p.id === propertyId ? { ...p, [field]: value } : p)));
     toast.success("Valor atualizado!");
