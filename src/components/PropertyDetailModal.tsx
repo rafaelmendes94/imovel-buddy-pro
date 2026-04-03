@@ -381,8 +381,8 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[2000] flex items-start justify-center overflow-y-auto p-2 sm:p-4 pt-4 sm:pt-6 pb-6 sm:pb-8" onClick={handleClose}>
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl animate-in fade-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[2000] flex items-start justify-center overflow-y-auto overflow-x-hidden p-0 sm:p-4 sm:pt-6 sm:pb-8" onClick={handleClose}>
+      <div className="bg-white sm:rounded-2xl shadow-2xl w-full max-w-5xl min-h-screen sm:min-h-0 animate-in fade-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
 
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-100">
