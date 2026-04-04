@@ -275,6 +275,12 @@ export default function Maps() {
               ) : null;
             })()}
           </div>
+        ) : (
+          <div className="text-center py-20 text-muted-foreground">
+            <MapPin className="w-16 h-16 mx-auto mb-4 opacity-40" />
+            <p className="text-lg font-semibold">Nenhum imóvel com coordenadas</p>
+            <p className="text-sm mt-1">Cadastre latitude e longitude nos imóveis para vê-los no mapa</p>
+          </div>
         )}
 
         {selectedProperty && (
