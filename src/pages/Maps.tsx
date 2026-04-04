@@ -21,20 +21,22 @@ function formatShortPrice(price: number): string {
   return String(price);
 }
 
-const typeConfig: Record<string, { emoji: string; color: string }> = {
-  Apartamento: { emoji: "🏢", color: "#2563eb" },
-  Casa: { emoji: "🏠", color: "#059669" },
-  Comercial: { emoji: "🏪", color: "#d97706" },
-  Terreno: { emoji: "🌳", color: "#7c3aed" },
-  Cobertura: { emoji: "🏙️", color: "#0891b2" },
-  Sobrado: { emoji: "🏡", color: "#16a34a" },
-  Kitnet: { emoji: "🛏️", color: "#f59e0b" },
-  Sala: { emoji: "🏢", color: "#6366f1" },
-  Loja: { emoji: "🏪", color: "#ea580c" },
-  Galpão: { emoji: "🏭", color: "#78716c" },
+const typeConfig: Record<string, { emoji: string; color: string; label: string }> = {
+  Apartamento: { emoji: "🏢", color: "#2563eb", label: "Apartamento" },
+  Casa: { emoji: "🏠", color: "#059669", label: "Casa" },
+  Comercial: { emoji: "🏪", color: "#d97706", label: "Comercial" },
+  Terreno: { emoji: "🌳", color: "#7c3aed", label: "Terreno" },
+  Lote: { emoji: "📐", color: "#8b5cf6", label: "Lote" },
+  Cobertura: { emoji: "🏙️", color: "#0891b2", label: "Cobertura" },
+  Sobrado: { emoji: "🏡", color: "#16a34a", label: "Sobrado" },
+  Kitnet: { emoji: "🛏️", color: "#f59e0b", label: "Kitnet" },
+  Sala: { emoji: "💼", color: "#6366f1", label: "Sala" },
+  Loja: { emoji: "🛒", color: "#ea580c", label: "Loja" },
+  Galpão: { emoji: "🏭", color: "#78716c", label: "Galpão" },
+  Condomínio: { emoji: "🏘️", color: "#0d9488", label: "Condomínio" },
 };
 
-const defaultCfg = { emoji: "📍", color: "#2563eb" };
+const defaultCfg = { emoji: "📍", color: "#2563eb", label: "Outro" };
 
 export default function Maps() {
   const navigate = useNavigate();
