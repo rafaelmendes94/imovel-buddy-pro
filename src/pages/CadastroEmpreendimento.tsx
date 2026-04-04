@@ -12,7 +12,7 @@ import { QuickPick } from '@/components/QuickPick';
 import { CepAutoFill, type AddressData } from '@/components/CepAutoFill';
 import { InfraToggle } from '@/components/InfraToggle';
 import { useSystemOptions } from '@/hooks/useSystemOptions';
-import { Landmark, MapPin, Layers, Save, Image, Loader2, Building2, FileText, Map, Calendar, Video, Eye, Plus, X, Download } from 'lucide-react';
+import { Landmark, MapPin, Layers, Save, Image, Loader2, Building2, FileText, Calendar, Video, Eye, Plus, X } from 'lucide-react';
 
 const statusOptions = ["Lançamento", "Em construção", "Pronto", "Em vendas"];
 const tipoOptions = ["Residencial", "Comercial", "Misto", "Loteamento"];
