@@ -18,7 +18,7 @@ export function useGoogleMapsLoader() {
     if (!loadPromise) {
       loadPromise = new Promise<void>((resolve, reject) => {
         const script = document.createElement("script");
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=marker`;
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=marker,geocoding`;
         script.async = true;
         script.defer = true;
         script.onload = () => resolve();
