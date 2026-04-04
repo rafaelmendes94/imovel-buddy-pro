@@ -139,15 +139,36 @@ export function PropertyMap({ properties, onSelectProperty }: PropertyMapProps) 
     );
   }
 
+  // Collect active types for legend
+  const activeTypes = [...new Set(properties.map(p => p.type))];
+
   return (
-    <div className="rounded-xl overflow-hidden relative border border-border shadow-sm h-[400px] sm:h-[600px]">
-      <div className="absolute top-4 left-4 z-10">
-        <div className="bg-card/95 backdrop-blur-sm rounded-lg shadow-lg px-3 py-2 border border-border flex items-center gap-2">
-          <span className="text-[11px] font-bold text-foreground">{properties.length}</span>
-          <span className="text-[10px] text-muted-foreground">imóveis no mapa</span>
+    <div className="space-y-3">
+      <div className="rounded-xl overflow-hidden relative border border-border shadow-sm h-[400px] sm:h-[600px]">
+        <div className="absolute top-4 left-4 z-10">
+          <div className="bg-card/95 backdrop-blur-sm rounded-lg shadow-lg px-3 py-2 border border-border flex items-center gap-2">
+            <span className="text-[11px] font-bold text-foreground">{properties.length}</span>
+            <span className="text-[10px] text-muted-foreground">imóveis no mapa</span>
+          </div>
         </div>
+        <div ref={mapRef} style={{ height: "100%", width: "100%" }} />
       </div>
-      <div ref={mapRef} style={{ height: "100%", width: "100%" }} />
+
+      {/* Legenda */}
+      {activeTypes.length > 0 && (
+        <div className="flex flex-wrap gap-2 px-1">
+          {activeTypes.map((type) => {
+            const cfg = typeConfig[type] || defaultCfg;
+            return (
+              <div key={type} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-card border border-border text-xs font-medium">
+                <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: cfg.color }} />
+                <span>{cfg.emoji}</span>
+                <span className="text-foreground">{cfg.label}</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
