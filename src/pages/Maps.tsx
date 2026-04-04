@@ -21,20 +21,22 @@ function formatShortPrice(price: number): string {
   return String(price);
 }
 
-const typeConfig: Record<string, { emoji: string; color: string }> = {
-  Apartamento: { emoji: "🏢", color: "#2563eb" },
-  Casa: { emoji: "🏠", color: "#059669" },
-  Comercial: { emoji: "🏪", color: "#d97706" },
-  Terreno: { emoji: "🌳", color: "#7c3aed" },
-  Cobertura: { emoji: "🏙️", color: "#0891b2" },
-  Sobrado: { emoji: "🏡", color: "#16a34a" },
-  Kitnet: { emoji: "🛏️", color: "#f59e0b" },
-  Sala: { emoji: "🏢", color: "#6366f1" },
-  Loja: { emoji: "🏪", color: "#ea580c" },
-  Galpão: { emoji: "🏭", color: "#78716c" },
+const typeConfig: Record<string, { emoji: string; color: string; label: string }> = {
+  Apartamento: { emoji: "🏢", color: "#2563eb", label: "Apartamento" },
+  Casa: { emoji: "🏠", color: "#059669", label: "Casa" },
+  Comercial: { emoji: "🏪", color: "#d97706", label: "Comercial" },
+  Terreno: { emoji: "🌳", color: "#7c3aed", label: "Terreno" },
+  Lote: { emoji: "📐", color: "#8b5cf6", label: "Lote" },
+  Cobertura: { emoji: "🏙️", color: "#0891b2", label: "Cobertura" },
+  Sobrado: { emoji: "🏡", color: "#16a34a", label: "Sobrado" },
+  Kitnet: { emoji: "🛏️", color: "#f59e0b", label: "Kitnet" },
+  Sala: { emoji: "💼", color: "#6366f1", label: "Sala" },
+  Loja: { emoji: "🛒", color: "#ea580c", label: "Loja" },
+  Galpão: { emoji: "🏭", color: "#78716c", label: "Galpão" },
+  Condomínio: { emoji: "🏘️", color: "#0d9488", label: "Condomínio" },
 };
 
-const defaultCfg = { emoji: "📍", color: "#2563eb" };
+const defaultCfg = { emoji: "📍", color: "#2563eb", label: "Outro" };
 
 export default function Maps() {
   const navigate = useNavigate();
@@ -243,14 +245,35 @@ export default function Maps() {
         )}
 
         {mappable.length > 0 ? (
-          <div className="rounded-xl overflow-hidden relative border border-border shadow-sm h-[500px] sm:h-[650px]">
-            <div className="absolute top-4 left-4 z-10">
-              <div className="bg-card/95 backdrop-blur-sm rounded-lg shadow-lg px-3 py-2 border border-border flex items-center gap-2">
-                <MapPin className="w-3.5 h-3.5 text-accent" />
-                <span className="text-[11px] font-bold text-foreground">{mappable.length} imóveis no mapa</span>
+          <div className="space-y-3">
+            <div className="rounded-xl overflow-hidden relative border border-border shadow-sm h-[500px] sm:h-[650px]">
+              <div className="absolute top-4 left-4 z-10">
+                <div className="bg-card/95 backdrop-blur-sm rounded-lg shadow-lg px-3 py-2 border border-border flex items-center gap-2">
+                  <MapPin className="w-3.5 h-3.5 text-accent" />
+                  <span className="text-[11px] font-bold text-foreground">{mappable.length} imóveis no mapa</span>
+                </div>
               </div>
+              <div ref={mapRef} style={{ height: "100%", width: "100%" }} />
             </div>
-            <div ref={mapRef} style={{ height: "100%", width: "100%" }} />
+
+            {/* Legenda */}
+            {(() => {
+              const activeTypes = [...new Set(mappable.map(im => im.tipo).filter(Boolean))];
+              return activeTypes.length > 0 ? (
+                <div className="flex flex-wrap gap-2 px-1">
+                  {activeTypes.map((type) => {
+                    const cfg = typeConfig[type] || defaultCfg;
+                    return (
+                      <div key={type} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-card border border-border text-xs font-medium">
+                        <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: cfg.color }} />
+                        <span>{cfg.emoji}</span>
+                        <span className="text-foreground">{cfg.label}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : null;
+            })()}
           </div>
         ) : (
           <div className="text-center py-20 text-muted-foreground">
