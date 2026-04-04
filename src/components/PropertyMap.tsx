@@ -64,7 +64,7 @@ export function PropertyMap({ properties, onSelectProperty }: PropertyMapProps) 
     markersRef.current = [];
 
     properties.forEach((property) => {
-      const cfg = typeConfig[property.type] || typeConfig.Apartamento;
+      const cfg = typeConfig[property.type] || defaultCfg;
       const shortPrice = formatShortPrice(property.price);
 
       const pinEl = document.createElement("div");
