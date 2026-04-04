@@ -12,7 +12,7 @@ import { QuickPick } from '@/components/QuickPick';
 import { CepAutoFill, type AddressData } from '@/components/CepAutoFill';
 import { InfraToggle } from '@/components/InfraToggle';
 import { useSystemOptions } from '@/hooks/useSystemOptions';
-import { Building, MapPin, Layers, Save, Image, Loader2, Building2, FileText, Map } from 'lucide-react';
+import { Building, MapPin, Layers, Save, Image, Loader2, Building2, FileText } from 'lucide-react';
 
 const statusOptions = ["Lançamento", "Em construção", "Pronto"];
 
