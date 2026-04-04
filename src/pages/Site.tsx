@@ -615,17 +615,21 @@ function SectionHeader({ title, subtitle, icon: Icon }: { title: string; subtitl
 }
 
 export default function Site() {
+  const searchParams = new URLSearchParams(window.location.search);
+  const initialTipo = searchParams.get("tipo") || "";
+  const initialCidade = searchParams.get("cidade") || "";
+
   const [siteProperties, setSiteProperties] = useState<SiteProperty[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<Category>("todos");
   const [searchTerm, setSearchTerm] = useState("");
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-  const [filterCity, setFilterCity] = useState("");
+  const [filterCity, setFilterCity] = useState(initialCidade);
   const [filterBedrooms, setFilterBedrooms] = useState("");
   const [filterPriceMin, setFilterPriceMin] = useState("");
   const [filterPriceMax, setFilterPriceMax] = useState("");
-  const [filterType, setFilterType] = useState("");
+  const [filterType, setFilterType] = useState(initialTipo);
   const [filterCondition, setFilterCondition] = useState("");
   const [filterEmpreendimento, setFilterEmpreendimento] = useState("");
   const [filterParking, setFilterParking] = useState("");
