@@ -61,6 +61,7 @@ export default function CadastroCondominio() {
             imagem_url: data.imagem_url || '', latitude: data.latitude ? String(data.latitude) : '',
             longitude: data.longitude ? String(data.longitude) : '',
             implantacao_url: (data as any).implantacao_url || '',
+            mapa_pdf_url: (data as any).mapa_pdf_url || '',
           });
         }
         setLoading(false);
