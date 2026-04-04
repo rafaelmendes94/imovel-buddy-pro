@@ -600,7 +600,7 @@ export default function Properties() {
 
 
         {/* Freshness Cards */}
-        <div className="grid grid-cols-4 gap-2 sm:gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
           {/* Imóveis total card */}
           <div className="bg-card border border-primary/30 rounded-xl p-2 sm:p-4 text-left">
             <div className="flex items-center justify-between">
