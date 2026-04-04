@@ -523,47 +523,47 @@ export default function Properties() {
         <div className="flex flex-col gap-3">
           <BackButton />
           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-            <div className="flex items-center gap-3 flex-wrap">
+            <div className="grid grid-cols-2 sm:flex sm:items-center sm:flex-wrap gap-1.5 sm:gap-3">
               {/* VGV Badges inline */}
-              <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
-                <div>
-                  <p className="text-[8px] font-bold uppercase text-emerald-600 leading-none">VGV Ativo <span className="text-muted-foreground font-medium">({propertyList.filter(p => p.status === "Disponível" || p.status === "Reservado").length})</span></p>
-                  <p className="text-sm font-black text-foreground leading-tight">
+              <div className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 min-w-0">
+                <TrendingUp className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-[8px] font-bold uppercase text-emerald-600 leading-none truncate">VGV Ativo <span className="text-muted-foreground font-medium">({propertyList.filter(p => p.status === "Disponível" || p.status === "Reservado").length})</span></p>
+                  <p className="text-xs sm:text-sm font-black text-foreground leading-tight truncate">
                     {formatCurrency(propertyList.filter(p => p.status === "Disponível" || p.status === "Reservado").reduce((sum, p) => sum + p.price, 0))}
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20">
-                <DollarSign className="w-3.5 h-3.5 text-blue-600" />
-                <div>
-                  <p className="text-[8px] font-bold uppercase text-blue-600 leading-none">Comissão Estimada <span className="text-muted-foreground font-medium">({propertyList.filter(p => p.status === "Disponível" || p.status === "Reservado").length})</span></p>
-                  <p className="text-sm font-black text-foreground leading-tight">
+              <div className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20 min-w-0">
+                <DollarSign className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-[8px] font-bold uppercase text-blue-600 leading-none truncate">Comissão Est. <span className="text-muted-foreground font-medium">({propertyList.filter(p => p.status === "Disponível" || p.status === "Reservado").length})</span></p>
+                  <p className="text-xs sm:text-sm font-black text-foreground leading-tight truncate">
                     {formatCurrency(propertyList.filter(p => p.status === "Disponível" || p.status === "Reservado").reduce((sum, p) => sum + (p.price * (p.commission || 0) / 100), 0))}
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20">
-                <Trophy className="w-3.5 h-3.5 text-red-600" />
-                <div>
-                  <p className="text-[8px] font-bold uppercase text-red-600 leading-none">VGV Vendidos <span className="text-muted-foreground font-medium">({propertyList.filter(p => p.status === "Vendido").length})</span></p>
-                  <p className="text-sm font-black text-foreground leading-tight">
+              <div className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 min-w-0">
+                <Trophy className="w-3.5 h-3.5 text-red-600 shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-[8px] font-bold uppercase text-red-600 leading-none truncate">VGV Vendidos <span className="text-muted-foreground font-medium">({propertyList.filter(p => p.status === "Vendido").length})</span></p>
+                  <p className="text-xs sm:text-sm font-black text-foreground leading-tight truncate">
                     {formatCurrency(propertyList.filter(p => p.status === "Vendido").reduce((sum, p) => sum + p.price, 0))}
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                <Wallet className="w-3.5 h-3.5 text-amber-600" />
-                <div>
-                  <p className="text-[8px] font-bold uppercase text-amber-600 leading-none">Comissões Pagas <span className="text-muted-foreground font-medium">({propertyList.filter(p => p.status === "Vendido").length})</span></p>
-                  <p className="text-sm font-black text-foreground leading-tight">
+              <div className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 min-w-0">
+                <Wallet className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-[8px] font-bold uppercase text-amber-600 leading-none truncate">Comissões Pagas <span className="text-muted-foreground font-medium">({propertyList.filter(p => p.status === "Vendido").length})</span></p>
+                  <p className="text-xs sm:text-sm font-black text-foreground leading-tight truncate">
                     {formatCurrency(propertyList.filter(p => p.status === "Vendido").reduce((sum, p) => sum + (p.price * (p.commission || 0) / 100), 0))}
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => navigate("/relatorios")}
-                className="flex items-center gap-1.5 px-3 py-2.5 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-colors"
+                className="col-span-2 sm:col-span-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-colors"
               >
                 <BarChart3 className="w-3.5 h-3.5" /> Relatórios
               </button>
@@ -600,7 +600,7 @@ export default function Properties() {
 
 
         {/* Freshness Cards */}
-        <div className="grid grid-cols-4 gap-2 sm:gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
           {/* Imóveis total card */}
           <div className="bg-card border border-primary/30 rounded-xl p-2 sm:p-4 text-left">
             <div className="flex items-center justify-between">
@@ -609,7 +609,7 @@ export default function Properties() {
                 <p className="text-xl sm:text-3xl font-black text-foreground mt-0.5 sm:mt-1">{propertyList.filter(p => p.status === "Disponível" || p.status === "Reservado").length}</p>
                 <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5 hidden sm:block">ativos no portfólio</p>
               </div>
-              <Building2 className="w-6 h-6 sm:w-8 sm:h-8 text-primary/40 group-hover:text-primary/60 transition-colors" />
+              <Building2 className="hidden sm:block w-6 h-6 sm:w-8 sm:h-8 text-primary/40 group-hover:text-primary/60 transition-colors" />
             </div>
           </div>
           <button
@@ -625,7 +625,7 @@ export default function Properties() {
                 <p className="text-xl sm:text-3xl font-black text-foreground mt-0.5 sm:mt-1">{freshnessStats.within30}</p>
                 <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5 hidden sm:block">imóveis em dia</p>
               </div>
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+              <div className="hidden sm:flex w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-emerald-500/10 items-center justify-center">
                 <CalendarCheck className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500" />
               </div>
             </div>
@@ -643,7 +643,7 @@ export default function Properties() {
                 <p className="text-xl sm:text-3xl font-black text-foreground mt-0.5 sm:mt-1">{freshnessStats.within60}</p>
                 <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5 hidden sm:block">precisam de revisão</p>
               </div>
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
+              <div className="hidden sm:flex w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-amber-500/10 items-center justify-center">
                 <CalendarClock className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500" />
               </div>
             </div>
@@ -661,7 +661,7 @@ export default function Properties() {
                 <p className="text-xl sm:text-3xl font-black text-foreground mt-0.5 sm:mt-1">{freshnessStats.over90}</p>
                 <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5 hidden sm:block">ação urgente</p>
               </div>
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-destructive/10 flex items-center justify-center">
+              <div className="hidden sm:flex w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-destructive/10 items-center justify-center">
                 <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-destructive" />
               </div>
             </div>
