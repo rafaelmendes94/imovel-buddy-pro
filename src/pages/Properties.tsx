@@ -609,7 +609,7 @@ export default function Properties() {
                 <p className="text-xl sm:text-3xl font-black text-foreground mt-0.5 sm:mt-1">{propertyList.filter(p => p.status === "Disponível" || p.status === "Reservado").length}</p>
                 <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5 hidden sm:block">ativos no portfólio</p>
               </div>
-              <Building2 className="w-6 h-6 sm:w-8 sm:h-8 text-primary/40 group-hover:text-primary/60 transition-colors" />
+              <Building2 className="hidden sm:block w-6 h-6 sm:w-8 sm:h-8 text-primary/40 group-hover:text-primary/60 transition-colors" />
             </div>
           </div>
           <button
