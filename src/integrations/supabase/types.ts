@@ -109,6 +109,7 @@ export type Database = {
           implantacao_url: string | null
           latitude: number | null
           longitude: number | null
+          mapa_pdf_url: string | null
           nome: string
           numero: string | null
           taxa_condominio: number | null
@@ -134,6 +135,7 @@ export type Database = {
           implantacao_url?: string | null
           latitude?: number | null
           longitude?: number | null
+          mapa_pdf_url?: string | null
           nome: string
           numero?: string | null
           taxa_condominio?: number | null
@@ -159,6 +161,7 @@ export type Database = {
           implantacao_url?: string | null
           latitude?: number | null
           longitude?: number | null
+          mapa_pdf_url?: string | null
           nome?: string
           numero?: string | null
           taxa_condominio?: number | null
