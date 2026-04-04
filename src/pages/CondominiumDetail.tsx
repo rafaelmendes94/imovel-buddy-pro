@@ -115,10 +115,11 @@ export default function CondominiumDetail() {
         </div>
 
         <Tabs defaultValue="info" className="space-y-4">
-          <TabsList className="bg-secondary">
+          <TabsList className="bg-secondary flex-wrap h-auto gap-1">
             <TabsTrigger value="info">Informações</TabsTrigger>
             <TabsTrigger value="imoveis">Imóveis ({imoveis.length})</TabsTrigger>
             {implantacaoUrl && <TabsTrigger value="implantacao">Implantação</TabsTrigger>}
+            {(condo as any).mapa_pdf_url && <TabsTrigger value="mapa">Mapa PDF</TabsTrigger>}
             <TabsTrigger value="localizacao">Localização</TabsTrigger>
           </TabsList>
 
