@@ -20,12 +20,16 @@ const DEFAULT_CENTER = { lat: -29.75, lng: -50.05 };
 const DEFAULT_ZOOM = 12;
 const PIN_ZOOM = 16;
 
+function getGoogleMaps() {
+  return (window as any).google?.maps;
+}
+
 export function AddressMapPicker({ latitude, longitude, onChange }: AddressMapPickerProps) {
   const { ready, loading } = useGoogleMapsLoader();
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<google.maps.Map | null>(null);
-  const markerRef = useRef<google.maps.marker.AdvancedMarkerElement | null>(null);
-  const geocoderRef = useRef<google.maps.Geocoder | null>(null);
+  const mapInstanceRef = useRef<any>(null);
+  const markerRef = useRef<any>(null);
+  const geocoderRef = useRef<any>(null);
   const skipCenterRef = useRef(false);
 
   const getCenter = useCallback(() => {
@@ -37,9 +41,12 @@ export function AddressMapPicker({ latitude, longitude, onChange }: AddressMapPi
     return DEFAULT_CENTER;
   }, [latitude, longitude]);
 
-  const reverseGeocode = useCallback(async (latLng: google.maps.LatLng) => {
+  const reverseGeocode = useCallback(async (latLng: any) => {
+    const maps = getGoogleMaps();
+    if (!maps) return;
+
     if (!geocoderRef.current) {
-      geocoderRef.current = new google.maps.Geocoder();
+      geocoderRef.current = new maps.Geocoder();
     }
     try {
       const { results } = await geocoderRef.current.geocode({ location: latLng });
@@ -56,14 +63,16 @@ export function AddressMapPicker({ latitude, longitude, onChange }: AddressMapPi
         if (c.types.includes("postal_code")) cep = c.long_name.replace(/\D/g, "");
       }
 
-      // Format CEP
       if (cep.length === 8) {
         cep = `${cep.slice(0, 5)}-${cep.slice(5)}`;
       }
 
+      const latVal = typeof latLng.lat === "function" ? latLng.lat() : latLng.lat;
+      const lngVal = typeof latLng.lng === "function" ? latLng.lng() : latLng.lng;
+
       onChange({
-        latitude: String(latLng.lat()),
-        longitude: String(latLng.lng()),
+        latitude: String(latVal),
+        longitude: String(lngVal),
         ...(endereco && { endereco }),
         ...(bairro && { bairro }),
         ...(cidade && { cidade }),
@@ -71,22 +80,30 @@ export function AddressMapPicker({ latitude, longitude, onChange }: AddressMapPi
         ...(cep && { cep }),
       });
     } catch {
-      // Just update coordinates if geocoding fails
-      onChange({
-        latitude: String(latLng.lat()),
-        longitude: String(latLng.lng()),
-      });
+      const latVal = typeof latLng.lat === "function" ? latLng.lat() : latLng.lat;
+      const lngVal = typeof latLng.lng === "function" ? latLng.lng() : latLng.lng;
+      onChange({ latitude: String(latVal), longitude: String(lngVal) });
     }
   }, [onChange]);
 
-  // Initialize map
+  const addDragListener = useCallback((marker: any) => {
+    marker.addListener("dragend", () => {
+      const pos = marker.position;
+      if (pos) {
+        skipCenterRef.current = true;
+        reverseGeocode(pos);
+      }
+    });
+  }, [reverseGeocode]);
+
   useEffect(() => {
-    if (!ready || !mapRef.current || mapInstanceRef.current) return;
+    const maps = getGoogleMaps();
+    if (!ready || !maps || !mapRef.current || mapInstanceRef.current) return;
 
     const center = getCenter();
     const zoom = center === DEFAULT_CENTER ? DEFAULT_ZOOM : PIN_ZOOM;
 
-    const map = new google.maps.Map(mapRef.current, {
+    const map = new maps.Map(mapRef.current, {
       center,
       zoom,
       mapId: "address-picker",
@@ -97,61 +114,37 @@ export function AddressMapPicker({ latitude, longitude, onChange }: AddressMapPi
 
     mapInstanceRef.current = map;
 
-    // Add marker if we have coordinates
     if (center !== DEFAULT_CENTER) {
-      markerRef.current = new google.maps.marker.AdvancedMarkerElement({
+      markerRef.current = new maps.marker.AdvancedMarkerElement({
         map,
         position: center,
         gmpDraggable: true,
       });
-
-      markerRef.current.addListener("dragend", () => {
-        const pos = markerRef.current?.position;
-        if (pos) {
-          skipCenterRef.current = true;
-          const latLng = new google.maps.LatLng(
-            typeof pos.lat === "function" ? pos.lat() : pos.lat,
-            typeof pos.lng === "function" ? pos.lng() : pos.lng
-          );
-          reverseGeocode(latLng);
-        }
-      });
+      addDragListener(markerRef.current);
     }
 
-    // Click to place/move pin
-    map.addListener("click", (e: google.maps.MapMouseEvent) => {
+    map.addListener("click", (e: any) => {
       if (!e.latLng) return;
       skipCenterRef.current = true;
 
       if (markerRef.current) {
         markerRef.current.position = e.latLng;
       } else {
-        markerRef.current = new google.maps.marker.AdvancedMarkerElement({
+        markerRef.current = new maps.marker.AdvancedMarkerElement({
           map,
           position: e.latLng,
           gmpDraggable: true,
         });
-
-        markerRef.current.addListener("dragend", () => {
-          const pos = markerRef.current?.position;
-          if (pos) {
-            skipCenterRef.current = true;
-            const latLng = new google.maps.LatLng(
-              typeof pos.lat === "function" ? pos.lat() : pos.lat,
-              typeof pos.lng === "function" ? pos.lng() : pos.lng
-            );
-            reverseGeocode(latLng);
-          }
-        });
+        addDragListener(markerRef.current);
       }
 
       reverseGeocode(e.latLng);
     });
   }, [ready]);
 
-  // Update marker/center when coordinates change externally (e.g. CEP lookup)
   useEffect(() => {
-    if (!mapInstanceRef.current) return;
+    const maps = getGoogleMaps();
+    if (!mapInstanceRef.current || !maps) return;
     if (skipCenterRef.current) {
       skipCenterRef.current = false;
       return;
@@ -168,23 +161,12 @@ export function AddressMapPicker({ latitude, longitude, onChange }: AddressMapPi
     if (markerRef.current) {
       markerRef.current.position = pos;
     } else {
-      markerRef.current = new google.maps.marker.AdvancedMarkerElement({
+      markerRef.current = new maps.marker.AdvancedMarkerElement({
         map: mapInstanceRef.current,
         position: pos,
         gmpDraggable: true,
       });
-
-      markerRef.current.addListener("dragend", () => {
-        const p = markerRef.current?.position;
-        if (p) {
-          skipCenterRef.current = true;
-          const latLng = new google.maps.LatLng(
-            typeof p.lat === "function" ? p.lat() : p.lat,
-            typeof p.lng === "function" ? p.lng() : p.lng
-          );
-          reverseGeocode(latLng);
-        }
-      });
+      addDragListener(markerRef.current);
     }
   }, [latitude, longitude]);
 

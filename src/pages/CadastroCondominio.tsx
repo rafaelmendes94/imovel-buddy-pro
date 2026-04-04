@@ -209,19 +209,6 @@ export default function CadastroCondominio() {
           {form.imagem_url && <img src={form.imagem_url} alt="Preview" className="mt-3 rounded-lg max-h-48 object-cover" />}
         </section>
 
-        <section>
-          <SectionHeader icon={Map} title="Localização" />
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label className="text-xs">Latitude</Label>
-              <Input type="number" step="any" value={form.latitude} onChange={(e) => setForm({ ...form, latitude: e.target.value })} />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">Longitude</Label>
-              <Input type="number" step="any" value={form.longitude} onChange={(e) => setForm({ ...form, longitude: e.target.value })} />
-            </div>
-          </div>
-        </section>
 
         <div className="flex justify-end gap-3 pt-4 border-t border-border">
           <button onClick={() => navigate("/condominios")} className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium hover:bg-muted transition-colors">Cancelar</button>
