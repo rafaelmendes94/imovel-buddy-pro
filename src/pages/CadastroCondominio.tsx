@@ -12,7 +12,7 @@ import { QuickPick } from '@/components/QuickPick';
 import { CepAutoFill, type AddressData } from '@/components/CepAutoFill';
 import { InfraToggle } from '@/components/InfraToggle';
 import { useSystemOptions } from '@/hooks/useSystemOptions';
-import { Fence, MapPin, Layers, Save, Image, Loader2, Building2, FileText, Map, DollarSign, FileUp, Upload } from 'lucide-react';
+import { Fence, MapPin, Layers, Save, Image, Loader2, Building2, FileText, DollarSign, FileUp, Upload } from 'lucide-react';
 
 const typeOptions = ["Vertical", "Horizontal", "Misto"];
 
