@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MapPin, Loader2 } from "lucide-react";
+import { AddressMapPicker } from "./AddressMapPicker";
 
 export interface AddressData {
   cep: string;
@@ -157,6 +158,13 @@ export function CepAutoFill({ data, onChange }: CepAutoFillProps) {
           />
         </div>
       </div>
+
+      {/* Mapa interativo para seleção por pin */}
+      <AddressMapPicker
+        latitude={data.latitude}
+        longitude={data.longitude}
+        onChange={onChange}
+      />
     </div>
   );
 }

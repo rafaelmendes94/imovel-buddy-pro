@@ -12,7 +12,7 @@ import { QuickPick } from '@/components/QuickPick';
 import { CepAutoFill, type AddressData } from '@/components/CepAutoFill';
 import { InfraToggle } from '@/components/InfraToggle';
 import { useSystemOptions } from '@/hooks/useSystemOptions';
-import { Landmark, MapPin, Layers, Save, Image, Loader2, Building2, FileText, Map, Calendar, Video, Eye, Plus, X, Download } from 'lucide-react';
+import { Landmark, MapPin, Layers, Save, Image, Loader2, Building2, FileText, Calendar, Video, Eye, Plus, X } from 'lucide-react';
 
 const statusOptions = ["Lançamento", "Em construção", "Pronto", "Em vendas"];
 const tipoOptions = ["Residencial", "Comercial", "Misto", "Loteamento"];
@@ -208,19 +208,6 @@ export default function CadastroEmpreendimento() {
           </div>
         </section>
 
-        <section>
-          <SectionHeader icon={Map} title="Localização" />
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label className="text-xs">Latitude</Label>
-              <Input type="number" step="any" value={form.latitude} onChange={(e) => setForm({ ...form, latitude: e.target.value })} />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">Longitude</Label>
-              <Input type="number" step="any" value={form.longitude} onChange={(e) => setForm({ ...form, longitude: e.target.value })} />
-            </div>
-          </div>
-        </section>
 
         <div className="flex justify-end gap-3 pt-4 border-t border-border">
           <button onClick={() => navigate("/empreendimentos")} className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium hover:bg-muted transition-colors">Cancelar</button>

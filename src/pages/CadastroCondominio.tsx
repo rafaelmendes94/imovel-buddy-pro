@@ -12,7 +12,7 @@ import { QuickPick } from '@/components/QuickPick';
 import { CepAutoFill, type AddressData } from '@/components/CepAutoFill';
 import { InfraToggle } from '@/components/InfraToggle';
 import { useSystemOptions } from '@/hooks/useSystemOptions';
-import { Fence, MapPin, Layers, Save, Image, Loader2, Building2, FileText, Map, DollarSign, FileUp, Upload } from 'lucide-react';
+import { Fence, MapPin, Layers, Save, Image, Loader2, Building2, FileText, DollarSign, FileUp, Upload } from 'lucide-react';
 
 const typeOptions = ["Vertical", "Horizontal", "Misto"];
 
@@ -209,19 +209,6 @@ export default function CadastroCondominio() {
           {form.imagem_url && <img src={form.imagem_url} alt="Preview" className="mt-3 rounded-lg max-h-48 object-cover" />}
         </section>
 
-        <section>
-          <SectionHeader icon={Map} title="Localização" />
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label className="text-xs">Latitude</Label>
-              <Input type="number" step="any" value={form.latitude} onChange={(e) => setForm({ ...form, latitude: e.target.value })} />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">Longitude</Label>
-              <Input type="number" step="any" value={form.longitude} onChange={(e) => setForm({ ...form, longitude: e.target.value })} />
-            </div>
-          </div>
-        </section>
 
         <div className="flex justify-end gap-3 pt-4 border-t border-border">
           <button onClick={() => navigate("/condominios")} className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium hover:bg-muted transition-colors">Cancelar</button>
