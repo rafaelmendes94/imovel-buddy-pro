@@ -661,7 +661,7 @@ export default function Properties() {
                 <p className="text-xl sm:text-3xl font-black text-foreground mt-0.5 sm:mt-1">{freshnessStats.over90}</p>
                 <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5 hidden sm:block">ação urgente</p>
               </div>
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-destructive/10 flex items-center justify-center">
+              <div className="hidden sm:flex w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-destructive/10 items-center justify-center">
                 <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-destructive" />
               </div>
             </div>
