@@ -32,6 +32,7 @@ const initialForm = {
   descricao: '', amenidades: [] as string[],
   imagem_url: '', latitude: '', longitude: '',
   implantacao_url: '',
+  mapa_pdf_url: '',
 };
 
 export default function CadastroCondominio() {
