@@ -245,20 +245,35 @@ export default function Maps() {
         )}
 
         {mappable.length > 0 ? (
-          <div className="rounded-xl overflow-hidden relative border border-border shadow-sm h-[500px] sm:h-[650px]">
-            <div className="absolute top-4 left-4 z-10">
-              <div className="bg-card/95 backdrop-blur-sm rounded-lg shadow-lg px-3 py-2 border border-border flex items-center gap-2">
-                <MapPin className="w-3.5 h-3.5 text-accent" />
-                <span className="text-[11px] font-bold text-foreground">{mappable.length} imóveis no mapa</span>
+          <div className="space-y-3">
+            <div className="rounded-xl overflow-hidden relative border border-border shadow-sm h-[500px] sm:h-[650px]">
+              <div className="absolute top-4 left-4 z-10">
+                <div className="bg-card/95 backdrop-blur-sm rounded-lg shadow-lg px-3 py-2 border border-border flex items-center gap-2">
+                  <MapPin className="w-3.5 h-3.5 text-accent" />
+                  <span className="text-[11px] font-bold text-foreground">{mappable.length} imóveis no mapa</span>
+                </div>
               </div>
+              <div ref={mapRef} style={{ height: "100%", width: "100%" }} />
             </div>
-            <div ref={mapRef} style={{ height: "100%", width: "100%" }} />
-          </div>
-        ) : (
-          <div className="text-center py-20 text-muted-foreground">
-            <MapPin className="w-16 h-16 mx-auto mb-4 opacity-40" />
-            <p className="text-lg font-semibold">Nenhum imóvel com coordenadas</p>
-            <p className="text-sm mt-1">Cadastre latitude e longitude nos imóveis para vê-los no mapa</p>
+
+            {/* Legenda */}
+            {(() => {
+              const activeTypes = [...new Set(mappable.map(im => im.tipo).filter(Boolean))];
+              return activeTypes.length > 0 ? (
+                <div className="flex flex-wrap gap-2 px-1">
+                  {activeTypes.map((type) => {
+                    const cfg = typeConfig[type] || defaultCfg;
+                    return (
+                      <div key={type} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-card border border-border text-xs font-medium">
+                        <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: cfg.color }} />
+                        <span>{cfg.emoji}</span>
+                        <span className="text-foreground">{cfg.label}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : null;
+            })()}
           </div>
         )}
 
