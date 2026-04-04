@@ -32,6 +32,7 @@ const initialForm = {
   descricao: '', amenidades: [] as string[],
   imagem_url: '', latitude: '', longitude: '',
   implantacao_url: '',
+  mapa_pdf_url: '',
 };
 
 export default function CadastroCondominio() {
@@ -60,6 +61,7 @@ export default function CadastroCondominio() {
             imagem_url: data.imagem_url || '', latitude: data.latitude ? String(data.latitude) : '',
             longitude: data.longitude ? String(data.longitude) : '',
             implantacao_url: (data as any).implantacao_url || '',
+            mapa_pdf_url: (data as any).mapa_pdf_url || '',
           });
         }
         setLoading(false);
@@ -96,6 +98,7 @@ export default function CadastroCondominio() {
       imagem_url: form.imagem_url,
       latitude: parseFloat(form.latitude) || 0, longitude: parseFloat(form.longitude) || 0,
       implantacao_url: form.implantacao_url,
+      mapa_pdf_url: form.mapa_pdf_url,
     };
     if (editId) {
       await supabase.from("condominios").update(payload).eq("id", editId);
@@ -197,6 +200,42 @@ export default function CadastroCondominio() {
             {form.implantacao_url && form.implantacao_url.match(/\.(jpg|jpeg|png|webp)$/i) && (
               <img src={form.implantacao_url} alt="Implantação" className="mt-2 rounded-lg max-h-48 object-contain border border-border" />
             )}
+          </div>
+        </section>
+
+        <section>
+          <SectionHeader icon={FileUp} title="Mapa do Condomínio (PDF)" />
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <label className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-accent text-accent-foreground text-sm font-semibold hover:opacity-90 transition-opacity cursor-pointer">
+                {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                {uploading ? "Enviando..." : "Enviar PDF do Mapa"}
+                <input type="file" accept=".pdf" className="hidden" onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file || !user) return;
+                  setUploading(true);
+                  const path = `mapas/${user.id}/${Date.now()}.pdf`;
+                  const { error } = await supabase.storage.from('site-assets').upload(path, file, { upsert: true });
+                  if (error) {
+                    toast({ title: "Erro ao enviar arquivo", description: error.message, variant: "destructive" });
+                  } else {
+                    const { data: urlData } = supabase.storage.from('site-assets').getPublicUrl(path);
+                    setForm(f => ({ ...f, mapa_pdf_url: urlData.publicUrl }));
+                    toast({ title: "Mapa enviado ✅" });
+                  }
+                  setUploading(false);
+                }} disabled={uploading} />
+              </label>
+              {form.mapa_pdf_url && (
+                <a href={form.mapa_pdf_url} target="_blank" rel="noopener noreferrer" className="text-xs text-accent hover:underline flex items-center gap-1">
+                  <FileUp className="w-3.5 h-3.5" /> Ver mapa atual
+                </a>
+              )}
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Ou cole a URL do PDF</Label>
+              <Input value={form.mapa_pdf_url} onChange={(e) => setForm({ ...form, mapa_pdf_url: e.target.value })} placeholder="https://...arquivo.pdf" />
+            </div>
           </div>
         </section>
 

@@ -1,0 +1,1 @@
+ALTER TABLE public.condominios ADD COLUMN mapa_pdf_url text DEFAULT '';

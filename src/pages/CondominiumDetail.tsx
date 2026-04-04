@@ -115,10 +115,11 @@ export default function CondominiumDetail() {
         </div>
 
         <Tabs defaultValue="info" className="space-y-4">
-          <TabsList className="bg-secondary">
+          <TabsList className="bg-secondary flex-wrap h-auto gap-1">
             <TabsTrigger value="info">Informações</TabsTrigger>
             <TabsTrigger value="imoveis">Imóveis ({imoveis.length})</TabsTrigger>
             {implantacaoUrl && <TabsTrigger value="implantacao">Implantação</TabsTrigger>}
+            {(condo as any).mapa_pdf_url && <TabsTrigger value="mapa">Mapa PDF</TabsTrigger>}
             <TabsTrigger value="localizacao">Localização</TabsTrigger>
           </TabsList>
 
@@ -218,6 +219,20 @@ export default function CondominiumDetail() {
               ) : (
                 <img src={implantacaoUrl} alt="Implantação" className="w-full rounded-xl border border-border object-contain max-h-[600px]" />
               )}
+            </TabsContent>
+          )}
+
+          {(condo as any).mapa_pdf_url && (
+            <TabsContent value="mapa" className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                  <FileUp className="w-4 h-4 text-accent" /> Mapa do Condomínio
+                </h3>
+                <a href={(condo as any).mapa_pdf_url} download className="flex items-center gap-2 px-4 py-2 rounded-lg bg-accent/10 text-accent text-sm font-semibold hover:bg-accent/20 transition-colors border border-accent/20">
+                  <Download className="w-4 h-4" /> Baixar PDF
+                </a>
+              </div>
+              <iframe src={(condo as any).mapa_pdf_url} className="w-full h-[600px] rounded-xl border border-border" title="Mapa do Condomínio PDF" />
             </TabsContent>
           )}
 
