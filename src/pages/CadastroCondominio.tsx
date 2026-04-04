@@ -98,6 +98,7 @@ export default function CadastroCondominio() {
       imagem_url: form.imagem_url,
       latitude: parseFloat(form.latitude) || 0, longitude: parseFloat(form.longitude) || 0,
       implantacao_url: form.implantacao_url,
+      mapa_pdf_url: form.mapa_pdf_url,
     };
     if (editId) {
       await supabase.from("condominios").update(payload).eq("id", editId);
