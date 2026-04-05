@@ -50,6 +50,11 @@ interface ValuationResult {
   };
   justification: string;
   premiums: { factor: string; percentage: string }[];
+  estimatedSaleTime?: {
+    minMonths: number;
+    maxMonths: number;
+    reasoning: string;
+  };
 }
 
 const CITIES = ["Capão da Canoa", "Xangri-lá", "Atlântida", "Torres", "Tramandaí", "Imbé", "Cidreira"];
