@@ -219,18 +219,24 @@ export default function Avaliacoes() {
         description: form.description,
       };
 
-      const existingProperties = properties.map((p) => ({
+      // Fetch comparable properties from database
+      const { data: dbProperties } = await supabase
+        .from("imoveis")
+        .select("id, titulo, cidade, tipo, preco, area, quartos, banheiros, vagas, vista_mar, decorado, empreendimento")
+        .limit(50);
+
+      const existingProperties = (dbProperties || []).map((p) => ({
         id: p.id,
-        title: p.title,
-        city: p.city,
-        type: p.type,
-        price: p.price,
+        title: p.titulo,
+        city: p.cidade,
+        type: p.tipo,
+        price: p.preco,
         area: p.area,
-        bedrooms: p.bedrooms,
-        bathrooms: p.bathrooms,
-        parking: p.parking,
-        seaView: p.seaView,
-        decorated: p.decorated,
+        bedrooms: p.quartos,
+        bathrooms: p.banheiros,
+        parking: p.vagas,
+        seaView: p.vista_mar,
+        decorated: p.decorado,
         empreendimento: p.empreendimento,
       }));
 
