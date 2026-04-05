@@ -2105,7 +2105,7 @@ function PropertyRow({
           {/* View counter */}
           <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md bg-muted/50">
             <Eye className="w-3.5 h-3.5 text-muted-foreground" />
-            <span className="text-[12px] font-bold text-foreground">{property.views ?? Math.floor(Math.random() * 200 + 10)}</span>
+            <span className="text-[12px] font-bold text-foreground">{property.views ?? 0}</span>
             <span className="text-[10px] text-muted-foreground">views</span>
           </div>
 
