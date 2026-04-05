@@ -662,6 +662,7 @@ export type Database = {
           updated_at: string
           user_id: string
           vagas: number
+          views: number
           vista: string | null
           vista_mar: boolean
         }
@@ -726,6 +727,7 @@ export type Database = {
           updated_at?: string
           user_id: string
           vagas?: number
+          views?: number
           vista?: string | null
           vista_mar?: boolean
         }
@@ -790,6 +792,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
           vagas?: number
+          views?: number
           vista?: string | null
           vista_mar?: boolean
         }
@@ -1298,6 +1301,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_imovel_views: {
+        Args: { imovel_id: string }
+        Returns: undefined
       }
     }
     Enums: {
