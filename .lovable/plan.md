@@ -1,22 +1,19 @@
 
 
-# Plano: Otimizar layout mobile dos cards de métricas e contagem
+# Plano: Home como página principal, Dashboard no /dashboard
 
-## Problema
-Os badges de VGV e os cards de contagem (Imóveis, Atualizados, Atenção, Desatualizados) estão transbordando para fora da tela em dispositivos móveis (384px viewport).
+## Resumo
+A rota `/` já renderiza `<Home />`. O problema é que após o login, admins são redirecionados para `/admin/dashboard` (que faz redirect para `/dashboard`). Corretores vão para `/painel`. Isso já está correto — o dashboard já está em `/dashboard`.
+
+A única mudança necessária é garantir que o fluxo de login redirecione admins diretamente para `/dashboard` (sem passar por `/admin/dashboard`).
 
 ## Mudanças
 
-### 1. Badges VGV (linhas 526-569)
-- Trocar `flex-wrap` por `grid grid-cols-2` no mobile para os 4 badges ficarem em 2x2
-- Garantir que cada badge tenha `min-w-0` e `overflow-hidden` para textos longos
-- Truncar valores muito longos com `truncate`
+### 1. `src/pages/Login.tsx` (linha 39)
+- Alterar o redirect de admins de `"/admin/dashboard"` para `"/dashboard"`
 
-### 2. Cards de Freshness/Contagem (linhas 603-669)
-- Mudar de `grid-cols-4` fixo para `grid-cols-2 sm:grid-cols-4` — 2 colunas no mobile, 4 no desktop
-- Reduzir padding interno no mobile
-- Ocultar o ícone grande no mobile para liberar espaço horizontal
+### 2. `src/App.tsx` (linha 90)
+- Remover a rota de redirect `"/admin/dashboard" → "/dashboard"` (já não será mais necessária)
 
-### Arquivos alterados
-- `src/pages/Properties.tsx` — seção de badges VGV e seção de freshness cards
+Duas linhas de mudança. A Home já é a página principal em `/`.
 
