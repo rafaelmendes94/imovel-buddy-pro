@@ -54,7 +54,7 @@ function markdownToHtml(md: string): string {
 const PAGE_HEIGHT_PX = 1122; // A4 proportional at 96dpi
 // Standard print margins: top/bottom 25mm (~95px), left 30mm (~113px), right 20mm (~76px)
 const PAGE_MARGIN_TOP = 95;
-const PAGE_MARGIN_BOTTOM = 95;
+const PAGE_MARGIN_BOTTOM = 120; // extra space for page number footer
 const PAGE_MARGIN_LEFT = 113;
 const PAGE_MARGIN_RIGHT = 76;
 const CONTENT_HEIGHT = PAGE_HEIGHT_PX - PAGE_MARGIN_TOP - PAGE_MARGIN_BOTTOM;
