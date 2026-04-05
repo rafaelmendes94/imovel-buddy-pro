@@ -351,8 +351,15 @@ export default function Properties() {
       bairro: property.neighborhood || "",
       area: String(property.area),
       quartos: String(property.bedrooms),
+      banheiros: String(property.bathrooms),
+      vagas: String(property.parking),
       endereco: property.address,
       titulo: property.title,
+      vista_mar: property.seaView ? "1" : "0",
+      decorado: property.decorated ? "1" : "0",
+      empreendimento: property.empreendimento || "",
+      descricao: property.description || "",
+      id: property.id,
     });
     navigate(`/avaliacoes?${params.toString()}`);
   };
