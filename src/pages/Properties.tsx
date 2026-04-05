@@ -21,6 +21,7 @@ import {
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { generatePropertyPdf } from "@/utils/generatePropertyPdf";
 
 // Broker info
 const brokerInfo: Record<string, { photo: string; whatsapp: string }> = {
@@ -2235,7 +2236,7 @@ function PropertyRow({
             className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors" title="Baixar todas as fotos (ZIP)"
           ><Image className="w-3.5 h-3.5 text-foreground" /></button>
           <button
-            onClick={() => { toast.info("Gerando PDF..."); }}
+            onClick={async () => { toast.info("Gerando PDF..."); try { await generatePropertyPdf(property); toast.success("PDF gerado!"); } catch { toast.error("Erro ao gerar PDF."); } }}
             className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors" title="PDF"
           ><Download className="w-3.5 h-3.5 text-foreground" /></button>
           <button
