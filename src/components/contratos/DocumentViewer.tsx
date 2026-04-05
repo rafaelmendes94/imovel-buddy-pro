@@ -52,11 +52,15 @@ function markdownToHtml(md: string): string {
 }
 
 const PAGE_HEIGHT_PX = 1122; // A4 proportional at 96dpi
-const PAGE_PADDING_PX = 76; // ~20mm
-const CONTENT_HEIGHT = PAGE_HEIGHT_PX - PAGE_PADDING_PX * 2;
+// Standard print margins: top/bottom 25mm (~95px), left 30mm (~113px), right 20mm (~76px)
+const PAGE_MARGIN_TOP = 95;
+const PAGE_MARGIN_BOTTOM = 95;
+const PAGE_MARGIN_LEFT = 113;
+const PAGE_MARGIN_RIGHT = 76;
+const CONTENT_HEIGHT = PAGE_HEIGHT_PX - PAGE_MARGIN_TOP - PAGE_MARGIN_BOTTOM;
 
 const PAGE_STYLE = `
-  @page { margin: 20mm; size: A4; }
+  @page { margin: 25mm 20mm 25mm 30mm; size: A4; }
   body { font-family: 'Georgia','Times New Roman',serif; font-size: 12pt; line-height: 1.7; color: #1a1a1a; margin:0; padding:0; }
   h1 { font-size:16pt; font-weight:bold; margin-top:1em; }
   h2 { font-size:14pt; font-weight:bold; margin-top:1em; }
@@ -152,7 +156,7 @@ function PaginatedPages({ html, containerRef }: { html: string; containerRef?: R
             className="bg-white shadow-[0_2px_12px_rgba(0,0,0,0.12)] border border-gray-200 overflow-hidden"
             style={{
               height: `${PAGE_HEIGHT_PX}px`,
-              padding: `${PAGE_PADDING_PX}px`,
+              padding: `${PAGE_MARGIN_TOP}px ${PAGE_MARGIN_RIGHT}px ${PAGE_MARGIN_BOTTOM}px ${PAGE_MARGIN_LEFT}px`,
               fontFamily: "'Georgia','Times New Roman',serif",
               color: "#1a1a1a",
               fontSize: "12pt",
@@ -219,7 +223,7 @@ function EditablePages({ editorRef, onInput }: { editorRef: React.RefObject<HTML
             className="bg-white shadow-[0_2px_12px_rgba(0,0,0,0.12)] border border-gray-200 overflow-hidden"
             style={{
               height: `${PAGE_HEIGHT_PX}px`,
-              padding: `${PAGE_PADDING_PX}px`,
+              padding: `${PAGE_MARGIN_TOP}px ${PAGE_MARGIN_RIGHT}px ${PAGE_MARGIN_BOTTOM}px ${PAGE_MARGIN_LEFT}px`,
               fontFamily: "'Georgia','Times New Roman',serif",
               color: "#1a1a1a",
               fontSize: "12pt",
@@ -328,7 +332,7 @@ export function DocumentViewer({
       tmp.innerHTML = src.innerHTML;
       document.body.appendChild(tmp);
       await html2pdf().set({
-        margin: [20, 15, 20, 15],
+        margin: [25, 20, 25, 30],
         filename: `${templateTitle?.replace(/\s+/g, "_").toLowerCase() || "documento"}.pdf`,
         image: { type: "jpeg", quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true },
@@ -506,7 +510,7 @@ export function DocumentViewer({
           <div className="mx-auto" style={{ maxWidth: "210mm" }}>
             <div
               className="bg-white shadow-[0_2px_12px_rgba(0,0,0,0.12)] border border-gray-200 flex flex-col items-center justify-center"
-              style={{ minHeight: `${PAGE_HEIGHT_PX}px`, padding: `${PAGE_PADDING_PX}px` }}
+              style={{ minHeight: `${PAGE_HEIGHT_PX}px`, padding: `${PAGE_MARGIN_TOP}px ${PAGE_MARGIN_RIGHT}px ${PAGE_MARGIN_BOTTOM}px ${PAGE_MARGIN_LEFT}px` }}
             >
               <Sparkles className="w-16 h-16 mb-4 text-muted-foreground/15" />
               <p className="text-sm font-medium text-muted-foreground">Preencha os dados e clique em "Gerar com IA"</p>
