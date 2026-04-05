@@ -2240,12 +2240,12 @@ function PropertyRow({
             className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors" title="PDF"
           ><Download className="w-3.5 h-3.5 text-foreground" /></button>
           <button
-            onClick={async () => {
-              const shareData = { title: property.title, text: `${property.title} - ${formatCurrency(property.price)}\n${property.address}, ${property.city}`, url: window.location.href };
-              if (navigator.share) { try { await navigator.share(shareData); } catch { /* cancelled */ } }
-              else { await navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`); toast.success("Link copiado!"); }
+            onClick={() => {
+              const text = `🏠 *${property.title}*\n📍 ${property.address}${property.neighborhood ? `, ${property.neighborhood}` : ""} — ${property.city}\n💰 ${formatCurrency(property.price)}${property.area ? `\n📐 ${property.area} m²` : ""}${property.bedrooms ? ` | 🛏 ${property.bedrooms} quartos` : ""}${property.bathrooms ? ` | 🚿 ${property.bathrooms} banheiros` : ""}${property.parking ? ` | 🚗 ${property.parking} vagas` : ""}${property.description ? `\n\n${property.description.substring(0, 200)}${property.description.length > 200 ? "..." : ""}` : ""}\n\n${window.location.href}`;
+              const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+              window.open(waUrl, "_blank");
             }}
-            className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors" title="Compartilhar"
+            className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors" title="Compartilhar no WhatsApp"
           ><Share2 className="w-3.5 h-3.5 text-foreground" /></button>
           <button
             onClick={() => onDuplicate?.(property.id)}
