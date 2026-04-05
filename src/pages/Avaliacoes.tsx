@@ -281,6 +281,21 @@ export default function Avaliacoes() {
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           {/* Form */}
           <form onSubmit={handleSubmit} className="lg:col-span-2 elevated-card rounded-xl p-5 space-y-4 h-fit">
+            {/* Property Selector */}
+            <div>
+              <h3 className="text-sm font-semibold text-card-foreground flex items-center gap-2 mb-3">
+                <Building2 className="w-4 h-4 text-accent" />
+                Selecionar Imóvel Cadastrado
+              </h3>
+              <PropertySelector onSelect={handlePropertySelect} onClear={handlePropertyClear} selected={selectedProperty} />
+            </div>
+
+            <div className="relative flex items-center gap-2">
+              <div className="flex-1 h-px bg-border" />
+              <span className="text-xs text-muted-foreground px-2">ou preencha manualmente</span>
+              <div className="flex-1 h-px bg-border" />
+            </div>
+
             <h3 className="text-sm font-semibold text-card-foreground flex items-center gap-2">
               <Home className="w-4 h-4 text-accent" />
               Dados do Imóvel
