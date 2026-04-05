@@ -153,6 +153,7 @@ function PropertySelector({ onSelect, onClear, selected }: { onSelect: (p: Prope
 }
 
 export default function Avaliacoes() {
+  const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ValuationResult | null>(null);
   const [selectedProperty, setSelectedProperty] = useState<PropertyOption | null>(null);
@@ -172,6 +173,30 @@ export default function Avaliacoes() {
     condominium: "",
     description: "",
   });
+
+  // Auto-fill from URL params (when coming from property card "Avaliar com IA")
+  useEffect(() => {
+    const tipo = searchParams.get("tipo");
+    if (!tipo) return;
+    setForm({
+      type: tipo || "Apartamento",
+      city: searchParams.get("cidade") || "Capão da Canoa",
+      address: searchParams.get("endereco") || "",
+      area: searchParams.get("area") || "",
+      bedrooms: searchParams.get("quartos") || "",
+      bathrooms: searchParams.get("banheiros") || "",
+      parking: searchParams.get("vagas") || "",
+      seaView: searchParams.get("vista_mar") === "1",
+      decorated: searchParams.get("decorado") === "1",
+      floor: "",
+      condominium: searchParams.get("empreendimento") || "",
+      description: searchParams.get("descricao") || "",
+    });
+    const titulo = searchParams.get("titulo");
+    if (titulo) {
+      toast.success(`Dados de "${titulo}" carregados para avaliação!`);
+    }
+  }, []);
 
   const updateForm = (key: string, value: string | boolean) => {
     setForm((prev) => ({ ...prev, [key]: value }));
