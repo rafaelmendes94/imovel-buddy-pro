@@ -2209,13 +2209,30 @@ function PropertyRow({
             className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors" title="Editar"
           ><Pencil className="w-3.5 h-3.5 text-primary" /></button>
           <button
-            onClick={() => {
-              property.images.forEach((img, i) => {
-                const a = document.createElement("a"); a.href = img; a.download = `${property.title.replace(/\s+/g, "_")}_foto_${i + 1}.jpg`; a.target = "_blank"; a.click();
-              });
-              toast.success(`${property.images.length} foto(s) baixando...`);
+            onClick={async () => {
+              if (!property.images || property.images.length === 0) { toast.error("Nenhuma foto disponível."); return; }
+              toast.info("Preparando ZIP com as fotos...");
+              try {
+                const JSZip = (await import("jszip")).default;
+                const zip = new JSZip();
+                const folder = zip.folder(property.title.replace(/\s+/g, "_")) || zip;
+                await Promise.all(property.images.map(async (img, i) => {
+                  try {
+                    const resp = await fetch(img);
+                    const blob = await resp.blob();
+                    const ext = blob.type.includes("png") ? "png" : "jpg";
+                    folder.file(`foto_${i + 1}.${ext}`, blob);
+                  } catch { /* skip failed */ }
+                }));
+                const content = await zip.generateAsync({ type: "blob" });
+                const url = URL.createObjectURL(content);
+                const a = document.createElement("a");
+                a.href = url; a.download = `${property.title.replace(/\s+/g, "_")}_fotos.zip`; a.click();
+                URL.revokeObjectURL(url);
+                toast.success(`ZIP com ${property.images.length} foto(s) baixado!`);
+              } catch { toast.error("Erro ao gerar ZIP."); }
             }}
-            className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors" title="Fotos"
+            className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors" title="Baixar todas as fotos (ZIP)"
           ><Image className="w-3.5 h-3.5 text-foreground" /></button>
           <button
             onClick={() => { toast.info("Gerando PDF..."); }}
