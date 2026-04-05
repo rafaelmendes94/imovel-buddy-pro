@@ -36,7 +36,7 @@ export default function Login() {
     const roles = rolesData?.map(r => r.role) || [];
 
     if (roles.includes("super_admin") || roles.includes("admin_staff")) {
-      navigate("/admin/dashboard");
+      navigate("/dashboard");
     } else {
       navigate("/painel");
     }
