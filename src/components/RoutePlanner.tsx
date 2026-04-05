@@ -8,11 +8,23 @@ import {
   ChevronUp,
   ChevronDown,
   Route,
+  AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface RoutePlannerProps {
   properties: Property[];
+}
+
+function hasValidCoords(p: Property) {
+  return p.lat !== 0 || p.lng !== 0;
+}
+
+function buildLocationString(p: Property) {
+  if (hasValidCoords(p)) return `${p.lat},${p.lng}`;
+  // fallback: use address
+  return encodeURIComponent(`${p.address}, ${p.city}`);
 }
 
 export function RoutePlanner({ properties }: RoutePlannerProps) {
@@ -20,11 +32,9 @@ export function RoutePlanner({ properties }: RoutePlannerProps) {
   const [orderedIds, setOrderedIds] = useState<string[]>([]);
   const [showAppChoice, setShowAppChoice] = useState(false);
 
-  // Sync ordered list with incoming favorites
   useEffect(() => {
     setOrderedIds((prev) => {
       const propIds = new Set(properties.map((p) => p.id));
-      // Keep existing order for props that still exist, add new ones at end
       const kept = prev.filter((id) => propIds.has(id));
       const newOnes = properties
         .filter((p) => !kept.includes(p.id))
@@ -59,14 +69,23 @@ export function RoutePlanner({ properties }: RoutePlannerProps) {
     });
   };
 
+  const missingCoords = orderedProperties.filter((p) => !hasValidCoords(p));
+
   const openGoogleMaps = () => {
     if (orderedProperties.length === 0) return;
-    const waypoints = orderedProperties.map((p) => `${p.lat},${p.lng}`);
-    const origin = waypoints[0];
-    const destination = waypoints[waypoints.length - 1];
+
+    if (missingCoords.length > 0) {
+      toast.warning(
+        `${missingCoords.length} imóvel(is) sem coordenadas — será usado o endereço como referência.`
+      );
+    }
+
+    const locations = orderedProperties.map(buildLocationString);
+    const origin = locations[0];
+    const destination = locations[locations.length - 1];
     const waypointsParam =
-      waypoints.length > 2
-        ? `&waypoints=${waypoints.slice(1, -1).join("|")}`
+      locations.length > 2
+        ? `&waypoints=${locations.slice(1, -1).join("|")}`
         : "";
     const url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}${waypointsParam}&travelmode=driving`;
     window.open(url, "_blank");
@@ -76,6 +95,14 @@ export function RoutePlanner({ properties }: RoutePlannerProps) {
   const openWaze = () => {
     if (orderedProperties.length === 0) return;
     const dest = orderedProperties[orderedProperties.length - 1];
+
+    if (!hasValidCoords(dest)) {
+      toast.warning(
+        "O último imóvel não tem coordenadas cadastradas. O Waze precisa de coordenadas para funcionar."
+      );
+      return;
+    }
+
     const url = `https://waze.com/ul?ll=${dest.lat},${dest.lng}&navigate=yes`;
     window.open(url, "_blank");
     setShowAppChoice(false);
@@ -145,11 +172,28 @@ export function RoutePlanner({ properties }: RoutePlannerProps) {
                   <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
                     Ordem de visita ({orderedProperties.length} paradas)
                   </p>
+
+                  {missingCoords.length > 0 && (
+                    <div className="flex items-start gap-2 p-3 mb-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800">
+                      <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                      <p className="text-xs">
+                        <strong>{missingCoords.length}</strong> imóvel(is) sem
+                        coordenadas GPS. O Google Maps usará o endereço; o Waze
+                        pode não funcionar para esses imóveis.
+                      </p>
+                    </div>
+                  )}
+
                   <div className="space-y-2">
                     {orderedProperties.map((p, i) => (
                       <div
                         key={p.id}
-                        className="flex items-center gap-3 p-3 rounded-xl bg-rose-50 border border-rose-100"
+                        className={cn(
+                          "flex items-center gap-3 p-3 rounded-xl border",
+                          hasValidCoords(p)
+                            ? "bg-rose-50 border-rose-100"
+                            : "bg-amber-50 border-amber-200"
+                        )}
                       >
                         <div className="w-7 h-7 rounded-full bg-red-500 text-white flex items-center justify-center text-xs font-black flex-shrink-0">
                           {i + 1}
@@ -169,6 +213,11 @@ export function RoutePlanner({ properties }: RoutePlannerProps) {
                           <p className="text-xs font-bold text-amber-600">
                             {formatCurrency(p.price)}
                           </p>
+                          {!hasValidCoords(p) && (
+                            <p className="text-[10px] text-amber-600 font-medium mt-0.5">
+                              ⚠ Sem GPS
+                            </p>
+                          )}
                         </div>
                         <div className="flex items-center gap-1 flex-shrink-0">
                           <button
