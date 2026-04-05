@@ -1696,12 +1696,13 @@ interface DealScore {
 }
 
 function analyzeDealScore(property: Property, allProperties: Property[]): DealScore {
-  // Find similar properties: same type, same city or nearby, similar bedrooms (±1)
+  // Find similar properties: same type, same city or nearby, similar bedrooms (±1), similar area (±40%)
   const similar = allProperties.filter(p =>
     p.id !== property.id &&
     p.type === property.type &&
     (p.city === property.city || (p.neighborhood && p.neighborhood === property.neighborhood)) &&
     Math.abs(p.bedrooms - property.bedrooms) <= 1 &&
+    (property.area > 0 && p.area > 0 ? Math.abs(p.area - property.area) / property.area <= 0.4 : true) &&
     p.status !== "Vendido" && p.status !== "Suspenso"
   );
 
@@ -1727,6 +1728,10 @@ function analyzeDealScore(property: Property, allProperties: Property[]): DealSc
   if (property.acceptsExchange) rawScore += 2;
   if (property.bonus && property.bonus > 0) rawScore += 3;
 
+  // More comparables = more confidence, slightly adjust
+  if (similar.length >= 5) rawScore += 2;
+  if (similar.length >= 10) rawScore += 2;
+
   // Normalize to 0-100
   const score = Math.max(0, Math.min(100, 50 + rawScore * 2));
 
@@ -1737,8 +1742,10 @@ function analyzeDealScore(property: Property, allProperties: Property[]): DealSc
   else if (score >= 40) label = "Normal";
   else label = "Acima da Média";
 
-  // Estimated days to sell (higher score = faster)
-  const estimatedDays = Math.max(7, Math.round(180 - score * 1.5));
+  // Estimated days to sell (higher score = faster, more comparables = more demand = faster)
+  const demandFactor = Math.min(1, similar.length / 10); // 0-1 based on how many similar exist
+  const baseDays = 180 - score * 1.5;
+  const estimatedDays = Math.max(7, Math.round(baseDays * (1 - demandFactor * 0.2)));
 
   return { score, label, estimatedDays, pricePerM2, avgPricePerM2 };
 }
