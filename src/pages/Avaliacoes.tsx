@@ -31,7 +31,7 @@ import {
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { formatCurrency } from "@/data/mockData";
-import { useEffect, useRef } from "react";
+
 
 interface ValuationResult {
   marketValue: number;
