@@ -54,10 +54,12 @@ function markdownToHtml(md: string): string {
 const PAGE_HEIGHT_PX = 1122; // A4 proportional at 96dpi
 // Standard print margins: top/bottom 25mm (~95px), left 30mm (~113px), right 20mm (~76px)
 const PAGE_MARGIN_TOP = 95;
-const PAGE_MARGIN_BOTTOM = 120; // extra space for page number footer
+const PAGE_MARGIN_BOTTOM = 95;
 const PAGE_MARGIN_LEFT = 113;
 const PAGE_MARGIN_RIGHT = 76;
-const CONTENT_HEIGHT = PAGE_HEIGHT_PX - PAGE_MARGIN_TOP - PAGE_MARGIN_BOTTOM;
+const PAGE_FOOTER_SPACE = 56; // reserved area so content never touches the footer
+const PAGE_FOOTER_OFFSET = 26;
+const CONTENT_HEIGHT = PAGE_HEIGHT_PX - PAGE_MARGIN_TOP - PAGE_MARGIN_BOTTOM - PAGE_FOOTER_SPACE;
 
 const PAGE_STYLE = `
   @page { margin: 25mm 20mm 25mm 30mm; size: A4; }
@@ -156,7 +158,8 @@ function PaginatedPages({ html, containerRef }: { html: string; containerRef?: R
             className="bg-white shadow-[0_2px_12px_rgba(0,0,0,0.12)] border border-gray-200 overflow-hidden"
             style={{
               height: `${PAGE_HEIGHT_PX}px`,
-              padding: `${PAGE_MARGIN_TOP}px ${PAGE_MARGIN_RIGHT}px ${PAGE_MARGIN_BOTTOM}px ${PAGE_MARGIN_LEFT}px`,
+              boxSizing: "border-box",
+              padding: `${PAGE_MARGIN_TOP}px ${PAGE_MARGIN_RIGHT}px ${PAGE_MARGIN_BOTTOM + PAGE_FOOTER_SPACE}px ${PAGE_MARGIN_LEFT}px`,
               fontFamily: "'Georgia','Times New Roman',serif",
               color: "#1a1a1a",
               fontSize: "12pt",
@@ -164,27 +167,28 @@ function PaginatedPages({ html, containerRef }: { html: string; containerRef?: R
               position: "relative",
             }}
           >
-            <div
-              ref={i === 0 ? containerRef : undefined}
-              style={{
-                marginTop: `-${i * CONTENT_HEIGHT}px`,
-                minHeight: `${CONTENT_HEIGHT}px`,
-              }}
-            >
-              {i === 0 && (
-                <div
-                  ref={measureRef}
-                  dangerouslySetInnerHTML={{ __html: html }}
-                />
-              )}
-              {i > 0 && (
-                <div dangerouslySetInnerHTML={{ __html: html }} />
-              )}
+            <div style={{ height: `${CONTENT_HEIGHT}px`, overflow: "hidden" }}>
+              <div
+                ref={i === 0 ? containerRef : undefined}
+                style={{
+                  marginTop: `-${i * CONTENT_HEIGHT}px`,
+                  minHeight: `${CONTENT_HEIGHT}px`,
+                }}
+              >
+                {i === 0 && (
+                  <div
+                    ref={measureRef}
+                    dangerouslySetInnerHTML={{ __html: html }}
+                  />
+                )}
+                {i > 0 && (
+                  <div dangerouslySetInnerHTML={{ __html: html }} />
+                )}
+              </div>
             </div>
-            {/* Page number footer */}
             <div
-              className="absolute bottom-3 left-0 right-0 text-center text-xs text-gray-400"
-              style={{ fontFamily: "Arial, sans-serif" }}
+              className="absolute left-0 right-0 text-center text-xs text-gray-400"
+              style={{ bottom: `${PAGE_FOOTER_OFFSET}px`, fontFamily: "Arial, sans-serif" }}
             >
               Página {i + 1} de {pageCount}
             </div>
@@ -223,7 +227,8 @@ function EditablePages({ editorRef, onInput }: { editorRef: React.RefObject<HTML
             className="bg-white shadow-[0_2px_12px_rgba(0,0,0,0.12)] border border-gray-200 overflow-hidden"
             style={{
               height: `${PAGE_HEIGHT_PX}px`,
-              padding: `${PAGE_MARGIN_TOP}px ${PAGE_MARGIN_RIGHT}px ${PAGE_MARGIN_BOTTOM}px ${PAGE_MARGIN_LEFT}px`,
+              boxSizing: "border-box",
+              padding: `${PAGE_MARGIN_TOP}px ${PAGE_MARGIN_RIGHT}px ${PAGE_MARGIN_BOTTOM + PAGE_FOOTER_SPACE}px ${PAGE_MARGIN_LEFT}px`,
               fontFamily: "'Georgia','Times New Roman',serif",
               color: "#1a1a1a",
               fontSize: "12pt",
@@ -231,24 +236,26 @@ function EditablePages({ editorRef, onInput }: { editorRef: React.RefObject<HTML
               position: "relative",
             }}
           >
-            {i === 0 ? (
-              <div
-                ref={editorRef}
-                contentEditable
-                suppressContentEditableWarning
-                onInput={onInput}
-                className="focus:outline-none"
-                style={{ minHeight: `${CONTENT_HEIGHT}px` }}
-              />
-            ) : (
-              <div
-                style={{ marginTop: `-${i * CONTENT_HEIGHT}px`, pointerEvents: "none" }}
-                dangerouslySetInnerHTML={{ __html: editorRef.current?.innerHTML || "" }}
-              />
-            )}
+            <div style={{ height: `${CONTENT_HEIGHT}px`, overflow: "hidden" }}>
+              {i === 0 ? (
+                <div
+                  ref={editorRef}
+                  contentEditable
+                  suppressContentEditableWarning
+                  onInput={onInput}
+                  className="focus:outline-none"
+                  style={{ minHeight: `${CONTENT_HEIGHT}px` }}
+                />
+              ) : (
+                <div
+                  style={{ marginTop: `-${i * CONTENT_HEIGHT}px`, pointerEvents: "none" }}
+                  dangerouslySetInnerHTML={{ __html: editorRef.current?.innerHTML || "" }}
+                />
+              )}
+            </div>
             <div
-              className="absolute bottom-3 left-0 right-0 text-center text-xs text-gray-400"
-              style={{ fontFamily: "Arial, sans-serif" }}
+              className="absolute left-0 right-0 text-center text-xs text-gray-400"
+              style={{ bottom: `${PAGE_FOOTER_OFFSET}px`, fontFamily: "Arial, sans-serif" }}
             >
               Página {i + 1} de {pageCount}
             </div>
