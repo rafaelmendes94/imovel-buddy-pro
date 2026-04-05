@@ -27,22 +27,65 @@ import {
   X,
   Clock,
   Timer,
+  Shield,
+  Lightbulb,
+  HomeIcon,
+  Landmark,
+  FileDown,
+  Globe,
+  Percent,
+  CalendarDays,
+  Star,
+  ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { formatCurrency } from "@/data/mockData";
+import { Progress } from "@/components/ui/progress";
 
+interface FoundListing {
+  url: string;
+  title: string;
+  price: number;
+  area: number;
+  platform: string;
+  similarity: string;
+}
+
+interface PlatformBreakdown {
+  name: string;
+  count: number;
+  avgPrice: number;
+  minPrice: number;
+  maxPrice: number;
+}
+
+interface RentalAnalysis {
+  monthlyRent: number;
+  annualYield: number;
+  paybackYears: number;
+  seasonalRent?: number;
+}
+
+interface ImprovementSuggestion {
+  suggestion: string;
+  estimatedImpact: string;
+  estimatedCost?: string;
+}
 
 interface ValuationResult {
   marketValue: number;
   quickSaleValue: number;
   pricePerSqm: number;
+  confidenceScore?: number;
   internalComparables: {
     id: string;
     title: string;
     price: number;
     similarity: string;
   }[];
+  foundListings?: FoundListing[];
+  platformBreakdown?: PlatformBreakdown[];
   externalAnalysis: {
     zapMinPrice: number;
     zapMaxPrice: number;
@@ -51,6 +94,10 @@ interface ValuationResult {
     platforms: string;
     marketTrend: string;
   };
+  rentalAnalysis?: RentalAnalysis;
+  improvementSuggestions?: ImprovementSuggestion[];
+  neighborhoodInsights?: string;
+  priceHistory?: string;
   justification: string;
   premiums: { factor: string; percentage: string }[];
   estimatedSaleTime?: {
@@ -63,7 +110,14 @@ interface ValuationResult {
 const CITIES = ["Capão da Canoa", "Xangri-lá", "Atlântida", "Torres", "Tramandaí", "Imbé", "Cidreira"];
 const TYPES = ["Apartamento", "Casa", "Comercial", "Terreno"];
 
-/* ─── Property selector for valuation ─── */
+const PLATFORM_COLORS: Record<string, string> = {
+  ZAP: "bg-purple-500",
+  OLX: "bg-orange-500",
+  "Viva Real": "bg-blue-500",
+  "Mercado Livre": "bg-yellow-500",
+  "ImóvelWeb": "bg-green-500",
+};
+
 interface PropertyOption {
   id: string;
   titulo: string;
@@ -152,13 +206,58 @@ function PropertySelector({ onSelect, onClear, selected }: { onSelect: (p: Prope
   );
 }
 
+/* ─── Confidence Gauge ─── */
+function ConfidenceGauge({ score }: { score: number }) {
+  const getColor = () => {
+    if (score >= 80) return "text-green-500";
+    if (score >= 60) return "text-accent";
+    if (score >= 40) return "text-yellow-500";
+    return "text-red-500";
+  };
+  const getLabel = () => {
+    if (score >= 80) return "Alta Confiança";
+    if (score >= 60) return "Boa Confiança";
+    if (score >= 40) return "Confiança Moderada";
+    return "Baixa Confiança";
+  };
+
+  return (
+    <div className="elevated-card rounded-xl p-5 text-center">
+      <Shield className="w-6 h-6 text-accent mx-auto mb-2" />
+      <p className="text-xs text-muted-foreground">Score de Confiança</p>
+      <p className={`text-3xl font-bold mt-1 ${getColor()}`}>{score}</p>
+      <Progress value={score} className="mt-2 h-2" />
+      <p className={`text-xs font-medium mt-1 ${getColor()}`}>{getLabel()}</p>
+    </div>
+  );
+}
+
+/* ─── Export PDF ─── */
+async function exportPDF() {
+  const el = document.getElementById("valuation-results");
+  if (!el) return;
+  toast.info("Gerando PDF...");
+  try {
+    const html2pdf = (await import("html2pdf.js")).default;
+    await html2pdf().set({
+      margin: [10, 10, 10, 10],
+      filename: `avaliacao-imovel-${Date.now()}.pdf`,
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+    }).from(el).save();
+    toast.success("PDF exportado com sucesso!");
+  } catch {
+    toast.error("Erro ao exportar PDF.");
+  }
+}
+
 export default function Avaliacoes() {
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ValuationResult | null>(null);
   const [selectedProperty, setSelectedProperty] = useState<PropertyOption | null>(null);
 
-  // Form state
   const [form, setForm] = useState({
     type: "Apartamento",
     city: "Capão da Canoa",
@@ -174,7 +273,6 @@ export default function Avaliacoes() {
     description: "",
   });
 
-  // Auto-fill from URL params (when coming from property card "Avaliar com IA")
   useEffect(() => {
     const tipo = searchParams.get("tipo");
     if (!tipo) return;
@@ -193,14 +291,10 @@ export default function Avaliacoes() {
       description: searchParams.get("descricao") || "",
     });
     const titulo = searchParams.get("titulo");
-    if (titulo) {
-      toast.success(`Dados de "${titulo}" carregados para avaliação!`);
-    }
+    if (titulo) toast.success(`Dados de "${titulo}" carregados para avaliação!`);
   }, []);
 
-  const updateForm = (key: string, value: string | boolean) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
-  };
+  const updateForm = (key: string, value: string | boolean) => setForm((prev) => ({ ...prev, [key]: value }));
 
   const handlePropertySelect = (p: PropertyOption) => {
     setSelectedProperty(p);
@@ -221,65 +315,42 @@ export default function Avaliacoes() {
     toast.success("Dados do imóvel preenchidos automaticamente!");
   };
 
-  const handlePropertyClear = () => {
-    setSelectedProperty(null);
-  };
+  const handlePropertyClear = () => setSelectedProperty(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!form.area || !form.city || !form.type) {
       toast.error("Preencha ao menos tipo, cidade e área.");
       return;
     }
-
     setLoading(true);
     setResult(null);
 
     try {
       const propertyData = {
-        type: form.type,
-        city: form.city,
-        address: form.address,
-        area: Number(form.area),
-        bedrooms: Number(form.bedrooms) || 0,
-        bathrooms: Number(form.bathrooms) || 0,
-        parking: Number(form.parking) || 0,
-        seaView: form.seaView,
-        decorated: form.decorated,
-        floor: form.floor,
-        condominium: form.condominium,
-        description: form.description,
+        type: form.type, city: form.city, address: form.address,
+        area: Number(form.area), bedrooms: Number(form.bedrooms) || 0,
+        bathrooms: Number(form.bathrooms) || 0, parking: Number(form.parking) || 0,
+        seaView: form.seaView, decorated: form.decorated,
+        floor: form.floor, condominium: form.condominium, description: form.description,
       };
 
-      // Fetch comparable properties from database
       const { data: dbProperties } = await supabase
         .from("imoveis")
         .select("id, titulo, cidade, tipo, preco, area, quartos, banheiros, vagas, vista_mar, decorado, empreendimento")
         .limit(50);
 
       const existingProperties = (dbProperties || []).map((p) => ({
-        id: p.id,
-        title: p.titulo,
-        city: p.cidade,
-        type: p.tipo,
-        price: p.preco,
-        area: p.area,
-        bedrooms: p.quartos,
-        bathrooms: p.banheiros,
-        parking: p.vagas,
-        seaView: p.vista_mar,
-        decorated: p.decorado,
-        empreendimento: p.empreendimento,
+        id: p.id, title: p.titulo, city: p.cidade, type: p.tipo,
+        price: p.preco, area: p.area, bedrooms: p.quartos, bathrooms: p.banheiros,
+        parking: p.vagas, seaView: p.vista_mar, decorated: p.decorado, empreendimento: p.empreendimento,
       }));
 
       const { data, error } = await supabase.functions.invoke("property-valuation", {
         body: { propertyData, existingProperties },
       });
-
       if (error) throw error;
       if (data.error) throw new Error(data.error);
-
       setResult(data);
       toast.success("Avaliação concluída!");
     } catch (err) {
@@ -298,229 +369,105 @@ export default function Avaliacoes() {
 
   return (
     <AppLayout>
-      <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
-        {/* Header */}
+      <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 pb-20">
         <BackButton />
-        <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <ClipboardCheck className="w-6 h-6 text-accent" />
-            Avaliações de Imóveis
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Insira os dados do imóvel para obter uma avaliação de mercado com comparativos internos e pesquisa externa
-          </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+              <ClipboardCheck className="w-6 h-6 text-accent" />
+              Avaliações de Imóveis
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Avaliação completa com comparativos, rentabilidade e sugestões de valorização
+            </p>
+          </div>
+          {result && (
+            <button onClick={exportPDF} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-accent text-accent-foreground text-sm font-medium hover:opacity-90 transition-opacity">
+              <FileDown className="w-4 h-4" /> Exportar PDF
+            </button>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          {/* Form */}
+          {/* Form — same as before */}
           <form onSubmit={handleSubmit} className="lg:col-span-2 elevated-card rounded-xl p-5 space-y-4 h-fit">
-            {/* Property Selector */}
             <div>
               <h3 className="text-sm font-semibold text-card-foreground flex items-center gap-2 mb-3">
-                <Building2 className="w-4 h-4 text-accent" />
-                Selecionar Imóvel Cadastrado
+                <Building2 className="w-4 h-4 text-accent" /> Selecionar Imóvel Cadastrado
               </h3>
               <PropertySelector onSelect={handlePropertySelect} onClear={handlePropertyClear} selected={selectedProperty} />
             </div>
-
             <div className="relative flex items-center gap-2">
-              <div className="flex-1 h-px bg-border" />
-              <span className="text-xs text-muted-foreground px-2">ou preencha manualmente</span>
-              <div className="flex-1 h-px bg-border" />
+              <div className="flex-1 h-px bg-border" /><span className="text-xs text-muted-foreground px-2">ou preencha manualmente</span><div className="flex-1 h-px bg-border" />
             </div>
-
-            <h3 className="text-sm font-semibold text-card-foreground flex items-center gap-2">
-              <Home className="w-4 h-4 text-accent" />
-              Dados do Imóvel
-            </h3>
-
-            {/* Type */}
+            <h3 className="text-sm font-semibold text-card-foreground flex items-center gap-2"><Home className="w-4 h-4 text-accent" /> Dados do Imóvel</h3>
             <div>
               <label className="text-xs text-muted-foreground font-medium">Tipo</label>
               <div className="flex flex-wrap gap-1.5 mt-1">
                 {TYPES.map((t) => (
-                  <button
-                    type="button"
-                    key={t}
-                    onClick={() => updateForm("type", t)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                      form.type === t
-                        ? "bg-accent text-accent-foreground"
-                        : "bg-muted text-muted-foreground hover:bg-muted/80"
-                    }`}
-                  >
-                    {t}
-                  </button>
+                  <button type="button" key={t} onClick={() => updateForm("type", t)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${form.type === t ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}>{t}</button>
                 ))}
               </div>
             </div>
-
-            {/* City */}
             <div>
-              <label className="text-xs text-muted-foreground font-medium flex items-center gap-1">
-                <MapPin className="w-3 h-3" /> Cidade
-              </label>
-              <select
-                value={form.city}
-                onChange={(e) => updateForm("city", e.target.value)}
-                className="w-full mt-1 px-3 py-2 rounded-lg bg-muted text-card-foreground text-sm border border-border focus:outline-none focus:ring-2 focus:ring-accent/50"
-              >
-                {CITIES.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
+              <label className="text-xs text-muted-foreground font-medium flex items-center gap-1"><MapPin className="w-3 h-3" /> Cidade</label>
+              <select value={form.city} onChange={(e) => updateForm("city", e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg bg-muted text-card-foreground text-sm border border-border focus:outline-none focus:ring-2 focus:ring-accent/50">
+                {CITIES.map((c) => (<option key={c} value={c}>{c}</option>))}
               </select>
             </div>
-
-            {/* Address */}
             <div>
               <label className="text-xs text-muted-foreground font-medium">Endereço</label>
-              <input
-                type="text"
-                value={form.address}
-                onChange={(e) => updateForm("address", e.target.value)}
-                placeholder="Av. Beira Mar, 500"
-                className="w-full mt-1 px-3 py-2 rounded-lg bg-muted text-card-foreground text-sm border border-border focus:outline-none focus:ring-2 focus:ring-accent/50"
-              />
+              <input type="text" value={form.address} onChange={(e) => updateForm("address", e.target.value)} placeholder="Av. Beira Mar, 500" className="w-full mt-1 px-3 py-2 rounded-lg bg-muted text-card-foreground text-sm border border-border focus:outline-none focus:ring-2 focus:ring-accent/50" />
             </div>
-
-            {/* Area + Bedrooms + Bathrooms + Parking */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs text-muted-foreground font-medium flex items-center gap-1">
-                  <Ruler className="w-3 h-3" /> Área (m²)
-                </label>
-                <input
-                  type="number"
-                  value={form.area}
-                  onChange={(e) => updateForm("area", e.target.value)}
-                  placeholder="120"
-                  required
-                  className="w-full mt-1 px-3 py-2 rounded-lg bg-muted text-card-foreground text-sm border border-border focus:outline-none focus:ring-2 focus:ring-accent/50"
-                />
+                <label className="text-xs text-muted-foreground font-medium flex items-center gap-1"><Ruler className="w-3 h-3" /> Área (m²)</label>
+                <input type="number" value={form.area} onChange={(e) => updateForm("area", e.target.value)} placeholder="120" required className="w-full mt-1 px-3 py-2 rounded-lg bg-muted text-card-foreground text-sm border border-border focus:outline-none focus:ring-2 focus:ring-accent/50" />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground font-medium flex items-center gap-1">
-                  <BedDouble className="w-3 h-3" /> Quartos
-                </label>
-                <input
-                  type="number"
-                  value={form.bedrooms}
-                  onChange={(e) => updateForm("bedrooms", e.target.value)}
-                  placeholder="3"
-                  className="w-full mt-1 px-3 py-2 rounded-lg bg-muted text-card-foreground text-sm border border-border focus:outline-none focus:ring-2 focus:ring-accent/50"
-                />
+                <label className="text-xs text-muted-foreground font-medium flex items-center gap-1"><BedDouble className="w-3 h-3" /> Quartos</label>
+                <input type="number" value={form.bedrooms} onChange={(e) => updateForm("bedrooms", e.target.value)} placeholder="3" className="w-full mt-1 px-3 py-2 rounded-lg bg-muted text-card-foreground text-sm border border-border focus:outline-none focus:ring-2 focus:ring-accent/50" />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground font-medium flex items-center gap-1">
-                  <Bath className="w-3 h-3" /> Banheiros
-                </label>
-                <input
-                  type="number"
-                  value={form.bathrooms}
-                  onChange={(e) => updateForm("bathrooms", e.target.value)}
-                  placeholder="2"
-                  className="w-full mt-1 px-3 py-2 rounded-lg bg-muted text-card-foreground text-sm border border-border focus:outline-none focus:ring-2 focus:ring-accent/50"
-                />
+                <label className="text-xs text-muted-foreground font-medium flex items-center gap-1"><Bath className="w-3 h-3" /> Banheiros</label>
+                <input type="number" value={form.bathrooms} onChange={(e) => updateForm("bathrooms", e.target.value)} placeholder="2" className="w-full mt-1 px-3 py-2 rounded-lg bg-muted text-card-foreground text-sm border border-border focus:outline-none focus:ring-2 focus:ring-accent/50" />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground font-medium flex items-center gap-1">
-                  <Car className="w-3 h-3" /> Vagas
-                </label>
-                <input
-                  type="number"
-                  value={form.parking}
-                  onChange={(e) => updateForm("parking", e.target.value)}
-                  placeholder="2"
-                  className="w-full mt-1 px-3 py-2 rounded-lg bg-muted text-card-foreground text-sm border border-border focus:outline-none focus:ring-2 focus:ring-accent/50"
-                />
+                <label className="text-xs text-muted-foreground font-medium flex items-center gap-1"><Car className="w-3 h-3" /> Vagas</label>
+                <input type="number" value={form.parking} onChange={(e) => updateForm("parking", e.target.value)} placeholder="2" className="w-full mt-1 px-3 py-2 rounded-lg bg-muted text-card-foreground text-sm border border-border focus:outline-none focus:ring-2 focus:ring-accent/50" />
               </div>
             </div>
-
-            {/* Floor + Condo */}
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-xs text-muted-foreground font-medium">Andar</label>
-                <input
-                  type="text"
-                  value={form.floor}
-                  onChange={(e) => updateForm("floor", e.target.value)}
-                  placeholder="8º andar"
-                  className="w-full mt-1 px-3 py-2 rounded-lg bg-muted text-card-foreground text-sm border border-border focus:outline-none focus:ring-2 focus:ring-accent/50"
-                />
+                <input type="text" value={form.floor} onChange={(e) => updateForm("floor", e.target.value)} placeholder="8º andar" className="w-full mt-1 px-3 py-2 rounded-lg bg-muted text-card-foreground text-sm border border-border focus:outline-none focus:ring-2 focus:ring-accent/50" />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground font-medium flex items-center gap-1">
-                  <Building2 className="w-3 h-3" /> Condomínio/Edifício
-                </label>
-                <input
-                  type="text"
-                  value={form.condominium}
-                  onChange={(e) => updateForm("condominium", e.target.value)}
-                  placeholder="Ed. Atlântico Sul"
-                  className="w-full mt-1 px-3 py-2 rounded-lg bg-muted text-card-foreground text-sm border border-border focus:outline-none focus:ring-2 focus:ring-accent/50"
-                />
+                <label className="text-xs text-muted-foreground font-medium flex items-center gap-1"><Building2 className="w-3 h-3" /> Condomínio/Edifício</label>
+                <input type="text" value={form.condominium} onChange={(e) => updateForm("condominium", e.target.value)} placeholder="Ed. Atlântico Sul" className="w-full mt-1 px-3 py-2 rounded-lg bg-muted text-card-foreground text-sm border border-border focus:outline-none focus:ring-2 focus:ring-accent/50" />
               </div>
             </div>
-
-            {/* Toggles */}
             <div className="flex gap-4">
               <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={form.seaView}
-                  onChange={(e) => updateForm("seaView", e.target.checked)}
-                  className="rounded border-border"
-                />
-                <span className="text-xs text-card-foreground flex items-center gap-1">
-                  <Eye className="w-3 h-3" /> Vista Mar
-                </span>
+                <input type="checkbox" checked={form.seaView} onChange={(e) => updateForm("seaView", e.target.checked)} className="rounded border-border" />
+                <span className="text-xs text-card-foreground flex items-center gap-1"><Eye className="w-3 h-3" /> Vista Mar</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={form.decorated}
-                  onChange={(e) => updateForm("decorated", e.target.checked)}
-                  className="rounded border-border"
-                />
-                <span className="text-xs text-card-foreground flex items-center gap-1">
-                  <Paintbrush className="w-3 h-3" /> Decorado
-                </span>
+                <input type="checkbox" checked={form.decorated} onChange={(e) => updateForm("decorated", e.target.checked)} className="rounded border-border" />
+                <span className="text-xs text-card-foreground flex items-center gap-1"><Paintbrush className="w-3 h-3" /> Decorado</span>
               </label>
             </div>
-
-            {/* Description */}
             <div>
               <label className="text-xs text-muted-foreground font-medium">Observações</label>
-              <textarea
-                value={form.description}
-                onChange={(e) => updateForm("description", e.target.value)}
-                placeholder="Informações adicionais sobre o imóvel..."
-                rows={3}
-                className="w-full mt-1 px-3 py-2 rounded-lg bg-muted text-card-foreground text-sm border border-border focus:outline-none focus:ring-2 focus:ring-accent/50 resize-none"
-              />
+              <textarea value={form.description} onChange={(e) => updateForm("description", e.target.value)} placeholder="Informações adicionais sobre o imóvel..." rows={3} className="w-full mt-1 px-3 py-2 rounded-lg bg-muted text-card-foreground text-sm border border-border focus:outline-none focus:ring-2 focus:ring-accent/50 resize-none" />
             </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-accent text-accent-foreground text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Avaliando...
-                </>
-              ) : (
-                <>
-                  <Search className="w-4 h-4" />
-                  Avaliar Imóvel
-                </>
-              )}
+            <button type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-accent text-accent-foreground text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50">
+              {loading ? (<><Loader2 className="w-4 h-4 animate-spin" /> Avaliando...</>) : (<><Search className="w-4 h-4" /> Avaliar Imóvel</>)}
             </button>
           </form>
 
           {/* Results */}
-          <div className="lg:col-span-3 space-y-4">
+          <div className="lg:col-span-3 space-y-4" id="valuation-results">
             {!result && !loading && (
               <div className="elevated-card rounded-xl p-12 flex flex-col items-center justify-center text-center">
                 <ClipboardCheck className="w-16 h-16 text-muted-foreground/30 mb-4" />
@@ -535,58 +482,136 @@ export default function Avaliacoes() {
               <div className="elevated-card rounded-xl p-12 flex flex-col items-center justify-center text-center">
                 <Loader2 className="w-12 h-12 text-accent animate-spin mb-4" />
                 <h3 className="text-lg font-semibold text-card-foreground">Analisando imóvel...</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Buscando comparativos internos e pesquisando plataformas externas
-                </p>
+                <p className="text-sm text-muted-foreground mt-1">Buscando comparativos e pesquisando portais imobiliários</p>
               </div>
             )}
 
             {result && (
               <>
-                {/* Main Values */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {/* Main Values + Confidence */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div className="elevated-card rounded-xl p-5 text-center border-2 border-accent/30">
                     <DollarSign className="w-6 h-6 text-accent mx-auto mb-2" />
                     <p className="text-xs text-muted-foreground">Valor de Mercado</p>
                     <p className="text-xl font-bold text-accent mt-1">{formatCurrency(result.marketValue)}</p>
-                    <p className="text-[10px] text-muted-foreground mt-1">
-                      {formatCurrency(result.pricePerSqm)}/m²
-                    </p>
+                    <p className="text-[10px] text-muted-foreground mt-1">{formatCurrency(result.pricePerSqm)}/m²</p>
                   </div>
                   <div className="elevated-card rounded-xl p-5 text-center">
                     <Zap className="w-6 h-6 text-orange-500 mx-auto mb-2" />
                     <p className="text-xs text-muted-foreground">Venda Rápida</p>
                     <p className="text-xl font-bold text-orange-500 mt-1">{formatCurrency(result.quickSaleValue)}</p>
-                    <p className="text-[10px] text-muted-foreground mt-1">
-                      {(((result.marketValue - result.quickSaleValue) / result.marketValue) * 100).toFixed(0)}% abaixo do mercado
-                    </p>
+                    <p className="text-[10px] text-muted-foreground mt-1">{(((result.marketValue - result.quickSaleValue) / result.marketValue) * 100).toFixed(0)}% abaixo</p>
                   </div>
                   <div className="elevated-card rounded-xl p-5 text-center">
-                    <div className="flex items-center justify-center gap-1 mb-2">
-                      {trendIcon}
-                      <span className="text-xs font-medium capitalize">{result.externalAnalysis.marketTrend}</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground">Tendência</p>
-                    <p className="text-lg font-bold text-card-foreground mt-1">
-                      {formatCurrency(result.externalAnalysis.zapAvgPrice)}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground mt-1">
-                      Média externa ({result.externalAnalysis.totalListings} anúncios)
-                    </p>
+                    <div className="flex items-center justify-center gap-1 mb-2">{trendIcon}<span className="text-xs font-medium capitalize">{result.externalAnalysis.marketTrend}</span></div>
+                    <p className="text-xs text-muted-foreground">Média Externa</p>
+                    <p className="text-lg font-bold text-card-foreground mt-1">{formatCurrency(result.externalAnalysis.zapAvgPrice)}</p>
+                    <p className="text-[10px] text-muted-foreground mt-1">{result.externalAnalysis.totalListings} anúncios</p>
                   </div>
+                  {result.confidenceScore != null && <ConfidenceGauge score={result.confidenceScore} />}
                 </div>
+
+                {/* Rental Analysis */}
+                {result.rentalAnalysis && (
+                  <div className="elevated-card rounded-xl p-5">
+                    <h3 className="text-sm font-semibold text-card-foreground mb-3 flex items-center gap-2">
+                      <Landmark className="w-4 h-4 text-accent" /> Análise de Rentabilidade
+                    </h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                      <div className="text-center p-3 rounded-lg bg-muted/50">
+                        <DollarSign className="w-4 h-4 text-accent mx-auto mb-1" />
+                        <p className="text-[10px] text-muted-foreground">Aluguel Mensal</p>
+                        <p className="text-sm font-bold text-card-foreground">{formatCurrency(result.rentalAnalysis.monthlyRent)}</p>
+                      </div>
+                      <div className="text-center p-3 rounded-lg bg-muted/50">
+                        <Percent className="w-4 h-4 text-green-500 mx-auto mb-1" />
+                        <p className="text-[10px] text-muted-foreground">Yield Anual</p>
+                        <p className="text-sm font-bold text-green-500">{result.rentalAnalysis.annualYield.toFixed(1)}%</p>
+                      </div>
+                      <div className="text-center p-3 rounded-lg bg-muted/50">
+                        <CalendarDays className="w-4 h-4 text-accent mx-auto mb-1" />
+                        <p className="text-[10px] text-muted-foreground">Payback</p>
+                        <p className="text-sm font-bold text-card-foreground">{result.rentalAnalysis.paybackYears.toFixed(1)} anos</p>
+                      </div>
+                      {result.rentalAnalysis.seasonalRent && (
+                        <div className="text-center p-3 rounded-lg bg-muted/50">
+                          <Star className="w-4 h-4 text-yellow-500 mx-auto mb-1" />
+                          <p className="text-[10px] text-muted-foreground">Diária Temporada</p>
+                          <p className="text-sm font-bold text-yellow-500">{formatCurrency(result.rentalAnalysis.seasonalRent)}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 {/* Premiums */}
                 {result.premiums && result.premiums.length > 0 && (
                   <div className="elevated-card rounded-xl p-5">
-                    <h3 className="text-sm font-semibold text-card-foreground mb-3">
-                      Fatores de Valorização / Desvalorização
-                    </h3>
+                    <h3 className="text-sm font-semibold text-card-foreground mb-3">Fatores de Valorização / Desvalorização</h3>
                     <div className="flex flex-wrap gap-2">
                       {result.premiums.map((p, i) => (
-                        <Badge key={i} variant="outline" className="text-xs py-1 px-2.5">
-                          {p.factor}: <span className="font-bold ml-1">{p.percentage}</span>
-                        </Badge>
+                        <Badge key={i} variant="outline" className="text-xs py-1 px-2.5">{p.factor}: <span className="font-bold ml-1">{p.percentage}</span></Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Platform Breakdown */}
+                {result.platformBreakdown && result.platformBreakdown.length > 0 && (
+                  <div className="elevated-card rounded-xl p-5">
+                    <h3 className="text-sm font-semibold text-card-foreground mb-3 flex items-center gap-2">
+                      <BarChart3 className="w-4 h-4 text-accent" /> Análise por Portal
+                    </h3>
+                    <div className="space-y-3">
+                      {result.platformBreakdown.map((pb, i) => {
+                        const maxPrice = Math.max(...result.platformBreakdown!.map(p => p.maxPrice));
+                        return (
+                          <div key={i} className="space-y-1">
+                            <div className="flex items-center justify-between text-xs">
+                              <div className="flex items-center gap-2">
+                                <div className={`w-2.5 h-2.5 rounded-full ${PLATFORM_COLORS[pb.name] || "bg-accent"}`} />
+                                <span className="font-medium text-card-foreground">{pb.name}</span>
+                                <Badge variant="secondary" className="text-[10px]">{pb.count} anúncios</Badge>
+                              </div>
+                              <span className="text-muted-foreground">{formatCurrency(pb.avgPrice)} média</span>
+                            </div>
+                            <div className="relative h-2 bg-muted rounded-full overflow-hidden">
+                              <div className={`absolute h-full rounded-full ${PLATFORM_COLORS[pb.name] || "bg-accent"} opacity-30`} style={{ left: `${(pb.minPrice / maxPrice) * 100}%`, width: `${((pb.maxPrice - pb.minPrice) / maxPrice) * 100}%` }} />
+                              <div className={`absolute h-full w-1.5 rounded-full ${PLATFORM_COLORS[pb.name] || "bg-accent"}`} style={{ left: `${(pb.avgPrice / maxPrice) * 100}%` }} />
+                            </div>
+                            <div className="flex justify-between text-[10px] text-muted-foreground">
+                              <span>{formatCurrency(pb.minPrice)}</span>
+                              <span>{formatCurrency(pb.maxPrice)}</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Found Listings */}
+                {result.foundListings && result.foundListings.length > 0 && (
+                  <div className="elevated-card rounded-xl p-5">
+                    <h3 className="text-sm font-semibold text-card-foreground mb-3 flex items-center gap-2">
+                      <Globe className="w-4 h-4 text-accent" /> Anúncios Similares Encontrados ({result.foundListings.length})
+                    </h3>
+                    <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+                      {result.foundListings.map((listing, i) => (
+                        <a key={i} href={listing.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-lg border border-border/50 hover:border-accent/30 hover:bg-muted/30 transition-all group">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-0.5">
+                              <Badge variant="secondary" className={`text-[9px] ${PLATFORM_COLORS[listing.platform] ? `${PLATFORM_COLORS[listing.platform]} text-white border-0` : ""}`}>{listing.platform}</Badge>
+                              <Badge variant="outline" className="text-[9px]">{listing.similarity}</Badge>
+                            </div>
+                            <p className="text-sm font-medium text-card-foreground truncate group-hover:text-accent transition-colors">{listing.title}</p>
+                            <p className="text-xs text-muted-foreground">{listing.area}m²</p>
+                          </div>
+                          <div className="text-right flex-shrink-0">
+                            <p className="text-sm font-bold text-accent">{formatCurrency(listing.price)}</p>
+                            <ExternalLink className="w-3 h-3 text-muted-foreground ml-auto mt-0.5 group-hover:text-accent transition-colors" />
+                          </div>
+                        </a>
                       ))}
                     </div>
                   </div>
@@ -595,8 +620,7 @@ export default function Avaliacoes() {
                 {/* Internal Comparables */}
                 <div className="elevated-card rounded-xl p-5">
                   <h3 className="text-sm font-semibold text-card-foreground mb-3 flex items-center gap-2">
-                    <Home className="w-4 h-4 text-accent" />
-                    Comparativos Internos
+                    <Home className="w-4 h-4 text-accent" /> Comparativos Internos
                   </h3>
                   {result.internalComparables.length === 0 ? (
                     <p className="text-sm text-muted-foreground">Nenhum comparativo encontrado na base interna.</p>
@@ -616,11 +640,10 @@ export default function Avaliacoes() {
                   )}
                 </div>
 
-                {/* External Analysis */}
+                {/* External Analysis - Price Bar */}
                 <div className="elevated-card rounded-xl p-5">
                   <h3 className="text-sm font-semibold text-card-foreground mb-3 flex items-center gap-2">
-                    <ExternalLink className="w-4 h-4 text-accent" />
-                    Pesquisa Externa ({result.externalAnalysis.platforms})
+                    <ExternalLink className="w-4 h-4 text-accent" /> Faixa de Preços Externa
                   </h3>
                   <div className="grid grid-cols-3 gap-4 mb-4">
                     <div className="text-center">
@@ -636,72 +659,82 @@ export default function Avaliacoes() {
                       <p className="text-sm font-bold text-card-foreground">{formatCurrency(result.externalAnalysis.zapMaxPrice)}</p>
                     </div>
                   </div>
-                  {/* Price bar */}
                   <div className="relative h-3 bg-muted rounded-full overflow-hidden">
-                    <div
-                      className="absolute h-full bg-gradient-to-r from-green-500 via-accent to-red-500 rounded-full"
-                      style={{ width: "100%" }}
-                    />
-                    <div
-                      className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-card border-2 border-accent rounded-full"
-                      style={{
-                        left: `${Math.min(
-                          100,
-                          Math.max(
-                            0,
-                            ((result.marketValue - result.externalAnalysis.zapMinPrice) /
-                              (result.externalAnalysis.zapMaxPrice - result.externalAnalysis.zapMinPrice)) *
-                              100
-                          )
-                        )}%`,
-                      }}
-                    />
+                    <div className="absolute h-full bg-gradient-to-r from-green-500 via-accent to-red-500 rounded-full" style={{ width: "100%" }} />
+                    <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-card border-2 border-accent rounded-full" style={{
+                      left: `${Math.min(100, Math.max(0, ((result.marketValue - result.externalAnalysis.zapMinPrice) / (result.externalAnalysis.zapMaxPrice - result.externalAnalysis.zapMinPrice)) * 100))}%`,
+                    }} />
                   </div>
-                  <p className="text-[10px] text-muted-foreground text-center mt-1">
-                    Posição do valor de mercado na faixa externa
-                  </p>
+                  <p className="text-[10px] text-muted-foreground text-center mt-1">Posição do valor de mercado na faixa externa</p>
                 </div>
 
                 {/* Sale Forecast */}
                 {result.estimatedSaleTime && (
                   <div className="elevated-card rounded-xl p-5">
-                    <h3 className="text-sm font-semibold text-card-foreground mb-3 flex items-center gap-2">
-                      <Timer className="w-4 h-4 text-accent" />
-                      Previsão de Venda
-                    </h3>
+                    <h3 className="text-sm font-semibold text-card-foreground mb-3 flex items-center gap-2"><Timer className="w-4 h-4 text-accent" /> Previsão de Venda</h3>
                     <div className="flex items-center gap-4 mb-3">
                       <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-accent/10 border border-accent/20">
                         <Clock className="w-5 h-5 text-accent" />
-                        <span className="text-lg font-bold text-accent">
-                          ~{result.estimatedSaleTime.minMonths}-{result.estimatedSaleTime.maxMonths} meses
-                        </span>
+                        <span className="text-lg font-bold text-accent">~{result.estimatedSaleTime.minMonths}-{result.estimatedSaleTime.maxMonths} meses</span>
                       </div>
                       <div className="flex-1">
                         <div className="h-2 rounded-full bg-muted overflow-hidden">
-                          <div
-                            className="h-full rounded-full bg-gradient-to-r from-accent to-primary transition-all"
-                            style={{ width: `${Math.max(10, 100 - (result.estimatedSaleTime.maxMonths / 12) * 100)}%` }}
-                          />
+                          <div className="h-full rounded-full bg-gradient-to-r from-accent to-primary transition-all" style={{ width: `${Math.max(10, 100 - (result.estimatedSaleTime.maxMonths / 12) * 100)}%` }} />
                         </div>
-                        <p className="text-[10px] text-muted-foreground mt-1">
-                          {result.estimatedSaleTime.maxMonths <= 3 ? "Venda rápida" : result.estimatedSaleTime.maxMonths <= 6 ? "Tempo médio" : "Venda mais lenta"}
-                        </p>
+                        <p className="text-[10px] text-muted-foreground mt-1">{result.estimatedSaleTime.maxMonths <= 3 ? "Venda rápida" : result.estimatedSaleTime.maxMonths <= 6 ? "Tempo médio" : "Venda mais lenta"}</p>
                       </div>
                     </div>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      {result.estimatedSaleTime.reasoning}
-                    </p>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{result.estimatedSaleTime.reasoning}</p>
+                  </div>
+                )}
+
+                {/* Improvement Suggestions */}
+                {result.improvementSuggestions && result.improvementSuggestions.length > 0 && (
+                  <div className="elevated-card rounded-xl p-5">
+                    <h3 className="text-sm font-semibold text-card-foreground mb-3 flex items-center gap-2">
+                      <Lightbulb className="w-4 h-4 text-yellow-500" /> Sugestões de Valorização
+                    </h3>
+                    <div className="space-y-2">
+                      {result.improvementSuggestions.map((s, i) => (
+                        <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 border border-border/50">
+                          <ChevronRight className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-card-foreground">{s.suggestion}</p>
+                            <div className="flex items-center gap-3 mt-1">
+                              <Badge className="text-[10px] bg-green-500/10 text-green-600 border-green-500/20">{s.estimatedImpact}</Badge>
+                              {s.estimatedCost && <span className="text-[10px] text-muted-foreground">Custo: {s.estimatedCost}</span>}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Neighborhood Insights */}
+                {result.neighborhoodInsights && (
+                  <div className="elevated-card rounded-xl p-5">
+                    <h3 className="text-sm font-semibold text-card-foreground mb-3 flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-accent" /> Perfil do Bairro / Região
+                    </h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{result.neighborhoodInsights}</p>
+                  </div>
+                )}
+
+                {/* Price History */}
+                {result.priceHistory && (
+                  <div className="elevated-card rounded-xl p-5">
+                    <h3 className="text-sm font-semibold text-card-foreground mb-3 flex items-center gap-2">
+                      <TrendingUp className="w-4 h-4 text-accent" /> Histórico de Preços
+                    </h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{result.priceHistory}</p>
                   </div>
                 )}
 
                 {/* Justification */}
                 <div className="elevated-card rounded-xl p-5">
-                  <h3 className="text-sm font-semibold text-card-foreground mb-3">
-                    Justificativa da Avaliação
-                  </h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
-                    {result.justification}
-                  </p>
+                  <h3 className="text-sm font-semibold text-card-foreground mb-3">Justificativa da Avaliação</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{result.justification}</p>
                 </div>
               </>
             )}
