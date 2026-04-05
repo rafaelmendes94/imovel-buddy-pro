@@ -88,7 +88,13 @@ export function RoutePlanner({ properties }: RoutePlannerProps) {
         ? `&waypoints=${locations.slice(1, -1).join("|")}`
         : "";
     const url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}${waypointsParam}&travelmode=driving`;
-    window.open(url, "_blank");
+    const a = document.createElement("a");
+    a.href = url;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
     setShowAppChoice(false);
   };
 
@@ -104,7 +110,13 @@ export function RoutePlanner({ properties }: RoutePlannerProps) {
     }
 
     const url = `https://waze.com/ul?ll=${dest.lat},${dest.lng}&navigate=yes`;
-    window.open(url, "_blank");
+    const a = document.createElement("a");
+    a.href = url;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
     setShowAppChoice(false);
   };
 
