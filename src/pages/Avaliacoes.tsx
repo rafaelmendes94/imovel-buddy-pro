@@ -636,6 +636,38 @@ export default function Avaliacoes() {
                   </p>
                 </div>
 
+                {/* Sale Forecast */}
+                {result.estimatedSaleTime && (
+                  <div className="elevated-card rounded-xl p-5">
+                    <h3 className="text-sm font-semibold text-card-foreground mb-3 flex items-center gap-2">
+                      <Timer className="w-4 h-4 text-accent" />
+                      Previsão de Venda
+                    </h3>
+                    <div className="flex items-center gap-4 mb-3">
+                      <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-accent/10 border border-accent/20">
+                        <Clock className="w-5 h-5 text-accent" />
+                        <span className="text-lg font-bold text-accent">
+                          ~{result.estimatedSaleTime.minMonths}-{result.estimatedSaleTime.maxMonths} meses
+                        </span>
+                      </div>
+                      <div className="flex-1">
+                        <div className="h-2 rounded-full bg-muted overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-accent to-primary transition-all"
+                            style={{ width: `${Math.max(10, 100 - (result.estimatedSaleTime.maxMonths / 12) * 100)}%` }}
+                          />
+                        </div>
+                        <p className="text-[10px] text-muted-foreground mt-1">
+                          {result.estimatedSaleTime.maxMonths <= 3 ? "Venda rápida" : result.estimatedSaleTime.maxMonths <= 6 ? "Tempo médio" : "Venda mais lenta"}
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      {result.estimatedSaleTime.reasoning}
+                    </p>
+                  </div>
+                )}
+
                 {/* Justification */}
                 <div className="elevated-card rounded-xl p-5">
                   <h3 className="text-sm font-semibold text-card-foreground mb-3">
