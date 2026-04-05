@@ -139,6 +139,16 @@ Sempre responda em português brasileiro. Seja preciso e profissional.`;
                       },
                       required: ["zapMinPrice", "zapMaxPrice", "zapAvgPrice", "totalListings", "platforms", "marketTrend"],
                     },
+                    estimatedSaleTime: {
+                      type: "object",
+                      properties: {
+                        minMonths: { type: "number", description: "Tempo mínimo estimado de venda em meses" },
+                        maxMonths: { type: "number", description: "Tempo máximo estimado de venda em meses" },
+                        reasoning: { type: "string", description: "Justificativa da estimativa de tempo de venda baseado na demanda e comparáveis encontrados" },
+                      },
+                      required: ["minMonths", "maxMonths", "reasoning"],
+                      description: "Estimativa de tempo para venda do imóvel baseada na demanda da região e comparáveis",
+                    },
                     justification: {
                       type: "string",
                       description: "Justificativa detalhada da avaliação em português, incluindo referências aos portais pesquisados e preços encontrados",
@@ -156,7 +166,7 @@ Sempre responda em português brasileiro. Seja preciso e profissional.`;
                       description: "Fatores que adicionam ou reduzem valor",
                     },
                   },
-                  required: ["marketValue", "quickSaleValue", "pricePerSqm", "internalComparables", "externalAnalysis", "justification", "premiums"],
+                  required: ["marketValue", "quickSaleValue", "pricePerSqm", "internalComparables", "externalAnalysis", "estimatedSaleTime", "justification", "premiums"],
                   additionalProperties: false,
                 },
               },
