@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { BackButton } from "@/components/BackButton";
-import { properties, formatCurrency } from "@/data/mockData";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -24,8 +23,12 @@ import {
   ArrowRight,
   Zap,
   Building2,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { formatCurrency } from "@/data/mockData";
+import { useEffect, useRef } from "react";
 
 interface ValuationResult {
   marketValue: number;
@@ -52,9 +55,99 @@ interface ValuationResult {
 const CITIES = ["Capão da Canoa", "Xangri-lá", "Atlântida", "Torres", "Tramandaí", "Imbé", "Cidreira"];
 const TYPES = ["Apartamento", "Casa", "Comercial", "Terreno"];
 
+/* ─── Property selector for valuation ─── */
+interface PropertyOption {
+  id: string;
+  titulo: string;
+  endereco: string;
+  cidade: string;
+  tipo: string;
+  preco: number;
+  area: number;
+  quartos: number;
+  banheiros: number;
+  vagas: number;
+  vista_mar: boolean;
+  decorado: boolean;
+  empreendimento: string | null;
+  bairro: string | null;
+  descricao: string | null;
+}
+
+function PropertySelector({ onSelect, onClear, selected }: { onSelect: (p: PropertyOption) => void; onClear: () => void; selected: PropertyOption | null }) {
+  const [search, setSearch] = useState("");
+  const [results, setResults] = useState<PropertyOption[]>([]);
+  const [isOpen, setIsOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (search.length < 2) { setResults([]); return; }
+    const timer = setTimeout(async () => {
+      setLoading(true);
+      const { data } = await supabase
+        .from("imoveis")
+        .select("id, titulo, endereco, cidade, tipo, preco, area, quartos, banheiros, vagas, vista_mar, decorado, empreendimento, bairro, descricao")
+        .or(`titulo.ilike.%${search}%,endereco.ilike.%${search}%,empreendimento.ilike.%${search}%,cidade.ilike.%${search}%`)
+        .limit(8);
+      setResults((data as PropertyOption[]) || []);
+      setIsOpen(true);
+      setLoading(false);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) setIsOpen(false);
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  if (selected) {
+    return (
+      <div className="flex items-center gap-3 p-3 rounded-lg border border-border bg-muted/30">
+        <Building2 className="w-5 h-5 text-accent flex-shrink-0" />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-foreground truncate">{selected.titulo}</p>
+          <p className="text-xs text-muted-foreground truncate flex items-center gap-1">
+            <MapPin className="w-3 h-3" /> {selected.endereco}, {selected.cidade} — {formatCurrency(selected.preco)}
+          </p>
+        </div>
+        <button onClick={onClear} className="p-1 rounded hover:bg-muted transition-colors"><X className="w-4 h-4 text-muted-foreground" /></button>
+      </div>
+    );
+  }
+
+  return (
+    <div ref={wrapperRef} className="relative">
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <Input placeholder="Buscar imóvel por título, endereço, cidade..." value={search} onChange={(e) => setSearch(e.target.value)} onFocus={() => results.length > 0 && setIsOpen(true)} className="pl-10 h-11" />
+        {loading && <div className="absolute right-3 top-1/2 -translate-y-1/2"><div className="w-4 h-4 border-2 border-accent border-t-transparent rounded-full animate-spin" /></div>}
+      </div>
+      {isOpen && results.length > 0 && (
+        <div className="absolute z-50 mt-1 w-full rounded-lg border border-border bg-popover shadow-lg max-h-64 overflow-y-auto">
+          {results.map((p) => (
+            <button key={p.id} onClick={() => { onSelect(p); setSearch(""); setIsOpen(false); }} className="w-full text-left px-4 py-3 hover:bg-muted/50 transition-colors border-b border-border/50 last:border-0">
+              <p className="text-sm font-medium text-foreground truncate">{p.titulo}</p>
+              <p className="text-xs text-muted-foreground truncate">{p.endereco}, {p.cidade} — {p.area}m² — {formatCurrency(p.preco)}</p>
+            </button>
+          ))}
+        </div>
+      )}
+      {isOpen && search.length >= 2 && results.length === 0 && !loading && (
+        <div className="absolute z-50 mt-1 w-full rounded-lg border border-border bg-popover shadow-lg p-4 text-center text-sm text-muted-foreground">Nenhum imóvel encontrado</div>
+      )}
+    </div>
+  );
+}
+
 export default function Avaliacoes() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ValuationResult | null>(null);
+  const [selectedProperty, setSelectedProperty] = useState<PropertyOption | null>(null);
 
   // Form state
   const [form, setForm] = useState({
@@ -74,6 +167,29 @@ export default function Avaliacoes() {
 
   const updateForm = (key: string, value: string | boolean) => {
     setForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handlePropertySelect = (p: PropertyOption) => {
+    setSelectedProperty(p);
+    setForm({
+      type: p.tipo || "Apartamento",
+      city: p.cidade || "Capão da Canoa",
+      address: p.endereco || "",
+      area: String(p.area || ""),
+      bedrooms: String(p.quartos || ""),
+      bathrooms: String(p.banheiros || ""),
+      parking: String(p.vagas || ""),
+      seaView: p.vista_mar || false,
+      decorated: p.decorado || false,
+      floor: "",
+      condominium: p.empreendimento || "",
+      description: p.descricao || "",
+    });
+    toast.success("Dados do imóvel preenchidos automaticamente!");
+  };
+
+  const handlePropertyClear = () => {
+    setSelectedProperty(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -103,18 +219,24 @@ export default function Avaliacoes() {
         description: form.description,
       };
 
-      const existingProperties = properties.map((p) => ({
+      // Fetch comparable properties from database
+      const { data: dbProperties } = await supabase
+        .from("imoveis")
+        .select("id, titulo, cidade, tipo, preco, area, quartos, banheiros, vagas, vista_mar, decorado, empreendimento")
+        .limit(50);
+
+      const existingProperties = (dbProperties || []).map((p) => ({
         id: p.id,
-        title: p.title,
-        city: p.city,
-        type: p.type,
-        price: p.price,
+        title: p.titulo,
+        city: p.cidade,
+        type: p.tipo,
+        price: p.preco,
         area: p.area,
-        bedrooms: p.bedrooms,
-        bathrooms: p.bathrooms,
-        parking: p.parking,
-        seaView: p.seaView,
-        decorated: p.decorated,
+        bedrooms: p.quartos,
+        bathrooms: p.banheiros,
+        parking: p.vagas,
+        seaView: p.vista_mar,
+        decorated: p.decorado,
         empreendimento: p.empreendimento,
       }));
 
@@ -159,6 +281,21 @@ export default function Avaliacoes() {
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           {/* Form */}
           <form onSubmit={handleSubmit} className="lg:col-span-2 elevated-card rounded-xl p-5 space-y-4 h-fit">
+            {/* Property Selector */}
+            <div>
+              <h3 className="text-sm font-semibold text-card-foreground flex items-center gap-2 mb-3">
+                <Building2 className="w-4 h-4 text-accent" />
+                Selecionar Imóvel Cadastrado
+              </h3>
+              <PropertySelector onSelect={handlePropertySelect} onClear={handlePropertyClear} selected={selectedProperty} />
+            </div>
+
+            <div className="relative flex items-center gap-2">
+              <div className="flex-1 h-px bg-border" />
+              <span className="text-xs text-muted-foreground px-2">ou preencha manualmente</span>
+              <div className="flex-1 h-px bg-border" />
+            </div>
+
             <h3 className="text-sm font-semibold text-card-foreground flex items-center gap-2">
               <Home className="w-4 h-4 text-accent" />
               Dados do Imóvel
