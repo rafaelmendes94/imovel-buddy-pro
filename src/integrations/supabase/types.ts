@@ -820,6 +820,50 @@ export type Database = {
           },
         ]
       }
+      implantacoes: {
+        Row: {
+          created_at: string
+          descricao: string | null
+          empreendimento_id: string
+          id: string
+          imagem_capa_url: string
+          mapa_url: string
+          tipo_arquivo: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          descricao?: string | null
+          empreendimento_id: string
+          id?: string
+          imagem_capa_url?: string
+          mapa_url?: string
+          tipo_arquivo?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          descricao?: string | null
+          empreendimento_id?: string
+          id?: string
+          imagem_capa_url?: string
+          mapa_url?: string
+          tipo_arquivo?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "implantacoes_empreendimento_id_fkey"
+            columns: ["empreendimento_id"]
+            isOneToOne: false
+            referencedRelation: "empreendimentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       job_roles: {
         Row: {
           created_at: string
