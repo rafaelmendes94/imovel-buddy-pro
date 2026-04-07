@@ -46,6 +46,7 @@ import {
   User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import logoImg from "@/assets/logo.png";
 import { RoutePlanner } from "@/components/RoutePlanner";
 import { SharkAI } from "@/components/SharkAI";
 import { useAuth } from "@/hooks/useAuth";
@@ -623,7 +624,9 @@ export default function Site() {
   const navigate = useNavigate();
   const { user, profile, signOut } = useAuth();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [imoveisMenuOpen, setImoveisMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const imoveisMenuRef = useRef<HTMLDivElement>(null);
   const searchParams = new URLSearchParams(window.location.search);
   const initialTipo = searchParams.get("tipo") || "";
   const initialCidade = searchParams.get("cidade") || "";
@@ -657,11 +660,14 @@ export default function Site() {
     } catch { return []; }
   });
 
-  // Close user menu on outside click
+  // Close user/imoveis menu on outside click
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
         setUserMenuOpen(false);
+      }
+      if (imoveisMenuRef.current && !imoveisMenuRef.current.contains(e.target as Node)) {
+        setImoveisMenuOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClick);
@@ -822,77 +828,87 @@ export default function Site() {
 
       {/* Navbar */}
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-14">
+          {/* Logo */}
           <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-500 to-amber-400 flex items-center justify-center">
-              <Home className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xl font-extrabold text-gray-900">MV <span className="text-amber-500">CONNECT</span></span>
+            <img src={logoImg} alt="MV BROKER CONNECT" className="h-8 object-contain" />
           </div>
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
-            {categories.slice(1).map((cat) => (
+
+          {/* Nav links */}
+          <nav className="hidden md:flex items-center gap-5 text-sm font-medium text-gray-600">
+            <button onClick={() => { setActiveCategory("todos"); document.getElementById("site-top")?.scrollIntoView({ behavior: "smooth" }); }} className="hover:text-primary transition-colors">
+              Início
+            </button>
+
+            {/* Imóveis dropdown */}
+            <div className="relative" ref={imoveisMenuRef}>
               <button
-                key={cat.key}
-                onClick={() => setActiveCategory(cat.key)}
-                className={cn(
-                  "hover:text-amber-600 transition-colors",
-                  activeCategory === cat.key && "text-amber-600 font-bold"
-                )}
+                onClick={() => setImoveisMenuOpen(!imoveisMenuOpen)}
+                className={cn("flex items-center gap-1 hover:text-primary transition-colors", imoveisMenuOpen && "text-primary")}
               >
-                {cat.label}
+                Imóveis <ChevronDown className="w-3.5 h-3.5" />
               </button>
-            ))}
-            <Link to="/brick-store" className="flex items-center gap-1 hover:text-amber-600 transition-colors font-semibold">
-              <ShoppingBag className="w-4 h-4" /> Brick
-            </Link>
+              {imoveisMenuOpen && (
+                <div className="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                  {categories.map((cat) => (
+                    <button
+                      key={cat.key}
+                      onClick={() => { setActiveCategory(cat.key); setImoveisMenuOpen(false); }}
+                      className={cn(
+                        "w-full flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors",
+                        activeCategory === cat.key && "text-primary font-semibold bg-gray-50"
+                      )}
+                    >
+                      <cat.icon className="w-4 h-4" /> {cat.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <Link to="/mapas-condominio" className="hover:text-primary transition-colors">Mapa Condomínio</Link>
+            <Link to="/fotos-cidade" className="hover:text-primary transition-colors">Fotos da Cidade</Link>
+            <a href="#contato" className="hover:text-primary transition-colors">Contato</a>
           </nav>
-          <div className="flex items-center gap-3">
+
+          {/* Right side */}
+          <div className="flex items-center gap-2">
             <button
               onClick={() => setShowFavorites(true)}
-              className="relative flex items-center gap-1.5 text-sm font-semibold text-gray-700 hover:text-red-500 transition-colors"
-              title="Meus Favoritos"
+              className="relative p-2 text-gray-600 hover:text-red-500 transition-colors"
+              title="Favoritos"
             >
               <Heart className={cn("w-5 h-5", favoriteIds.length > 0 && "fill-red-500 text-red-500")} />
               {favoriteIds.length > 0 && (
-                <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
+                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center">
                   {favoriteIds.length}
                 </span>
               )}
             </button>
-            <a href="tel:+5511999999999" className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-gray-700 hover:text-amber-600 transition-colors">
-              <Phone className="w-4 h-4" /> (11) 99999-9999
-            </a>
-            <a
-              href="https://wa.me/5511999999999"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-4 py-2 rounded-xl bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-colors shadow-sm"
-            >
-              WhatsApp
-            </a>
+
             {user ? (
               <div className="relative" ref={userMenuRef}>
                 <button
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 transition-colors text-sm font-semibold text-gray-700"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors text-sm font-semibold text-gray-700"
                 >
                   <User className="w-4 h-4" />
-                  <span className="hidden sm:inline max-w-[120px] truncate">{profile?.full_name || "Minha Conta"}</span>
-                  <ChevronDown className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline max-w-[100px] truncate">{profile?.full_name || "Conta"}</span>
+                  <ChevronDown className="w-3 h-3" />
                 </button>
                 {userMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-lg border border-gray-200 py-1 z-50">
-                    <button onClick={() => { navigate("/dashboard"); setUserMenuOpen(false); }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                    <button onClick={() => { navigate("/dashboard"); setUserMenuOpen(false); }} className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                       <LayoutDashboard className="w-4 h-4" /> Dashboard
                     </button>
-                    <button onClick={() => { navigate("/configuracoes"); setUserMenuOpen(false); }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                    <button onClick={() => { navigate("/configuracoes"); setUserMenuOpen(false); }} className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                       <Settings className="w-4 h-4" /> Configurações
                     </button>
-                    <button onClick={() => { navigate("/painel/assinatura"); setUserMenuOpen(false); }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                    <button onClick={() => { navigate("/painel/assinatura"); setUserMenuOpen(false); }} className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                       <CreditCard className="w-4 h-4" /> Planos
                     </button>
                     <div className="border-t border-gray-100 my-1" />
-                    <button onClick={() => { signOut(); setUserMenuOpen(false); }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                    <button onClick={() => { signOut(); setUserMenuOpen(false); }} className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
                       <LogOut className="w-4 h-4" /> Sair
                     </button>
                   </div>
@@ -901,7 +917,7 @@ export default function Site() {
             ) : (
               <Link
                 to="/login"
-                className="px-4 py-2 rounded-xl bg-gray-900 text-white text-sm font-bold hover:bg-gray-800 transition-colors shadow-sm"
+                className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:opacity-90 transition-opacity"
               >
                 Login
               </Link>
