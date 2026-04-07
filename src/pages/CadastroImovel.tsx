@@ -598,8 +598,8 @@ export function ImovelForm({ editId }: { editId?: string }) {
       <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
         <SectionHeader icon={Building2} title="Identificação" />
 
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 sm:gap-4 mb-4">
-          <div className="space-y-1.5 sm:col-span-2">
+        <div className="grid grid-cols-1 sm:grid-cols-6 gap-3 sm:gap-4 mb-4">
+          <div className="space-y-1.5 sm:col-span-3">
             <Label className="text-xs">Título do Imóvel *</Label>
             <Input placeholder="Ex: Apartamento 3 quartos frente mar" value={form.titulo} onChange={e => set('titulo', e.target.value)} required />
           </div>
@@ -608,11 +608,14 @@ export function ImovelForm({ editId }: { editId?: string }) {
             <Input placeholder="Unidade" value={form.unidade} onChange={e => set('unidade', e.target.value)} />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs">Quadra / Lote / Box</Label>
+            <Label className="text-xs">Box</Label>
+            <Input placeholder="Box" value={form.box} onChange={e => set('box', e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Quadra / Lote</Label>
             <div className="flex gap-1">
               <Input placeholder="Qd" value={form.quadra} onChange={e => set('quadra', e.target.value)} />
               <Input placeholder="Lt" value={form.lote} onChange={e => set('lote', e.target.value)} />
-              <Input placeholder="Bx" value={form.box} onChange={e => set('box', e.target.value)} />
             </div>
           </div>
         </div>
