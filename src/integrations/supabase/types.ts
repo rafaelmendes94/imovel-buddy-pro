@@ -94,25 +94,31 @@ export type Database = {
       city_galleries: {
         Row: {
           capa_url: string
+          cidade: string
           created_at: string
           descricao: string | null
           id: string
+          tipo: string
           titulo: string
           updated_at: string
         }
         Insert: {
           capa_url?: string
+          cidade?: string
           created_at?: string
           descricao?: string | null
           id?: string
+          tipo?: string
           titulo: string
           updated_at?: string
         }
         Update: {
           capa_url?: string
+          cidade?: string
           created_at?: string
           descricao?: string | null
           id?: string
+          tipo?: string
           titulo?: string
           updated_at?: string
         }
