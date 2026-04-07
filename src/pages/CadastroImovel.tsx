@@ -69,6 +69,7 @@ export interface FormData {
   areaPrivativa: string;
   quartos: number;
   banheiros: number;
+  lavabo: number;
   vagas: number;
   elevadores: number;
   descricao: string;
@@ -106,7 +107,7 @@ export const initialForm: FormData = {
   bairro: '', cidade: '', estado: '',
   empreendimento: '', unidade: '', box: '', quadra: '', lote: '',
   preco: '', precoParcelado: '', comissao: '', bonus: '', bonusValidade: '',
-  area: '', areaPrivativa: '', quartos: 0, banheiros: 0, vagas: 0, elevadores: 0,
+  area: '', areaPrivativa: '', quartos: 0, banheiros: 0, lavabo: 0, vagas: 0, elevadores: 0,
   descricao: '', proprietario: '', proprietarioTelefone: '', proprietarioTipo: '',
   condicao: '', padrao: '', posicaoPredio: '', posicaoSolar: '', vista: '',
   localChaves: '', termoExclusividade: '',
@@ -350,6 +351,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         areaPrivativa: data.area_privativa ? String(data.area_privativa) : '',
         quartos: data.quartos || 0,
         banheiros: data.banheiros || 0,
+        lavabo: (data as any).lavabo || 0,
         vagas: data.vagas || 0,
         elevadores: data.elevadores || 0,
         descricao: data.descricao || '',
@@ -500,6 +502,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         area_privativa: parseFloat(form.areaPrivativa) || 0,
         quartos: form.quartos,
         banheiros: form.banheiros,
+        lavabo: form.lavabo,
         vagas: form.vagas,
         elevadores: form.elevadores,
         descricao: form.descricao || null,
@@ -668,9 +671,10 @@ export function ImovelForm({ editId }: { editId?: string }) {
           className="mb-4"
         />
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-4">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4 mb-4">
           <QuickPick label="Dormitórios" options={[0, 1, 2, 3, 4, "5+"]} value={form.quartos} onChange={(v) => set('quartos', v === "5+" ? 5 : Number(v))} icon={<BedDouble className="w-3.5 h-3.5" />} />
           <QuickPick label="Banheiros" options={[0, 1, 2, 3, 4, "5+"]} value={form.banheiros} onChange={(v) => set('banheiros', v === "5+" ? 5 : Number(v))} icon={<Bath className="w-3.5 h-3.5" />} />
+          <QuickPick label="Lavabo" options={[0, 1, 2, 3]} value={form.lavabo} onChange={(v) => set('lavabo', Number(v))} icon={<Bath className="w-3.5 h-3.5" />} />
           <QuickPick label="Vagas" options={[0, 1, 2, 3, "4+"]} value={form.vagas} onChange={(v) => set('vagas', v === "4+" ? 4 : Number(v))} icon={<Car className="w-3.5 h-3.5" />} />
           <QuickPick label="Elevadores" options={[0, 1, 2, "3+"]} value={form.elevadores} onChange={(v) => set('elevadores', v === "3+" ? 3 : Number(v))} />
         </div>

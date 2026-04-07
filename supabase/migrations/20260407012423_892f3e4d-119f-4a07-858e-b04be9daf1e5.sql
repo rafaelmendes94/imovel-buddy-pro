@@ -1,0 +1,1 @@
+ALTER TABLE public.imoveis ADD COLUMN lavabo integer NOT NULL DEFAULT 0;
