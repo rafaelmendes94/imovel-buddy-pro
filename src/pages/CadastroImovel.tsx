@@ -300,19 +300,57 @@ function DescriptionAI({ form, onGenerated }: { form: FormData; onGenerated: (te
   );
 }
 
+const fieldLabels: Record<string, string> = {
+  titulo: 'Título', tipo: 'Tipo', status: 'Status', cep: 'CEP', endereco: 'Endereço',
+  numero: 'Número', complemento: 'Complemento', bairro: 'Bairro', cidade: 'Cidade', estado: 'Estado',
+  empreendimento: 'Empreendimento', unidade: 'Unidade', box: 'Box', quadra: 'Quadra', lote: 'Lote',
+  preco: 'Preço', precoParcelado: 'Preço Parcelado', comissao: 'Comissão %', bonus: 'Bônus', bonusValidade: 'Validade Bônus',
+  area: 'Área Total', areaPrivativa: 'Área Privativa', quartos: 'Quartos', banheiros: 'Banheiros',
+  lavabo: 'Lavabo', vagas: 'Vagas', elevadores: 'Elevadores', descricao: 'Descrição',
+  proprietario: 'Proprietário', proprietarioTelefone: 'Tel. Proprietário', proprietarioTipo: 'Tipo Proprietário',
+  condicao: 'Condição', padrao: 'Padrão', posicaoPredio: 'Posição Prédio', posicaoSolar: 'Posição Solar',
+  vista: 'Vista', localChaves: 'Local Chaves', termoExclusividade: 'Exclusividade',
+  vistaMar: 'Vista Mar', decorado: 'Decorado', aceitaPermuta: 'Aceita Permuta',
+  destaqueHome: 'Destaque Home', ativoSite: 'Ativo no Site', destaqueCategoria: 'Categoria Destaque',
+  condicoesPagemento: 'Condições Pagamento', infraestrutura: 'Infraestrutura',
+  outrasCaracteristicas: 'Outras Características', latitude: 'Latitude', longitude: 'Longitude',
+  linkVideo: 'Link Vídeo', linkMaterial: 'Link Material', link360: 'Link 360°',
+};
+
+function computeChanges(original: FormData, current: FormData): { field: string; from: string; to: string }[] {
+  const changes: { field: string; from: string; to: string }[] = [];
+  for (const key of Object.keys(original) as (keyof FormData)[]) {
+    const o = JSON.stringify(original[key]);
+    const c = JSON.stringify(current[key]);
+    if (o !== c) {
+      const label = fieldLabels[key] || key;
+      const formatVal = (v: any) => {
+        if (typeof v === 'boolean') return v ? 'Sim' : 'Não';
+        if (Array.isArray(v)) return v.length ? v.join(', ') : '(vazio)';
+        return String(v || '(vazio)');
+      };
+      changes.push({ field: label, from: formatVal(original[key]), to: formatVal(current[key]) });
+    }
+  }
+  return changes;
+}
+
 export function ImovelForm({ editId }: { editId?: string }) {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(!!editId);
   const [form, setForm] = useState<FormData>(initialForm);
+  const originalFormRef = useRef<FormData>(initialForm);
   const [newInfra, setNewInfra] = useState('');
   const [newCaract, setNewCaract] = useState('');
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const { values: infraOptions } = useSystemOptions("infraestrutura");
+  const [logs, setLogs] = useState<any[]>([]);
+  const [logsLoading, setLogsLoading] = useState(false);
 
   const isEdit = !!editId;
   const set = (field: keyof FormData, value: any) => setForm(prev => ({ ...prev, [field]: value }));
