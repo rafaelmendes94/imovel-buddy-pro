@@ -46,6 +46,7 @@ import {
   User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import logoImg from "@/assets/logo.png";
 import { RoutePlanner } from "@/components/RoutePlanner";
 import { SharkAI } from "@/components/SharkAI";
 import { useAuth } from "@/hooks/useAuth";
