@@ -609,7 +609,46 @@ export function ImovelForm({ editId }: { editId?: string }) {
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs">Box</Label>
-            <Input placeholder="Box" value={form.box} onChange={e => set('box', e.target.value)} />
+            <div className="flex flex-wrap items-center gap-1">
+              {form.box.split(',').filter(b => b.trim()).map((b, i) => (
+                <span key={i} className="inline-flex items-center gap-0.5 bg-primary/10 text-primary text-xs font-medium px-2 py-1 rounded-md">
+                  {b.trim()}
+                  <button type="button" className="hover:text-destructive" onClick={() => {
+                    const boxes = form.box.split(',').filter(x => x.trim());
+                    boxes.splice(i, 1);
+                    set('box', boxes.join(', '));
+                  }}><X className="w-3 h-3" /></button>
+                </span>
+              ))}
+              <div className="flex items-center gap-0.5">
+                <Input
+                  placeholder="Nº"
+                  className="w-16 h-8 text-xs"
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      const val = (e.target as HTMLInputElement).value.trim();
+                      if (!val) return;
+                      const current = form.box.split(',').filter(x => x.trim());
+                      current.push(val);
+                      set('box', current.join(', '));
+                      (e.target as HTMLInputElement).value = '';
+                    }
+                  }}
+                />
+                <Button type="button" variant="outline" size="icon" className="h-8 w-8 flex-shrink-0" onClick={(e) => {
+                  const input = (e.currentTarget.previousElementSibling as HTMLInputElement);
+                  const val = input?.value?.trim();
+                  if (!val) return;
+                  const current = form.box.split(',').filter(x => x.trim());
+                  current.push(val);
+                  set('box', current.join(', '));
+                  input.value = '';
+                }}>
+                  <Plus className="w-3.5 h-3.5" />
+                </Button>
+              </div>
+            </div>
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs">Quadra / Lote</Label>
