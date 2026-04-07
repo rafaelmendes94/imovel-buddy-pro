@@ -422,10 +422,52 @@ export function ImovelForm({ editId }: { editId?: string }) {
         linkMaterial: (data as any).link_material || '',
         link360: (data as any).link_360 || '',
       });
+      originalFormRef.current = {
+        titulo: data.titulo || '', tipo: data.tipo || '', status: data.status || 'Disponível',
+        cep: (data as any).cep || '', endereco: data.endereco || '', numero: (data as any).numero || '',
+        complemento: (data as any).complemento || '', bairro: data.bairro || '', cidade: data.cidade || '',
+        estado: (data as any).estado || '', empreendimento: data.empreendimento || '', unidade: data.unidade || '',
+        box: data.box || '', quadra: data.quadra || '', lote: data.lote || '',
+        preco: data.preco ? String(data.preco) : '', precoParcelado: data.preco_parcelado ? String(data.preco_parcelado) : '',
+        comissao: data.comissao ? String(data.comissao) : '', bonus: data.bonus ? String(data.bonus) : '',
+        bonusValidade: data.bonus_validade || '', area: data.area ? String(data.area) : '',
+        areaPrivativa: data.area_privativa ? String(data.area_privativa) : '', quartos: data.quartos || 0,
+        banheiros: data.banheiros || 0, lavabo: (data as any).lavabo || 0, vagas: data.vagas || 0,
+        elevadores: data.elevadores || 0, descricao: data.descricao || '', proprietario: data.proprietario || '',
+        proprietarioTelefone: data.proprietario_telefone || '', proprietarioTipo: data.proprietario_tipo || '',
+        condicao: data.condicao || '', padrao: data.padrao || '', posicaoPredio: data.posicao_predio || '',
+        posicaoSolar: data.posicao_solar || '', vista: data.vista || '', localChaves: data.local_chaves || '',
+        termoExclusividade: data.termo_exclusividade || '', vistaMar: data.vista_mar || false,
+        decorado: data.decorado || false, aceitaPermuta: data.aceita_permuta || false,
+        destaqueHome: data.destaque_home || false, ativoSite: data.ativo_site || false,
+        destaqueCategoria: data.destaque_categoria || 'none', condicoesPagemento: data.condicoes_pagamento || [],
+        infraestrutura: data.infraestrutura || [], outrasCaracteristicas: data.outras_caracteristicas || [],
+        latitude: data.latitude ? String(data.latitude) : '', longitude: data.longitude ? String(data.longitude) : '',
+        edificio_id: data.edificio_id || '', condominio_id: data.condominio_id || '',
+        empreendimento_id: data.empreendimento_id || '', linkVideo: (data as any).link_video || '',
+        linkMaterial: (data as any).link_material || '', link360: (data as any).link_360 || '',
+      };
       setExistingImages(data.imagens || []);
       setLoadingData(false);
     };
     load();
+  }, [editId]);
+
+  // Load logs for edit mode
+  useEffect(() => {
+    if (!editId) return;
+    const loadLogs = async () => {
+      setLogsLoading(true);
+      const { data } = await supabase
+        .from('imovel_logs')
+        .select('*')
+        .eq('imovel_id', editId)
+        .order('created_at', { ascending: false })
+        .limit(50);
+      if (data) setLogs(data);
+      setLogsLoading(false);
+    };
+    loadLogs();
   }, [editId]);
 
   const togglePayment = (cond: string) => {
