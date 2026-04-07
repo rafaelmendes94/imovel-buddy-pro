@@ -1,105 +1,101 @@
 
 
-## Plano: Modulo "Implantacoes" dos Empreendimentos
+## Plano: Modulo "Fotos da Cidade" com Galerias
 
 ### Resumo
-Criar pagina completa de Implantacoes com grid de cards dos empreendimentos, modal de visualizacao de mapas/PDFs, formulario de upload, tabela no banco, bucket de storage e rota no menu.
+Refazer completamente a pagina Fotos da Cidade. Super Admin cria galerias (titulo + foto de capa), adiciona fotos e videos dentro. Todos os usuarios logados podem visualizar e baixar o conteudo.
 
-### 1. Banco de Dados — Migration
+### 1. Banco de Dados — 2 Migrations
 
-Criar tabela `implantacoes`:
+**Tabela `city_galleries`** (cada galeria):
 ```sql
-CREATE TABLE public.implantacoes (
+CREATE TABLE public.city_galleries (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid NOT NULL,
-  empreendimento_id uuid NOT NULL,
-  imagem_capa_url text NOT NULL DEFAULT '',
-  mapa_url text NOT NULL DEFAULT '',
-  tipo_arquivo text NOT NULL DEFAULT 'imagem',
+  titulo text NOT NULL,
+  capa_url text NOT NULL DEFAULT '',
   descricao text DEFAULT '',
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE public.city_galleries ENABLE ROW LEVEL SECURITY;
 
-ALTER TABLE public.implantacoes ENABLE ROW LEVEL SECURITY;
-
--- RLS: owner + super_admin + admin_staff read
-CREATE POLICY "Users read own implantacoes" ON public.implantacoes
-  FOR SELECT TO authenticated
-  USING (auth.uid() = user_id OR has_role(auth.uid(),'super_admin') OR has_role(auth.uid(),'admin_staff'));
-
-CREATE POLICY "Users insert own implantacoes" ON public.implantacoes
-  FOR INSERT TO authenticated WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Users update own implantacoes" ON public.implantacoes
-  FOR UPDATE TO authenticated USING (auth.uid() = user_id OR has_role(auth.uid(),'super_admin'));
-
-CREATE POLICY "Users delete own implantacoes" ON public.implantacoes
-  FOR DELETE TO authenticated USING (auth.uid() = user_id OR has_role(auth.uid(),'super_admin'));
+-- Qualquer autenticado pode ver
+CREATE POLICY "Anyone reads galleries" ON public.city_galleries
+  FOR SELECT TO authenticated USING (true);
+-- Apenas super_admin gerencia
+CREATE POLICY "Super admin manages galleries" ON public.city_galleries
+  FOR ALL TO authenticated
+  USING (has_role(auth.uid(), 'super_admin'))
+  WITH CHECK (has_role(auth.uid(), 'super_admin'));
 ```
 
-Criar storage bucket `implantacoes` (public):
+**Tabela `city_gallery_items`** (fotos/videos dentro de cada galeria):
 ```sql
-INSERT INTO storage.buckets (id, name, public) VALUES ('implantacoes','implantacoes',true);
+CREATE TABLE public.city_gallery_items (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  gallery_id uuid NOT NULL REFERENCES public.city_galleries(id) ON DELETE CASCADE,
+  tipo text NOT NULL DEFAULT 'foto', -- 'foto' ou 'video'
+  url text NOT NULL DEFAULT '',
+  titulo text DEFAULT '',
+  sort_order integer NOT NULL DEFAULT 0,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE public.city_gallery_items ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Auth users upload implantacoes" ON storage.objects
-  FOR INSERT TO authenticated WITH CHECK (bucket_id = 'implantacoes');
-CREATE POLICY "Anyone reads implantacoes" ON storage.objects
-  FOR SELECT TO public USING (bucket_id = 'implantacoes');
-CREATE POLICY "Auth users delete implantacoes" ON storage.objects
-  FOR DELETE TO authenticated USING (bucket_id = 'implantacoes');
+CREATE POLICY "Anyone reads gallery items" ON public.city_gallery_items
+  FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Super admin manages gallery items" ON public.city_gallery_items
+  FOR ALL TO authenticated
+  USING (has_role(auth.uid(), 'super_admin'))
+  WITH CHECK (has_role(auth.uid(), 'super_admin'));
 ```
 
-### 2. Nova Pagina — `src/pages/Implantacoes.tsx`
+**Storage bucket `city-photos`** (public):
+```sql
+INSERT INTO storage.buckets (id, name, public) VALUES ('city-photos','city-photos',true);
+CREATE POLICY "Super admin uploads city photos" ON storage.objects
+  FOR INSERT TO authenticated WITH CHECK (bucket_id = 'city-photos' AND has_role(auth.uid(), 'super_admin'));
+CREATE POLICY "Anyone reads city photos" ON storage.objects
+  FOR SELECT TO public USING (bucket_id = 'city-photos');
+CREATE POLICY "Super admin deletes city photos" ON storage.objects
+  FOR DELETE TO authenticated USING (bucket_id = 'city-photos' AND has_role(auth.uid(), 'super_admin'));
+```
 
-**Layout:**
-- Cabecalho com titulo "Implantacoes dos Empreendimentos", subtitulo, icone `Map`
-- Botao "Nova Implantacao" abre dialog de cadastro
-- Grid responsivo: `grid-cols-1 md:grid-cols-2 lg:grid-cols-3`
+### 2. Reescrever `src/pages/CityPhotos.tsx`
 
-**Card de cada implantacao:**
-- Imagem de capa (aspect-ratio 16:9) com fallback
-- Nome do empreendimento (buscado da tabela empreendimentos)
-- Endereco/cidade do empreendimento
-- Badge de status do empreendimento
-- Descricao (se houver, truncada)
-- Botao "Ver Implantacao" — abre modal de visualizacao
-- Botoes editar/excluir para o dono
+**Tela principal — Grid de galerias:**
+- Header "Fotos da Cidade" com contagem de galerias
+- Botao "Nova Galeria" visivel apenas para `isSuperAdmin`
+- Grid `grid-cols-1 md:grid-cols-2 lg:grid-cols-3` com cards
+- Cada card mostra: foto de capa (aspect 16:9), titulo, quantidade de itens, botoes editar/excluir (so super_admin)
+- Clicar no card abre a galeria em modo detalhe
 
-**Modal de visualizacao:**
-- Dialog grande (max-w-4xl)
-- Header com nome do empreendimento
-- Se tipo_arquivo = 'imagem': exibe img com zoom (CSS transform + scroll)
-- Se tipo_arquivo = 'pdf': iframe embed ou link de download
-- Botao "Baixar Arquivo" com download direto
-- Botao fechar
-
-**Dialog de cadastro/edicao:**
-- Select de empreendimento (carrega da tabela empreendimentos do user)
-- Upload imagem de capa (JPG/PNG/WEBP, max 5MB)
-- Upload mapa de implantacao (JPG/PNG/PDF, max 20MB) — detecta automaticamente se e PDF para setar tipo_arquivo
+**Modal de criar/editar galeria:**
+- Campo titulo (obrigatorio)
+- Upload de foto de capa (bucket `city-photos`)
 - Textarea descricao (opcional)
-- Validacoes de formato e tamanho
-- Salvar faz upload no bucket e insert/update na tabela
 
-### 3. Rota — `src/App.tsx`
-Adicionar:
-```tsx
-import Implantacoes from "./pages/Implantacoes";
-// ...
-<Route path="/implantacoes" element={<AuthGuard><Implantacoes /></AuthGuard>} />
-```
+**Tela de detalhe da galeria (dentro da mesma pagina, com estado):**
+- Header com titulo da galeria e botao voltar
+- Botao "Adicionar Midia" (so super_admin) — abre modal para upload de foto ou colar link de video (YouTube)
+- Grid de midias: fotos com lightbox e botao download, videos com embed do YouTube
+- Botao de excluir item individual (so super_admin)
+- Botao "Baixar Todas as Fotos" — faz download individual de cada foto (ou abre em nova aba)
 
-### 4. Menu — `src/components/AppSidebar.tsx` e `AdminSidebar.tsx`
-Adicionar item no menu apos "Empreendimentos":
-```tsx
-{ icon: Map, label: "Implantacoes", path: "/implantacoes" }
-```
+**Permissoes na UI:**
+- `useAuth()` para checar `isSuperAdmin`
+- Usuarios comuns veem tudo, podem baixar, mas nao veem botoes de criar/editar/excluir
+
+### 3. Rota
+Ja existe: `/fotos-cidade` com `<AuthGuard>` — manter como esta.
+
+### 4. Menu
+Ja existe item "Fotos da Cidade" no AppSidebar — sem alteracao.
 
 ### Notas Tecnicas
-- Usa AppLayout como wrapper (padrao do projeto)
-- Empreendimentos sao carregados via supabase query para popular o select e enriquecer os cards
-- Upload usa `supabase.storage.from('implantacoes').upload()`
-- Zoom na imagem via state de scale + CSS transform (sem lib externa)
-- Aproximadamente 400 linhas de codigo na pagina
+- Uploads via `supabase.storage.from('city-photos').upload()`
+- Videos sao links do YouTube armazenados como `tipo = 'video'` e `url = link`
+- Fotos sao arquivos reais no bucket, `tipo = 'foto'`
+- Download de foto usa `window.open(url)` ou tag `<a download>`
+- Aproximadamente 450 linhas de codigo
 
