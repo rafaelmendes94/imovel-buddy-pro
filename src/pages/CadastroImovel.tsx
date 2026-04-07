@@ -502,6 +502,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         area_privativa: parseFloat(form.areaPrivativa) || 0,
         quartos: form.quartos,
         banheiros: form.banheiros,
+        lavabo: form.lavabo,
         vagas: form.vagas,
         elevadores: form.elevadores,
         descricao: form.descricao || null,
