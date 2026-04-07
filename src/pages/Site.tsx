@@ -620,6 +620,10 @@ function SectionHeader({ title, subtitle, icon: Icon }: { title: string; subtitl
 }
 
 export default function Site() {
+  const navigate = useNavigate();
+  const { user, profile, signOut } = useAuth();
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
   const searchParams = new URLSearchParams(window.location.search);
   const initialTipo = searchParams.get("tipo") || "";
   const initialCidade = searchParams.get("cidade") || "";
@@ -652,6 +656,17 @@ export default function Site() {
       return JSON.parse(localStorage.getItem("mv-favorites") || "[]");
     } catch { return []; }
   });
+
+  // Close user menu on outside click
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
 
   const toggleFavorite = (id: string) => {
     setFavoriteIds((prev) => {
