@@ -870,6 +870,42 @@ export default function Site() {
             >
               WhatsApp
             </a>
+            {user ? (
+              <div className="relative" ref={userMenuRef}>
+                <button
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 transition-colors text-sm font-semibold text-gray-700"
+                >
+                  <User className="w-4 h-4" />
+                  <span className="hidden sm:inline max-w-[120px] truncate">{profile?.full_name || "Minha Conta"}</span>
+                  <ChevronDown className="w-3.5 h-3.5" />
+                </button>
+                {userMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-lg border border-gray-200 py-1 z-50">
+                    <button onClick={() => { navigate("/dashboard"); setUserMenuOpen(false); }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                      <LayoutDashboard className="w-4 h-4" /> Dashboard
+                    </button>
+                    <button onClick={() => { navigate("/configuracoes"); setUserMenuOpen(false); }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                      <Settings className="w-4 h-4" /> Configurações
+                    </button>
+                    <button onClick={() => { navigate("/painel/assinatura"); setUserMenuOpen(false); }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                      <CreditCard className="w-4 h-4" /> Planos
+                    </button>
+                    <div className="border-t border-gray-100 my-1" />
+                    <button onClick={() => { signOut(); setUserMenuOpen(false); }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                      <LogOut className="w-4 h-4" /> Sair
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link
+                to="/login"
+                className="px-4 py-2 rounded-xl bg-gray-900 text-white text-sm font-bold hover:bg-gray-800 transition-colors shadow-sm"
+              >
+                Login
+              </Link>
+            )}
           </div>
         </div>
       </header>
