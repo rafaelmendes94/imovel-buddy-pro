@@ -69,6 +69,7 @@ export interface FormData {
   areaPrivativa: string;
   quartos: number;
   banheiros: number;
+  lavabo: number;
   vagas: number;
   elevadores: number;
   descricao: string;
