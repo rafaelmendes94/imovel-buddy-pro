@@ -107,7 +107,7 @@ export const initialForm: FormData = {
   bairro: '', cidade: '', estado: '',
   empreendimento: '', unidade: '', box: '', quadra: '', lote: '',
   preco: '', precoParcelado: '', comissao: '', bonus: '', bonusValidade: '',
-  area: '', areaPrivativa: '', quartos: 0, banheiros: 0, vagas: 0, elevadores: 0,
+  area: '', areaPrivativa: '', quartos: 0, banheiros: 0, lavabo: 0, vagas: 0, elevadores: 0,
   descricao: '', proprietario: '', proprietarioTelefone: '', proprietarioTipo: '',
   condicao: '', padrao: '', posicaoPredio: '', posicaoSolar: '', vista: '',
   localChaves: '', termoExclusividade: '',
