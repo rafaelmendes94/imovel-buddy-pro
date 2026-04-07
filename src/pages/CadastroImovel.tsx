@@ -303,7 +303,7 @@ function DescriptionAI({ form, onGenerated }: { form: FormData; onGenerated: (te
 const fieldLabels: Record<string, string> = {
   titulo: 'Título', tipo: 'Tipo', status: 'Status', cep: 'CEP', endereco: 'Endereço',
   numero: 'Número', complemento: 'Complemento', bairro: 'Bairro', cidade: 'Cidade', estado: 'Estado',
-  empreendimento: 'Empreendimento', unidade: 'Unidade', box: 'Box', quadra: 'Quadra', lote: 'Lote',
+  empreendimento: 'Loteamento', unidade: 'Unidade', box: 'Box', quadra: 'Quadra', lote: 'Lote',
   preco: 'Preço', precoParcelado: 'Preço Parcelado', comissao: 'Comissão %', bonus: 'Bônus', bonusValidade: 'Validade Bônus',
   area: 'Área Total', areaPrivativa: 'Área Privativa', quartos: 'Quartos', banheiros: 'Banheiros',
   lavabo: 'Lavabo', vagas: 'Vagas', elevadores: 'Elevadores', descricao: 'Descrição',
@@ -799,7 +799,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
 
       {/* ===== BLOCO: VINCULAÇÃO DE ENTIDADE ===== */}
       <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
-        <SectionHeader icon={Landmark} title="Vincular a Edifício / Condomínio / Empreendimento" />
+        <SectionHeader icon={Landmark} title="Vincular a Edifício / Condomínio / Loteamento" />
         <p className="text-xs text-muted-foreground mb-4">Selecione apenas um. O endereço e infraestrutura serão preenchidos automaticamente.</p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <EntitySelector
@@ -825,7 +825,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
             onSelect={handleEntitySelect}
           />
           <EntitySelector
-            label="Empreendimento"
+            label="Loteamento"
             icon={<Landmark className="w-3.5 h-3.5" />}
             table="empreendimentos"
             value={form.empreendimento_id}

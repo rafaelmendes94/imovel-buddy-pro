@@ -353,7 +353,7 @@ export default function Reports() {
               <RankingBarCard title="Cidade" data={rankings.byCity} />
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <RankingListCard title="Top Empreendimentos" icon={Building2} data={rankings.byEmpreendimento.slice(0, 6)} />
+              <RankingListCard title="Top Loteamentos" icon={Building2} data={rankings.byEmpreendimento.slice(0, 6)} />
               <RankingProgressCard title="Top Corretores" data={rankings.byBroker} />
               <RankingListCard title="VGV por Segmento" icon={Star} data={rankings.bySegment} colors={SEGMENT_COLORS} />
             </div>
