@@ -62,6 +62,7 @@ import BrickStore from "./pages/BrickStore";
 import Empreendimentos from "./pages/Empreendimentos";
 import CadastroEdificio from "./pages/CadastroEdificio";
 import CadastroCondominio from "./pages/CadastroCondominio";
+import MapasCondominio from "./pages/MapasCondominio";
 import CadastroEmpreendimento from "./pages/CadastroEmpreendimento";
 
 const queryClient = new QueryClient();
@@ -107,6 +108,7 @@ const App = () => (
             <Route path="/edificios/:id" element={<AuthGuard><BuildingDetail /></AuthGuard>} />
             <Route path="/condominios" element={<AuthGuard><Condominiums /></AuthGuard>} />
             <Route path="/condominios/:id" element={<AuthGuard><CondominiumDetail /></AuthGuard>} />
+            <Route path="/mapas-condominio" element={<AuthGuard><MapasCondominio /></AuthGuard>} />
             <Route path="/mapas" element={<AuthGuard><Maps /></AuthGuard>} />
             <Route path="/fotos-cidade" element={<AuthGuard><CityPhotos /></AuthGuard>} />
             <Route path="/corretores" element={<AuthGuard><Brokers /></AuthGuard>} />

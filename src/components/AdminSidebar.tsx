@@ -26,6 +26,7 @@ const operationalItems = [
   { icon: Building2, label: "Imóveis", path: "/imoveis", moduleKey: "imoveis" },
   { icon: Building, label: "Edifícios", path: "/edificios", moduleKey: "edificios" },
   { icon: Fence, label: "Condomínios", path: "/condominios", moduleKey: "condominios" },
+  { icon: Map, label: "Mapas Condomínio", path: "/mapas-condominio", moduleKey: "condominios" },
   { icon: Camera, label: "Fotos da Cidade", path: "/fotos-cidade", moduleKey: "fotos_cidade" },
   { icon: ClipboardCheck, label: "Avaliações", path: "/avaliacoes", moduleKey: "avaliacoes" },
   { icon: Wallet, label: "Financeiro", path: "/financeiro", moduleKey: "financeiro" },
