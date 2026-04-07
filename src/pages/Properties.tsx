@@ -569,6 +569,27 @@ export default function Properties() {
                   </p>
                 </div>
               </div>
+              {(() => {
+                const now = new Date();
+                const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+                const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+                const soldThisMonth = propertyList.filter(p => {
+                  if (p.status !== "Vendido") return false;
+                  const d = new Date(p.updatedAt || p.createdAt);
+                  return d >= firstDay && d <= lastDay;
+                });
+                return (
+                  <div className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-lg bg-purple-500/10 border border-purple-500/20 min-w-0">
+                    <CalendarCheck className="w-3.5 h-3.5 text-purple-600 shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-[8px] font-bold uppercase text-purple-600 leading-none truncate">Vendidos do Mês <span className="text-muted-foreground font-medium">({soldThisMonth.length})</span></p>
+                      <p className="text-xs sm:text-sm font-black text-foreground leading-tight truncate">
+                        {formatCurrency(soldThisMonth.reduce((sum, p) => sum + p.price, 0))}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })()}
               <button
                 onClick={() => navigate("/relatorios")}
                 className="col-span-2 sm:col-span-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-colors"
