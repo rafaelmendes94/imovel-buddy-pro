@@ -888,6 +888,36 @@ export type Database = {
           },
         ]
       }
+      imovel_logs: {
+        Row: {
+          action: string
+          changes: Json
+          created_at: string
+          id: string
+          imovel_id: string
+          user_id: string
+          user_name: string
+        }
+        Insert: {
+          action?: string
+          changes?: Json
+          created_at?: string
+          id?: string
+          imovel_id: string
+          user_id: string
+          user_name?: string
+        }
+        Update: {
+          action?: string
+          changes?: Json
+          created_at?: string
+          id?: string
+          imovel_id?: string
+          user_id?: string
+          user_name?: string
+        }
+        Relationships: []
+      }
       implantacoes: {
         Row: {
           created_at: string
