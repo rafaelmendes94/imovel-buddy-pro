@@ -351,6 +351,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         areaPrivativa: data.area_privativa ? String(data.area_privativa) : '',
         quartos: data.quartos || 0,
         banheiros: data.banheiros || 0,
+        lavabo: (data as any).lavabo || 0,
         vagas: data.vagas || 0,
         elevadores: data.elevadores || 0,
         descricao: data.descricao || '',
