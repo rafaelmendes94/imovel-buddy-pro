@@ -17,7 +17,7 @@ const navItems = [
   { icon: Building, label: "Edifícios", path: "/edificios" },
   { icon: Fence, label: "Condomínios", path: "/condominios" },
   { icon: Map, label: "Mapas Condomínio", path: "/mapas-condominio" },
-  { icon: Landmark, label: "Empreendimentos", path: "/empreendimentos" },
+  { icon: Landmark, label: "Loteamentos", path: "/empreendimentos" },
   { icon: Camera, label: "Fotos da Cidade", path: "/fotos-cidade" },
   { icon: ClipboardCheck, label: "Avaliações", path: "/avaliacoes" },
   { icon: Wallet, label: "Financeiro", path: "/financeiro" },
