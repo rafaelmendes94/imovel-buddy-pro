@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,8 +20,9 @@ import {
   Building2, MapPin, BedDouble, Bath, Car, Ruler, User, Phone, DollarSign,
   Percent, Gift, Home, Sparkles, Save, Image, Plus, X, Loader2,
   Hash, FileText, Eye, Key, Calendar, Building, Fence, Landmark, Search, Brain, Wand2,
-  Play, FolderDown
+  Play, FolderDown, History, Clock
 } from 'lucide-react';
+import { format } from 'date-fns';
 
 const tiposImovel = ["Apartamento", "Casa", "Comercial", "Terreno", "Lote", "Condomínio"];
 const statusOptions = ["Disponível", "Vendido", "Reservado", "Alugado", "Suspenso"];
@@ -299,19 +300,57 @@ function DescriptionAI({ form, onGenerated }: { form: FormData; onGenerated: (te
   );
 }
 
+const fieldLabels: Record<string, string> = {
+  titulo: 'Título', tipo: 'Tipo', status: 'Status', cep: 'CEP', endereco: 'Endereço',
+  numero: 'Número', complemento: 'Complemento', bairro: 'Bairro', cidade: 'Cidade', estado: 'Estado',
+  empreendimento: 'Empreendimento', unidade: 'Unidade', box: 'Box', quadra: 'Quadra', lote: 'Lote',
+  preco: 'Preço', precoParcelado: 'Preço Parcelado', comissao: 'Comissão %', bonus: 'Bônus', bonusValidade: 'Validade Bônus',
+  area: 'Área Total', areaPrivativa: 'Área Privativa', quartos: 'Quartos', banheiros: 'Banheiros',
+  lavabo: 'Lavabo', vagas: 'Vagas', elevadores: 'Elevadores', descricao: 'Descrição',
+  proprietario: 'Proprietário', proprietarioTelefone: 'Tel. Proprietário', proprietarioTipo: 'Tipo Proprietário',
+  condicao: 'Condição', padrao: 'Padrão', posicaoPredio: 'Posição Prédio', posicaoSolar: 'Posição Solar',
+  vista: 'Vista', localChaves: 'Local Chaves', termoExclusividade: 'Exclusividade',
+  vistaMar: 'Vista Mar', decorado: 'Decorado', aceitaPermuta: 'Aceita Permuta',
+  destaqueHome: 'Destaque Home', ativoSite: 'Ativo no Site', destaqueCategoria: 'Categoria Destaque',
+  condicoesPagemento: 'Condições Pagamento', infraestrutura: 'Infraestrutura',
+  outrasCaracteristicas: 'Outras Características', latitude: 'Latitude', longitude: 'Longitude',
+  linkVideo: 'Link Vídeo', linkMaterial: 'Link Material', link360: 'Link 360°',
+};
+
+function computeChanges(original: FormData, current: FormData): { field: string; from: string; to: string }[] {
+  const changes: { field: string; from: string; to: string }[] = [];
+  for (const key of Object.keys(original) as (keyof FormData)[]) {
+    const o = JSON.stringify(original[key]);
+    const c = JSON.stringify(current[key]);
+    if (o !== c) {
+      const label = fieldLabels[key] || key;
+      const formatVal = (v: any) => {
+        if (typeof v === 'boolean') return v ? 'Sim' : 'Não';
+        if (Array.isArray(v)) return v.length ? v.join(', ') : '(vazio)';
+        return String(v || '(vazio)');
+      };
+      changes.push({ field: label, from: formatVal(original[key]), to: formatVal(current[key]) });
+    }
+  }
+  return changes;
+}
+
 export function ImovelForm({ editId }: { editId?: string }) {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(!!editId);
   const [form, setForm] = useState<FormData>(initialForm);
+  const originalFormRef = useRef<FormData>(initialForm);
   const [newInfra, setNewInfra] = useState('');
   const [newCaract, setNewCaract] = useState('');
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const { values: infraOptions } = useSystemOptions("infraestrutura");
+  const [logs, setLogs] = useState<any[]>([]);
+  const [logsLoading, setLogsLoading] = useState(false);
 
   const isEdit = !!editId;
   const set = (field: keyof FormData, value: any) => setForm(prev => ({ ...prev, [field]: value }));
@@ -383,10 +422,52 @@ export function ImovelForm({ editId }: { editId?: string }) {
         linkMaterial: (data as any).link_material || '',
         link360: (data as any).link_360 || '',
       });
+      originalFormRef.current = {
+        titulo: data.titulo || '', tipo: data.tipo || '', status: data.status || 'Disponível',
+        cep: (data as any).cep || '', endereco: data.endereco || '', numero: (data as any).numero || '',
+        complemento: (data as any).complemento || '', bairro: data.bairro || '', cidade: data.cidade || '',
+        estado: (data as any).estado || '', empreendimento: data.empreendimento || '', unidade: data.unidade || '',
+        box: data.box || '', quadra: data.quadra || '', lote: data.lote || '',
+        preco: data.preco ? String(data.preco) : '', precoParcelado: data.preco_parcelado ? String(data.preco_parcelado) : '',
+        comissao: data.comissao ? String(data.comissao) : '', bonus: data.bonus ? String(data.bonus) : '',
+        bonusValidade: data.bonus_validade || '', area: data.area ? String(data.area) : '',
+        areaPrivativa: data.area_privativa ? String(data.area_privativa) : '', quartos: data.quartos || 0,
+        banheiros: data.banheiros || 0, lavabo: (data as any).lavabo || 0, vagas: data.vagas || 0,
+        elevadores: data.elevadores || 0, descricao: data.descricao || '', proprietario: data.proprietario || '',
+        proprietarioTelefone: data.proprietario_telefone || '', proprietarioTipo: data.proprietario_tipo || '',
+        condicao: data.condicao || '', padrao: data.padrao || '', posicaoPredio: data.posicao_predio || '',
+        posicaoSolar: data.posicao_solar || '', vista: data.vista || '', localChaves: data.local_chaves || '',
+        termoExclusividade: data.termo_exclusividade || '', vistaMar: data.vista_mar || false,
+        decorado: data.decorado || false, aceitaPermuta: data.aceita_permuta || false,
+        destaqueHome: data.destaque_home || false, ativoSite: data.ativo_site || false,
+        destaqueCategoria: data.destaque_categoria || 'none', condicoesPagemento: data.condicoes_pagamento || [],
+        infraestrutura: data.infraestrutura || [], outrasCaracteristicas: data.outras_caracteristicas || [],
+        latitude: data.latitude ? String(data.latitude) : '', longitude: data.longitude ? String(data.longitude) : '',
+        edificio_id: data.edificio_id || '', condominio_id: data.condominio_id || '',
+        empreendimento_id: data.empreendimento_id || '', linkVideo: (data as any).link_video || '',
+        linkMaterial: (data as any).link_material || '', link360: (data as any).link_360 || '',
+      };
       setExistingImages(data.imagens || []);
       setLoadingData(false);
     };
     load();
+  }, [editId]);
+
+  // Load logs for edit mode
+  useEffect(() => {
+    if (!editId) return;
+    const loadLogs = async () => {
+      setLogsLoading(true);
+      const { data } = await supabase
+        .from('imovel_logs')
+        .select('*')
+        .eq('imovel_id', editId)
+        .order('created_at', { ascending: false })
+        .limit(50);
+      if (data) setLogs(data);
+      setLogsLoading(false);
+    };
+    loadLogs();
   }, [editId]);
 
   const togglePayment = (cond: string) => {
@@ -538,10 +619,35 @@ export function ImovelForm({ editId }: { editId?: string }) {
       if (isEdit) {
         const { error } = await supabase.from('imoveis').update(payload).eq('id', editId);
         if (error) throw error;
+
+        // Insert change log
+        const changes = computeChanges(originalFormRef.current, form);
+        if (changes.length > 0 && user) {
+          await supabase.from('imovel_logs').insert({
+            imovel_id: editId,
+            user_id: user.id,
+            user_name: profile?.full_name || user.email || 'Desconhecido',
+            action: 'edit',
+            changes,
+          });
+        }
+
         toast({ title: "Sucesso! ✅", description: "Imóvel atualizado com sucesso!" });
       } else {
-        const { error } = await supabase.from('imoveis').insert([{ ...payload, user_id: user.id }]).select();
+        const { data: inserted, error } = await supabase.from('imoveis').insert([{ ...payload, user_id: user.id }]).select().single();
         if (error) throw error;
+
+        // Insert creation log
+        if (inserted && user) {
+          await supabase.from('imovel_logs').insert({
+            imovel_id: inserted.id,
+            user_id: user.id,
+            user_name: profile?.full_name || user.email || 'Desconhecido',
+            action: 'create',
+            changes: [{ field: 'Cadastro', from: '', to: 'Imóvel criado' }],
+          });
+        }
+
         toast({ title: "Sucesso! ✅", description: "Imóvel cadastrado com sucesso!" });
       }
 
@@ -955,6 +1061,53 @@ export function ImovelForm({ editId }: { editId?: string }) {
           </label>
         </div>
       </div>
+
+      {/* === HISTÓRICO DE ALTERAÇÕES === */}
+      {isEdit && (
+        <div className="bg-card border border-border rounded-2xl p-4 sm:p-6">
+          <SectionHeader icon={History} title="Histórico de Alterações" />
+          {logsLoading ? (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground py-4">
+              <Loader2 className="w-4 h-4 animate-spin" /> Carregando histórico...
+            </div>
+          ) : logs.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4">Nenhuma alteração registrada.</p>
+          ) : (
+            <div className="space-y-3 max-h-96 overflow-y-auto">
+              {logs.map((log) => (
+                <div key={log.id} className="border border-border rounded-lg p-3 bg-muted/20">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-2 h-2 rounded-full ${log.action === 'create' ? 'bg-emerald-500' : 'bg-primary'}`} />
+                      <span className="text-xs font-semibold text-foreground">
+                        {log.action === 'create' ? 'Cadastro' : 'Edição'}
+                      </span>
+                      <span className="text-xs text-muted-foreground">por</span>
+                      <span className="text-xs font-medium text-foreground">{log.user_name}</span>
+                    </div>
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Clock className="w-3 h-3" />
+                      {format(new Date(log.created_at), "dd/MM/yyyy 'às' HH:mm")}
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    {(Array.isArray(log.changes) ? log.changes : []).map((c: any, i: number) => (
+                      <div key={i} className="text-xs flex flex-wrap gap-1">
+                        <span className="font-medium text-foreground">{c.field}:</span>
+                        {c.from && c.from !== '(vazio)' && (
+                          <span className="text-destructive line-through">{c.from.length > 60 ? c.from.slice(0, 60) + '...' : c.from}</span>
+                        )}
+                        <span className="text-muted-foreground">→</span>
+                        <span className="text-emerald-500">{c.to.length > 60 ? c.to.slice(0, 60) + '...' : c.to}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="flex flex-col sm:flex-row justify-end gap-3 pb-6">
         <Button type="button" variant="outline" onClick={() => navigate('/imoveis')} className="w-full sm:w-auto">Cancelar</Button>
