@@ -20,8 +20,9 @@ import {
   Building2, MapPin, BedDouble, Bath, Car, Ruler, User, Phone, DollarSign,
   Percent, Gift, Home, Sparkles, Save, Image, Plus, X, Loader2,
   Hash, FileText, Eye, Key, Calendar, Building, Fence, Landmark, Search, Brain, Wand2,
-  Play, FolderDown
+  Play, FolderDown, History, Clock
 } from 'lucide-react';
+import { format } from 'date-fns';
 
 const tiposImovel = ["Apartamento", "Casa", "Comercial", "Terreno", "Lote", "Condomínio"];
 const statusOptions = ["Disponível", "Vendido", "Reservado", "Alugado", "Suspenso"];
