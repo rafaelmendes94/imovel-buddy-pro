@@ -91,6 +91,71 @@ export type Database = {
         }
         Relationships: []
       }
+      city_galleries: {
+        Row: {
+          capa_url: string
+          created_at: string
+          descricao: string | null
+          id: string
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          capa_url?: string
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          capa_url?: string
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      city_gallery_items: {
+        Row: {
+          created_at: string
+          gallery_id: string
+          id: string
+          sort_order: number
+          tipo: string
+          titulo: string | null
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          gallery_id: string
+          id?: string
+          sort_order?: number
+          tipo?: string
+          titulo?: string | null
+          url?: string
+        }
+        Update: {
+          created_at?: string
+          gallery_id?: string
+          id?: string
+          sort_order?: number
+          tipo?: string
+          titulo?: string | null
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "city_gallery_items_gallery_id_fkey"
+            columns: ["gallery_id"]
+            isOneToOne: false
+            referencedRelation: "city_galleries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       condominios: {
         Row: {
           amenidades: string[] | null
