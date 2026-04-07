@@ -50,25 +50,311 @@ const xmlPortals: { name: XmlPortal; description: string }[] = [
   { name: "Personalizado", description: "XML genérico completo" },
 ];
 
-function generateXml(properties: Property[], portal: XmlPortal): string {
-  const escapeXml = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+const escapeXml = (s: string) =>
+  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
+
+const mapPropertyType = (type: string): string => {
+  const map: Record<string, string> = {
+    Apartamento: "Residential / Apartment",
+    Casa: "Residential / Home",
+    Comercial: "Commercial / Building",
+    Terreno: "Residential / Land Lot",
+    Lote: "Residential / Land Lot",
+    "Condomínio": "Residential / Condo",
+  };
+  return map[type] || "Residential / Apartment";
+};
+
+const mapSubTipoOlx = (type: string): string => {
+  const map: Record<string, string> = {
+    Apartamento: "Apartamento Padrão",
+    Casa: "Casa Padrão",
+    Comercial: "Imóvel Comercial",
+    Terreno: "Terrenos e Lotes",
+    Lote: "Terrenos e Lotes",
+    "Condomínio": "Casa de Condomínio",
+  };
+  return map[type] || "Apartamento Padrão";
+};
+
+const mapTipoCnm = (type: string): string => {
+  const map: Record<string, string> = {
+    Apartamento: "Apartamento",
+    Casa: "Casa",
+    Comercial: "Comercial",
+    Terreno: "Terreno",
+    Lote: "Terreno",
+    "Condomínio": "Casa de Condomínio",
+  };
+  return map[type] || "Apartamento";
+};
+
+const mapFinalidadeCnm = (type: string): string => {
+  if (type === "Comercial") return "CO";
+  return "RE";
+};
+
+const photosXmlOlx = (images: string[]) =>
+  images.length
+    ? `      <Fotos>\n${images.map((url, i) => `        <Foto>${i === 0 ? "\n          <Principal>1</Principal>" : ""}\n          <URLArquivo>${escapeXml(url)}</URLArquivo>\n        </Foto>`).join("\n")}\n      </Fotos>`
+    : "";
+
+const photosXmlVrSync = (images: string[]) =>
+  images.length
+    ? `      <Media>\n${images.map((url, i) => `        <Item medium="image"${i === 0 ? ' primary="true"' : ""}>${escapeXml(url)}</Item>`).join("\n")}\n      </Media>`
+    : "";
+
+const photosCnm = (images: string[]) =>
+  images.length
+    ? `      <fotos_imovel>\n${images.map((url) => `        <foto>\n          <url>${escapeXml(url)}</url>\n          <data_atualizacao></data_atualizacao>\n        </foto>`).join("\n")}\n      </fotos_imovel>`
+    : "      <fotos_imovel></fotos_imovel>";
+
+/* ─── ZAP Imóveis (formato ZAP legado) ─── */
+function generateZapXml(properties: Property[]): string {
   const items = properties.map((p) => `    <Imovel>
-      <CodigoImovel>${escapeXml(p.id)}</CodigoImovel>
+      <CodigoImovel>${escapeXml(p.id.slice(0, 50))}</CodigoImovel>
       <TipoImovel>${escapeXml(p.type)}</TipoImovel>
-      <TituloImovel>${escapeXml(p.title)}</TituloImovel>
+      <SubTipoImovel>${escapeXml(p.type)}</SubTipoImovel>
+      <CategoriaImovel>Padrão</CategoriaImovel>
+      <TituloImovel><![CDATA[${p.title}]]></TituloImovel>
+      <Observacao><![CDATA[${p.description || p.title}]]></Observacao>
+      <TipoOferta>STANDARD</TipoOferta>
+      <PrecoVenda>${Math.round(p.price)}</PrecoVenda>
       <Endereco>${escapeXml(p.address)}</Endereco>
+      <Numero>${escapeXml(p.unitNumber || "")}</Numero>
+      <Complemento></Complemento>
+      <Bairro>${escapeXml(p.neighborhood || "")}</Bairro>
       <Cidade>${escapeXml(p.city)}</Cidade>
-      <PrecoVenda>${p.price}</PrecoVenda>
-      <AreaUtil>${p.area}</AreaUtil>
+      <UF>RS</UF>
+      <CEP></CEP>
+      <AreaUtil>${Math.round(p.area)}</AreaUtil>
+      <AreaTotal>${Math.round(p.area)}</AreaTotal>
       <QtdDormitorios>${p.bedrooms}</QtdDormitorios>
+      <QtdSuites>0</QtdSuites>
       <QtdBanheiros>${p.bathrooms}</QtdBanheiros>
       <QtdVagas>${p.parking}</QtdVagas>
-      <StatusImovel>${escapeXml(p.status)}</StatusImovel>
-      <Corretor>${escapeXml(p.broker)}</Corretor>
       <Latitude>${p.lat}</Latitude>
       <Longitude>${p.lng}</Longitude>
+${photosXmlOlx(p.images)}
     </Imovel>`).join("\n");
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<Imoveis portal="${portal}">\n  <Header>\n    <TotalImoveis>${properties.length}</TotalImoveis>\n  </Header>\n  <ListaImoveis>\n${items}\n  </ListaImoveis>\n</Imoveis>`;
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<Carga xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Imoveis>
+${items}
+  </Imoveis>
+</Carga>`;
+}
+
+/* ─── VivaReal / ZAP (formato VRSync oficial) ─── */
+function generateVrSyncXml(properties: Property[]): string {
+  const now = new Date().toISOString().slice(0, 19);
+  const items = properties.map((p) => `    <Listing>
+      <ListingID>${escapeXml(p.id.slice(0, 50))}</ListingID>
+      <Title><![CDATA[${p.title}]]></Title>
+      <TransactionType>For Sale</TransactionType>
+      <PublicationType>STANDARD</PublicationType>
+      <Location displayAddress="All">
+        <Country abbreviation="BR">Brasil</Country>
+        <State abbreviation="RS">Rio Grande do Sul</State>
+        <City><![CDATA[${p.city}]]></City>
+        <Neighborhood><![CDATA[${p.neighborhood || ""}]]></Neighborhood>
+        <Address><![CDATA[${p.address}]]></Address>
+        <StreetNumber>${escapeXml(p.unitNumber || "")}</StreetNumber>
+        <Complement></Complement>
+        <PostalCode></PostalCode>
+        <Latitude>${p.lat}</Latitude>
+        <Longitude>${p.lng}</Longitude>
+      </Location>
+      <Details>
+        <PropertyType>${mapPropertyType(p.type)}</PropertyType>
+        <Description><![CDATA[${p.description || p.title}]]></Description>
+        <ListPrice currency="BRL">${Math.round(p.price)}</ListPrice>
+        <LivingArea unit="square metres">${Math.round(p.area)}</LivingArea>
+        <LotArea unit="square metres">${Math.round(p.area)}</LotArea>
+        <Bedrooms>${p.bedrooms}</Bedrooms>
+        <Bathrooms>${p.bathrooms}</Bathrooms>
+        <Suites>0</Suites>
+        <Garage type="Parking Spaces">${p.parking}</Garage>
+      </Details>
+${photosXmlVrSync(p.images)}
+      <ContactInfo>
+        <Name><![CDATA[${p.broker}]]></Name>
+        <Email></Email>
+      </ContactInfo>
+    </Listing>`).join("\n");
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<ListingDataFeed xmlns="http://www.vivareal.com/schemas/1.0/VRSync"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xsi:schemaLocation="http://www.vivareal.com/schemas/1.0/VRSync http://xml.vivareal.com/vrsync.xsd">
+  <Header>
+    <Provider>MV Broker Connect</Provider>
+    <Email></Email>
+    <ContactName>MV Broker Connect</ContactName>
+    <PublishDate>${now}</PublishDate>
+    <Telephone></Telephone>
+  </Header>
+  <Listings>
+${items}
+  </Listings>
+</ListingDataFeed>`;
+}
+
+/* ─── OLX (formato OLX Pro) ─── */
+function generateOlxXml(properties: Property[]): string {
+  const items = properties.map((p) => `    <Imovel>
+      <CodigoImovel>${escapeXml(p.id.slice(0, 20))}</CodigoImovel>
+      <TituloAnuncio><![CDATA[${p.title.slice(0, 90)}]]></TituloAnuncio>
+      <SubTipoImovel>${mapSubTipoOlx(p.type)}</SubTipoImovel>
+      <Cidade>${escapeXml(p.city)}</Cidade>
+      <Bairro>${escapeXml(p.neighborhood || "")}</Bairro>
+      <CEP></CEP>
+      <PrecoVenda>${Math.round(p.price)}</PrecoVenda>
+      <PrecoCondominio>0</PrecoCondominio>
+      <ValorIPTU>0</ValorIPTU>
+      <QtdDormitorios>${Math.min(p.bedrooms, 5)}</QtdDormitorios>
+      <QtdBanheiros>${Math.min(p.bathrooms, 5)}</QtdBanheiros>
+      <QtdVagas>${Math.min(p.parking, 5)}</QtdVagas>
+      <AreaUtil>${Math.round(p.area)}</AreaUtil>
+      <Observacao><![CDATA[${p.description || p.title}]]></Observacao>
+${photosXmlOlx(p.images)}
+    </Imovel>`).join("\n");
+
+  return `<?xml version="1.0" encoding="utf-8"?>
+<Carga xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Imoveis>
+${items}
+  </Imoveis>
+</Carga>`;
+}
+
+/* ─── Imovelweb (formato VRSync/Grupo OLX) ─── */
+function generateImovelwebXml(properties: Property[]): string {
+  return generateVrSyncXml(properties);
+}
+
+/* ─── Chaves na Mão ─── */
+function generateChavesNaMaoXml(properties: Property[]): string {
+  const items = properties.map((p) => `    <imovel>
+      <referencia>${escapeXml(p.id)}</referencia>
+      <codigo_cliente>${escapeXml(p.id)}</codigo_cliente>
+      <link_cliente></link_cliente>
+      <titulo><![CDATA[${p.title}]]></titulo>
+      <transacao>V</transacao>
+      <transacao2></transacao2>
+      <finalidade>${mapFinalidadeCnm(p.type)}</finalidade>
+      <finalidade2></finalidade2>
+      <destaque>${p.status === "Disponível" ? "1" : "0"}</destaque>
+      <tipo>${mapTipoCnm(p.type)}</tipo>
+      <tipo2></tipo2>
+      <valor>${p.price.toFixed(2)}</valor>
+      <valor_locacao></valor_locacao>
+      <valor_iptu></valor_iptu>
+      <valor_condominio></valor_condominio>
+      <area_total>${p.area.toFixed(2)}</area_total>
+      <area_util>${(p.privateArea || p.area).toFixed(2)}</area_util>
+      <conservacao></conservacao>
+      <quartos>${p.bedrooms}</quartos>
+      <suites>0</suites>
+      <garagem>${p.parking}</garagem>
+      <banheiro>${p.bathrooms}</banheiro>
+      <closet></closet>
+      <salas></salas>
+      <despensa></despensa>
+      <bar></bar>
+      <cozinha></cozinha>
+      <quarto_empregada></quarto_empregada>
+      <escritorio></escritorio>
+      <area_servico></area_servico>
+      <lareira></lareira>
+      <varanda></varanda>
+      <lavanderia></lavanderia>
+      <aceita_pet></aceita_pet>
+      <estado>RS</estado>
+      <cidade>${escapeXml(p.city)}</cidade>
+      <bairro>${escapeXml(p.neighborhood || "")}</bairro>
+      <cep></cep>
+      <endereco>${escapeXml(p.address)}</endereco>
+      <numero>${escapeXml(p.unitNumber || "")}</numero>
+      <complemento></complemento>
+      <esconder_endereco_imovel>0</esconder_endereco_imovel>
+      <descritivo><![CDATA[${p.description || p.title}]]></descritivo>
+${photosCnm(p.images)}
+      <data_atualizacao>${p.updatedAt || ""}</data_atualizacao>
+      <latitude>${p.lat}</latitude>
+      <longitude>${p.lng}</longitude>
+      <video>${p.linkVideo || ""}</video>
+      <tour_360>${p.link360 || ""}</tour_360>
+      <area_comum></area_comum>
+      <area_privativa></area_privativa>
+      <aceita_troca>${p.acceptsExchange ? "1" : "0"}</aceita_troca>
+      <periodo_locacao></periodo_locacao>
+    </imovel>`).join("\n");
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<Document>
+  <imoveis>
+${items}
+  </imoveis>
+</Document>`;
+}
+
+/* ─── Personalizado (XML genérico completo) ─── */
+function generateGenericXml(properties: Property[]): string {
+  const items = properties.map((p) => `    <Imovel>
+      <Codigo>${escapeXml(p.id)}</Codigo>
+      <Titulo><![CDATA[${p.title}]]></Titulo>
+      <TipoImovel>${escapeXml(p.type)}</TipoImovel>
+      <Status>${escapeXml(p.status)}</Status>
+      <Endereco>${escapeXml(p.address)}</Endereco>
+      <Bairro>${escapeXml(p.neighborhood || "")}</Bairro>
+      <Cidade>${escapeXml(p.city)}</Cidade>
+      <Estado>RS</Estado>
+      <PrecoVenda>${p.price}</PrecoVenda>
+      <PrecoParcelado>${p.priceInstallment || 0}</PrecoParcelado>
+      <AreaTotal>${p.area}</AreaTotal>
+      <AreaPrivativa>${p.privateArea || p.area}</AreaPrivativa>
+      <Quartos>${p.bedrooms}</Quartos>
+      <Banheiros>${p.bathrooms}</Banheiros>
+      <Vagas>${p.parking}</Vagas>
+      <Decorado>${p.decorated ? "Sim" : "Nao"}</Decorado>
+      <VistaMar>${p.seaView ? "Sim" : "Nao"}</VistaMar>
+      <AceitaPermuta>${p.acceptsExchange ? "Sim" : "Nao"}</AceitaPermuta>
+      <Empreendimento>${escapeXml(p.empreendimento || "")}</Empreendimento>
+      <Corretor>${escapeXml(p.broker)}</Corretor>
+      <Descricao><![CDATA[${p.description || ""}]]></Descricao>
+      <Latitude>${p.lat}</Latitude>
+      <Longitude>${p.lng}</Longitude>
+      <LinkVideo>${p.linkVideo || ""}</LinkVideo>
+      <Link360>${p.link360 || ""}</Link360>
+      <Imagens>${p.images.map((url) => `\n        <Imagem>${escapeXml(url)}</Imagem>`).join("")}
+      </Imagens>
+    </Imovel>`).join("\n");
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<Imoveis>
+  <Header>
+    <Gerado>${new Date().toISOString()}</Gerado>
+    <TotalImoveis>${properties.length}</TotalImoveis>
+  </Header>
+  <ListaImoveis>
+${items}
+  </ListaImoveis>
+</Imoveis>`;
+}
+
+function generateXml(properties: Property[], portal: XmlPortal): string {
+  switch (portal) {
+    case "ZAP Imóveis": return generateZapXml(properties);
+    case "VivaReal": return generateVrSyncXml(properties);
+    case "OLX": return generateOlxXml(properties);
+    case "Imovelweb": return generateImovelwebXml(properties);
+    case "Chaves na Mão": return generateChavesNaMaoXml(properties);
+    case "Personalizado": return generateGenericXml(properties);
+    default: return generateGenericXml(properties);
+  }
 }
 
 function downloadXml(xml: string, portal: string) {
