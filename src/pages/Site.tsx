@@ -659,11 +659,14 @@ export default function Site() {
     } catch { return []; }
   });
 
-  // Close user menu on outside click
+  // Close user/imoveis menu on outside click
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
         setUserMenuOpen(false);
+      }
+      if (imoveisMenuRef.current && !imoveisMenuRef.current.contains(e.target as Node)) {
+        setImoveisMenuOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClick);
