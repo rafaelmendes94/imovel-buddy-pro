@@ -623,7 +623,9 @@ export default function Site() {
   const navigate = useNavigate();
   const { user, profile, signOut } = useAuth();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [imoveisMenuOpen, setImoveisMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const imoveisMenuRef = useRef<HTMLDivElement>(null);
   const searchParams = new URLSearchParams(window.location.search);
   const initialTipo = searchParams.get("tipo") || "";
   const initialCidade = searchParams.get("cidade") || "";
