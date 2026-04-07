@@ -40,10 +40,15 @@ import {
   Handshake,
   Route,
   ShoppingBag,
+  LogOut,
+  LayoutDashboard,
+  Settings,
+  User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { RoutePlanner } from "@/components/RoutePlanner";
 import { SharkAI } from "@/components/SharkAI";
+import { useAuth } from "@/hooks/useAuth";
 
 // Site property type mapped from DB
 interface SiteProperty {
