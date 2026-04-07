@@ -558,7 +558,7 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
               onChange={(e) => setMapFilterEmpreendimento(e.target.value)}
               className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
             >
-              <option value="">Todos empreendimentos</option>
+              <option value="">Todos loteamentos</option>
               {uniqueMapEmpreendimentos.map((emp) => (
                 <option key={emp} value={emp}>{emp}</option>
               ))}
