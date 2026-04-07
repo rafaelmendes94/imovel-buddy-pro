@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { BackButton } from "@/components/BackButton";
 import { useAuth } from "@/hooks/useAuth";
@@ -7,13 +7,15 @@ import { toast } from "sonner";
 import { CityGalleryGrid } from "@/components/city-photos/CityGalleryGrid";
 import { CityGalleryDetail } from "@/components/city-photos/CityGalleryDetail";
 import { GalleryFormModal } from "@/components/city-photos/GalleryFormModal";
-import { Plus, Camera } from "lucide-react";
+import { Plus, Camera, Filter } from "lucide-react";
 
 export interface CityGallery {
   id: string;
   titulo: string;
   capa_url: string;
   descricao: string;
+  tipo: string;
+  cidade: string;
   created_at: string;
   item_count?: number;
 }
@@ -34,6 +36,29 @@ export default function CityPhotos() {
   const [selectedGallery, setSelectedGallery] = useState<CityGallery | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingGallery, setEditingGallery] = useState<CityGallery | null>(null);
+  const [filterTipo, setFilterTipo] = useState("");
+  const [filterCidade, setFilterCidade] = useState("");
+  const [tipoOptions, setTipoOptions] = useState<string[]>([]);
+
+  // Fetch tipo options from system_options
+  useEffect(() => {
+    supabase.from("system_options").select("value").eq("category", "gallery_tipo").order("sort_order")
+      .then(({ data }) => { if (data) setTipoOptions(data.map((d: any) => d.value)); });
+  }, []);
+
+  // Derive unique cities from galleries
+  const cidadeOptions = useMemo(() => {
+    const cities = galleries.map(g => g.cidade).filter(c => c.length > 0);
+    return [...new Set(cities)].sort();
+  }, [galleries]);
+
+  const filteredGalleries = useMemo(() => {
+    return galleries.filter(g => {
+      if (filterTipo && g.tipo !== filterTipo) return false;
+      if (filterCidade && g.cidade !== filterCidade) return false;
+      return true;
+    });
+  }, [galleries, filterTipo, filterCidade]);
 
   const fetchGalleries = useCallback(async () => {
     setLoading(true);
@@ -99,7 +124,7 @@ export default function CityPhotos() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Fotos da Cidade</h1>
-            <p className="text-sm text-muted-foreground mt-1">{galleries.length} galerias</p>
+            <p className="text-sm text-muted-foreground mt-1">{filteredGalleries.length} galerias</p>
           </div>
           {isSuperAdmin && (
             <button
@@ -111,20 +136,44 @@ export default function CityPhotos() {
           )}
         </div>
 
+        {/* Filtros */}
+        <div className="flex flex-wrap gap-3 items-center">
+          <Filter className="w-4 h-4 text-muted-foreground" />
+          <select
+            value={filterTipo}
+            onChange={(e) => setFilterTipo(e.target.value)}
+            className="px-3 py-2 bg-background border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          >
+            <option value="">Todos os tipos</option>
+            {tipoOptions.map((t) => <option key={t} value={t}>{t}</option>)}
+          </select>
+          <select
+            value={filterCidade}
+            onChange={(e) => setFilterCidade(e.target.value)}
+            className="px-3 py-2 bg-background border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          >
+            <option value="">Todas as cidades</option>
+            {cidadeOptions.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
+          {(filterTipo || filterCidade) && (
+            <button onClick={() => { setFilterTipo(""); setFilterCidade(""); }} className="text-xs text-primary hover:underline">Limpar filtros</button>
+          )}
+        </div>
+
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[1, 2, 3].map((i) => (
               <div key={i} className="h-56 rounded-xl bg-muted animate-pulse" />
             ))}
           </div>
-        ) : galleries.length === 0 ? (
+        ) : filteredGalleries.length === 0 ? (
           <div className="text-center py-16 text-muted-foreground">
             <Camera className="w-12 h-12 mx-auto mb-3 opacity-40" />
-            <p>Nenhuma galeria cadastrada</p>
+            <p>Nenhuma galeria encontrada</p>
           </div>
         ) : (
           <CityGalleryGrid
-            galleries={galleries}
+            galleries={filteredGalleries}
             isSuperAdmin={isSuperAdmin}
             onSelect={setSelectedGallery}
             onEdit={handleEdit}

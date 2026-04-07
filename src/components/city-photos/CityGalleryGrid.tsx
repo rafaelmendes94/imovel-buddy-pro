@@ -46,6 +46,10 @@ export function CityGalleryGrid({ galleries, isSuperAdmin, onSelect, onEdit, onD
           </div>
           <div className="p-4">
             <h3 className="font-semibold text-card-foreground truncate">{g.titulo}</h3>
+            <div className="flex items-center gap-2 mt-1 flex-wrap">
+              {g.tipo && <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">{g.tipo}</span>}
+              {g.cidade && <span className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground font-medium">{g.cidade}</span>}
+            </div>
             <p className="text-xs text-muted-foreground mt-1">{g.item_count || 0} mídias</p>
           </div>
         </div>
