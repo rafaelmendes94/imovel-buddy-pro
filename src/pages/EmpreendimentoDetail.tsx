@@ -67,7 +67,7 @@ export default function EmpreendimentoDetail() {
       <AppLayout>
         <div className="p-8 text-center text-muted-foreground">
           <Building2 className="w-16 h-16 mx-auto mb-4 opacity-40" />
-          <p className="text-lg">Empreendimento não encontrado</p>
+          <p className="text-lg">Loteamento não encontrado</p>
           <Link to="/empreendimentos" className="text-accent hover:underline mt-2 inline-block">Voltar</Link>
         </div>
       </AppLayout>
@@ -211,7 +211,7 @@ export default function EmpreendimentoDetail() {
             {imoveis.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <Home className="w-12 h-12 mx-auto mb-3 opacity-40" />
-                <p>Nenhum imóvel vinculado a este empreendimento</p>
+                <p>Nenhum imóvel vinculado a este loteamento</p>
               </div>
             ) : (
               <>

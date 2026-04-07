@@ -46,7 +46,7 @@ export default function Empreendimentos() {
 
   const handleDelete = async (id: string) => {
     await supabase.from("empreendimentos").delete().eq("id", id);
-    toast({ title: "Empreendimento excluído" });
+    toast({ title: "Loteamento excluído" });
     loadData();
   };
 
@@ -56,17 +56,17 @@ export default function Empreendimentos() {
         <BackButton />
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Empreendimentos</h1>
-            <p className="text-sm text-muted-foreground mt-1">{items.length} empreendimentos cadastrados</p>
+            <h1 className="text-2xl font-bold text-foreground">Loteamentos</h1>
+            <p className="text-sm text-muted-foreground mt-1">{items.length} loteamentos cadastrados</p>
           </div>
           <button onClick={() => navigate("/cadastro-empreendimento")} className="flex items-center gap-2 px-4 py-2.5 rounded-lg gradient-gold text-primary text-sm font-semibold hover:opacity-90 transition-opacity self-start">
-            <Plus className="w-4 h-4" /> Novo Empreendimento
+            <Plus className="w-4 h-4" /> Novo Loteamento
           </button>
         </div>
 
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input type="text" placeholder="Buscar empreendimento..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full pl-10 pr-4 py-2.5 bg-card border border-input rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+          <input type="text" placeholder="Buscar loteamento..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full pl-10 pr-4 py-2.5 bg-card border border-input rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
         </div>
 
         {loading ? (
@@ -112,7 +112,7 @@ export default function Empreendimentos() {
         {!loading && filtered.length === 0 && (
           <div className="text-center py-16 text-muted-foreground">
             <Landmark className="w-12 h-12 mx-auto mb-3 opacity-40" />
-            <p>Nenhum empreendimento encontrado</p>
+            <p>Nenhum loteamento encontrado</p>
           </div>
         )}
       </div>

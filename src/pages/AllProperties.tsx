@@ -270,7 +270,7 @@ export default function AllProperties() {
               <Search className="w-5 h-5 text-gray-400 ml-2 flex-shrink-0" />
               <input
                 type="text"
-                placeholder="Buscar por nome, endereço, cidade ou empreendimento..."
+                placeholder="Buscar por nome, endereço, cidade ou loteamento..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="flex-1 px-3 py-1.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none bg-transparent"

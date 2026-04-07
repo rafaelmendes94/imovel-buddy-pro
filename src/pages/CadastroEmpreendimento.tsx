@@ -82,10 +82,10 @@ export default function CadastroEmpreendimento() {
     };
     if (editId) {
       await supabase.from("empreendimentos").update(payload).eq("id", editId);
-      toast({ title: "Empreendimento atualizado ✅" });
+      toast({ title: "Loteamento atualizado ✅" });
     } else {
       await supabase.from("empreendimentos").insert([{ ...payload, user_id: user.id }]);
-      toast({ title: "Empreendimento cadastrado ✅" });
+      toast({ title: "Loteamento cadastrado ✅" });
     }
     setSaving(false);
     navigate("/empreendimentos");
@@ -113,14 +113,14 @@ export default function CadastroEmpreendimento() {
     <AppLayout>
       <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-4xl mx-auto">
         <BackButton />
-        <h1 className="text-2xl font-bold text-foreground">{editId ? "Editar Empreendimento" : "Novo Empreendimento"}</h1>
+        <h1 className="text-2xl font-bold text-foreground">{editId ? "Editar Loteamento" : "Novo Loteamento"}</h1>
 
         <section>
           <SectionHeader icon={Landmark} title="Dados Básicos" />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="sm:col-span-2 space-y-1.5">
-              <Label className="text-xs">Nome do Empreendimento *</Label>
-              <Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} placeholder="Nome do empreendimento" />
+              <Label className="text-xs">Nome do Loteamento *</Label>
+              <Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} placeholder="Nome do loteamento" />
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs">Construtora</Label>
@@ -154,7 +154,7 @@ export default function CadastroEmpreendimento() {
 
         <section>
           <SectionHeader icon={FileText} title="Descrição" />
-          <Textarea value={form.descricao} onChange={(e) => setForm({ ...form, descricao: e.target.value })} rows={4} placeholder="Descrição do empreendimento..." />
+          <Textarea value={form.descricao} onChange={(e) => setForm({ ...form, descricao: e.target.value })} rows={4} placeholder="Descrição do loteamento..." />
         </section>
 
         <section>
@@ -213,7 +213,7 @@ export default function CadastroEmpreendimento() {
           <button onClick={() => navigate("/empreendimentos")} className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium hover:bg-muted transition-colors">Cancelar</button>
           <button onClick={handleSubmit} disabled={saving} className="flex items-center gap-2 px-6 py-2.5 rounded-lg gradient-gold text-primary text-sm font-semibold hover:opacity-90 transition-opacity">
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            {editId ? "Salvar Alterações" : "Cadastrar Empreendimento"}
+            {editId ? "Salvar Alterações" : "Cadastrar Loteamento"}
           </button>
         </div>
       </div>
