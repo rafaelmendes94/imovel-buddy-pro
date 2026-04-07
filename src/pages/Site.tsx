@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { formatCurrency } from "@/data/mockData";
 import { supabase } from "@/integrations/supabase/client";
 import { PropertyDetailModal } from "@/components/PropertyDetailModal";
@@ -40,10 +40,15 @@ import {
   Handshake,
   Route,
   ShoppingBag,
+  LogOut,
+  LayoutDashboard,
+  Settings,
+  User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { RoutePlanner } from "@/components/RoutePlanner";
 import { SharkAI } from "@/components/SharkAI";
+import { useAuth } from "@/hooks/useAuth";
 
 // Site property type mapped from DB
 interface SiteProperty {
@@ -615,6 +620,10 @@ function SectionHeader({ title, subtitle, icon: Icon }: { title: string; subtitl
 }
 
 export default function Site() {
+  const navigate = useNavigate();
+  const { user, profile, signOut } = useAuth();
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
   const searchParams = new URLSearchParams(window.location.search);
   const initialTipo = searchParams.get("tipo") || "";
   const initialCidade = searchParams.get("cidade") || "";
@@ -647,6 +656,17 @@ export default function Site() {
       return JSON.parse(localStorage.getItem("mv-favorites") || "[]");
     } catch { return []; }
   });
+
+  // Close user menu on outside click
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
 
   const toggleFavorite = (id: string) => {
     setFavoriteIds((prev) => {
@@ -850,6 +870,42 @@ export default function Site() {
             >
               WhatsApp
             </a>
+            {user ? (
+              <div className="relative" ref={userMenuRef}>
+                <button
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 transition-colors text-sm font-semibold text-gray-700"
+                >
+                  <User className="w-4 h-4" />
+                  <span className="hidden sm:inline max-w-[120px] truncate">{profile?.full_name || "Minha Conta"}</span>
+                  <ChevronDown className="w-3.5 h-3.5" />
+                </button>
+                {userMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-lg border border-gray-200 py-1 z-50">
+                    <button onClick={() => { navigate("/dashboard"); setUserMenuOpen(false); }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                      <LayoutDashboard className="w-4 h-4" /> Dashboard
+                    </button>
+                    <button onClick={() => { navigate("/configuracoes"); setUserMenuOpen(false); }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                      <Settings className="w-4 h-4" /> Configurações
+                    </button>
+                    <button onClick={() => { navigate("/painel/assinatura"); setUserMenuOpen(false); }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                      <CreditCard className="w-4 h-4" /> Planos
+                    </button>
+                    <div className="border-t border-gray-100 my-1" />
+                    <button onClick={() => { signOut(); setUserMenuOpen(false); }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                      <LogOut className="w-4 h-4" /> Sair
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link
+                to="/login"
+                className="px-4 py-2 rounded-xl bg-gray-900 text-white text-sm font-bold hover:bg-gray-800 transition-colors shadow-sm"
+              >
+                Login
+              </Link>
+            )}
           </div>
         </div>
       </header>
