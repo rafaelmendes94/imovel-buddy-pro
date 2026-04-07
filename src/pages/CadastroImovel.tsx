@@ -1062,6 +1062,53 @@ export function ImovelForm({ editId }: { editId?: string }) {
         </div>
       </div>
 
+      {/* === HISTÓRICO DE ALTERAÇÕES === */}
+      {isEdit && (
+        <div className="bg-card border border-border rounded-2xl p-4 sm:p-6">
+          <SectionHeader icon={History} title="Histórico de Alterações" />
+          {logsLoading ? (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground py-4">
+              <Loader2 className="w-4 h-4 animate-spin" /> Carregando histórico...
+            </div>
+          ) : logs.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4">Nenhuma alteração registrada.</p>
+          ) : (
+            <div className="space-y-3 max-h-96 overflow-y-auto">
+              {logs.map((log) => (
+                <div key={log.id} className="border border-border rounded-lg p-3 bg-muted/20">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-2 h-2 rounded-full ${log.action === 'create' ? 'bg-emerald-500' : 'bg-primary'}`} />
+                      <span className="text-xs font-semibold text-foreground">
+                        {log.action === 'create' ? 'Cadastro' : 'Edição'}
+                      </span>
+                      <span className="text-xs text-muted-foreground">por</span>
+                      <span className="text-xs font-medium text-foreground">{log.user_name}</span>
+                    </div>
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Clock className="w-3 h-3" />
+                      {format(new Date(log.created_at), "dd/MM/yyyy 'às' HH:mm")}
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    {(Array.isArray(log.changes) ? log.changes : []).map((c: any, i: number) => (
+                      <div key={i} className="text-xs flex flex-wrap gap-1">
+                        <span className="font-medium text-foreground">{c.field}:</span>
+                        {c.from && c.from !== '(vazio)' && (
+                          <span className="text-destructive line-through">{c.from.length > 60 ? c.from.slice(0, 60) + '...' : c.from}</span>
+                        )}
+                        <span className="text-muted-foreground">→</span>
+                        <span className="text-emerald-500">{c.to.length > 60 ? c.to.slice(0, 60) + '...' : c.to}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="flex flex-col sm:flex-row justify-end gap-3 pb-6">
         <Button type="button" variant="outline" onClick={() => navigate('/imoveis')} className="w-full sm:w-auto">Cancelar</Button>
         <Button type="submit" disabled={loading} className="gap-2 px-8 w-full sm:w-auto">
