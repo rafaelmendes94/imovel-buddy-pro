@@ -619,10 +619,35 @@ export function ImovelForm({ editId }: { editId?: string }) {
       if (isEdit) {
         const { error } = await supabase.from('imoveis').update(payload).eq('id', editId);
         if (error) throw error;
+
+        // Insert change log
+        const changes = computeChanges(originalFormRef.current, form);
+        if (changes.length > 0 && user) {
+          await supabase.from('imovel_logs').insert({
+            imovel_id: editId,
+            user_id: user.id,
+            user_name: profile?.full_name || user.email || 'Desconhecido',
+            action: 'edit',
+            changes,
+          });
+        }
+
         toast({ title: "Sucesso! ✅", description: "Imóvel atualizado com sucesso!" });
       } else {
-        const { error } = await supabase.from('imoveis').insert([{ ...payload, user_id: user.id }]).select();
+        const { data: inserted, error } = await supabase.from('imoveis').insert([{ ...payload, user_id: user.id }]).select().single();
         if (error) throw error;
+
+        // Insert creation log
+        if (inserted && user) {
+          await supabase.from('imovel_logs').insert({
+            imovel_id: inserted.id,
+            user_id: user.id,
+            user_name: profile?.full_name || user.email || 'Desconhecido',
+            action: 'create',
+            changes: [{ field: 'Cadastro', from: '', to: 'Imóvel criado' }],
+          });
+        }
+
         toast({ title: "Sucesso! ✅", description: "Imóvel cadastrado com sucesso!" });
       }
 
