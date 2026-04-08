@@ -816,74 +816,18 @@ export default function Properties() {
         {/* Header */}
         <div className="flex flex-col gap-3">
           <BackButton />
-          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-            <div className="grid grid-cols-2 sm:flex sm:items-center sm:flex-wrap gap-1.5 sm:gap-3">
-              {/* VGV Badges inline */}
-              <div className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 min-w-0">
-                <TrendingUp className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                <div className="min-w-0">
-                  <p className="text-[8px] font-bold uppercase text-emerald-600 leading-none truncate">VGV Ativo <span className="text-muted-foreground font-medium">({propertyList.filter(p => p.status === "Disponível" || p.status === "Reservado").length})</span></p>
-                  <p className="text-xs sm:text-sm font-black text-foreground leading-tight truncate">
-                    {formatCurrency(propertyList.filter(p => p.status === "Disponível" || p.status === "Reservado").reduce((sum, p) => sum + p.price, 0))}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20 min-w-0">
-                <DollarSign className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                <div className="min-w-0">
-                  <p className="text-[8px] font-bold uppercase text-blue-600 leading-none truncate">Comissão Est. <span className="text-muted-foreground font-medium">({propertyList.filter(p => p.status === "Disponível" || p.status === "Reservado").length})</span></p>
-                  <p className="text-xs sm:text-sm font-black text-foreground leading-tight truncate">
-                    {formatCurrency(propertyList.filter(p => p.status === "Disponível" || p.status === "Reservado").reduce((sum, p) => sum + (p.price * (p.commission || 0) / 100), 0))}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 min-w-0">
-                <Trophy className="w-3.5 h-3.5 text-red-600 shrink-0" />
-                <div className="min-w-0">
-                  <p className="text-[8px] font-bold uppercase text-red-600 leading-none truncate">VGV Vendidos <span className="text-muted-foreground font-medium">({propertyList.filter(p => p.status === "Vendido").length})</span></p>
-                  <p className="text-xs sm:text-sm font-black text-foreground leading-tight truncate">
-                    {formatCurrency(propertyList.filter(p => p.status === "Vendido").reduce((sum, p) => sum + p.price, 0))}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 min-w-0">
-                <Wallet className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                <div className="min-w-0">
-                  <p className="text-[8px] font-bold uppercase text-amber-600 leading-none truncate">Comissões Pagas <span className="text-muted-foreground font-medium">({propertyList.filter(p => p.status === "Vendido").length})</span></p>
-                  <p className="text-xs sm:text-sm font-black text-foreground leading-tight truncate">
-                    {formatCurrency(propertyList.filter(p => p.status === "Vendido").reduce((sum, p) => sum + (p.price * (p.commission || 0) / 100), 0))}
-                  </p>
-                </div>
-              </div>
-              {(() => {
-                const now = new Date();
-                const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-                const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
-                const soldThisMonth = propertyList.filter(p => {
-                  if (p.status !== "Vendido") return false;
-                  const d = new Date(p.updatedAt || p.createdAt);
-                  return d >= firstDay && d <= lastDay;
-                });
-                return (
-                  <div className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-lg bg-purple-500/10 border border-purple-500/20 min-w-0">
-                    <CalendarCheck className="w-3.5 h-3.5 text-purple-600 shrink-0" />
-                    <div className="min-w-0">
-                      <p className="text-[8px] font-bold uppercase text-purple-600 leading-none truncate">Vendidos do Mês <span className="text-muted-foreground font-medium">({soldThisMonth.length})</span></p>
-                      <p className="text-xs sm:text-sm font-black text-foreground leading-tight truncate">
-                        {formatCurrency(soldThisMonth.reduce((sum, p) => sum + p.price, 0))}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })()}
+          {/* Action buttons row */}
+          <div className="flex items-center justify-between gap-3">
+            <h1 className="text-lg sm:text-xl font-bold text-foreground flex items-center gap-2">
+              <Building2 className="w-5 h-5 text-accent" /> Imóveis
+            </h1>
+            <div className="flex gap-2 flex-wrap flex-shrink-0">
               <button
                 onClick={() => navigate("/relatorios")}
-                className="col-span-2 sm:col-span-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-colors"
               >
                 <BarChart3 className="w-3.5 h-3.5" /> Relatórios
               </button>
-            </div>
-            <div className="flex gap-2 flex-wrap flex-shrink-0">
               <div className="relative" ref={xmlMenuRef}>
                 <button
                   onClick={() => setShowXmlMenu(!showXmlMenu)}
@@ -910,6 +854,67 @@ export default function Properties() {
                 <Plus className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Novo</span> Imóvel
               </button>
             </div>
+          </div>
+
+          {/* VGV Cards - larger and centered */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            <div className="flex items-center gap-2.5 px-3 sm:px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+              <TrendingUp className="w-5 h-5 text-emerald-600 shrink-0" />
+              <div className="min-w-0">
+                <p className="text-[9px] sm:text-[10px] font-bold uppercase text-emerald-600 leading-none truncate">VGV Ativo <span className="text-muted-foreground font-medium">({propertyList.filter(p => p.status === "Disponível" || p.status === "Reservado").length})</span></p>
+                <p className="text-sm sm:text-base font-black text-foreground leading-tight truncate">
+                  {formatCurrency(propertyList.filter(p => p.status === "Disponível" || p.status === "Reservado").reduce((sum, p) => sum + p.price, 0))}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2.5 px-3 sm:px-4 py-3 rounded-xl bg-blue-500/10 border border-blue-500/20">
+              <DollarSign className="w-5 h-5 text-blue-600 shrink-0" />
+              <div className="min-w-0">
+                <p className="text-[9px] sm:text-[10px] font-bold uppercase text-blue-600 leading-none truncate">Comissão Est. <span className="text-muted-foreground font-medium">({propertyList.filter(p => p.status === "Disponível" || p.status === "Reservado").length})</span></p>
+                <p className="text-sm sm:text-base font-black text-foreground leading-tight truncate">
+                  {formatCurrency(propertyList.filter(p => p.status === "Disponível" || p.status === "Reservado").reduce((sum, p) => sum + (p.price * (p.commission || 0) / 100), 0))}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2.5 px-3 sm:px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20">
+              <Trophy className="w-5 h-5 text-red-600 shrink-0" />
+              <div className="min-w-0">
+                <p className="text-[9px] sm:text-[10px] font-bold uppercase text-red-600 leading-none truncate">VGV Vendidos <span className="text-muted-foreground font-medium">({propertyList.filter(p => p.status === "Vendido").length})</span></p>
+                <p className="text-sm sm:text-base font-black text-foreground leading-tight truncate">
+                  {formatCurrency(propertyList.filter(p => p.status === "Vendido").reduce((sum, p) => sum + p.price, 0))}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2.5 px-3 sm:px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+              <Wallet className="w-5 h-5 text-amber-600 shrink-0" />
+              <div className="min-w-0">
+                <p className="text-[9px] sm:text-[10px] font-bold uppercase text-amber-600 leading-none truncate">Comissões Pagas <span className="text-muted-foreground font-medium">({propertyList.filter(p => p.status === "Vendido").length})</span></p>
+                <p className="text-sm sm:text-base font-black text-foreground leading-tight truncate">
+                  {formatCurrency(propertyList.filter(p => p.status === "Vendido").reduce((sum, p) => sum + (p.price * (p.commission || 0) / 100), 0))}
+                </p>
+              </div>
+            </div>
+            {(() => {
+              const now = new Date();
+              const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+              const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+              const soldThisMonth = propertyList.filter(p => {
+                if (p.status !== "Vendido") return false;
+                const d = new Date(p.updatedAt || p.createdAt);
+                return d >= firstDay && d <= lastDay;
+              });
+              return (
+                <div className="col-span-2 sm:col-span-1 flex items-center gap-2.5 px-3 sm:px-4 py-3 rounded-xl bg-purple-500/10 border border-purple-500/20">
+                  <CalendarCheck className="w-5 h-5 text-purple-600 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-[9px] sm:text-[10px] font-bold uppercase text-purple-600 leading-none truncate">Vendidos do Mês <span className="text-muted-foreground font-medium">({soldThisMonth.length})</span></p>
+                    <p className="text-sm sm:text-base font-black text-foreground leading-tight truncate">
+                      {formatCurrency(soldThisMonth.reduce((sum, p) => sum + p.price, 0))}
+                    </p>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         </div>
 
