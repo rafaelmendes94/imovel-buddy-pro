@@ -138,7 +138,9 @@ export default function ConstrutoraDetail() {
     if (uploadError) { toast.error("Erro no upload"); setUploading(false); return; }
     const { data: { publicUrl } } = supabase.storage.from('site-assets').getPublicUrl(path);
     const field = type === 'cover' ? 'cover_url' : 'perfil_url';
-    await supabase.from("construtoras").update({ [field]: publicUrl, updated_at: new Date().toISOString() }).eq("id", id);
+    const updateData: Record<string, string> = { updated_at: new Date().toISOString() };
+    updateData[field] = publicUrl;
+    await supabase.from("construtoras").update(updateData as any).eq("id", id);
     setUploading(false);
     toast.success(`${type === 'cover' ? 'Capa' : 'Foto de perfil'} atualizada!`);
     fetchAll();
