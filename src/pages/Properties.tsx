@@ -456,6 +456,7 @@ export default function Properties() {
   });
   const [filterFreshness, setFilterFreshness] = useState<"all" | "30" | "60" | "90">("all");
   const [showInactive, setShowInactive] = useState(false);
+  const [showSoldThisMonth, setShowSoldThisMonth] = useState(false);
   const catScrollRef = useRef<HTMLDivElement>(null);
   const [categories, setCategories] = useState(getSavedCategoryOrder);
   const dragCatRef = useRef<number | null>(null);
