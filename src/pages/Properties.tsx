@@ -926,7 +926,7 @@ export default function Properties() {
         {/* Freshness Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
           {/* Imóveis total card */}
-          <div className="bg-card border border-primary/30 rounded-xl p-2 sm:p-4 text-left">
+          <button onClick={() => { clearFilters(); setActiveCategory("todos"); setFilterFreshness("all"); }} className="bg-card border border-primary/30 rounded-xl p-2 sm:p-4 text-left hover:bg-primary/5 transition-colors cursor-pointer">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider text-primary">Imóveis</p>
