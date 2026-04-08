@@ -456,6 +456,7 @@ export default function Properties() {
   });
   const [filterFreshness, setFilterFreshness] = useState<"all" | "30" | "60" | "90">("all");
   const [showInactive, setShowInactive] = useState(false);
+  const [showSoldThisMonth, setShowSoldThisMonth] = useState(false);
   const catScrollRef = useRef<HTMLDivElement>(null);
   const [categories, setCategories] = useState(getSavedCategoryOrder);
   const dragCatRef = useRef<number | null>(null);
@@ -904,7 +905,10 @@ export default function Properties() {
                 return d >= firstDay && d <= lastDay;
               });
               return (
-                <div className="col-span-2 sm:col-span-1 flex items-center gap-2.5 px-3 sm:px-4 py-3 rounded-xl bg-purple-500/10 border border-purple-500/20">
+                <button
+                  onClick={() => setShowSoldThisMonth(true)}
+                  className="col-span-2 sm:col-span-1 flex items-center gap-2.5 px-3 sm:px-4 py-3 rounded-xl bg-purple-500/10 border border-purple-500/20 hover:bg-purple-500/20 transition-colors cursor-pointer text-left"
+                >
                   <CalendarCheck className="w-5 h-5 text-purple-600 shrink-0" />
                   <div className="min-w-0">
                     <p className="text-[9px] sm:text-[10px] font-bold uppercase text-purple-600 leading-none truncate">Vendidos do Mês <span className="text-muted-foreground font-medium">({soldThisMonth.length})</span></p>
@@ -912,7 +916,7 @@ export default function Properties() {
                       {formatCurrency(soldThisMonth.reduce((sum, p) => sum + p.price, 0))}
                     </p>
                   </div>
-                </div>
+                </button>
               );
             })()}
           </div>
@@ -1605,6 +1609,74 @@ export default function Properties() {
           </div>
         </div>
       )}
+
+      {/* Modal Vendidos do Mês */}
+      {showSoldThisMonth && (() => {
+        const now = new Date();
+        const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+        const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+        const soldThisMonth = propertyList.filter(p => {
+          if (p.status !== "Vendido") return false;
+          const d = new Date(p.updatedAt || p.createdAt);
+          return d >= firstDay && d <= lastDay;
+        });
+        const monthName = now.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+        return (
+          <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setShowSoldThisMonth(false)}>
+            <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+              <div className="flex items-center justify-between p-4 border-b border-border">
+                <div>
+                  <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+                    <CalendarCheck className="w-5 h-5 text-purple-600" /> Vendidos do Mês
+                  </h3>
+                  <p className="text-xs text-muted-foreground capitalize">{monthName} — {soldThisMonth.length} imóvel(is)</p>
+                </div>
+                <button onClick={() => setShowSoldThisMonth(false)} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="overflow-y-auto flex-1 p-2">
+                {soldThisMonth.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-12">Nenhum imóvel vendido este mês</p>
+                ) : (
+                  <div className="space-y-2">
+                    {soldThisMonth.map(p => (
+                      <div
+                        key={p.id}
+                        className="flex items-center gap-3 p-3 rounded-xl border border-border hover:bg-muted/30 transition-colors cursor-pointer"
+                        onClick={() => { setShowSoldThisMonth(false); setSelectedProperty(p); }}
+                      >
+                        <img src={p.image} alt={p.title} className="w-16 h-12 rounded-lg object-cover flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-foreground truncate">{p.title}</p>
+                          <p className="text-xs text-muted-foreground truncate">{p.address}, {p.city}</p>
+                          <div className="flex items-center gap-3 mt-0.5">
+                            <span className="text-xs font-bold text-foreground">{formatCurrency(p.price)}</span>
+                            {p.commission ? (
+                              <span className="text-[10px] text-purple-600 font-medium">
+                                Comissão: {formatCurrency(p.price * p.commission / 100)} ({p.commission}%)
+                              </span>
+                            ) : null}
+                          </div>
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          <p className="text-[10px] text-muted-foreground">
+                            {new Date(p.updatedAt || p.createdAt).toLocaleDateString("pt-BR")}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                    <div className="border-t border-border pt-3 px-2 flex items-center justify-between">
+                      <span className="text-xs font-bold text-muted-foreground">Total VGV Vendido</span>
+                      <span className="text-sm font-black text-foreground">{formatCurrency(soldThisMonth.reduce((s, p) => s + p.price, 0))}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </AppLayout>
   );
 }
