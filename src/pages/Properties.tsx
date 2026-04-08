@@ -905,7 +905,10 @@ export default function Properties() {
                 return d >= firstDay && d <= lastDay;
               });
               return (
-                <div className="col-span-2 sm:col-span-1 flex items-center gap-2.5 px-3 sm:px-4 py-3 rounded-xl bg-purple-500/10 border border-purple-500/20">
+                <button
+                  onClick={() => setShowSoldThisMonth(true)}
+                  className="col-span-2 sm:col-span-1 flex items-center gap-2.5 px-3 sm:px-4 py-3 rounded-xl bg-purple-500/10 border border-purple-500/20 hover:bg-purple-500/20 transition-colors cursor-pointer text-left"
+                >
                   <CalendarCheck className="w-5 h-5 text-purple-600 shrink-0" />
                   <div className="min-w-0">
                     <p className="text-[9px] sm:text-[10px] font-bold uppercase text-purple-600 leading-none truncate">Vendidos do Mês <span className="text-muted-foreground font-medium">({soldThisMonth.length})</span></p>
@@ -913,7 +916,7 @@ export default function Properties() {
                       {formatCurrency(soldThisMonth.reduce((sum, p) => sum + p.price, 0))}
                     </p>
                   </div>
-                </div>
+                </button>
               );
             })()}
           </div>
