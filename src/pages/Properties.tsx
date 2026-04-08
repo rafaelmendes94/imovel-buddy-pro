@@ -935,7 +935,7 @@ export default function Properties() {
               </div>
               <Building2 className="hidden sm:block w-6 h-6 sm:w-8 sm:h-8 text-primary/40 group-hover:text-primary/60 transition-colors" />
             </div>
-          </div>
+          </button>
           <button
             onClick={() => setFilterFreshness(filterFreshness === "30" ? "all" : "30")}
             className={cn(
