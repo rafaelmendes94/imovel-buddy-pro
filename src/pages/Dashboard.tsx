@@ -45,14 +45,31 @@ export default function Dashboard() {
   const isAdmin = isSuperAdmin || isAdminStaff;
   const Layout = isAdmin ? AdminLayout : AppLayout;
 
+  const [dbStats, setDbStats] = useState({ clients: 0, imobiliarias: 0, corretores: 0, construtoras: 0 });
+
+  useEffect(() => {
+    const fetch = async () => {
+      const [clientsRes, corretoresRes, construtorasRes] = await Promise.all([
+        supabase.from("subscriptions").select("id", { count: "exact", head: true }).eq("status", "active"),
+        supabase.from("subscriber_brokers").select("id", { count: "exact", head: true }).eq("status", "active"),
+        supabase.from("construtoras").select("id", { count: "exact", head: true }).eq("status", "active"),
+      ]);
+      setDbStats({
+        clients: clientsRes.count || 0,
+        imobiliarias: 0,
+        corretores: corretoresRes.count || 0,
+        construtoras: construtorasRes.count || 0,
+      });
+    };
+    fetch();
+  }, []);
+
   const totalProperties = properties.length;
   const available = properties.filter((p) => p.status === "Disponível").length;
   const totalRevenue = salesData.reduce((sum, d) => sum + d.receita, 0);
   const totalSales = salesData.reduce((sum, d) => sum + d.vendas, 0);
 
-  // VGV total cadastrado = sum of all property prices
   const vgvCadastrado = properties.reduce((sum, p) => sum + p.price, 0);
-  // VGV vendido = sum of all salesRecords prices
   const vgvVendido = salesRecords.reduce((sum, s) => sum + s.price, 0);
   const qtdVendas = salesRecords.length;
 
