@@ -123,6 +123,34 @@ export default function Dashboard() {
           />
         </div>
 
+        {/* Real DB Stats */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <MetricCard
+            title="Clientes Ativos"
+            value={dbStats.clients.toString()}
+            changeType="neutral"
+            icon={UserCheck}
+          />
+          <MetricCard
+            title="Imobiliárias"
+            value={dbStats.imobiliarias.toString()}
+            changeType="neutral"
+            icon={Landmark}
+          />
+          <MetricCard
+            title="Corretores"
+            value={dbStats.corretores.toString()}
+            changeType="neutral"
+            icon={Users}
+          />
+          <MetricCard
+            title="Construtoras Ativas"
+            value={dbStats.construtoras.toString()}
+            changeType="neutral"
+            icon={HardHat}
+          />
+        </div>
+
         {/* VGV Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="elevated-card rounded-xl p-5">
