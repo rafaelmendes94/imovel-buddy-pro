@@ -3,6 +3,8 @@ import { AdminLayout } from "@/components/AdminLayout";
 import { BackButton } from "@/components/BackButton";
 import { MetricCard } from "@/components/MetricCard";
 import { useAuth } from "@/hooks/useAuth";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Building2,
   Users,
@@ -11,6 +13,9 @@ import {
   Download,
   ShoppingCart,
   BarChart3,
+  Landmark,
+  UserCheck,
+  HardHat,
 } from "lucide-react";
 import {
   salesData,
