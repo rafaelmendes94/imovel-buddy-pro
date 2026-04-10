@@ -3,6 +3,8 @@ import { AdminLayout } from "@/components/AdminLayout";
 import { BackButton } from "@/components/BackButton";
 import { MetricCard } from "@/components/MetricCard";
 import { useAuth } from "@/hooks/useAuth";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Building2,
   Users,
@@ -11,6 +13,9 @@ import {
   Download,
   ShoppingCart,
   BarChart3,
+  Landmark,
+  UserCheck,
+  HardHat,
 } from "lucide-react";
 import {
   salesData,
@@ -40,14 +45,31 @@ export default function Dashboard() {
   const isAdmin = isSuperAdmin || isAdminStaff;
   const Layout = isAdmin ? AdminLayout : AppLayout;
 
+  const [dbStats, setDbStats] = useState({ clients: 0, imobiliarias: 0, corretores: 0, construtoras: 0 });
+
+  useEffect(() => {
+    const fetch = async () => {
+      const [clientsRes, corretoresRes, construtorasRes] = await Promise.all([
+        supabase.from("subscriptions").select("id", { count: "exact", head: true }).eq("status", "active"),
+        supabase.from("subscriber_brokers").select("id", { count: "exact", head: true }).eq("status", "active"),
+        supabase.from("construtoras").select("id", { count: "exact", head: true }).eq("status", "active"),
+      ]);
+      setDbStats({
+        clients: clientsRes.count || 0,
+        imobiliarias: 0,
+        corretores: corretoresRes.count || 0,
+        construtoras: construtorasRes.count || 0,
+      });
+    };
+    fetch();
+  }, []);
+
   const totalProperties = properties.length;
   const available = properties.filter((p) => p.status === "Disponível").length;
   const totalRevenue = salesData.reduce((sum, d) => sum + d.receita, 0);
   const totalSales = salesData.reduce((sum, d) => sum + d.vendas, 0);
 
-  // VGV total cadastrado = sum of all property prices
   const vgvCadastrado = properties.reduce((sum, p) => sum + p.price, 0);
-  // VGV vendido = sum of all salesRecords prices
   const vgvVendido = salesRecords.reduce((sum, s) => sum + s.price, 0);
   const qtdVendas = salesRecords.length;
 
@@ -98,6 +120,34 @@ export default function Dashboard() {
             change="+8.3% vs mês anterior"
             changeType="positive"
             icon={TrendingUp}
+          />
+        </div>
+
+        {/* Real DB Stats */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <MetricCard
+            title="Clientes Ativos"
+            value={dbStats.clients.toString()}
+            changeType="neutral"
+            icon={UserCheck}
+          />
+          <MetricCard
+            title="Imobiliárias"
+            value={dbStats.imobiliarias.toString()}
+            changeType="neutral"
+            icon={Landmark}
+          />
+          <MetricCard
+            title="Corretores"
+            value={dbStats.corretores.toString()}
+            changeType="neutral"
+            icon={Users}
+          />
+          <MetricCard
+            title="Construtoras Ativas"
+            value={dbStats.construtoras.toString()}
+            changeType="neutral"
+            icon={HardHat}
           />
         </div>
 
