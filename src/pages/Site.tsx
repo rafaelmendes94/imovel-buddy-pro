@@ -871,8 +871,34 @@ export default function Site() {
               )}
             </div>
 
+            {/* Empreendimentos dropdown */}
+            <div className="relative" ref={empreendMenuRef}>
+              <button
+                onClick={() => setEmpreendMenuOpen(!empreendMenuOpen)}
+                className={cn("flex items-center gap-1 hover:text-primary transition-colors", empreendMenuOpen && "text-primary")}
+              >
+                Empreendimentos <ChevronDown className="w-3.5 h-3.5" />
+              </button>
+              {empreendMenuOpen && (
+                <div className="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                  <Link to="/condominios" onClick={() => setEmpreendMenuOpen(false)}
+                    className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                    <Fence className="w-4 h-4" /> Condomínios
+                  </Link>
+                  <Link to="/edificios" onClick={() => setEmpreendMenuOpen(false)}
+                    className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                    <Building2 className="w-4 h-4" /> Edifícios
+                  </Link>
+                  <Link to="/empreendimentos" onClick={() => setEmpreendMenuOpen(false)}
+                    className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                    <TreePine className="w-4 h-4" /> Loteamentos
+                  </Link>
+                </div>
+              )}
+            </div>
+
             <Link to="/mapas-condominio" className="hover:text-primary transition-colors">Mapa Condomínio</Link>
-            <Link to="/fotos-cidade" className="hover:text-primary transition-colors">Fotos da Cidade</Link>
+            <Link to="/galeria-cidade" className="hover:text-primary transition-colors">Fotos da Cidade</Link>
             <Link to="/planos" className="hover:text-primary transition-colors">Planos</Link>
             <a href="#contato" className="hover:text-primary transition-colors">Contato</a>
           </nav>
