@@ -48,20 +48,20 @@ export default function Dashboard() {
   const [dbStats, setDbStats] = useState({ clients: 0, imobiliarias: 0, corretores: 0, construtoras: 0 });
 
   useEffect(() => {
-    const fetch = async () => {
-      const [clientsRes, corretoresRes, construtorasRes] = await Promise.all([
-        supabase.from("subscriptions").select("id", { count: "exact", head: true }).eq("status", "active"),
-        supabase.from("subscriber_brokers").select("id", { count: "exact", head: true }).eq("status", "active"),
+    const fetchStats = async () => {
+      const [corretoresRes, imobiliariasRes, construtorasRes] = await Promise.all([
+        supabase.from("subscriptions").select("id, plans!inner(plan_type)", { count: "exact", head: true }).eq("status", "active").eq("plans.plan_type", "corretor"),
+        supabase.from("subscriptions").select("id, plans!inner(plan_type)", { count: "exact", head: true }).eq("status", "active").eq("plans.plan_type", "imobiliaria"),
         supabase.from("construtoras").select("id", { count: "exact", head: true }).eq("status", "active"),
       ]);
       setDbStats({
-        clients: clientsRes.count || 0,
-        imobiliarias: 0,
+        clients: 0,
+        imobiliarias: imobiliariasRes.count || 0,
         corretores: corretoresRes.count || 0,
         construtoras: construtorasRes.count || 0,
       });
     };
-    fetch();
+    fetchStats();
   }, []);
 
   const totalProperties = properties.length;
@@ -124,24 +124,18 @@ export default function Dashboard() {
         </div>
 
         {/* Real DB Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <MetricCard
-            title="Clientes Ativos"
-            value={dbStats.clients.toString()}
-            changeType="neutral"
-            icon={UserCheck}
-          />
-          <MetricCard
-            title="Imobiliárias"
-            value={dbStats.imobiliarias.toString()}
-            changeType="neutral"
-            icon={Landmark}
-          />
-          <MetricCard
-            title="Corretores"
+            title="Corretores Ativos"
             value={dbStats.corretores.toString()}
             changeType="neutral"
             icon={Users}
+          />
+          <MetricCard
+            title="Imobiliárias Ativas"
+            value={dbStats.imobiliarias.toString()}
+            changeType="neutral"
+            icon={Landmark}
           />
           <MetricCard
             title="Construtoras Ativas"

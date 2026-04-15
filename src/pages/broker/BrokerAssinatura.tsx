@@ -30,8 +30,9 @@ export default function BrokerAssinatura() {
   const { toast } = useToast();
 
   useEffect(() => {
-    supabase.from("plans").select("*").eq("is_active", true).then(({ data }) => setPlans(data || []));
-  }, []);
+    const accountType = user?.user_metadata?.account_type || "corretor";
+    supabase.from("plans").select("*").eq("is_active", true).eq("plan_type", accountType).then(({ data }) => setPlans(data || []));
+  }, [user]);
 
   const handleCheckout = async (planId: string) => {
     setLoadingCheckout(planId);

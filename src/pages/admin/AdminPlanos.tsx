@@ -32,11 +32,12 @@ interface PlanForm {
   max_properties: string;
   max_brokers: string;
   modules: string[];
+  plan_type: string;
 }
 
 const emptyForm: PlanForm = {
   name: "", price: "", billing_cycle: "monthly", trial_days: "7",
-  max_properties: "50", max_brokers: "5", modules: [],
+  max_properties: "50", max_brokers: "5", modules: [], plan_type: "corretor",
 };
 
 export default function AdminPlanos() {
@@ -66,8 +67,9 @@ export default function AdminPlanos() {
       billing_cycle: form.billing_cycle as any,
       trial_days: parseInt(form.trial_days),
       max_properties: parseInt(form.max_properties),
-      max_brokers: parseInt(form.max_brokers),
+      max_brokers: form.plan_type === "corretor" ? 1 : parseInt(form.max_brokers),
       modules: form.modules,
+      plan_type: form.plan_type,
     };
 
     if (editId) {
@@ -95,6 +97,7 @@ export default function AdminPlanos() {
       max_properties: String(plan.max_properties),
       max_brokers: String(plan.max_brokers),
       modules: Array.isArray(plan.modules) ? plan.modules : [],
+      plan_type: plan.plan_type || "corretor",
     });
     setDialogOpen(true);
   };
@@ -125,7 +128,13 @@ export default function AdminPlanos() {
               <div className="space-y-3 max-h-[60vh] overflow-y-auto">
                 <Input placeholder="Nome do plano" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} />
                 <div className="grid grid-cols-2 gap-3">
-                  <Input type="number" placeholder="Preço (R$)" value={form.price} onChange={e => setForm(p => ({ ...p, price: e.target.value }))} />
+                  <Select value={form.plan_type} onValueChange={v => setForm(p => ({ ...p, plan_type: v, max_brokers: v === "corretor" ? "1" : p.max_brokers }))}>
+                    <SelectTrigger><SelectValue placeholder="Tipo" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="corretor">Corretor</SelectItem>
+                      <SelectItem value="imobiliaria">Imobiliária</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <Select value={form.billing_cycle} onValueChange={v => setForm(p => ({ ...p, billing_cycle: v }))}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -135,10 +144,15 @@ export default function AdminPlanos() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <Input type="number" placeholder="Preço (R$)" value={form.price} onChange={e => setForm(p => ({ ...p, price: e.target.value }))} />
                   <Input type="number" placeholder="Dias trial" value={form.trial_days} onChange={e => setForm(p => ({ ...p, trial_days: e.target.value }))} />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
                   <Input type="number" placeholder="Máx imóveis" value={form.max_properties} onChange={e => setForm(p => ({ ...p, max_properties: e.target.value }))} />
-                  <Input type="number" placeholder="Máx corretores" value={form.max_brokers} onChange={e => setForm(p => ({ ...p, max_brokers: e.target.value }))} />
+                  {form.plan_type === "imobiliaria" && (
+                    <Input type="number" placeholder="Máx corretores" value={form.max_brokers} onChange={e => setForm(p => ({ ...p, max_brokers: e.target.value }))} />
+                  )}
                 </div>
                 <div>
                   <p className="text-sm font-medium text-foreground mb-2">Módulos inclusos</p>
@@ -170,6 +184,9 @@ export default function AdminPlanos() {
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold text-foreground">{plan.name}</h3>
                   <div className="flex items-center gap-1">
+                    <Badge variant="outline" className={plan.plan_type === "imobiliaria" ? "border-blue-400 text-blue-600" : "border-emerald-400 text-emerald-600"}>
+                      {plan.plan_type === "imobiliaria" ? "Imobiliária" : "Corretor"}
+                    </Badge>
                     <Badge variant={plan.is_active ? "default" : "secondary"}>
                       {plan.is_active ? "Ativo" : "Inativo"}
                     </Badge>
