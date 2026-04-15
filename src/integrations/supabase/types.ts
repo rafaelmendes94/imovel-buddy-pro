@@ -989,6 +989,75 @@ export type Database = {
         }
         Relationships: []
       }
+      partners: {
+        Row: {
+          address: string | null
+          category: string
+          city: string | null
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          email: string | null
+          id: string
+          logo_url: string | null
+          name: string
+          phone: string | null
+          projects: number | null
+          rating: number | null
+          since_year: string | null
+          slug: string
+          sort_order: number | null
+          status: string
+          total_ratings: number | null
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          category?: string
+          city?: string | null
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          id?: string
+          logo_url?: string | null
+          name: string
+          phone?: string | null
+          projects?: number | null
+          rating?: number | null
+          since_year?: string | null
+          slug: string
+          sort_order?: number | null
+          status?: string
+          total_ratings?: number | null
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          category?: string
+          city?: string | null
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          id?: string
+          logo_url?: string | null
+          name?: string
+          phone?: string | null
+          projects?: number | null
+          rating?: number | null
+          since_year?: string | null
+          slug?: string
+          sort_order?: number | null
+          status?: string
+          total_ratings?: number | null
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
