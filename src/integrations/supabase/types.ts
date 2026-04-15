@@ -1040,6 +1040,7 @@ export type Database = {
           max_properties: number
           modules: Json
           name: string
+          plan_type: string
           price: number
           trial_days: number
         }
@@ -1052,6 +1053,7 @@ export type Database = {
           max_properties?: number
           modules?: Json
           name: string
+          plan_type?: string
           price?: number
           trial_days?: number
         }
@@ -1064,6 +1066,7 @@ export type Database = {
           max_properties?: number
           modules?: Json
           name?: string
+          plan_type?: string
           price?: number
           trial_days?: number
         }

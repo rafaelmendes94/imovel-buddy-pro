@@ -1,0 +1,1 @@
+ALTER TABLE public.plans ADD COLUMN plan_type text NOT NULL DEFAULT 'corretor';
