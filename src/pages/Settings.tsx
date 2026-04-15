@@ -1,21 +1,97 @@
 import { AppLayout } from "@/components/AppLayout";
 import { BackButton } from "@/components/BackButton";
-import { Building2, CreditCard, Bell, Shield, KeyRound, Palette } from "lucide-react";
-import { useState } from "react";
+import { Building2, CreditCard, Bell, Shield, KeyRound, Palette, Eye, EyeOff, Globe, Copy, Loader2, CheckCircle, XCircle } from "lucide-react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { SiteConfigDialog } from "@/components/SiteConfigDialog";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Settings() {
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [showSiteConfig, setShowSiteConfig] = useState(false);
+  const [showAsaasDialog, setShowAsaasDialog] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [changing, setChanging] = useState(false);
   const { toast } = useToast();
+  const { isSuperAdmin } = useAuth();
+
+  // Asaas state
+  const [asaasKey, setAsaasKey] = useState("");
+  const [asaasEnv, setAsaasEnv] = useState("sandbox");
+  const [showKey, setShowKey] = useState(false);
+  const [savingAsaas, setSavingAsaas] = useState(false);
+  const [testingAsaas, setTestingAsaas] = useState(false);
+  const [testResult, setTestResult] = useState<"success" | "error" | null>(null);
+
+  useEffect(() => {
+    if (showAsaasDialog) loadAsaasSettings();
+  }, [showAsaasDialog]);
+
+  const loadAsaasSettings = async () => {
+    const { data } = await supabase
+      .from("system_settings")
+      .select("key, value")
+      .in("key", ["asaas_api_key", "asaas_environment"]);
+    if (data) {
+      data.forEach((s) => {
+        if (s.key === "asaas_api_key") setAsaasKey(s.value);
+        if (s.key === "asaas_environment") setAsaasEnv(s.value);
+      });
+    }
+  };
+
+  const saveAsaasSetting = async (key: string, value: string) => {
+    const { data: existing } = await supabase
+      .from("system_settings")
+      .select("id")
+      .eq("key", key)
+      .maybeSingle();
+    if (existing) {
+      await supabase.from("system_settings").update({ value }).eq("id", existing.id);
+    } else {
+      await supabase.from("system_settings").insert({ key, value });
+    }
+  };
+
+  const handleSaveAsaas = async () => {
+    setSavingAsaas(true);
+    try {
+      await saveAsaasSetting("asaas_api_key", asaasKey);
+      await saveAsaasSetting("asaas_environment", asaasEnv);
+      toast({ title: "Salvo!", description: "Credenciais do Asaas atualizadas." });
+    } catch (err: any) {
+      toast({ title: "Erro", description: err.message, variant: "destructive" });
+    }
+    setSavingAsaas(false);
+  };
+
+  const handleTestAsaas = async () => {
+    setTestingAsaas(true);
+    setTestResult(null);
+    try {
+      const { data } = await supabase.functions.invoke("asaas-checkout", {
+        body: { plan_id: "test", user_id: "test" },
+      });
+      if (data?.error?.includes("não configurado")) {
+        setTestResult("error");
+      } else {
+        setTestResult("success");
+        toast({ title: "Conexão OK!", description: "API Key do Asaas válida." });
+      }
+    } catch {
+      setTestResult("error");
+    }
+    setTestingAsaas(false);
+  };
+
+  const webhookUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/asaas-webhook`;
 
   const handleChangePassword = async () => {
     if (newPassword.length < 6) {
@@ -84,6 +160,12 @@ export default function Settings() {
       description: "Cores do cabeçalho, rodapé e foto de capa do site público",
       onClick: () => setShowSiteConfig(true),
     },
+    ...(isSuperAdmin ? [{
+      icon: CreditCard,
+      title: "Asaas / Pagamentos",
+      description: "Configure a API Key e ambiente do gateway Asaas",
+      onClick: () => setShowAsaasDialog(true),
+    }] : []),
   ];
 
   return (
@@ -121,6 +203,7 @@ export default function Settings() {
           ))}
         </div>
 
+        {/* Password Dialog */}
         <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
           <DialogContent className="sm:max-w-sm">
             <DialogHeader><DialogTitle>Alterar Minha Senha</DialogTitle></DialogHeader>
@@ -140,6 +223,109 @@ export default function Settings() {
               <Button onClick={handleChangePassword} disabled={changing} className="w-full">
                 {changing ? "Alterando..." : "Alterar Senha"}
               </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Asaas Config Dialog */}
+        <Dialog open={showAsaasDialog} onOpenChange={setShowAsaasDialog}>
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <CreditCard className="w-5 h-5" />
+                Asaas — Pagamentos
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>API Key</Label>
+                <div className="relative">
+                  <Input
+                    type={showKey ? "text" : "password"}
+                    value={asaasKey}
+                    onChange={(e) => setAsaasKey(e.target.value)}
+                    placeholder="$aact_xxxxxxxxxx..."
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowKey(!showKey)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Ambiente</Label>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant={asaasEnv === "sandbox" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setAsaasEnv("sandbox")}
+                  >
+                    <Globe className="w-4 h-4 mr-1" />
+                    Sandbox
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={asaasEnv === "production" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setAsaasEnv("production")}
+                  >
+                    <Globe className="w-4 h-4 mr-1" />
+                    Produção
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {asaasEnv === "sandbox" ? "Pagamentos simulados, sem cobrança real." : "Cobranças reais serão processadas."}
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Webhook URL</Label>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 bg-muted px-3 py-2 rounded text-xs font-mono break-all">
+                    {webhookUrl}
+                  </code>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => {
+                      navigator.clipboard.writeText(webhookUrl);
+                      toast({ title: "URL copiada!" });
+                    }}
+                  >
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">Cole no painel do Asaas → Integrações → Webhooks.</p>
+              </div>
+
+              <div className="flex gap-2 pt-2">
+                <Button onClick={handleSaveAsaas} disabled={savingAsaas}>
+                  {savingAsaas ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                  Salvar
+                </Button>
+                <Button variant="outline" onClick={handleTestAsaas} disabled={testingAsaas || !asaasKey}>
+                  {testingAsaas ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : testResult === "success" ? (
+                    <CheckCircle className="w-4 h-4 mr-2 text-success" />
+                  ) : testResult === "error" ? (
+                    <XCircle className="w-4 h-4 mr-2 text-destructive" />
+                  ) : null}
+                  Testar Conexão
+                </Button>
+              </div>
+
+              {testResult && (
+                <Badge variant={testResult === "success" ? "default" : "destructive"}>
+                  {testResult === "success" ? "✓ Conexão OK" : "✗ Falha na conexão"}
+                </Badge>
+              )}
             </div>
           </DialogContent>
         </Dialog>
