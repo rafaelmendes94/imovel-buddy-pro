@@ -4,12 +4,8 @@ import { BackButton } from "@/components/BackButton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { MetricCard } from "@/components/MetricCard";
-import {
-  salesRecords,
-  salesData,
-  formatCurrency,
-  SaleRecord,
-} from "@/data/mockData";
+import { useReportData, RealSaleRecord } from "@/hooks/useReportData";
+import { formatCurrency } from "@/data/mockData";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, ReferenceLine, LineChart, Line, Legend,
@@ -20,6 +16,7 @@ import {
   CalendarRange, ArrowUp, ArrowDown, Minus, ChevronDown, SlidersHorizontal, X,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // ─── Constants ───
 const SEGMENT_COLORS: Record<string, string> = {
@@ -31,25 +28,21 @@ const TYPE_COLORS: Record<string, string> = {
   "Comercial": "hsl(38, 92%, 50%)", "Terreno": "hsl(0, 60%, 55%)",
 };
 
-const ALL_CITIES = [...new Set(salesRecords.map(s => s.city))].sort();
-const ALL_TYPES: SaleRecord["type"][] = ["Apartamento", "Casa", "Comercial", "Terreno"];
-const ALL_SEGMENTS: SaleRecord["segment"][] = ["Luxo", "Alto Padrão", "Médio Padrão", "Econômico"];
 const ALL_MONTHS = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-const ALL_YEARS = [...new Set(salesRecords.map(s => new Date(s.date).getFullYear()))].sort((a, b) => b - a);
 const MONTH_MAP: Record<string, number> = { "Jan": 0, "Fev": 1, "Mar": 2, "Abr": 3, "Mai": 4, "Jun": 5, "Jul": 6, "Ago": 7, "Set": 8, "Out": 9, "Nov": 10, "Dez": 11 };
 
 type TimePeriod = "Todos" | "Dia" | "Semana" | "Mês" | "Ano";
 type TabType = "relatorio" | "comparativo";
 
 // ─── Helpers ───
-function isToday(d: string) { return new Date(d).toDateString() === new Date("2026-03-27").toDateString(); }
+function isToday(d: string) { return new Date(d).toDateString() === new Date().toDateString(); }
 function isThisWeek(d: string) {
-  const date = new Date(d), now = new Date("2026-03-27"), ws = new Date(now);
+  const date = new Date(d), now = new Date(), ws = new Date(now);
   ws.setDate(now.getDate() - now.getDay()); ws.setHours(0, 0, 0, 0);
   return date >= ws && date <= now;
 }
-function isThisMonth(d: string) { const dt = new Date(d); return dt.getMonth() === 2 && dt.getFullYear() === 2026; }
-function isThisYear(d: string) { return new Date(d).getFullYear() === 2026; }
+function isThisMonth(d: string) { const dt = new Date(d), now = new Date(); return dt.getMonth() === now.getMonth() && dt.getFullYear() === now.getFullYear(); }
+function isThisYear(d: string) { return new Date(d).getFullYear() === new Date().getFullYear(); }
 
 // ─── Filter Chip ───
 function FilterChip({ label, active, onClick, onRemove, size = "sm" }: {
@@ -90,12 +83,13 @@ function SelectFilter({ label, icon: Icon, options, value, onChange }: {
 }
 
 // ─── Rankings helper ───
-function useRankings(filtered: SaleRecord[]) {
+function useRankings(filtered: RealSaleRecord[]) {
   return useMemo(() => {
-    const rank = (key: keyof SaleRecord | ((s: SaleRecord) => string)) => {
+    const rank = (key: keyof RealSaleRecord | ((s: RealSaleRecord) => string)) => {
       const map: Record<string, { count: number; vgv: number }> = {};
       filtered.forEach(s => {
         const k = typeof key === "function" ? key(s) : String(s[key]);
+        if (!k) return;
         if (!map[k]) map[k] = { count: 0, vgv: 0 };
         map[k].count++; map[k].vgv += s.price;
       });
@@ -110,6 +104,8 @@ function useRankings(filtered: SaleRecord[]) {
 }
 
 export default function Reports() {
+  const { sales, monthlyData, allCities, allTypes, allSegments, allYears, loading } = useReportData();
+
   const [activeTab, setActiveTab] = useState<TabType>("relatorio");
   const [filterCity, setFilterCity] = useState("Todas");
   const [filterType, setFilterType] = useState("Todos");
@@ -124,7 +120,7 @@ export default function Reports() {
   const activeFilterCount = [filterCity !== "Todas", filterType !== "Todos", filterSegment !== "Todos", filterSeaView !== "Todos", filterPeriod !== "Todos", filterMonth !== null, filterYear !== null].filter(Boolean).length;
   const clearAll = () => { setFilterCity("Todas"); setFilterType("Todos"); setFilterSegment("Todos"); setFilterSeaView("Todos"); setFilterPeriod("Todos"); setFilterMonth(null); setFilterYear(null); };
 
-  const filtered = useMemo(() => salesRecords.filter(s => {
+  const filtered = useMemo(() => sales.filter(s => {
     if (filterCity !== "Todas" && s.city !== filterCity) return false;
     if (filterType !== "Todos" && s.type !== filterType) return false;
     if (filterSegment !== "Todos" && s.segment !== filterSegment) return false;
@@ -138,32 +134,52 @@ export default function Reports() {
     if (filterMonth !== null && d.getMonth() !== filterMonth) return false;
     if (filterYear !== null && d.getFullYear() !== filterYear) return false;
     return true;
-  }), [filterCity, filterType, filterSegment, filterSeaView, filterPeriod, filterMonth, filterYear]);
+  }), [sales, filterCity, filterType, filterSegment, filterSeaView, filterPeriod, filterMonth, filterYear]);
+
+  const currentYear = new Date().getFullYear();
+  const currentMonthName = ALL_MONTHS[new Date().getMonth()];
 
   const vgvYear = filtered.filter(s => isThisYear(s.date)).reduce((sum, s) => sum + s.price, 0);
   const vgvMonth = filtered.filter(s => isThisMonth(s.date)).reduce((sum, s) => sum + s.price, 0);
   const vgvWeek = filtered.filter(s => isThisWeek(s.date)).reduce((sum, s) => sum + s.price, 0);
-  const totalSales = filtered.filter(s => isThisYear(s.date)).length;
-  const avgTicket = totalSales > 0 ? vgvYear / totalSales : 0;
+  const totalSalesYear = filtered.filter(s => isThisYear(s.date)).length;
+  const avgTicket = totalSalesYear > 0 ? vgvYear / totalSalesYear : 0;
+
+  // Calculate % change for ticket
+  const previousYear = currentYear - 1;
+  const prevYearSales = filtered.filter(s => new Date(s.date).getFullYear() === previousYear);
+  const prevAvgTicket = prevYearSales.length > 0 ? prevYearSales.reduce((sum, s) => sum + s.price, 0) / prevYearSales.length : 0;
+  const ticketChange = prevAvgTicket > 0 ? ((avgTicket - prevAvgTicket) / prevAvgTicket * 100) : 0;
 
   const rankings = useRankings(filtered);
 
-  const revenueBarData = salesData.map((d, i) => {
-    const prev = i > 0 ? salesData[i - 1].receita : d.receita;
-    const change = ((d.receita - prev) / prev) * 100;
-    return { ...d, change: i === 0 ? 0 : change, trend: i === 0 ? "neutral" : change > 0 ? "alta" : change < 0 ? "baixa" : "neutral" };
-  });
-  const avgRevenue = salesData.reduce((s, d) => s + d.receita, 0) / salesData.length;
+  // Build monthly bar data from filtered sales
+  const revenueBarData = useMemo(() => {
+    const data = ALL_MONTHS.map((month, i) => {
+      const monthSales = filtered.filter(s => new Date(s.date).getMonth() === i && isThisYear(s.date));
+      return { month, vendas: monthSales.length, receita: monthSales.reduce((sum, s) => sum + s.price, 0) };
+    });
+    return data.map((d, i) => {
+      const prev = i > 0 ? data[i - 1].receita : d.receita;
+      const change = prev > 0 ? ((d.receita - prev) / prev) * 100 : 0;
+      return { ...d, change: i === 0 ? 0 : change, trend: i === 0 ? "neutral" as const : change > 0 ? "alta" as const : change < 0 ? "baixa" as const : "neutral" as const };
+    });
+  }, [filtered]);
+
+  const avgRevenue = useMemo(() => {
+    const nonZero = revenueBarData.filter(d => d.receita > 0);
+    return nonZero.length > 0 ? nonZero.reduce((s, d) => s + d.receita, 0) / nonZero.length : 0;
+  }, [revenueBarData]);
+
   const segmentPie = rankings.bySegment.map(s => ({ name: s.name, value: s.vgv, fill: SEGMENT_COLORS[s.name] || "hsl(var(--chart-4))" }));
   const typePie = rankings.byType.map(s => ({ name: s.name, value: s.count, fill: TYPE_COLORS[s.name] || "hsl(var(--chart-4))" }));
 
   // ─── Comparativo Anual ───
-  const currentYear = 2026;
-  const previousYear = 2025;
   const comparativoData = useMemo(() => {
-    const currentYearSales = salesRecords.filter(s => new Date(s.date).getFullYear() === currentYear);
-    const previousYearSales = salesRecords.filter(s => new Date(s.date).getFullYear() === previousYear);
-    const segmentComparison = ALL_SEGMENTS.map(seg => {
+    const currentYearSales = sales.filter(s => new Date(s.date).getFullYear() === currentYear);
+    const previousYearSales = sales.filter(s => new Date(s.date).getFullYear() === previousYear);
+    const uniqueSegments = [...new Set(sales.map(s => s.segment).filter(Boolean))];
+    const segmentComparison = uniqueSegments.map(seg => {
       const curVgv = currentYearSales.filter(s => s.segment === seg).reduce((sum, s) => sum + s.price, 0);
       const prevVgv = previousYearSales.filter(s => s.segment === seg).reduce((sum, s) => sum + s.price, 0);
       const curCount = currentYearSales.filter(s => s.segment === seg).length;
@@ -183,7 +199,21 @@ export default function Reports() {
     const prevTotal = previousYearSales.reduce((sum, s) => sum + s.price, 0);
     const totalValorization = prevTotal > 0 ? ((curTotal - prevTotal) / prevTotal) * 100 : 0;
     return { segmentComparison, monthlyComparison, curTotal, prevTotal, totalValorization, curCount: currentYearSales.length, prevCount: previousYearSales.length };
-  }, []);
+  }, [sales, currentYear, previousYear]);
+
+  if (loading) {
+    return (
+      <AppLayout>
+        <div className="p-4 sm:p-6 lg:p-8 space-y-4">
+          <Skeleton className="h-8 w-64" />
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-24 rounded-xl" />)}
+          </div>
+          <Skeleton className="h-64 rounded-xl" />
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>
@@ -214,24 +244,22 @@ export default function Reports() {
           <>
             {/* ─── VGV METRICS ─── */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-              <MetricCard title="VGV Ano (2026)" value={formatCurrency(vgvYear)} change={`${totalSales} vendas`} changeType="positive" icon={CalendarRange} />
-              <MetricCard title="VGV Mês (Mar)" value={formatCurrency(vgvMonth)} change={`${filtered.filter(s => isThisMonth(s.date)).length} vendas`} changeType="positive" icon={CalendarDays} />
+              <MetricCard title={`VGV Ano (${currentYear})`} value={formatCurrency(vgvYear)} change={`${totalSalesYear} vendas`} changeType="positive" icon={CalendarRange} />
+              <MetricCard title={`VGV Mês (${currentMonthName})`} value={formatCurrency(vgvMonth)} change={`${filtered.filter(s => isThisMonth(s.date)).length} vendas`} changeType="positive" icon={CalendarDays} />
               <MetricCard title="VGV Semana" value={formatCurrency(vgvWeek)} change={`${filtered.filter(s => isThisWeek(s.date)).length} vendas`} changeType="positive" icon={Calendar} />
-              <MetricCard title="Ticket Médio" value={formatCurrency(avgTicket)} change="+5.2%" changeType="positive" icon={TrendingUp} />
-              <MetricCard title="Total de Vendas" value={String(totalSales)} change="no período" changeType="neutral" icon={Target} />
+              <MetricCard title="Ticket Médio" value={formatCurrency(avgTicket)} change={ticketChange !== 0 ? `${ticketChange > 0 ? "+" : ""}${ticketChange.toFixed(1)}%` : "—"} changeType={ticketChange > 0 ? "positive" : ticketChange < 0 ? "negative" : "neutral"} icon={TrendingUp} />
+              <MetricCard title="Total de Vendas" value={String(totalSalesYear)} change="no período" changeType="neutral" icon={Target} />
             </div>
 
             {/* ─── FILTERS ─── */}
             <div className="elevated-card rounded-xl p-3">
               <div className="flex items-center gap-3 flex-wrap">
-                {/* Primary filters as selects */}
-                <SelectFilter label="Cidade" icon={MapPin} value={filterCity} onChange={setFilterCity} options={[{ value: "Todas", label: "Todas cidades" }, ...ALL_CITIES.map(c => ({ value: c, label: c }))]} />
-                <SelectFilter label="Tipo" icon={Building2} value={filterType} onChange={setFilterType} options={[{ value: "Todos", label: "Todos tipos" }, ...ALL_TYPES.map(t => ({ value: t, label: t }))]} />
-                <SelectFilter label="Segmento" icon={Star} value={filterSegment} onChange={setFilterSegment} options={[{ value: "Todos", label: "Todos" }, ...ALL_SEGMENTS.map(s => ({ value: s, label: s }))]} />
+                <SelectFilter label="Cidade" icon={MapPin} value={filterCity} onChange={setFilterCity} options={[{ value: "Todas", label: "Todas cidades" }, ...allCities.map(c => ({ value: c, label: c }))]} />
+                <SelectFilter label="Tipo" icon={Building2} value={filterType} onChange={setFilterType} options={[{ value: "Todos", label: "Todos tipos" }, ...allTypes.map(t => ({ value: t, label: t }))]} />
+                <SelectFilter label="Segmento" icon={Star} value={filterSegment} onChange={setFilterSegment} options={[{ value: "Todos", label: "Todos" }, ...allSegments.map(s => ({ value: s, label: s }))]} />
 
                 <div className="w-px h-6 bg-border" />
 
-                {/* Period chips inline */}
                 {(["Dia", "Semana", "Mês", "Ano"] as TimePeriod[]).map(p => (
                   <FilterChip key={p} label={p} active={filterPeriod === p} onClick={() => setFilterPeriod(filterPeriod === p ? "Todos" : p)} />
                 ))}
@@ -274,7 +302,7 @@ export default function Reports() {
                 </span>
                 <div className="flex gap-1">
                   <FilterChip size="xs" label="Todos" active={filterYear === null} onClick={() => setFilterYear(null)} />
-                  {ALL_YEARS.map(y => (
+                  {allYears.map(y => (
                     <FilterChip size="xs" key={y} label={String(y)} active={filterYear === y} onClick={() => setFilterYear(filterYear === y ? null : y)} />
                   ))}
                 </div>
@@ -320,77 +348,89 @@ export default function Reports() {
                 <h3 className="text-sm font-semibold text-card-foreground mb-3 flex items-center gap-2">
                   <Star className="w-4 h-4 text-accent" /> Distribuição
                 </h3>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <p className="text-[10px] text-muted-foreground text-center mb-1 font-medium">Segmento (VGV)</p>
-                    <ResponsiveContainer width="100%" height={180}>
-                      <PieChart><Pie data={segmentPie} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={35} outerRadius={65} paddingAngle={2}>{segmentPie.map((e, i) => <Cell key={i} fill={e.fill} />)}</Pie>
-                        <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "10px" }} />
-                      </PieChart>
-                    </ResponsiveContainer>
-                    <div className="flex flex-wrap justify-center gap-x-3 gap-y-1">
-                      {segmentPie.map(s => <div key={s.name} className="flex items-center gap-1 text-[9px] text-muted-foreground"><div className="w-1.5 h-1.5 rounded-full" style={{ background: s.fill }} />{s.name}</div>)}
+                {segmentPie.length === 0 && typePie.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-16">Nenhuma venda registrada</p>
+                ) : (
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <p className="text-[10px] text-muted-foreground text-center mb-1 font-medium">Segmento (VGV)</p>
+                      <ResponsiveContainer width="100%" height={180}>
+                        <PieChart><Pie data={segmentPie} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={35} outerRadius={65} paddingAngle={2}>{segmentPie.map((e, i) => <Cell key={i} fill={e.fill} />)}</Pie>
+                          <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "10px" }} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                      <div className="flex flex-wrap justify-center gap-x-3 gap-y-1">
+                        {segmentPie.map(s => <div key={s.name} className="flex items-center gap-1 text-[9px] text-muted-foreground"><div className="w-1.5 h-1.5 rounded-full" style={{ background: s.fill }} />{s.name}</div>)}
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-muted-foreground text-center mb-1 font-medium">Tipo (Qtd)</p>
+                      <ResponsiveContainer width="100%" height={180}>
+                        <PieChart><Pie data={typePie} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={35} outerRadius={65} paddingAngle={2}>{typePie.map((e, i) => <Cell key={i} fill={e.fill} />)}</Pie>
+                          <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "10px" }} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                      <div className="flex flex-wrap justify-center gap-x-3 gap-y-1">
+                        {typePie.map(s => <div key={s.name} className="flex items-center gap-1 text-[9px] text-muted-foreground"><div className="w-1.5 h-1.5 rounded-full" style={{ background: s.fill }} />{s.name}</div>)}
+                      </div>
                     </div>
                   </div>
-                  <div>
-                    <p className="text-[10px] text-muted-foreground text-center mb-1 font-medium">Tipo (Qtd)</p>
-                    <ResponsiveContainer width="100%" height={180}>
-                      <PieChart><Pie data={typePie} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={35} outerRadius={65} paddingAngle={2}>{typePie.map((e, i) => <Cell key={i} fill={e.fill} />)}</Pie>
-                        <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "10px" }} />
-                      </PieChart>
-                    </ResponsiveContainer>
-                    <div className="flex flex-wrap justify-center gap-x-3 gap-y-1">
-                      {typePie.map(s => <div key={s.name} className="flex items-center gap-1 text-[9px] text-muted-foreground"><div className="w-1.5 h-1.5 rounded-full" style={{ background: s.fill }} />{s.name}</div>)}
-                    </div>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
 
             {/* ─── RANKINGS ─── */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <RankingBarCard title="Tipo de Imóvel" data={rankings.byType} colors={TYPE_COLORS} />
-              <RankingBarCard title="Cidade" data={rankings.byCity} />
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <RankingListCard title="Top Loteamentos" icon={Building2} data={rankings.byEmpreendimento.slice(0, 6)} />
-              <RankingProgressCard title="Top Corretores" data={rankings.byBroker} />
-              <RankingListCard title="VGV por Segmento" icon={Star} data={rankings.bySegment} colors={SEGMENT_COLORS} />
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <RankingProgressCard title="Proprietários" data={rankings.byOwner} />
-              <RankingBarCard title="Bairros" data={rankings.byNeighborhood} />
-            </div>
+            {filtered.length > 0 && (
+              <>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <RankingBarCard title="Tipo de Imóvel" data={rankings.byType} colors={TYPE_COLORS} />
+                  <RankingBarCard title="Cidade" data={rankings.byCity} />
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                  <RankingListCard title="Top Loteamentos" icon={Building2} data={rankings.byEmpreendimento.slice(0, 6)} />
+                  <RankingProgressCard title="Top Corretores" data={rankings.byBroker} />
+                  <RankingListCard title="VGV por Segmento" icon={Star} data={rankings.bySegment} colors={SEGMENT_COLORS} />
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <RankingProgressCard title="Proprietários" data={rankings.byOwner} />
+                  <RankingBarCard title="Bairros" data={rankings.byNeighborhood} />
+                </div>
+              </>
+            )}
 
             {/* ─── RECENT SALES ─── */}
             <div className="elevated-card rounded-xl p-5">
               <h3 className="text-sm font-semibold text-card-foreground mb-3 flex items-center gap-2">
                 <DollarSign className="w-4 h-4 text-accent" /> Últimas Vendas
               </h3>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-border">
-                      {["Data", "Imóvel", "Cidade", "Tipo", "Segmento", "Corretor", "Valor"].map(h => (
-                        <th key={h} className={`py-2 text-[10px] text-muted-foreground font-medium uppercase tracking-wider ${h === "Valor" ? "text-right" : "text-left"}`}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filtered.slice(0, 10).map(sale => (
-                      <tr key={sale.id} className="border-b border-border/30 hover:bg-muted/20 transition-colors">
-                        <td className="py-2 text-xs text-muted-foreground">{new Date(sale.date).toLocaleDateString("pt-BR")}</td>
-                        <td className="py-2 text-xs font-medium text-card-foreground">{sale.propertyTitle}</td>
-                        <td className="py-2 text-xs text-muted-foreground">{sale.city}</td>
-                        <td className="py-2"><Badge variant="outline" className="text-[9px] px-1.5 py-0">{sale.type}</Badge></td>
-                        <td className="py-2"><Badge variant="secondary" className="text-[9px] px-1.5 py-0">{sale.segment}</Badge></td>
-                        <td className="py-2 text-xs text-muted-foreground">{sale.broker}</td>
-                        <td className="py-2 text-right text-xs font-bold text-accent">{formatCurrency(sale.price)}</td>
+              {filtered.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">Nenhuma venda encontrada com os filtros selecionados</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-border">
+                        {["Data", "Imóvel", "Cidade", "Tipo", "Segmento", "Corretor", "Valor"].map(h => (
+                          <th key={h} className={`py-2 text-[10px] text-muted-foreground font-medium uppercase tracking-wider ${h === "Valor" ? "text-right" : "text-left"}`}>{h}</th>
+                        ))}
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {filtered.slice(0, 10).map(sale => (
+                        <tr key={sale.id} className="border-b border-border/30 hover:bg-muted/20 transition-colors">
+                          <td className="py-2 text-xs text-muted-foreground">{new Date(sale.date).toLocaleDateString("pt-BR")}</td>
+                          <td className="py-2 text-xs font-medium text-card-foreground">{sale.propertyTitle}</td>
+                          <td className="py-2 text-xs text-muted-foreground">{sale.city}</td>
+                          <td className="py-2"><Badge variant="outline" className="text-[9px] px-1.5 py-0">{sale.type}</Badge></td>
+                          <td className="py-2"><Badge variant="secondary" className="text-[9px] px-1.5 py-0">{sale.segment}</Badge></td>
+                          <td className="py-2 text-xs text-muted-foreground">{sale.broker}</td>
+                          <td className="py-2 text-right text-xs font-bold text-accent">{formatCurrency(sale.price)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </>
         ) : (
@@ -491,94 +531,101 @@ function ComparativoAnual({ data, currentYear, previousYear }: {
         <h3 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
           <TrendingUp className="w-4 h-4 text-accent" /> Valorização por Segmento
         </h3>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-border">
-                {["Segmento", `VGV ${currentYear}`, `VGV ${previousYear}`, "Valorização", `Vendas ${currentYear}`, `Vendas ${previousYear}`, `Ticket Médio ${currentYear}`, "Var. Ticket"].map(h => (
-                  <th key={h} className="py-2.5 px-3 text-[10px] text-muted-foreground font-medium uppercase tracking-wider text-left first:pl-0">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {data.segmentComparison.map(seg => (
-                <tr key={seg.segment} className="border-b border-border/30 hover:bg-muted/20 transition-colors">
-                  <td className="py-3 px-3 first:pl-0">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full" style={{ background: SEGMENT_COLORS[seg.segment] }} />
-                      <span className="text-xs font-medium text-foreground">{seg.segment}</span>
-                    </div>
-                  </td>
-                  <td className="py-3 px-3 text-xs font-semibold text-foreground">{formatCurrency(seg.curVgv)}</td>
-                  <td className="py-3 px-3 text-xs text-muted-foreground">{formatCurrency(seg.prevVgv)}</td>
-                  <td className="py-3 px-3">
-                    <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full ${
-                      seg.valorization > 0 ? "text-emerald-600 bg-emerald-500/10" :
-                      seg.valorization < 0 ? "text-destructive bg-destructive/10" :
-                      "text-muted-foreground bg-muted"
-                    }`}>
-                      {seg.valorization > 0 ? <ArrowUp className="w-3 h-3" /> : seg.valorization < 0 ? <ArrowDown className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
-                      {seg.valorization > 0 ? "+" : ""}{seg.valorization.toFixed(1)}%
-                    </span>
-                  </td>
-                  <td className="py-3 px-3 text-xs text-foreground font-medium">{seg.curCount}</td>
-                  <td className="py-3 px-3 text-xs text-muted-foreground">{seg.prevCount}</td>
-                  <td className="py-3 px-3 text-xs text-foreground font-medium">{formatCurrency(seg.curAvgTicket)}</td>
-                  <td className="py-3 px-3">
-                    <span className={`text-[10px] font-bold ${seg.ticketChange > 0 ? "text-emerald-500" : seg.ticketChange < 0 ? "text-destructive" : "text-muted-foreground"}`}>
-                      {seg.ticketChange > 0 ? "+" : ""}{seg.ticketChange.toFixed(1)}%
-                    </span>
-                  </td>
+        {data.segmentComparison.length === 0 ? (
+          <p className="text-sm text-muted-foreground text-center py-8">Nenhum dado disponível</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-border">
+                  {["Segmento", `VGV ${currentYear}`, `VGV ${previousYear}`, "Valorização", `Vendas ${currentYear}`, `Vendas ${previousYear}`, `Ticket Médio ${currentYear}`, "Var. Ticket"].map(h => (
+                    <th key={h} className="py-2.5 px-3 text-[10px] text-muted-foreground font-medium uppercase tracking-wider text-left first:pl-0">{h}</th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {data.segmentComparison.map(seg => (
+                  <tr key={seg.segment} className="border-b border-border/30 hover:bg-muted/20 transition-colors">
+                    <td className="py-3 px-3 first:pl-0">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full" style={{ background: SEGMENT_COLORS[seg.segment] }} />
+                        <span className="text-xs font-medium text-foreground">{seg.segment}</span>
+                      </div>
+                    </td>
+                    <td className="py-3 px-3 text-xs font-semibold text-foreground">{formatCurrency(seg.curVgv)}</td>
+                    <td className="py-3 px-3 text-xs text-muted-foreground">{formatCurrency(seg.prevVgv)}</td>
+                    <td className="py-3 px-3">
+                      <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full ${
+                        seg.valorization > 0 ? "text-emerald-600 bg-emerald-500/10" :
+                        seg.valorization < 0 ? "text-destructive bg-destructive/10" :
+                        "text-muted-foreground bg-muted"
+                      }`}>
+                        {seg.valorization > 0 ? <ArrowUp className="w-3 h-3" /> : seg.valorization < 0 ? <ArrowDown className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
+                        {seg.valorization > 0 ? "+" : ""}{seg.valorization.toFixed(1)}%
+                      </span>
+                    </td>
+                    <td className="py-3 px-3 text-xs text-foreground font-medium">{seg.curCount}</td>
+                    <td className="py-3 px-3 text-xs text-muted-foreground">{seg.prevCount}</td>
+                    <td className="py-3 px-3 text-xs text-foreground font-medium">{formatCurrency(seg.curAvgTicket)}</td>
+                    <td className="py-3 px-3">
+                      <span className={`text-[10px] font-bold ${seg.ticketChange > 0 ? "text-emerald-500" : seg.ticketChange < 0 ? "text-destructive" : "text-muted-foreground"}`}>
+                        {seg.ticketChange > 0 ? "+" : ""}{seg.ticketChange.toFixed(1)}%
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Segment bars visual */}
-      <div className="elevated-card rounded-xl p-5">
-        <h3 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
-          <Star className="w-4 h-4 text-accent" /> Comparativo Visual por Segmento
-        </h3>
-        <div className="space-y-4">
-          {data.segmentComparison.map(seg => {
-            const maxVgv = Math.max(...data.segmentComparison.flatMap(s => [s.curVgv, s.prevVgv]), 1);
-            return (
-              <div key={seg.segment} className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-foreground">{seg.segment}</span>
-                  <span className={`text-[10px] font-bold ${seg.valorization >= 0 ? "text-emerald-500" : "text-destructive"}`}>
-                    {seg.valorization > 0 ? "+" : ""}{seg.valorization.toFixed(1)}%
-                  </span>
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[9px] text-muted-foreground w-8">{currentYear}</span>
-                    <div className="flex-1 h-3 bg-muted rounded-full overflow-hidden">
-                      <div className="h-full rounded-full transition-all duration-700" style={{ width: `${(seg.curVgv / maxVgv) * 100}%`, background: SEGMENT_COLORS[seg.segment] }} />
-                    </div>
-                    <span className="text-[9px] text-foreground font-medium w-20 text-right">{formatCurrency(seg.curVgv)}</span>
+      {data.segmentComparison.length > 0 && (
+        <div className="elevated-card rounded-xl p-5">
+          <h3 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
+            <Star className="w-4 h-4 text-accent" /> Comparativo Visual por Segmento
+          </h3>
+          <div className="space-y-4">
+            {data.segmentComparison.map(seg => {
+              const maxVgv = Math.max(...data.segmentComparison.flatMap(s => [s.curVgv, s.prevVgv]), 1);
+              return (
+                <div key={seg.segment} className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-foreground">{seg.segment}</span>
+                    <span className={`text-[10px] font-bold ${seg.valorization >= 0 ? "text-emerald-500" : "text-destructive"}`}>
+                      {seg.valorization > 0 ? "+" : ""}{seg.valorization.toFixed(1)}%
+                    </span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[9px] text-muted-foreground w-8">{previousYear}</span>
-                    <div className="flex-1 h-3 bg-muted rounded-full overflow-hidden">
-                      <div className="h-full rounded-full transition-all duration-700 opacity-40" style={{ width: `${(seg.prevVgv / maxVgv) * 100}%`, background: SEGMENT_COLORS[seg.segment] }} />
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[9px] text-muted-foreground w-8">{currentYear}</span>
+                      <div className="flex-1 h-3 bg-muted rounded-full overflow-hidden">
+                        <div className="h-full rounded-full transition-all duration-700" style={{ width: `${(seg.curVgv / maxVgv) * 100}%`, background: SEGMENT_COLORS[seg.segment] }} />
+                      </div>
+                      <span className="text-[9px] text-foreground font-medium w-20 text-right">{formatCurrency(seg.curVgv)}</span>
                     </div>
-                    <span className="text-[9px] text-muted-foreground w-20 text-right">{formatCurrency(seg.prevVgv)}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[9px] text-muted-foreground w-8">{previousYear}</span>
+                      <div className="flex-1 h-3 bg-muted rounded-full overflow-hidden">
+                        <div className="h-full rounded-full transition-all duration-700 opacity-40" style={{ width: `${(seg.prevVgv / maxVgv) * 100}%`, background: SEGMENT_COLORS[seg.segment] }} />
+                      </div>
+                      <span className="text-[9px] text-muted-foreground w-20 text-right">{formatCurrency(seg.prevVgv)}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
 
 // ─── REUSABLE RANKING COMPONENTS ───
 function RankingBarCard({ title, data, colors }: { title: string; data: { name: string; count: number; vgv: number }[]; colors?: Record<string, string> }) {
+  if (data.length === 0) return null;
   return (
     <div className="elevated-card rounded-xl p-5">
       <h3 className="text-sm font-semibold text-card-foreground mb-3 flex items-center gap-2"><Trophy className="w-4 h-4 text-accent" /> Ranking — {title}</h3>
@@ -612,6 +659,7 @@ function RankingBarCard({ title, data, colors }: { title: string; data: { name: 
 }
 
 function RankingListCard({ title, icon: Icon, data, colors }: { title: string; icon: React.ElementType; data: { name: string; count: number; vgv: number }[]; colors?: Record<string, string> }) {
+  if (data.length === 0) return null;
   return (
     <div className="elevated-card rounded-xl p-5">
       <h3 className="text-sm font-semibold text-card-foreground mb-3 flex items-center gap-2"><Icon className="w-4 h-4 text-accent" /> {title}</h3>
@@ -635,6 +683,7 @@ function RankingListCard({ title, icon: Icon, data, colors }: { title: string; i
 }
 
 function RankingProgressCard({ title, data }: { title: string; data: { name: string; count: number; vgv: number }[] }) {
+  if (data.length === 0) return null;
   const maxVgv = data[0]?.vgv || 1;
   return (
     <div className="elevated-card rounded-xl p-5">
