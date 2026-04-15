@@ -45,7 +45,7 @@ import {
   Settings,
   User,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, toSlug } from "@/lib/utils";
 import logoImg from "@/assets/logo.png";
 import { RoutePlanner } from "@/components/RoutePlanner";
 import { SharkAI } from "@/components/SharkAI";
@@ -94,6 +94,10 @@ const brokerInfo: Record<string, { photo: string; whatsapp: string }> = {
     whatsapp: "5511999999999",
   },
 };
+
+const normalizePhone = (value?: string | null) => (value || "").replace(/\D/g, "");
+const getBrokerAvatar = (name: string) =>
+  `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0f4c81&color=fff&size=200`;
 
 // Will be populated from DB
 let siteProperties: SiteProperty[] = [];
@@ -276,10 +280,7 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, 
 
         {/* Broker + WhatsApp */}
         <div className="flex items-center justify-between pt-2 border-t border-border">
-          <Link
-            to={`/corretor/${property.broker.toLowerCase().replace(/\s+/g, "-")}`}
-            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-          >
+          <Link to={`/corretor/${toSlug(property.broker)}`} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <img
               src={broker.photo}
               alt={property.broker}
@@ -702,46 +703,65 @@ export default function Site() {
   useEffect(() => {
     const fetchProperties = async () => {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('imoveis')
-        .select('*')
-        .eq('ativo_site', true);
-      
+      const [{ data, error }, { data: brokersData }] = await Promise.all([
+        supabase.from("imoveis").select("*").eq("ativo_site", true),
+        supabase.from("subscriber_brokers").select("name, phone").eq("status", "active"),
+      ]);
+
+      (brokersData || []).forEach((broker: any) => {
+        if (!broker?.name) return;
+        brokerInfo[broker.name] = {
+          photo: brokerInfo[broker.name]?.photo || getBrokerAvatar(broker.name),
+          whatsapp: normalizePhone(broker.phone) || brokerInfo[broker.name]?.whatsapp || "5511999999999",
+        };
+      });
+
       if (!error && data) {
-        const mapped: SiteProperty[] = data.map((row) => ({
-          id: row.id,
-          title: row.titulo,
-          address: row.endereco,
-          city: row.cidade,
-          type: row.tipo,
-          status: row.status,
-          price: Number(row.preco),
-          area: Number(row.area),
-          bedrooms: row.quartos,
-          bathrooms: row.banheiros,
-          parking: row.vagas,
-          broker: "Corretor",
-          image: row.imagens?.[0] || "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&h=400&fit=crop",
-          images: row.imagens || [],
-          createdAt: row.created_at,
-          lat: Number((row as any).latitude) || 0,
-          lng: Number((row as any).longitude) || 0,
-          decorated: row.decorado,
-          seaView: row.vista_mar,
-          acceptsExchange: row.aceita_permuta,
-          paymentConditions: row.condicoes_pagamento || [],
-          empreendimento: row.empreendimento || '',
-          unitNumber: row.unidade || '',
-          boxNumber: row.box || '',
-          quadra: row.quadra || '',
-          lote: row.lote || '',
-          exclusivityTerm: row.termo_exclusividade || '',
-          destaqueCategoria: (row as any).destaque_categoria || '',
-          destaqueHome: row.destaque_home,
-          neighborhood: row.bairro || '',
-          vista: row.vista || '',
-          caracteristicas: row.outras_caracteristicas || [],
-        }));
+        const mapped: SiteProperty[] = data.map((row) => {
+          const brokerName = row.corretor_nome?.trim() || "Corretor";
+
+          if (!brokerInfo[brokerName]) {
+            brokerInfo[brokerName] = {
+              photo: getBrokerAvatar(brokerName),
+              whatsapp: "5511999999999",
+            };
+          }
+
+          return {
+            id: row.id,
+            title: row.titulo,
+            address: row.endereco,
+            city: row.cidade,
+            type: row.tipo,
+            status: row.status,
+            price: Number(row.preco),
+            area: Number(row.area),
+            bedrooms: row.quartos,
+            bathrooms: row.banheiros,
+            parking: row.vagas,
+            broker: brokerName,
+            image: row.imagens?.[0] || "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&h=400&fit=crop",
+            images: row.imagens || [],
+            createdAt: row.created_at,
+            lat: Number((row as any).latitude) || 0,
+            lng: Number((row as any).longitude) || 0,
+            decorated: row.decorado,
+            seaView: row.vista_mar,
+            acceptsExchange: row.aceita_permuta,
+            paymentConditions: row.condicoes_pagamento || [],
+            empreendimento: row.empreendimento || "",
+            unitNumber: row.unidade || "",
+            boxNumber: row.box || "",
+            quadra: row.quadra || "",
+            lote: row.lote || "",
+            exclusivityTerm: row.termo_exclusividade || "",
+            destaqueCategoria: (row as any).destaque_categoria || "",
+            destaqueHome: row.destaque_home,
+            neighborhood: row.bairro || "",
+            vista: row.vista || "",
+            caracteristicas: row.outras_caracteristicas || [],
+          };
+        });
         setSiteProperties(mapped);
       }
       setLoading(false);
@@ -1293,7 +1313,7 @@ export default function Site() {
               <div className="space-y-3">
                 {displayRanking.map((broker, i) => {
                   const MedalIcon = medalIcons[i] || Star;
-                  const slug = broker.name.toLowerCase().replace(/\s+/g, "-");
+                  const slug = toSlug(broker.name);
                   return (
                     <Link
                       key={broker.name}
