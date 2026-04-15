@@ -12,6 +12,7 @@ export default function Registro() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [accountType, setAccountType] = useState<"corretor" | "imobiliaria">("corretor");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -24,7 +25,7 @@ export default function Registro() {
       email,
       password,
       options: {
-        data: { full_name: fullName, phone },
+        data: { full_name: fullName, phone, account_type: accountType },
         emailRedirectTo: window.location.origin,
       },
     });
@@ -52,6 +53,25 @@ export default function Registro() {
         </div>
 
         <form onSubmit={handleRegister} className="space-y-4 bg-card p-6 rounded-xl border border-border shadow-sm">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">Tipo de conta</label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setAccountType("corretor")}
+                className={`py-2.5 rounded-lg border text-sm font-medium transition-all ${accountType === "corretor" ? "bg-primary text-primary-foreground border-primary" : "bg-card text-muted-foreground border-border hover:border-primary/50"}`}
+              >
+                Corretor
+              </button>
+              <button
+                type="button"
+                onClick={() => setAccountType("imobiliaria")}
+                className={`py-2.5 rounded-lg border text-sm font-medium transition-all ${accountType === "imobiliaria" ? "bg-primary text-primary-foreground border-primary" : "bg-card text-muted-foreground border-border hover:border-primary/50"}`}
+              >
+                Imobiliária
+              </button>
+            </div>
+          </div>
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Nome completo</label>
             <Input
