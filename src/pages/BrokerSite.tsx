@@ -90,10 +90,13 @@ function PropertyCard({ p, brokerName, whatsapp }: { p: DBProperty; brokerName: 
   );
 }
 
+const toSlug = (name: string) =>
+  name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+
 export default function BrokerSite() {
   const { slug } = useParams<{ slug: string }>();
-  const brokerName = slug ? slug.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ") : "";
 
+  const [brokerName, setBrokerName] = useState("");
   const [properties, setProperties] = useState<DBProperty[]>([]);
   const [soldProperties, setSoldProperties] = useState<DBProperty[]>([]);
   const [profile, setProfile] = useState<{ full_name: string; avatar_url: string | null; phone: string | null; email: string | null } | null>(null);
@@ -106,43 +109,57 @@ export default function BrokerSite() {
 
   useEffect(() => {
     const load = async () => {
-      // Fetch properties by broker name
+      if (!slug) { setLoading(false); return; }
+
+      // Find broker by matching slug against all subscriber_brokers
+      const { data: allBrokers } = await supabase
+        .from("subscriber_brokers")
+        .select("name, phone, creci");
+
+      const match = (allBrokers || []).find(b => toSlug(b.name) === slug);
+      
+      // Also check profiles if no broker match
+      let resolvedName = match?.name || "";
+      if (!resolvedName) {
+        const { data: allProfiles } = await supabase
+          .from("profiles")
+          .select("full_name");
+        const profMatch = (allProfiles || []).find(p => toSlug(p.full_name) === slug);
+        resolvedName = profMatch?.full_name || "";
+      }
+
+      if (!resolvedName) { setLoading(false); return; }
+      setBrokerName(resolvedName);
+
+      if (match) setBrokerInfo({ phone: match.phone, creci: match.creci });
+
       const { data: available } = await supabase
         .from("imoveis")
         .select("*")
-        .eq("corretor_nome", brokerName)
+        .eq("corretor_nome", resolvedName)
         .in("status", ["Disponível", "Reservado"])
         .eq("ativo_site", true);
 
       const { data: sold } = await supabase
         .from("imoveis")
         .select("*")
-        .eq("corretor_nome", brokerName)
+        .eq("corretor_nome", resolvedName)
         .eq("status", "Vendido");
 
       setProperties((available as any) || []);
       setSoldProperties((sold as any) || []);
 
-      // Try find broker in subscriber_brokers
-      const { data: sb } = await supabase
-        .from("subscriber_brokers")
-        .select("phone, creci")
-        .eq("name", brokerName)
-        .maybeSingle();
-      setBrokerInfo(sb);
-
-      // Try find profile
       const { data: prof } = await supabase
         .from("profiles")
         .select("full_name, avatar_url, phone, email")
-        .eq("full_name", brokerName)
+        .eq("full_name", resolvedName)
         .maybeSingle();
       setProfile(prof);
 
       setLoading(false);
     };
-    if (brokerName) load();
-  }, [brokerName]);
+    load();
+  }, [slug]);
 
   useEffect(() => {
     if (soldProperties.length <= 1) return;
