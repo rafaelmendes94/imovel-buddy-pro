@@ -870,7 +870,6 @@ export default function Site() {
             <Link to="/fotos-cidade" className="hover:text-primary transition-colors">Fotos da Cidade</Link>
             <Link to="/planos" className="hover:text-primary transition-colors">Planos</Link>
             <a href="#contato" className="hover:text-primary transition-colors">Contato</a>
-            <a href="#contato" className="hover:text-primary transition-colors">Contato</a>
           </nav>
 
           {/* Right side */}
