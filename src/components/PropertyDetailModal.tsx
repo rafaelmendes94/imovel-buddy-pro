@@ -13,7 +13,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { formatCurrency, type Property } from "@/data/mockData";
-import { cn } from "@/lib/utils";
+import { cn, toSlug } from "@/lib/utils";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { DraggableFieldGrid, type FieldConfig } from "./DraggableFieldGrid";
@@ -1064,7 +1064,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
           <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
             {broker ? (
               <Link
-                to={`/corretor/${property.broker.toLowerCase().replace(/\s+/g, "-")}`}
+                to={`/corretor/${toSlug(property.broker)}`}
                 className="flex items-center gap-3 hover:opacity-80 transition-opacity"
                 onClick={onClose}
               >
