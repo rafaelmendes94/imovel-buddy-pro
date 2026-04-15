@@ -625,8 +625,10 @@ export default function Site() {
   const { user, profile, signOut } = useAuth();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [imoveisMenuOpen, setImoveisMenuOpen] = useState(false);
+  const [empreendMenuOpen, setEmpreendMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const imoveisMenuRef = useRef<HTMLDivElement>(null);
+  const empreendMenuRef = useRef<HTMLDivElement>(null);
   const searchParams = new URLSearchParams(window.location.search);
   const initialTipo = searchParams.get("tipo") || "";
   const initialCidade = searchParams.get("cidade") || "";
@@ -668,6 +670,9 @@ export default function Site() {
       }
       if (imoveisMenuRef.current && !imoveisMenuRef.current.contains(e.target as Node)) {
         setImoveisMenuOpen(false);
+      }
+      if (empreendMenuRef.current && !empreendMenuRef.current.contains(e.target as Node)) {
+        setEmpreendMenuOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClick);
