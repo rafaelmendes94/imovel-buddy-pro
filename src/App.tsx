@@ -15,6 +15,7 @@ import Home from "./pages/Home";
 import EmpreendimentoDetail from "./pages/EmpreendimentoDetail";
 import PartnerDetail from "./pages/PartnerDetail";
 import ConstrutoraSite from "./pages/ConstrutoraSite";
+import Planos from "./pages/Planos";
 
 // Admin pages
 // AdminDashboard removed - using unified Dashboard
@@ -86,6 +87,7 @@ const App = () => (
             <Route path="/construtora/:slug" element={<ConstrutoraSite />} />
             <Route path="/site" element={<Site />} />
             <Route path="/brick-store" element={<BrickStore />} />
+            <Route path="/planos" element={<Planos />} />
 
             {/* Admin routes */}
             
