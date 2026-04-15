@@ -37,16 +37,18 @@ export default function BrokerAssinatura() {
   const handleCheckout = async (planId: string) => {
     setLoadingCheckout(planId);
     try {
-      const { data, error } = await supabase.functions.invoke("mercado-pago-checkout", {
+      const { data, error } = await supabase.functions.invoke("asaas-checkout", {
         body: { plan_id: planId, user_id: user?.id },
       });
 
       if (error) throw error;
 
-      if (data?.init_point) {
-        window.open(data.init_point, "_blank");
+      if (data?.invoiceUrl) {
+        window.open(data.invoiceUrl, "_blank");
+      } else if (data?.error) {
+        toast({ title: "Checkout não disponível", description: data.error, variant: "destructive" });
       } else {
-        toast({ title: "Checkout não disponível", description: "Configure o Mercado Pago para ativar pagamentos.", variant: "destructive" });
+        toast({ title: "Checkout não disponível", description: "Configure o Asaas nas configurações do sistema.", variant: "destructive" });
       }
     } catch (err: any) {
       toast({ title: "Erro no checkout", description: err.message, variant: "destructive" });

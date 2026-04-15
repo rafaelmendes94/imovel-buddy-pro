@@ -17,6 +17,7 @@ const adminItems = [
   { icon: CreditCard, label: "Planos", path: "/admin/planos", moduleKey: "planos" },
   { icon: Settings, label: "Opções do Sistema", path: "/admin/opcoes", moduleKey: "dashboard_admin" },
   { icon: Brain, label: "Configuração IA", path: "/admin/ia", moduleKey: "dashboard_admin" },
+  { icon: CreditCard, label: "Asaas / Pagamentos", path: "/admin/asaas", moduleKey: "dashboard_admin" },
 ];
 
 const operationalItems = [

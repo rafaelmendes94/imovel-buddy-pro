@@ -1074,6 +1074,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          asaas_customer_id: string | null
           avatar_url: string | null
           created_at: string
           email: string | null
@@ -1083,6 +1084,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          asaas_customer_id?: string | null
           avatar_url?: string | null
           created_at?: string
           email?: string | null
@@ -1092,6 +1094,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          asaas_customer_id?: string | null
           avatar_url?: string | null
           created_at?: string
           email?: string | null
