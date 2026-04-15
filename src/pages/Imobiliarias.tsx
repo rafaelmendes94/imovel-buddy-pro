@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { BackButton } from "@/components/BackButton";
 import { Button } from "@/components/ui/button";
@@ -7,13 +8,16 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-  Building2, Users, Plus, Trash2, Edit, Phone, Mail, Award, ChevronDown, ChevronUp, UserPlus, Search
+  Building2, Users, Plus, Trash2, Edit, Phone, Mail, Award, ChevronDown, ChevronUp, UserPlus, Search, ExternalLink, Home, MapPin, Ruler
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+
+const formatCurrency = (v: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
+const toSlug = (name: string) => name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
 interface Corretor {
   id: string;
@@ -35,28 +39,30 @@ interface Imobiliaria {
   corretores: Corretor[];
 }
 
+interface ImobProperty {
+  id: string;
+  titulo: string;
+  preco: number;
+  tipo: string;
+  cidade: string;
+  area: number;
+  quartos: number;
+  imagens: string[] | null;
+  corretor_nome: string | null;
+  imobiliaria_nome: string | null;
+  status: string;
+}
+
 const initialImobiliarias: Imobiliaria[] = [
   {
-    id: "1",
-    name: "Alpha Imóveis",
-    cnpj: "12.345.678/0001-90",
-    phone: "(51) 3456-7890",
-    email: "contato@alphaimoveis.com",
-    address: "Av. Beira Mar, 500 - Capão da Canoa",
-    creci: "J-12345",
+    id: "1", name: "Alpha Imóveis", cnpj: "12.345.678/0001-90", phone: "(51) 3456-7890", email: "contato@alphaimoveis.com", address: "Av. Beira Mar, 500 - Capão da Canoa", creci: "J-12345",
     corretores: [
       { id: "c1", name: "Carlos Silva", email: "carlos@alpha.com", phone: "(51) 99876-5432", creci: "123456-RS", status: "Ativo" },
       { id: "c2", name: "Ana Rodrigues", email: "ana@alpha.com", phone: "(51) 99765-4321", creci: "234567-RS", status: "Ativo" },
     ],
   },
   {
-    id: "2",
-    name: "Beta Imobiliária",
-    cnpj: "98.765.432/0001-10",
-    phone: "(51) 3567-8901",
-    email: "contato@betaimob.com",
-    address: "Rua Central, 200 - Xangri-lá",
-    creci: "J-67890",
+    id: "2", name: "Beta Imobiliária", cnpj: "98.765.432/0001-10", phone: "(51) 3567-8901", email: "contato@betaimob.com", address: "Rua Central, 200 - Xangri-lá", creci: "J-67890",
     corretores: [
       { id: "c3", name: "Marcos Oliveira", email: "marcos@beta.com", phone: "(51) 99654-3210", creci: "345678-RS", status: "Ativo" },
     ],
@@ -69,11 +75,34 @@ export default function Imobiliarias() {
   const [editingImob, setEditingImob] = useState<Imobiliaria | null>(null);
   const [editingCorretor, setEditingCorretor] = useState<{ imobId: string; corretor: Corretor | null } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-
   const [imobForm, setImobForm] = useState({ name: "", cnpj: "", phone: "", email: "", address: "", creci: "" });
   const [corretorForm, setCorretorForm] = useState({ name: "", email: "", phone: "", creci: "", status: "Ativo" as Corretor["status"] });
-
   const [activeTab, setActiveTab] = useState("lista");
+  
+  // Real properties from DB
+  const [imobProperties, setImobProperties] = useState<Record<string, ImobProperty[]>>({});
+
+  useEffect(() => {
+    // Fetch properties grouped by imobiliaria_nome
+    const fetchProps = async () => {
+      const { data } = await supabase
+        .from("imoveis")
+        .select("id, titulo, preco, tipo, cidade, area, quartos, imagens, corretor_nome, imobiliaria_nome, status")
+        .not("imobiliaria_nome", "is", null)
+        .neq("imobiliaria_nome", "");
+      
+      if (data) {
+        const grouped: Record<string, ImobProperty[]> = {};
+        (data as ImobProperty[]).forEach(p => {
+          const key = p.imobiliaria_nome || "";
+          if (!grouped[key]) grouped[key] = [];
+          grouped[key].push(p);
+        });
+        setImobProperties(grouped);
+      }
+    };
+    fetchProps();
+  }, []);
 
   const resetImobForm = () => setImobForm({ name: "", cnpj: "", phone: "", email: "", address: "", creci: "" });
   const resetCorretorForm = () => setCorretorForm({ name: "", email: "", phone: "", creci: "", status: "Ativo" });
@@ -148,6 +177,18 @@ export default function Imobiliarias() {
     i.corretores.some(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
+  // Group properties by corretor for an imobiliária
+  const getPropertiesByBroker = (imobName: string) => {
+    const props = imobProperties[imobName] || [];
+    const grouped: Record<string, ImobProperty[]> = {};
+    props.forEach(p => {
+      const key = p.corretor_nome || "Sem corretor";
+      if (!grouped[key]) grouped[key] = [];
+      grouped[key].push(p);
+    });
+    return grouped;
+  };
+
   return (
     <AppLayout>
       <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
@@ -195,9 +236,13 @@ export default function Imobiliarias() {
               <p className="text-sm text-muted-foreground text-center py-12">Nenhuma imobiliária encontrada</p>
             )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               {filteredImobiliarias.map(imob => {
                 const isExpanded = expandedImob === imob.id;
+                const propsByBroker = getPropertiesByBroker(imob.name);
+                const totalProps = Object.values(propsByBroker).reduce((s, arr) => s + arr.length, 0);
+                const totalVgv = Object.values(propsByBroker).flat().reduce((s, p) => s + Number(p.preco), 0);
+
                 return (
                   <Card key={imob.id} className="overflow-hidden">
                     <div className="p-4 flex items-start gap-4">
@@ -205,13 +250,14 @@ export default function Imobiliarias() {
                         <Building2 className="w-6 h-6 text-accent" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <h4 className="text-sm font-semibold text-foreground truncate">{imob.name}</h4>
                           <Badge variant="outline" className="text-[10px]">{imob.corretores.length} corretores</Badge>
+                          {totalProps > 0 && <Badge variant="secondary" className="text-[10px]">{totalProps} imóveis</Badge>}
                         </div>
                         {imob.creci && <p className="text-xs text-muted-foreground">CRECI: {imob.creci}</p>}
                         {imob.phone && <p className="text-xs text-muted-foreground flex items-center gap-1"><Phone className="w-3 h-3" />{imob.phone}</p>}
-                        {imob.email && <p className="text-xs text-muted-foreground flex items-center gap-1"><Mail className="w-3 h-3" />{imob.email}</p>}
+                        {totalVgv > 0 && <p className="text-xs text-accent font-semibold mt-1">VGV: {formatCurrency(totalVgv)}</p>}
                       </div>
                       <div className="flex items-center gap-0.5 flex-shrink-0">
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditImob(imob)}>
@@ -228,33 +274,93 @@ export default function Imobiliarias() {
 
                     {isExpanded && (
                       <div className="border-t border-border">
+                        {/* Corretores */}
+                        <div className="px-4 pt-3 pb-1">
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Corretores</p>
+                        </div>
                         {imob.corretores.length === 0 && (
-                          <p className="text-xs text-muted-foreground text-center py-4">Nenhum corretor cadastrado</p>
+                          <p className="text-xs text-muted-foreground text-center py-3">Nenhum corretor cadastrado</p>
                         )}
-                        {imob.corretores.map(c => (
-                          <div key={c.id} className="flex items-center gap-3 px-4 py-3 border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors">
-                            <div className="w-9 h-9 rounded-full bg-accent/10 flex items-center justify-center text-xs font-bold text-accent flex-shrink-0">
-                              {c.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                        {imob.corretores.map(c => {
+                          const corretorProps = (imobProperties[imob.name] || []).filter(p => p.corretor_nome === c.name);
+                          return (
+                            <div key={c.id} className="border-b border-border/50 last:border-0">
+                              <div className="flex items-center gap-3 px-4 py-3 hover:bg-muted/20 transition-colors">
+                                <div className="w-9 h-9 rounded-full bg-accent/10 flex items-center justify-center text-xs font-bold text-accent flex-shrink-0">
+                                  {c.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium text-foreground truncate">{c.name}</p>
+                                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                    {c.creci && <span>CRECI: {c.creci}</span>}
+                                    <Badge variant="outline" className={cn("text-[9px] h-4", c.status === "Ativo" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" : "bg-muted text-muted-foreground")}>
+                                      {c.status}
+                                    </Badge>
+                                    {corretorProps.length > 0 && (
+                                      <span className="text-accent font-semibold">{corretorProps.length} imóveis</span>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="flex gap-0.5 flex-shrink-0">
+                                  <Link to={`/corretor/${toSlug(c.name)}`} target="_blank">
+                                    <Button variant="ghost" size="icon" className="h-7 w-7" title="Ver página do corretor">
+                                      <ExternalLink className="w-3.5 h-3.5" />
+                                    </Button>
+                                  </Link>
+                                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEditCorretor(imob.id, c)}>
+                                    <Edit className="w-3.5 h-3.5" />
+                                  </Button>
+                                  <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDeleteCorretor(imob.id, c.id)}>
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </Button>
+                                </div>
+                              </div>
+
+                              {/* Property mini-cards for this broker */}
+                              {corretorProps.length > 0 && (
+                                <div className="px-4 pb-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 ml-12">
+                                  {corretorProps.map(p => (
+                                    <div key={p.id} className="flex items-center gap-2 p-2 rounded-lg bg-muted/30 border border-border/50">
+                                      <img src={p.imagens?.[0] || "/placeholder.svg"} alt={p.titulo} className="w-12 h-12 rounded-md object-cover flex-shrink-0" />
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-xs font-semibold text-foreground truncate">{p.titulo}</p>
+                                        <p className="text-[10px] text-muted-foreground">{p.cidade} · {p.tipo}</p>
+                                        <p className="text-xs font-bold text-accent">{formatCurrency(p.preco)}</p>
+                                      </div>
+                                      <Badge variant={p.status === "Vendido" ? "destructive" : p.status === "Reservado" ? "secondary" : "default"} className="text-[9px] h-4 flex-shrink-0">
+                                        {p.status}
+                                      </Badge>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-foreground truncate">{c.name}</p>
-                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                {c.creci && <span>CRECI: {c.creci}</span>}
-                                <Badge variant="outline" className={cn("text-[9px] h-4", c.status === "Ativo" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" : "bg-muted text-muted-foreground")}>
-                                  {c.status}
-                                </Badge>
+                          );
+                        })}
+
+                        {/* Unassigned properties */}
+                        {(() => {
+                          const unassigned = (imobProperties[imob.name] || []).filter(p => !imob.corretores.some(c => c.name === p.corretor_nome));
+                          if (unassigned.length === 0) return null;
+                          return (
+                            <div className="px-4 py-3 border-t border-border/50">
+                              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Outros imóveis ({unassigned.length})</p>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                                {unassigned.map(p => (
+                                  <div key={p.id} className="flex items-center gap-2 p-2 rounded-lg bg-muted/30 border border-border/50">
+                                    <img src={p.imagens?.[0] || "/placeholder.svg"} alt={p.titulo} className="w-12 h-12 rounded-md object-cover flex-shrink-0" />
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-xs font-semibold text-foreground truncate">{p.titulo}</p>
+                                      <p className="text-[10px] text-muted-foreground">{p.corretor_nome || "Sem corretor"} · {p.tipo}</p>
+                                      <p className="text-xs font-bold text-accent">{formatCurrency(p.preco)}</p>
+                                    </div>
+                                  </div>
+                                ))}
                               </div>
                             </div>
-                            <div className="flex gap-0.5 flex-shrink-0">
-                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEditCorretor(imob.id, c)}>
-                                <Edit className="w-3.5 h-3.5" />
-                              </Button>
-                              <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDeleteCorretor(imob.id, c.id)}>
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
+                          );
+                        })()}
+
                         <div className="p-3">
                           <Button variant="outline" size="sm" className="w-full gap-1 text-xs" onClick={() => handleAddCorretor(imob.id)}>
                             <Plus className="w-3.5 h-3.5" /> Adicionar Corretor
