@@ -322,6 +322,7 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
   const { ready: gmapsReady } = useGoogleMapsLoader();
 
   const uniqueMapEmpreendimentos = [...new Set(mapProperties.map((p) => p.empreendimento).filter(Boolean))].sort();
+  const uniqueMapTypes = [...new Set(mapProperties.map((p) => p.type).filter(Boolean))].sort();
 
   // Debounce address input for geocoding
   useEffect(() => {
@@ -549,10 +550,9 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
               className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
             >
               <option value="">Todos os tipos</option>
-              <option value="Apartamento">Apartamento</option>
-              <option value="Casa">Casa</option>
-              <option value="Terreno">Terreno</option>
-              <option value="Comercial">Comercial</option>
+              {uniqueMapTypes.map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
             </select>
 
             <select
@@ -1519,7 +1519,7 @@ export default function Site() {
         {!searchTerm && !hasActiveFilters && (activeCategory === "todos") && (
           <section>
             <SectionHeader title="Localização dos Imóveis" subtitle="Veja todos os imóveis no mapa" icon={MapPin} />
-            <SiteMap properties={available} />
+            <SiteMap properties={siteProperties} />
           </section>
         )}
       </main>
