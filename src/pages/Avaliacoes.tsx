@@ -281,6 +281,7 @@ export default function Avaliacoes() {
     floor: "",
     condominium: "",
     description: "",
+    currentPrice: "",
   });
 
   useEffect(() => {
