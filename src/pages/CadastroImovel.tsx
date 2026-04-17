@@ -283,6 +283,7 @@ function EntitySelectorsGroup({ form, set, handleEntitySelect }: {
   );
 }
 
+const descriptionStyles = [
   { id: "gatilhos", label: "🎯 Gatilhos de Venda", desc: "Persuasão e urgência" },
   { id: "agressiva", label: "🔥 Agressiva", desc: "Impacto e conversão" },
   { id: "informativa", label: "📋 Informativa", desc: "Detalhes técnicos" },
