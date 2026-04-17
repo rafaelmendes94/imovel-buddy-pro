@@ -23,6 +23,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { generatePropertyPdf } from "@/utils/generatePropertyPdf";
+import { useAuth } from "@/hooks/useAuth";
 
 // Broker info
 const brokerInfo: Record<string, { photo: string; whatsapp: string }> = {
@@ -2811,6 +2812,7 @@ const DESTAQUE_OPTIONS = [
 ];
 
 function DestaqueSelector({ propertyId, compact }: { propertyId: string; compact?: boolean }) {
+  const { isSuperAdmin } = useAuth();
   const [value, setValue] = useState("");
   const [loading, setLoading] = useState(true);
   const [existsInDb, setExistsInDb] = useState(false);
@@ -2830,6 +2832,8 @@ function DestaqueSelector({ propertyId, compact }: { propertyId: string; compact
       setLoading(false);
     });
   }, [propertyId]);
+
+  if (!isSuperAdmin) return null;
 
   const handleChange = async (newVal: string) => {
     if (!existsInDb) {
