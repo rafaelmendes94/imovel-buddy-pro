@@ -482,7 +482,7 @@ export default function Properties() {
     const fetchProperties = async () => {
       const { data, error } = await supabase
         .from("imoveis")
-        .select("*")
+        .select("*, edificios(nome), condominios(nome), empreendimentos(nome)")
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -519,7 +519,7 @@ export default function Properties() {
         seaView: row.vista_mar || false,
         acceptsExchange: row.aceita_permuta || false,
         paymentConditions: row.condicoes_pagamento || [],
-        empreendimento: row.empreendimento || "",
+        empreendimento: row.empreendimento || (row as any).edificios?.nome || (row as any).condominios?.nome || (row as any).empreendimentos?.nome || "",
         unitNumber: row.unidade || "",
         boxNumber: row.box || "",
         quadra: row.quadra || "",
