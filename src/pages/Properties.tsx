@@ -2833,6 +2833,8 @@ function DestaqueSelector({ propertyId, compact }: { propertyId: string; compact
     });
   }, [propertyId]);
 
+  if (!isSuperAdmin) return null;
+
   const handleChange = async (newVal: string) => {
     if (!existsInDb) {
       toast.error("Imóvel não cadastrado no banco de dados");
