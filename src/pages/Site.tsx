@@ -50,6 +50,7 @@ import logoImg from "@/assets/logo.png";
 import { RoutePlanner } from "@/components/RoutePlanner";
 import { SharkAI } from "@/components/SharkAI";
 import { useAuth } from "@/hooks/useAuth";
+import { useGoogleMapsLoader } from "@/hooks/useGoogleMapsLoader";
 
 // Site property type mapped from DB
 interface SiteProperty {
