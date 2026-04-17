@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Property, formatCurrency } from "@/data/mockData";
-import { cn } from "@/lib/utils";
 import { useGoogleMapsLoader } from "@/hooks/useGoogleMapsLoader";
 import { Loader2 } from "lucide-react";
 
@@ -32,6 +31,61 @@ const typeConfig: Record<string, { emoji: string; color: string; label: string }
 
 const defaultCfg = { emoji: "📍", color: "#2563eb", label: "Outro" };
 
+function clearMarker(marker: any) {
+  if (!marker) return;
+  if ("map" in marker) {
+    marker.map = null;
+    return;
+  }
+  if (typeof marker.setMap === "function") {
+    marker.setMap(null);
+  }
+}
+
+function createFallbackMarker(maps: any, map: any, property: Property, shortPrice: string, color: string) {
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="72" height="34" viewBox="0 0 72 34" fill="none">
+      <rect x="2" y="2" width="68" height="22" rx="11" fill="${color}" />
+      <path d="M31 24H41L36 32L31 24Z" fill="${color}" />
+      <text x="36" y="17" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="700" fill="white">${shortPrice}</text>
+    </svg>
+  `.trim();
+
+  return new maps.Marker({
+    position: { lat: property.lat, lng: property.lng },
+    map,
+    title: property.title,
+    icon: {
+      url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
+      scaledSize: new maps.Size(72, 34),
+      anchor: new maps.Point(36, 32),
+    },
+  });
+}
+
+function createMarker(maps: any, map: any, property: Property, cfg: { emoji: string; color: string }, shortPrice: string) {
+  const AdvancedMarkerElement = maps.marker?.AdvancedMarkerElement;
+
+  if (AdvancedMarkerElement) {
+    const pinEl = document.createElement("div");
+    pinEl.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;cursor:pointer;">
+      <div style="background:${cfg.color};border-radius:6px 6px 6px 0;padding:2px 5px;box-shadow:0 1px 6px rgba(0,0,0,0.2);display:flex;align-items:center;gap:2px;white-space:nowrap;">
+        <span style="font-size:9px;line-height:1;">${cfg.emoji}</span>
+        <span style="font-size:8px;font-weight:800;color:#fff;letter-spacing:0.2px;">${shortPrice}</span>
+      </div>
+      <div style="width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid ${cfg.color};"></div>
+    </div>`;
+
+    return new AdvancedMarkerElement({
+      position: { lat: property.lat, lng: property.lng },
+      map,
+      content: pinEl,
+    });
+  }
+
+  return createFallbackMarker(maps, map, property, shortPrice, cfg.color);
+}
+
 export function PropertyMap({ properties, onSelectProperty }: PropertyMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
@@ -40,13 +94,14 @@ export function PropertyMap({ properties, onSelectProperty }: PropertyMapProps) 
   const { ready, loading } = useGoogleMapsLoader();
 
   useEffect(() => {
-    if (!ready || !mapRef.current) return;
+    const maps = (window as any).google?.maps;
+    if (!ready || !mapRef.current || !maps?.Map) return;
 
     const center = properties.length > 0
       ? { lat: properties[0].lat, lng: properties[0].lng }
       : { lat: -23.55, lng: -46.63 };
 
-    const map = new (window as any).google.maps.Map(mapRef.current, {
+    const map = new maps.Map(mapRef.current, {
       center,
       zoom: 11,
       mapId: "PROPERTY_MAP",
@@ -56,30 +111,15 @@ export function PropertyMap({ properties, onSelectProperty }: PropertyMapProps) 
       fullscreenControl: false,
     });
     mapInstanceRef.current = map;
-    infoWindowRef.current = new (window as any).google.maps.InfoWindow();
+    infoWindowRef.current = new maps.InfoWindow();
 
-    // Clear old markers
-    markersRef.current.forEach(m => m.map = null);
+    markersRef.current.forEach(clearMarker);
     markersRef.current = [];
 
     properties.forEach((property) => {
       const cfg = typeConfig[property.type] || defaultCfg;
       const shortPrice = formatShortPrice(property.price);
-
-      const pinEl = document.createElement("div");
-      pinEl.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;cursor:pointer;">
-        <div style="background:${cfg.color};border-radius:6px 6px 6px 0;padding:2px 5px;box-shadow:0 1px 6px rgba(0,0,0,0.2);display:flex;align-items:center;gap:2px;white-space:nowrap;">
-          <span style="font-size:9px;line-height:1;">${cfg.emoji}</span>
-          <span style="font-size:8px;font-weight:800;color:#fff;letter-spacing:0.2px;">${shortPrice}</span>
-        </div>
-        <div style="width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid ${cfg.color};"></div>
-      </div>`;
-
-      const marker = new (window as any).google.maps.marker.AdvancedMarkerElement({
-        position: { lat: property.lat, lng: property.lng },
-        map,
-        content: pinEl,
-      });
+      const marker = createMarker(maps, map, property, cfg, shortPrice);
 
       marker.addListener("click", () => {
         const popupContent = `
@@ -105,30 +145,29 @@ export function PropertyMap({ properties, onSelectProperty }: PropertyMapProps) 
             </div>
           </div>`;
 
-        infoWindowRef.current!.setContent(popupContent);
-        infoWindowRef.current!.open(map, marker);
+        infoWindowRef.current?.setContent(popupContent);
+        infoWindowRef.current?.open({ map, anchor: marker });
 
         setTimeout(() => {
           const detailBtn = document.getElementById(`gmaps-detail-${property.id}`);
-          detailBtn?.addEventListener("click", () => onSelectProperty?.(property));
+          detailBtn?.addEventListener("click", () => onSelectProperty?.(property), { once: true });
         }, 100);
       });
 
       markersRef.current.push(marker);
     });
 
-    // Fit bounds
     if (properties.length > 1) {
-      const bounds = new (window as any).google.maps.LatLngBounds();
-      properties.forEach(p => bounds.extend({ lat: p.lat, lng: p.lng }));
+      const bounds = new maps.LatLngBounds();
+      properties.forEach((p) => bounds.extend({ lat: p.lat, lng: p.lng }));
       map.fitBounds(bounds, 40);
     }
 
     return () => {
-      markersRef.current.forEach(m => m.map = null);
+      markersRef.current.forEach(clearMarker);
       markersRef.current = [];
     };
-  }, [ready, properties]);
+  }, [ready, properties, onSelectProperty]);
 
   if (loading) {
     return (
@@ -138,8 +177,7 @@ export function PropertyMap({ properties, onSelectProperty }: PropertyMapProps) 
     );
   }
 
-  // Collect active types for legend
-  const activeTypes = [...new Set(properties.map(p => p.type))];
+  const activeTypes = [...new Set(properties.map((p) => p.type))];
 
   return (
     <div className="space-y-3">
@@ -153,7 +191,6 @@ export function PropertyMap({ properties, onSelectProperty }: PropertyMapProps) 
         <div ref={mapRef} style={{ height: "100%", width: "100%" }} />
       </div>
 
-      {/* Legenda */}
       {activeTypes.length > 0 && (
         <div className="flex flex-wrap gap-2 px-1">
           {activeTypes.map((type) => {
