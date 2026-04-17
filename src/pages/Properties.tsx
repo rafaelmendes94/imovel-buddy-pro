@@ -1907,10 +1907,15 @@ function PropertyCard({
             <div className="flex flex-wrap items-center gap-1 mt-1">
               {property.empreendimento && (
                 <Link
-                  to={`/empreendimento/${property.empreendimento.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`}
+                  to={
+                    property.edificioId ? `/edificios/${property.edificioId}` :
+                    property.condominioId ? `/condominios/${property.condominioId}` :
+                    property.empreendimentoId ? `/empreendimentos/${property.empreendimentoId}` :
+                    `/empreendimento/${property.empreendimento.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`
+                  }
                   className="text-[12px] font-bold text-foreground uppercase tracking-wide bg-accent/10 px-1.5 py-0.5 rounded hover:bg-accent/20 transition-colors"
                   onClick={(e) => e.stopPropagation()}
-                  title="Abrir página do empreendimento"
+                  title="Abrir página do edifício/condomínio/loteamento"
                 >
                   {cleanEmpreendimentoName(property.empreendimento)}
                 </Link>
@@ -2317,9 +2322,15 @@ function PropertyRow({
             <div className="flex items-center gap-1.5 flex-wrap">
               {property.empreendimento && (
                 <Link
-                  to={`/empreendimento/${property.empreendimento.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`}
+                  to={
+                    property.edificioId ? `/edificios/${property.edificioId}` :
+                    property.condominioId ? `/condominios/${property.condominioId}` :
+                    property.empreendimentoId ? `/empreendimentos/${property.empreendimentoId}` :
+                    `/empreendimento/${property.empreendimento.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`
+                  }
                   className="font-black text-foreground uppercase text-[13px] tracking-wide px-3 py-0.5 rounded-md border border-border bg-background hover:bg-muted transition-colors shadow-sm"
                   onClick={(e) => e.stopPropagation()}
+                  title="Abrir página do edifício/condomínio/loteamento"
                 >{cleanEmpreendimentoName(property.empreendimento)}</Link>
               )}
               {unitParts.map((part) => (
