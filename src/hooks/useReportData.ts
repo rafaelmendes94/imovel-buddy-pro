@@ -107,7 +107,11 @@ export function useReportData() {
   const allCities = useMemo(() => [...new Set(allSales.map((s) => s.city).filter(Boolean))].sort(), [allSales]);
   const allTypes = useMemo(() => [...new Set(allSales.map((s) => s.type).filter(Boolean))].sort(), [allSales]);
   const allSegments = useMemo(() => [...new Set(allSales.map((s) => s.segment).filter(Boolean))].sort(), [allSales]);
-  const allYears = useMemo(() => [...new Set(allSales.map((s) => new Date(s.date).getFullYear()))].sort((a, b) => b - a), [allSales]);
+  const allYears = useMemo(() => {
+    const years = new Set<number>(allSales.map((s) => new Date(s.date).getFullYear()).filter((y) => !isNaN(y)));
+    years.add(new Date().getFullYear()); // sempre incluir ano atual
+    return [...years].sort((a, b) => b - a);
+  }, [allSales]);
 
   return {
     sales: allSales,
