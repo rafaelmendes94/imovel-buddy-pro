@@ -1976,8 +1976,8 @@ function PropertyCard({
       <div className="p-4 space-y-3">
         <div>
           <h3 className="font-semibold text-card-foreground text-sm cursor-pointer hover:text-primary transition-colors uppercase"
-            onClick={() => onFilterByTitle?.(property.title)}
-            title="Clique para ver títulos semelhantes"
+            onClick={() => onSelect?.(property)}
+            title="Ver detalhes do imóvel"
           >{property.title}</h3>
           {(property.empreendimento || unitParts.length > 0) && (
             <div className="flex flex-wrap items-center gap-1 mt-1">
