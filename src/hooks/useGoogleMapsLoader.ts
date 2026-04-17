@@ -17,11 +17,31 @@ export function useGoogleMapsLoader() {
 
     if (!loadPromise) {
       loadPromise = new Promise<void>((resolve, reject) => {
+        const existing = document.querySelector('script[data-google-maps-loader]') as HTMLScriptElement | null;
+        const onReady = async () => {
+          try {
+            const g = (window as any).google;
+            await Promise.all([
+              g.maps.importLibrary("maps"),
+              g.maps.importLibrary("marker"),
+              g.maps.importLibrary("geocoding"),
+            ]);
+            resolve();
+          } catch (e) {
+            reject(e as Error);
+          }
+        };
+        if (existing) {
+          if ((window as any).google?.maps?.importLibrary) onReady();
+          else existing.addEventListener("load", onReady);
+          return;
+        }
         const script = document.createElement("script");
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=marker,geocoding&loading=async&v=weekly`;
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&loading=async&v=weekly`;
         script.async = true;
         script.defer = true;
-        script.onload = () => resolve();
+        script.dataset.googleMapsLoader = "true";
+        script.onload = onReady;
         script.onerror = () => reject(new Error("Failed to load Google Maps"));
         document.head.appendChild(script);
       });
