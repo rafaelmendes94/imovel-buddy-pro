@@ -39,6 +39,9 @@ interface SiteProperty {
   acceptsExchange?: boolean;
   paymentConditions?: string[];
   empreendimento?: string;
+  edificioId?: string;
+  condominioId?: string;
+  empreendimentoId?: string;
   unitNumber?: string;
   boxNumber?: string;
   quadra?: string;
@@ -97,9 +100,15 @@ function PropertyCard({ property, onSelect }: { property: SiteProperty; onSelect
           <div className="flex flex-wrap items-center gap-1.5">
             {property.empreendimento && (
               <Link
-                to={`/empreendimento/${property.empreendimento.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`}
+                to={
+                  property.edificioId ? `/edificios/${property.edificioId}` :
+                  property.condominioId ? `/condominios/${property.condominioId}` :
+                  property.empreendimentoId ? `/empreendimentos/${property.empreendimentoId}` :
+                  `/empreendimento/${property.empreendimento.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`
+                }
                 className="text-[11px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md hover:bg-amber-100 transition-colors"
                 onClick={(e) => e.stopPropagation()}
+                title="Abrir página do edifício/condomínio/loteamento"
               >
                 {property.empreendimento}
               </Link>
@@ -166,7 +175,7 @@ export default function AllProperties() {
       setLoading(true);
       const { data, error } = await supabase
         .from('imoveis')
-        .select('*')
+        .select('*, edificios(nome), condominios(nome), empreendimentos(nome)')
         .eq('ativo_site', true);
 
       if (!error && data) {
@@ -192,7 +201,10 @@ export default function AllProperties() {
             seaView: row.vista_mar,
             acceptsExchange: row.aceita_permuta,
             paymentConditions: row.condicoes_pagamento || [],
-            empreendimento: row.empreendimento || '',
+            empreendimento: row.empreendimento || (row as any).edificios?.nome || (row as any).condominios?.nome || (row as any).empreendimentos?.nome || '',
+            edificioId: (row as any).edificio_id || '',
+            condominioId: (row as any).condominio_id || '',
+            empreendimentoId: (row as any).empreendimento_id || '',
             unitNumber: row.unidade || '',
             boxNumber: row.box || '',
             quadra: row.quadra || '',

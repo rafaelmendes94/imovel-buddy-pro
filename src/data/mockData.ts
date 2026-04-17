@@ -27,6 +27,9 @@ export interface Property {
   paymentConditions?: string[];
   paymentConditionsOther?: string;
   empreendimento?: string;
+  edificioId?: string;
+  condominioId?: string;
+  empreendimentoId?: string;
   unitNumber?: string;
   boxNumber?: string;
   quadra?: string;
