@@ -284,11 +284,29 @@ export default function VideoMaker() {
 
   const handleAddFinance = () => {
     if (!newFinance.property || !newFinance.client) return toast.error("Preencha os campos obrigatórios");
-    const entry: FinanceEntry = { id: Date.now().toString(), property: newFinance.property, client: newFinance.client, materialType: newFinance.materialType, clientType: newFinance.clientType, clientValue: Number(newFinance.clientValue) || 0, editorCost: Number(newFinance.editorCost) || 0, status: newFinance.status, dueDate: newFinance.dueDate };
+    const baseId = Date.now().toString();
+    const entry: FinanceEntry = { id: baseId, property: newFinance.property, client: newFinance.client, materialType: newFinance.materialType, clientType: newFinance.clientType, clientValue: Number(newFinance.clientValue) || 0, editorCost: Number(newFinance.editorCost) || 0, status: newFinance.status, dueDate: newFinance.dueDate };
     setFinance(prev => [...prev, entry]);
+
+    // Auto-cria card no Kanban na coluna "Para Gravar"
+    const newKanbanJob: VideoJob = {
+      id: baseId + "-job",
+      property: newFinance.property,
+      client: newFinance.client,
+      address: "",
+      value: Number(newFinance.clientValue) || 0,
+      materialType: newFinance.materialType,
+      clientType: newFinance.clientType,
+      status: "gravar",
+      dueDate: newFinance.dueDate,
+      notes: "",
+      createdAt: new Date().toISOString().split("T")[0],
+    };
+    setJobs(prev => [...prev, newKanbanJob]);
+
     setNewFinance({ property: "", client: "", clientValue: "", editorCost: "", dueDate: "", status: "pendente", materialType: "vr", clientType: "assinante" });
     setFinanceDialogOpen(false);
-    toast.success("Registro financeiro adicionado!");
+    toast.success("Registro financeiro adicionado e enviado para o Kanban (Para Gravar)!");
   };
   const toggleFinanceStatus = (id: string) => {
     setFinance(prev => prev.map(f => {
