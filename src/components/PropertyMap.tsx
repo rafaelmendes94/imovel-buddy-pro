@@ -51,7 +51,6 @@ export function PropertyMap({ properties, onSelectProperty }: PropertyMapProps) 
       zoom: 11,
       mapId: "PROPERTY_MAP",
       zoomControl: true,
-      zoomControlOptions: { position: ((window as any).google.maps.ControlPosition).RIGHT_BOTTOM },
       streetViewControl: false,
       mapTypeControl: false,
       fullscreenControl: false,
