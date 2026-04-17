@@ -192,7 +192,7 @@ export default function VideoMaker() {
 
   // Forms
   const [newJob, setNewJob] = useState({ property: "", client: "", address: "", value: "", dueDate: "", notes: "", status: "gravar" as VideoJob["status"], materialType: "vr" as MaterialType, clientType: "assinante" as ClientType });
-  const [newEvent, setNewEvent] = useState({ title: "", date: "", time: "", endTime: "", type: "gravacao" as AgendaEvent["type"], notes: "", location: "" });
+  const [newEvent, setNewEvent] = useState({ title: "", date: "", time: "", endTime: "", type: "gravacao" as AgendaEvent["type"], notes: "", location: "", property: "", client: "", clientValue: "", editorCost: "", materialType: "vr" as MaterialType, clientType: "assinante" as ClientType });
   const [newFinance, setNewFinance] = useState({ property: "", client: "", clientValue: "", editorCost: "", dueDate: "", status: "pendente" as FinanceEntry["status"], materialType: "vr" as MaterialType, clientType: "assinante" as ClientType });
 
   // ====== FINANCIAL METRICS ======
