@@ -18,7 +18,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ManualSalesDialog } from "@/components/relatorios/ManualSalesDialog";
-import { Database } from "lucide-react";
+import { AgenciamentosBI } from "@/components/relatorios/AgenciamentosBI";
+import { Database, Briefcase } from "lucide-react";
 
 // ─── Constants ───
 const SEGMENT_COLORS: Record<string, string> = {
@@ -34,7 +35,7 @@ const ALL_MONTHS = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set
 const MONTH_MAP: Record<string, number> = { "Jan": 0, "Fev": 1, "Mar": 2, "Abr": 3, "Mai": 4, "Jun": 5, "Jul": 6, "Ago": 7, "Set": 8, "Out": 9, "Nov": 10, "Dez": 11 };
 
 type TimePeriod = "Todos" | "Dia" | "Semana" | "Mês" | "Ano";
-type TabType = "relatorio" | "comparativo";
+type TabType = "relatorio" | "comparativo" | "agenciamentos";
 
 // ─── Helpers ───
 function isToday(d: string) { return new Date(d).toDateString() === new Date().toDateString(); }
