@@ -66,23 +66,25 @@ export function useReportData() {
 
     const manual: RealSaleRecord[] = (mvRes.data || []).map((row: any) => ({
       id: row.id,
-      propertyTitle: row.empreendimento || row.edificio_condominio || "Venda manual",
+      propertyTitle: row.imovel || "Agenciamento",
       city: row.cidade || "Sem cidade",
       neighborhood: row.bairro || "Sem bairro",
-      owner: "—",
+      owner: row.proprietario || "—",
       type: row.tipo || "Outros",
-      segment: "Médio Padrão",
-      broker: row.corretor || "Sem corretor",
+      segment: row.padrao || "Médio Padrão",
+      broker: "—",
       price: Number(row.valor) || 0,
-      date: row.data_venda ? new Date(row.data_venda).toISOString() : new Date().toISOString(),
-      empreendimento: row.empreendimento || "",
-      edificio: row.edificio_condominio || "",
-      condominio: row.edificio_condominio || "",
-      bedrooms: 0,
+      date: row.data_atualizacao || row.data_inclusao
+        ? new Date(row.data_atualizacao || row.data_inclusao).toISOString()
+        : new Date().toISOString(),
+      empreendimento: row.imovel || "",
+      edificio: row.imovel || "",
+      condominio: "",
+      bedrooms: parseInt(String(row.dormitorios || "0"), 10) || 0,
       seaView: false,
       isManual: true,
-      commission: Number(row.comissao) || 0,
-      client: row.cliente || "",
+      commission: 0,
+      client: "",
     }));
 
     setSales(real);
