@@ -24,6 +24,53 @@ function getGoogleMaps() {
   return (window as any).google?.maps;
 }
 
+function getMarkerPosition(marker: any) {
+  if (!marker) return null;
+  if (marker.position) return marker.position;
+  if (typeof marker.getPosition === "function") return marker.getPosition();
+  return null;
+}
+
+function setMarkerPosition(marker: any, position: any) {
+  if (!marker) return;
+  if ("position" in marker) {
+    marker.position = position;
+    return;
+  }
+  if (typeof marker.setPosition === "function") {
+    marker.setPosition(position);
+  }
+}
+
+function removeMarker(marker: any) {
+  if (!marker) return;
+  if ("map" in marker) {
+    marker.map = null;
+    return;
+  }
+  if (typeof marker.setMap === "function") {
+    marker.setMap(null);
+  }
+}
+
+function createDraggableMarker(maps: any, map: any, position: any) {
+  const AdvancedMarkerElement = maps.marker?.AdvancedMarkerElement;
+
+  if (AdvancedMarkerElement) {
+    return new AdvancedMarkerElement({
+      map,
+      position,
+      gmpDraggable: true,
+    });
+  }
+
+  return new maps.Marker({
+    map,
+    position,
+    draggable: true,
+  });
+}
+
 export function AddressMapPicker({ latitude, longitude, onChange }: AddressMapPickerProps) {
   const { ready, loading } = useGoogleMapsLoader();
   const mapRef = useRef<HTMLDivElement>(null);
@@ -88,7 +135,7 @@ export function AddressMapPicker({ latitude, longitude, onChange }: AddressMapPi
 
   const addDragListener = useCallback((marker: any) => {
     marker.addListener("dragend", () => {
-      const pos = marker.position;
+      const pos = getMarkerPosition(marker);
       if (pos) {
         skipCenterRef.current = true;
         reverseGeocode(pos);
@@ -115,32 +162,31 @@ export function AddressMapPicker({ latitude, longitude, onChange }: AddressMapPi
     mapInstanceRef.current = map;
 
     if (center !== DEFAULT_CENTER) {
-      markerRef.current = new maps.marker.AdvancedMarkerElement({
-        map,
-        position: center,
-        gmpDraggable: true,
-      });
+      markerRef.current = createDraggableMarker(maps, map, center);
       addDragListener(markerRef.current);
     }
 
-    map.addListener("click", (e: any) => {
+    const clickListener = map.addListener("click", (e: any) => {
       if (!e.latLng) return;
       skipCenterRef.current = true;
 
       if (markerRef.current) {
-        markerRef.current.position = e.latLng;
+        setMarkerPosition(markerRef.current, e.latLng);
       } else {
-        markerRef.current = new maps.marker.AdvancedMarkerElement({
-          map,
-          position: e.latLng,
-          gmpDraggable: true,
-        });
+        markerRef.current = createDraggableMarker(maps, map, e.latLng);
         addDragListener(markerRef.current);
       }
 
       reverseGeocode(e.latLng);
     });
-  }, [ready]);
+
+    return () => {
+      clickListener?.remove?.();
+      removeMarker(markerRef.current);
+      markerRef.current = null;
+      mapInstanceRef.current = null;
+    };
+  }, [ready, getCenter, addDragListener, reverseGeocode]);
 
   useEffect(() => {
     const maps = getGoogleMaps();
@@ -159,16 +205,12 @@ export function AddressMapPicker({ latitude, longitude, onChange }: AddressMapPi
     mapInstanceRef.current.setZoom(PIN_ZOOM);
 
     if (markerRef.current) {
-      markerRef.current.position = pos;
+      setMarkerPosition(markerRef.current, pos);
     } else {
-      markerRef.current = new maps.marker.AdvancedMarkerElement({
-        map: mapInstanceRef.current,
-        position: pos,
-        gmpDraggable: true,
-      });
+      markerRef.current = createDraggableMarker(maps, mapInstanceRef.current, pos);
       addDragListener(markerRef.current);
     }
-  }, [latitude, longitude]);
+  }, [latitude, longitude, addDragListener]);
 
   if (loading) {
     return (
