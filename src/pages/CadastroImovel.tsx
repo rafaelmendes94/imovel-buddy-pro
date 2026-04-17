@@ -817,41 +817,8 @@ export function ImovelForm({ editId }: { editId?: string }) {
       <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
         <SectionHeader icon={Landmark} title="Vincular a Edifício / Condomínio / Loteamento" />
         <p className="text-xs text-muted-foreground mb-4">Selecione apenas um. O endereço e infraestrutura serão preenchidos automaticamente.</p>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <EntitySelector
-            label="Edifício"
-            icon={<Building className="w-3.5 h-3.5" />}
-            table="edificios"
-            value={form.edificio_id}
-            onChange={(id) => {
-              set('edificio_id', id);
-              if (id) { set('condominio_id', ''); set('empreendimento_id', ''); }
-            }}
-            onSelect={handleEntitySelect}
-          />
-          <EntitySelector
-            label="Condomínio"
-            icon={<Fence className="w-3.5 h-3.5" />}
-            table="condominios"
-            value={form.condominio_id}
-            onChange={(id) => {
-              set('condominio_id', id);
-              if (id) { set('edificio_id', ''); set('empreendimento_id', ''); }
-            }}
-            onSelect={handleEntitySelect}
-          />
-          <EntitySelector
-            label="Loteamento"
-            icon={<Landmark className="w-3.5 h-3.5" />}
-            table="empreendimentos"
-            value={form.empreendimento_id}
-            onChange={(id) => {
-              set('empreendimento_id', id);
-              if (id) { set('edificio_id', ''); set('condominio_id', ''); }
-            }}
-            onSelect={handleEntitySelect}
-          />
-        </div>
+        <EntitySelectorsGroup form={form} set={set} handleEntitySelect={handleEntitySelect} />
+
       </div>
 
       {/* ===== BLOCO: ENDEREÇO COM CEP ===== */}
