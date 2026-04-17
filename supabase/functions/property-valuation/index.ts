@@ -130,6 +130,19 @@ const toolSchema = {
             required: ["factor", "percentage"],
           },
         },
+        priceAnalysis: {
+          type: "object",
+          description: "Análise comparativa entre o preço anunciado pelo proprietário e o valor de mercado calculado",
+          properties: {
+            listedPrice: { type: "number", description: "Preço atualmente anunciado" },
+            marketValue: { type: "number", description: "Valor de mercado estimado (mesmo de marketValue)" },
+            difference: { type: "number", description: "Diferença em reais (listedPrice - marketValue)" },
+            differencePercent: { type: "number", description: "Diferença percentual ((listedPrice - marketValue) / marketValue * 100)" },
+            verdict: { type: "string", enum: ["abaixo", "condizente", "acima"], description: "abaixo: >5% abaixo, condizente: dentro de ±5%, acima: >5% acima" },
+            reasoning: { type: "string", description: "Explicação detalhada do veredito incluindo comparação com portais e base interna" },
+          },
+          required: ["listedPrice", "marketValue", "difference", "differencePercent", "verdict", "reasoning"],
+        },
       },
       required: ["marketValue", "quickSaleValue", "pricePerSqm", "confidenceScore", "internalComparables", "foundListings", "platformBreakdown", "externalAnalysis", "rentalAnalysis", "improvementSuggestions", "neighborhoodInsights", "priceHistory", "estimatedSaleTime", "justification", "premiums"],
       additionalProperties: false,
@@ -143,7 +156,8 @@ serve(async (req) => {
   }
 
   try {
-    const { propertyData, existingProperties } = await req.json();
+    const { propertyData, existingProperties, currentPrice } = await req.json();
+    const listedPrice = Number(currentPrice ?? propertyData?.currentPrice ?? 0);
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
@@ -210,6 +224,14 @@ CRITÉRIOS DE VALORIZAÇÃO:
 - Andar alto (premium de 3-5% por andar)
 - Infraestrutura do condomínio/empreendimento
 - Estado de conservação e idade
+
+8. ANÁLISE DO PREÇO ANUNCIADO (priceAnalysis) — OBRIGATÓRIO quando listedPrice > 0:
+${listedPrice > 0 ? `   - O imóvel está anunciado por R$ ${listedPrice.toLocaleString("pt-BR")}.
+   - Compare ESSE preço com seu marketValue calculado e com a média dos portais.
+   - Calcule difference = listedPrice - marketValue e differencePercent.
+   - verdict: "abaixo" se mais que 5% abaixo do mercado | "condizente" se entre -5% e +5% | "acima" se mais de 5% acima.
+   - reasoning: explique objetivamente por que o preço está alinhado/desalinhado, citando comparativos internos e dos portais. Indique se é uma oportunidade, está justo ou está acima do que o mercado paga atualmente.
+   - listedPrice deve ser EXATAMENTE ${listedPrice}.` : "   - Sem preço anunciado informado: retorne listedPrice = 0 e verdict = \"condizente\" com reasoning explicando que não há preço para comparar."}
 
 Sempre responda em português brasileiro. Seja preciso, detalhado e profissional.`;
 
