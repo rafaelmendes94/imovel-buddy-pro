@@ -404,7 +404,7 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
     markersRef.current.forEach((m) => m.setMap(null));
     markersRef.current = [];
 
-    const colors: Record<string, string> = { Apartamento: "#f59e0b", Casa: "#3b82f6", Terreno: "#22c55e", Comercial: "#8b5cf6" };
+    const colors: Record<string, string> = { Apartamento: "#2563eb", Casa: "#3b82f6", Terreno: "#22c55e", Comercial: "#8b5cf6" };
     const svgIcons: Record<string, string> = {
       Apartamento: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/></svg>`,
       Casa: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>`,
@@ -412,18 +412,27 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
       Comercial: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/></svg>`,
     };
 
+    const shortPrice = (v: number) => {
+      if (v >= 1_000_000) return `R$ ${(v / 1_000_000).toFixed(v % 1_000_000 === 0 ? 0 : 1).replace('.', ',')}M`;
+      if (v >= 1_000) return `R$ ${Math.round(v / 1_000)}k`;
+      return `R$ ${v}`;
+    };
+
     filteredMapProperties.forEach((p) => {
       if (!p.lat || !p.lng) return;
-      const color = colors[p.type] || "#f59e0b";
+      const color = colors[p.type] || "#2563eb";
       const svg = svgIcons[p.type] || svgIcons.Apartamento;
       const broker = brokerInfo[p.broker] || { photo: "", whatsapp: "5511999999999" };
       const whatsMsg = encodeURIComponent(`Olá! Tenho interesse no imóvel: ${p.title}`);
 
       const pinDiv = document.createElement("div");
       pinDiv.innerHTML = `
-        <div style="position:relative;cursor:pointer;">
-          <div style="width:32px;height:32px;background:${color};border:2px solid white;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;">${svg}</div>
-          <div style="width:8px;height:8px;background:${color};transform:rotate(45deg);margin:-5px auto 0;box-shadow:1px 1px 3px rgba(0,0,0,0.25);"></div>
+        <div style="position:relative;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;">
+          <div style="background:white;color:${color};border:1.5px solid ${color};border-radius:999px;padding:2px 8px;font-size:11px;font-weight:800;font-family:system-ui,-apple-system,sans-serif;box-shadow:0 2px 6px rgba(0,0,0,0.18);white-space:nowrap;letter-spacing:-0.2px;">${shortPrice(p.price)}</div>
+          <div style="position:relative;">
+            <div style="width:30px;height:30px;background:${color};border:2px solid white;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;">${svg}</div>
+            <div style="width:8px;height:8px;background:${color};transform:rotate(45deg);margin:-5px auto 0;box-shadow:1px 1px 3px rgba(0,0,0,0.25);"></div>
+          </div>
         </div>`;
 
       const marker = new google.maps.marker.AdvancedMarkerElement({
@@ -439,7 +448,7 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
             <img src="${p.image}" alt="${p.title}" style="width:100%;height:120px;object-fit:cover;border-radius:8px;margin-bottom:8px;" />
             <h3 style="font-size:14px;font-weight:700;color:#1a1a1a;margin:0 0 4px;">${p.title}</h3>
             <p style="font-size:11px;color:#666;margin:0 0 6px;">📍 ${p.address}, ${p.city}</p>
-            <p style="font-size:18px;font-weight:800;color:#f59e0b;margin:0 0 8px;">${formatCurrency(p.price)}</p>
+            <p style="font-size:18px;font-weight:800;color:${color};margin:0 0 8px;">${formatCurrency(p.price)}</p>
             <div style="display:flex;gap:12px;font-size:11px;color:#888;margin-bottom:10px;">
               ${p.area > 0 ? `<span>📐 ${p.area}m²</span>` : ""}
               ${p.bedrooms > 0 ? `<span>🛏 ${p.bedrooms} qts</span>` : ""}
@@ -532,7 +541,7 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
         <div className="bg-white/95 backdrop-blur-md rounded-xl p-3 shadow-lg border border-gray-100">
           <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Legenda</p>
           <div className="space-y-1.5">
-            <div className="flex items-center gap-2 text-xs font-medium text-gray-700"><span className="w-4 h-4 rounded bg-blue-500 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/></svg></span> Apartamento</div>
+            <div className="flex items-center gap-2 text-xs font-medium text-gray-700"><span className="w-4 h-4 rounded bg-blue-600 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/></svg></span> Apartamento</div>
             <div className="flex items-center gap-2 text-xs font-medium text-gray-700"><span className="w-4 h-4 rounded bg-blue-500 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span> Casa</div>
             <div className="flex items-center gap-2 text-xs font-medium text-gray-700"><span className="w-4 h-4 rounded bg-emerald-500 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M10 20.777a6.942 6.942 0 0 1-2.5-12.026"/><path d="M2 21h20"/></svg></span> Terreno</div>
             <div className="flex items-center gap-2 text-xs font-medium text-gray-700"><span className="w-4 h-4 rounded bg-violet-500 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/></svg></span> Comercial</div>
