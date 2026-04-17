@@ -23,6 +23,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { generatePropertyPdf } from "@/utils/generatePropertyPdf";
+import { useAuth } from "@/hooks/useAuth";
 
 // Broker info
 const brokerInfo: Record<string, { photo: string; whatsapp: string }> = {
