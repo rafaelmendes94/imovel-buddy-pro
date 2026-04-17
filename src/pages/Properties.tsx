@@ -716,6 +716,7 @@ export default function Properties() {
       empreendimento: property.empreendimento || "",
       descricao: property.description || "",
       id: property.id,
+      preco: String(property.price || 0),
     });
     navigate(`/avaliacoes?${params.toString()}`);
   };

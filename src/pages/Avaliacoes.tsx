@@ -73,11 +73,21 @@ interface ImprovementSuggestion {
   estimatedCost?: string;
 }
 
+interface PriceAnalysis {
+  listedPrice: number;
+  marketValue: number;
+  difference: number;
+  differencePercent: number;
+  verdict: "abaixo" | "condizente" | "acima";
+  reasoning: string;
+}
+
 interface ValuationResult {
   marketValue: number;
   quickSaleValue: number;
   pricePerSqm: number;
   confidenceScore?: number;
+  priceAnalysis?: PriceAnalysis;
   internalComparables: {
     id: string;
     title: string;
