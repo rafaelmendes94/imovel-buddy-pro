@@ -389,22 +389,6 @@ export default function Reports() {
               </div>
             </div>
 
-            {/* ─── CHARTS ROW ─── */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {/* Revenue Bar Chart */}
-              <div className="elevated-card rounded-xl p-5">
-                <h3 className="text-sm font-semibold text-card-foreground mb-1 flex items-center gap-2">
-                  <BarChart3 className="w-4 h-4 text-accent" /> Receita Mensal
-                </h3>
-                <p className="text-[10px] text-muted-foreground mb-3">Clique em uma barra para detalhes</p>
-                <ResponsiveContainer width="100%" height={260}>
-                  <BarChart data={revenueBarData} barCategoryGap="20%" onClick={(data) => { if (data?.activeLabel) setSelectedMonth(data.activeLabel); }} style={{ cursor: "pointer" }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                    <XAxis dataKey="month" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
-                    <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v) => `${(v / 1000000).toFixed(1)}M`} />
-                    <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "11px" }} formatter={(value: number) => [formatCurrency(value), "Receita"]} />
-                    <ReferenceLine y={avgRevenue} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" />
-                    <Bar dataKey="receita" radius={[4, 4, 0, 0]} animationDuration={800}>
             {/* ─── BLOCOS PRINCIPAIS (drag para reordenar) ─── */}
             <DraggableBlocks
               storageKey="mv-reports-blocks-order"
@@ -553,6 +537,99 @@ export default function Reports() {
                 },
               ]}
             />
+          </>
+        ) : (
+          /* ─── COMPARATIVO ANUAL TAB ─── */
+          <ComparativoAnual data={comparativoData} currentYear={currentYear} previousYear={previousYear} />
+        )}
+
+        {/* Month Sales Dialog */}
+        <Dialog open={!!selectedMonth} onOpenChange={() => setSelectedMonth(null)}>
+          <DialogContent className="max-w-3xl max-h-[80vh] overflow-auto">
+            <DialogHeader><DialogTitle>Vendas de {selectedMonth}</DialogTitle></DialogHeader>
+            {(() => {
+              const monthNum = selectedMonth ? MONTH_MAP[selectedMonth] : -1;
+              const monthSales = filtered.filter(s => new Date(s.date).getMonth() === monthNum);
+              const totalVgv = monthSales.reduce((sum, s) => sum + s.price, 0);
+              return (
+                <div className="space-y-4">
+                  <div className="flex gap-4">
+                    <div className="p-3 rounded-lg bg-primary/10"><p className="text-xs text-muted-foreground">Total de Vendas</p><p className="text-lg font-bold text-foreground">{monthSales.length}</p></div>
+                    <div className="p-3 rounded-lg bg-accent/10"><p className="text-xs text-muted-foreground">VGV do Mês</p><p className="text-lg font-bold text-accent">{formatCurrency(totalVgv)}</p></div>
+                  </div>
+                  {monthSales.length === 0 ? <p className="text-sm text-muted-foreground py-8 text-center">Nenhuma venda neste mês</p> : (
+                    <Table>
+                      <TableHeader><TableRow><TableHead>Imóvel</TableHead><TableHead>Cidade</TableHead><TableHead>Tipo</TableHead><TableHead>Segmento</TableHead><TableHead>Corretor</TableHead><TableHead className="text-right">Valor</TableHead></TableRow></TableHeader>
+                      <TableBody>
+                        {monthSales.map(s => (
+                          <TableRow key={s.id}>
+                            <TableCell className="font-medium text-foreground">{s.propertyTitle}</TableCell>
+                            <TableCell className="text-muted-foreground">{s.city}</TableCell>
+                            <TableCell><Badge variant="outline" className="text-xs">{s.type}</Badge></TableCell>
+                            <TableCell><Badge className="text-xs" style={{ background: SEGMENT_COLORS[s.segment] + "33", color: SEGMENT_COLORS[s.segment], border: "none" }}>{s.segment}</Badge></TableCell>
+                            <TableCell className="text-muted-foreground">{s.broker}</TableCell>
+                            <TableCell className="text-right font-bold text-foreground">{formatCurrency(s.price)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  )}
+                </div>
+              );
+            })()}
+          </DialogContent>
+        </Dialog>
+      </div>
+    </AppLayout>
+  );
+}
+
+// ─── COMPARATIVO ANUAL COMPONENT ───
+function ComparativoAnual({ data, currentYear, previousYear }: {
+  data: { segmentComparison: any[]; monthlyComparison: any[]; curTotal: number; prevTotal: number; totalValorization: number; curCount: number; prevCount: number };
+  currentYear: number; previousYear: number;
+}) {
+  return (
+    <div className="space-y-5">
+      {/* Overview cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="elevated-card rounded-xl p-5">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">VGV {currentYear}</p>
+          <p className="text-2xl font-bold text-foreground mt-1">{formatCurrency(data.curTotal)}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">{data.curCount} vendas</p>
+        </div>
+        <div className="elevated-card rounded-xl p-5">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">VGV {previousYear}</p>
+          <p className="text-2xl font-bold text-foreground mt-1">{formatCurrency(data.prevTotal)}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">{data.prevCount} vendas</p>
+        </div>
+        <div className="elevated-card rounded-xl p-5">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Valorização Geral</p>
+          <p className={`text-2xl font-bold mt-1 flex items-center gap-2 ${data.totalValorization >= 0 ? "text-emerald-500" : "text-destructive"}`}>
+            {data.totalValorization >= 0 ? <ArrowUp className="w-5 h-5" /> : <ArrowDown className="w-5 h-5" />}
+            {data.totalValorization > 0 ? "+" : ""}{data.totalValorization.toFixed(1)}%
+          </p>
+          <p className="text-xs text-muted-foreground mt-0.5">vs ano anterior</p>
+        </div>
+      </div>
+
+      {/* Monthly comparison chart */}
+      <div className="elevated-card rounded-xl p-5">
+        <h3 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
+          <BarChart3 className="w-4 h-4 text-accent" /> VGV Mensal — {currentYear} vs {previousYear}
+        </h3>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={data.monthlyComparison} barGap={4}>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+            <XAxis dataKey="month" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+            <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v) => v > 0 ? `${(v / 1000000).toFixed(1)}M` : "0"} />
+            <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "11px" }} formatter={(v: number) => [formatCurrency(v)]} />
+            <Legend wrapperStyle={{ fontSize: "11px" }} />
+            <Bar dataKey={`VGV ${currentYear}`} fill="hsl(142, 71%, 45%)" radius={[4, 4, 0, 0]} />
+            <Bar dataKey={`VGV ${previousYear}`} fill="hsl(var(--muted-foreground))" radius={[4, 4, 0, 0]} opacity={0.5} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
 
       {/* Segment bars visual */}
       {data.segmentComparison.length > 0 && (
