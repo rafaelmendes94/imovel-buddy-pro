@@ -546,6 +546,8 @@ export default function Properties() {
         linkVideo: (row as any).link_video || "",
         linkMaterial: (row as any).link_material || "",
         link360: (row as any).link_360 || "",
+        plataformaVenda: (row as any).plataforma_venda || "",
+        dataVenda: (row as any).data_venda || "",
       }));
 
       setPropertyList(mapped);
@@ -1603,6 +1605,15 @@ export default function Properties() {
       {/* Floating tools */}
       <RoutePlanner properties={routeProperties} />
       <SharkAI properties={propertyList} onSelectProperty={setSelectedProperty} />
+
+      {/* Sold confirmation dialog */}
+      <SoldConfirmDialog
+        open={!!pendingSold}
+        propertyTitle={pendingSold?.title || ""}
+        defaultDate={pendingSold?.dataVenda}
+        onConfirm={handleConfirmSold}
+        onCancel={() => setPendingSold(null)}
+      />
 
       {/* Property Detail Modal */}
       <PropertyDetailModal
