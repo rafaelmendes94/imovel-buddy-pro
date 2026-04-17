@@ -354,7 +354,7 @@ export default function VideoMaker() {
           notes: newEvent.notes,
           createdAt: new Date().toISOString().split("T")[0],
         };
-        setJobs(prev => [...prev, newKanbanJob]);
+        setJobs(prev => [newKanbanJob, ...prev]);
 
         const newFinanceEntry: FinanceEntry = {
           id: baseId + "-fin",
@@ -367,7 +367,7 @@ export default function VideoMaker() {
           status: "pendente",
           dueDate: newEvent.date,
         };
-        setFinance(prev => [...prev, newFinanceEntry]);
+        setFinance(prev => [newFinanceEntry, ...prev]);
         toast.success("Evento criado e enviado para Kanban e Financeiro!");
       } else {
         toast.success("Evento adicionado!");
