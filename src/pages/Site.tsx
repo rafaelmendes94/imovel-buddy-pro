@@ -150,7 +150,7 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, 
         {property.status !== "Disponível" && (
           <span className={cn(
             "absolute top-3 left-3 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide z-20",
-            property.status === "Vendido" ? "bg-red-500 text-white" : "bg-amber-500 text-white"
+            property.status === "Vendido" ? "bg-red-500 text-white" : "bg-blue-500 text-white"
           )}>
             {property.status}
           </span>
@@ -160,7 +160,7 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, 
         {property.exclusivityTerm && (
           <button
             onClick={(e) => { e.stopPropagation(); onViewTerm?.(property.exclusivityTerm!); }}
-            className="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-amber-500/90 text-white backdrop-blur-sm hover:bg-amber-600 transition-colors z-20 shadow-md"
+            className="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-blue-500/90 text-white backdrop-blur-sm hover:bg-blue-600 transition-colors z-20 shadow-md"
           >
             <FileCheck className="w-3 h-3" /> Ex.Assinada
           </button>
@@ -517,7 +517,7 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
               className={cn(
                 "flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all",
                 mapStyle === style.key
-                  ? "bg-amber-500 text-white shadow-sm"
+                  ? "bg-blue-500 text-white shadow-sm"
                   : "text-gray-600 hover:bg-gray-100"
               )}
             >
@@ -530,7 +530,7 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
         <div className="bg-white/95 backdrop-blur-md rounded-xl p-3 shadow-lg border border-gray-100">
           <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Legenda</p>
           <div className="space-y-1.5">
-            <div className="flex items-center gap-2 text-xs font-medium text-gray-700"><span className="w-4 h-4 rounded bg-amber-500 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/></svg></span> Apartamento</div>
+            <div className="flex items-center gap-2 text-xs font-medium text-gray-700"><span className="w-4 h-4 rounded bg-blue-500 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/></svg></span> Apartamento</div>
             <div className="flex items-center gap-2 text-xs font-medium text-gray-700"><span className="w-4 h-4 rounded bg-blue-500 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span> Casa</div>
             <div className="flex items-center gap-2 text-xs font-medium text-gray-700"><span className="w-4 h-4 rounded bg-emerald-500 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M10 20.777a6.942 6.942 0 0 1-2.5-12.026"/><path d="M2 21h20"/></svg></span> Terreno</div>
             <div className="flex items-center gap-2 text-xs font-medium text-gray-700"><span className="w-4 h-4 rounded bg-violet-500 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/></svg></span> Comercial</div>
@@ -545,7 +545,7 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
             <select
               value={mapFilterType}
               onChange={(e) => setMapFilterType(e.target.value)}
-              className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+              className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
             >
               <option value="">Todos os tipos</option>
               <option value="Apartamento">Apartamento</option>
@@ -557,7 +557,7 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
             <select
               value={mapFilterEmpreendimento}
               onChange={(e) => setMapFilterEmpreendimento(e.target.value)}
-              className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+              className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
             >
               <option value="">Todos loteamentos</option>
               {uniqueMapEmpreendimentos.map((emp) => (
@@ -570,13 +570,13 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
               placeholder="🔍 Endereço ou bairro..."
               value={mapFilterAddress}
               onChange={(e) => setMapFilterAddress(e.target.value)}
-              className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-amber-400 min-w-[160px] flex-1"
+              className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 min-w-[160px] flex-1"
             />
 
             <select
               value={mapFilterPriceMax}
               onChange={(e) => setMapFilterPriceMax(e.target.value)}
-              className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+              className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
             >
               <option value="">Valor máximo</option>
               <option value="300000">Até R$ 300 mil</option>
@@ -610,7 +610,7 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
 function SectionHeader({ title, subtitle, icon: Icon }: { title: string; subtitle: string; icon: typeof Home }) {
   return (
     <div className="flex items-center gap-3 mb-6">
-      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-amber-400 flex items-center justify-center shadow-md">
+      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-400 flex items-center justify-center shadow-md">
         <Icon className="w-5 h-5 text-white" />
       </div>
       <div>
@@ -993,7 +993,7 @@ export default function Site() {
             {/* Title */}
             <div className="max-w-2xl space-y-4">
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight">
-                MV <span className="text-amber-400">CONNECT</span>
+                MV <span className="text-blue-400">CONNECT</span>
               </h1>
               <p className="text-lg text-gray-300 leading-relaxed">
                 Conectando corretores a corretores e imóveis a clientes.
@@ -1004,13 +1004,13 @@ export default function Site() {
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
               <button
                 onClick={() => setActiveCategory("todos")}
-                className="group bg-white/10 hover:bg-amber-500/90 backdrop-blur-md rounded-2xl p-4 border border-white/20 hover:border-amber-400 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-amber-500/20 text-left"
+                className="group bg-white/10 hover:bg-blue-500/90 backdrop-blur-md rounded-2xl p-4 border border-white/20 hover:border-blue-400 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-blue-500/20 text-left"
               >
-                <div className="w-10 h-10 rounded-xl bg-amber-400/20 group-hover:bg-white/20 flex items-center justify-center mb-3 transition-colors">
-                  <Star className="w-5 h-5 text-amber-400 group-hover:text-white transition-colors" />
+                <div className="w-10 h-10 rounded-xl bg-blue-400/20 group-hover:bg-white/20 flex items-center justify-center mb-3 transition-colors">
+                  <Star className="w-5 h-5 text-blue-400 group-hover:text-white transition-colors" />
                 </div>
                 <p className="text-2xl font-black text-white">{available.length}</p>
-                <p className="text-[11px] font-semibold text-gray-300 group-hover:text-amber-100 uppercase tracking-wider">Total Imóveis</p>
+                <p className="text-[11px] font-semibold text-gray-300 group-hover:text-blue-100 uppercase tracking-wider">Total Imóveis</p>
               </button>
 
               <button
@@ -1057,12 +1057,12 @@ export default function Site() {
                 <p className="text-[11px] font-semibold text-gray-300 group-hover:text-violet-100 uppercase tracking-wider">Xangri-lá</p>
               </button>
 
-              <div className="bg-gradient-to-br from-amber-500/30 to-amber-600/30 backdrop-blur-md rounded-2xl p-4 border border-amber-400/40">
-                <div className="w-10 h-10 rounded-xl bg-amber-400/30 flex items-center justify-center mb-3">
-                  <DollarSign className="w-5 h-5 text-amber-300" />
+              <div className="bg-gradient-to-br from-blue-500/30 to-blue-600/30 backdrop-blur-md rounded-2xl p-4 border border-blue-400/40">
+                <div className="w-10 h-10 rounded-xl bg-blue-400/30 flex items-center justify-center mb-3">
+                  <DollarSign className="w-5 h-5 text-blue-300" />
                 </div>
-                <p className="text-lg font-black text-amber-300 leading-tight">{formatCurrency(totalVGV)}</p>
-                <p className="text-[11px] font-semibold text-amber-200/80 uppercase tracking-wider">VGV Cadastrado</p>
+                <p className="text-lg font-black text-blue-300 leading-tight">{formatCurrency(totalVGV)}</p>
+                <p className="text-[11px] font-semibold text-blue-200/80 uppercase tracking-wider">VGV Cadastrado</p>
               </div>
             </div>
 
@@ -1105,7 +1105,7 @@ export default function Site() {
                 <select
                   value={filterCity}
                   onChange={(e) => setFilterCity(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 >
                   <option value="">Todas</option>
                   <option value="Capão da Canoa">Capão da Canoa</option>
@@ -1117,7 +1117,7 @@ export default function Site() {
                 <select
                   value={filterType}
                   onChange={(e) => setFilterType(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 >
                   <option value="">Todos</option>
                   <option value="Apartamento">Apartamento</option>
@@ -1131,7 +1131,7 @@ export default function Site() {
                 <select
                   value={filterBedrooms}
                   onChange={(e) => setFilterBedrooms(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 >
                   <option value="">Qualquer</option>
                   <option value="1">1+</option>
@@ -1145,7 +1145,7 @@ export default function Site() {
                 <select
                   value={filterPriceMin}
                   onChange={(e) => setFilterPriceMin(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 >
                   <option value="">Sem mínimo</option>
                   <option value="200000">R$ 200 mil</option>
@@ -1159,7 +1159,7 @@ export default function Site() {
                 <select
                   value={filterPriceMax}
                   onChange={(e) => setFilterPriceMax(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 >
                   <option value="">Sem máximo</option>
                   <option value="500000">R$ 500 mil</option>
@@ -1174,7 +1174,7 @@ export default function Site() {
                 <select
                   value={filterCondition}
                   onChange={(e) => setFilterCondition(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 >
                   <option value="">Todas</option>
                   <option value="12x">12x</option>
@@ -1194,7 +1194,7 @@ export default function Site() {
                 <select
                   value={filterEmpreendimento}
                   onChange={(e) => setFilterEmpreendimento(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 >
                   <option value="">Todos</option>
                   {uniqueEmpreendimentos.map((emp) => (
@@ -1205,7 +1205,7 @@ export default function Site() {
               <div className="flex items-end gap-2">
                 <button
                   onClick={() => { setActiveCategory("todos"); setShowFilters(false); }}
-                  className="flex-1 px-4 py-2 rounded-lg bg-amber-500 text-white text-sm font-bold hover:bg-amber-600 transition-colors"
+                  className="flex-1 px-4 py-2 rounded-lg bg-blue-500 text-white text-sm font-bold hover:bg-blue-600 transition-colors"
                 >
                   Buscar
                 </button>
@@ -1233,7 +1233,7 @@ export default function Site() {
               className={cn(
                 "flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all",
                 activeCategory === cat.key
-                  ? "bg-amber-500 text-white shadow-sm"
+                  ? "bg-blue-500 text-white shadow-sm"
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               )}
             >
@@ -1304,7 +1304,7 @@ export default function Site() {
             .map(([name, data]) => ({ name, ...data, photo: brokerInfo[name]?.photo || "" }))
             .sort((a, b) => b.value - a.value);
           const displayRanking = showFullRanking ? ranking : ranking.slice(0, 3);
-          const medalColors = ["from-amber-400 to-yellow-500", "from-gray-300 to-gray-400", "from-orange-400 to-orange-500"];
+          const medalColors = ["from-blue-400 to-yellow-500", "from-gray-300 to-gray-400", "from-blue-400 to-blue-500"];
           const medalIcons = [Trophy, Award, Medal];
 
           return (
@@ -1318,7 +1318,7 @@ export default function Site() {
                     <Link
                       key={broker.name}
                       to={`/corretor/${slug}`}
-                      className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg hover:border-amber-200 transition-all group"
+                      className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg hover:border-blue-200 transition-all group"
                     >
                       {/* Position */}
                       <div className={cn(
@@ -1336,12 +1336,12 @@ export default function Site() {
                       <img
                         src={broker.photo}
                         alt={broker.name}
-                        className="w-12 h-12 rounded-full object-cover border-2 border-gray-200 group-hover:border-amber-400 transition-colors flex-shrink-0"
+                        className="w-12 h-12 rounded-full object-cover border-2 border-gray-200 group-hover:border-blue-400 transition-colors flex-shrink-0"
                       />
 
                       {/* Info */}
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-gray-900 group-hover:text-amber-700 transition-colors">{broker.name}</p>
+                        <p className="text-sm font-bold text-gray-900 group-hover:text-blue-700 transition-colors">{broker.name}</p>
                         <p className="text-xs text-gray-500">{broker.count} {broker.count === 1 ? "venda" : "vendas"}</p>
                       </div>
 
@@ -1351,7 +1351,7 @@ export default function Site() {
                         <p className="text-[10px] text-gray-400 uppercase tracking-wider">VGV vendido</p>
                       </div>
 
-                      <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-amber-500 transition-colors flex-shrink-0" />
+                      <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-blue-500 transition-colors flex-shrink-0" />
                     </Link>
                   );
                 })}
@@ -1361,7 +1361,7 @@ export default function Site() {
                   to="/ranking"
                   className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gray-900 text-white text-sm font-bold hover:bg-gray-800 transition-colors shadow-md hover:shadow-lg"
                 >
-                  <Trophy className="w-4 h-4 text-amber-400" />
+                  <Trophy className="w-4 h-4 text-blue-400" />
                   Ver Ranking Completo
                   <ChevronRight className="w-4 h-4" />
                 </Link>
@@ -1402,7 +1402,7 @@ export default function Site() {
                   <Link
                     key={`${partner.name}-${i}`}
                     to={`/parceiro/${partner.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`}
-                    className="flex-shrink-0 w-40 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden hover:border-amber-300"
+                    className="flex-shrink-0 w-40 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden hover:border-blue-300"
                   >
                     <div className="h-20 overflow-hidden">
                       <img src={partner.logo} alt={partner.name} className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity" />
@@ -1508,7 +1508,7 @@ export default function Site() {
           <div className="flex justify-center">
             <Link
               to="/todos-imoveis"
-              className="px-8 py-4 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-400 text-white text-base font-extrabold hover:from-amber-600 hover:to-amber-500 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
+              className="px-8 py-4 rounded-2xl bg-gradient-to-r from-blue-500 to-blue-400 text-white text-base font-extrabold hover:from-blue-600 hover:to-blue-500 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
             >
               <Search className="w-5 h-5" /> Ver Todos os Imóveis ({available.length})
             </Link>
@@ -1529,10 +1529,10 @@ export default function Site() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-amber-400 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-400 flex items-center justify-center">
                   <Home className="w-4 h-4 text-white" />
                 </div>
-                <span className="text-lg font-extrabold text-white">MV <span className="text-amber-400">CONNECT</span></span>
+                <span className="text-lg font-extrabold text-white">MV <span className="text-blue-400">CONNECT</span></span>
               </div>
               <p className="text-sm leading-relaxed">
                 Conectando corretores a corretores e imóveis a clientes. Sua plataforma de confiança no litoral.
@@ -1541,20 +1541,20 @@ export default function Site() {
             <div>
               <h4 className="font-bold text-white mb-4">Categorias</h4>
               <ul className="space-y-2 text-sm">
-                <li><button onClick={() => setActiveCategory("apartamentos")} className="hover:text-amber-400 transition-colors">Apartamentos</button></li>
-                <li><button onClick={() => setActiveCategory("casas")} className="hover:text-amber-400 transition-colors">Casas</button></li>
-                <li><button onClick={() => setActiveCategory("condominios")} className="hover:text-amber-400 transition-colors">Condomínios</button></li>
-                <li><button onClick={() => setActiveCategory("lotes-cond")} className="hover:text-amber-400 transition-colors">Lotes Condomínio</button></li>
-                <li><button onClick={() => setActiveCategory("lotes-bairro")} className="hover:text-amber-400 transition-colors">Lotes Bairro</button></li>
+                <li><button onClick={() => setActiveCategory("apartamentos")} className="hover:text-blue-400 transition-colors">Apartamentos</button></li>
+                <li><button onClick={() => setActiveCategory("casas")} className="hover:text-blue-400 transition-colors">Casas</button></li>
+                <li><button onClick={() => setActiveCategory("condominios")} className="hover:text-blue-400 transition-colors">Condomínios</button></li>
+                <li><button onClick={() => setActiveCategory("lotes-cond")} className="hover:text-blue-400 transition-colors">Lotes Condomínio</button></li>
+                <li><button onClick={() => setActiveCategory("lotes-bairro")} className="hover:text-blue-400 transition-colors">Lotes Bairro</button></li>
               </ul>
             </div>
             <div>
               <h4 className="font-bold text-white mb-4">Contato</h4>
               <div className="space-y-3 text-sm">
-                <a href="tel:+5511999999999" className="flex items-center gap-2 hover:text-amber-400 transition-colors">
+                <a href="tel:+5511999999999" className="flex items-center gap-2 hover:text-blue-400 transition-colors">
                   <Phone className="w-4 h-4" /> (11) 99999-9999
                 </a>
-                <a href="mailto:contato@imobcrm.com" className="flex items-center gap-2 hover:text-amber-400 transition-colors">
+                <a href="mailto:contato@imobcrm.com" className="flex items-center gap-2 hover:text-blue-400 transition-colors">
                   <Mail className="w-4 h-4" /> contato@imobcrm.com
                 </a>
                 <a href="https://wa.me/5511999999999" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-colors text-sm mt-2">
@@ -1573,7 +1573,7 @@ export default function Site() {
       <button
         onClick={scrollToTop}
         className={cn(
-          "fixed bottom-6 right-6 w-12 h-12 rounded-full bg-amber-500 text-white shadow-lg flex items-center justify-center hover:bg-amber-600 transition-all z-50",
+          "fixed bottom-6 right-6 w-12 h-12 rounded-full bg-blue-500 text-white shadow-lg flex items-center justify-center hover:bg-blue-600 transition-all z-50",
           "opacity-100 scale-100"
         )}
       >
@@ -1595,7 +1595,7 @@ export default function Site() {
           <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between p-4 border-b border-gray-100">
               <div className="flex items-center gap-2">
-                <FileCheck className="w-5 h-5 text-amber-500" />
+                <FileCheck className="w-5 h-5 text-blue-500" />
                 <h3 className="text-base font-bold text-gray-900">Termo de Exclusividade</h3>
               </div>
               <div className="flex items-center gap-2">
@@ -1710,7 +1710,7 @@ function FavoritesPage({
             <Heart className="w-16 h-16 text-gray-300 mx-auto" />
             <h2 className="text-xl font-bold text-gray-700">Nenhum favorito ainda</h2>
             <p className="text-gray-500">Clique no coração dos imóveis para adicioná-los aqui.</p>
-            <button onClick={onClose} className="mt-4 px-6 py-2.5 rounded-xl bg-amber-500 text-white font-bold hover:bg-amber-600 transition-colors">
+            <button onClick={onClose} className="mt-4 px-6 py-2.5 rounded-xl bg-blue-500 text-white font-bold hover:bg-blue-600 transition-colors">
               Voltar ao site
             </button>
           </div>
@@ -1724,7 +1724,7 @@ function FavoritesPage({
               <select
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
-                className="px-3 py-2 rounded-lg border border-gray-200 text-sm bg-white hover:border-amber-300 focus:ring-2 focus:ring-amber-200 focus:outline-none"
+                className="px-3 py-2 rounded-lg border border-gray-200 text-sm bg-white hover:border-blue-300 focus:ring-2 focus:ring-blue-200 focus:outline-none"
               >
                 <option value="">Todos os tipos</option>
                 {uniqueTypes.map((t) => <option key={t} value={t}>{t}</option>)}
@@ -1732,7 +1732,7 @@ function FavoritesPage({
               <select
                 value={filterCity}
                 onChange={(e) => setFilterCity(e.target.value)}
-                className="px-3 py-2 rounded-lg border border-gray-200 text-sm bg-white hover:border-amber-300 focus:ring-2 focus:ring-amber-200 focus:outline-none"
+                className="px-3 py-2 rounded-lg border border-gray-200 text-sm bg-white hover:border-blue-300 focus:ring-2 focus:ring-blue-200 focus:outline-none"
               >
                 <option value="">Todas as cidades</option>
                 {uniqueCities.map((c) => <option key={c} value={c}>{c}</option>)}
@@ -1740,7 +1740,7 @@ function FavoritesPage({
               <select
                 value={filterBedrooms}
                 onChange={(e) => setFilterBedrooms(e.target.value)}
-                className="px-3 py-2 rounded-lg border border-gray-200 text-sm bg-white hover:border-amber-300 focus:ring-2 focus:ring-amber-200 focus:outline-none"
+                className="px-3 py-2 rounded-lg border border-gray-200 text-sm bg-white hover:border-blue-300 focus:ring-2 focus:ring-blue-200 focus:outline-none"
               >
                 <option value="">Quartos</option>
                 <option value="1">1+</option>
@@ -1758,7 +1758,7 @@ function FavoritesPage({
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                  className="px-3 py-2 rounded-lg border border-gray-200 text-sm bg-white hover:border-amber-300 focus:ring-2 focus:ring-amber-200 focus:outline-none"
+                  className="px-3 py-2 rounded-lg border border-gray-200 text-sm bg-white hover:border-blue-300 focus:ring-2 focus:ring-blue-200 focus:outline-none"
                 >
                   <option value="recent">Mais recentes</option>
                   <option value="price-asc">Menor preço</option>
