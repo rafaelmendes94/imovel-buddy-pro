@@ -145,17 +145,21 @@ interface EntityOption {
   estado?: string;
 }
 
-function EntitySelector({ label, icon, table, value, onChange, onSelect }: {
+function EntitySelector({ label, icon, table, value, onChange, onSelect, openId, setOpenId, id }: {
   label: string;
   icon: React.ReactNode;
   table: 'edificios' | 'condominios' | 'empreendimentos';
   value: string;
   onChange: (id: string) => void;
   onSelect: (entity: EntityOption) => void;
+  openId: string | null;
+  setOpenId: (id: string | null) => void;
+  id: string;
 }) {
   const [options, setOptions] = useState<EntityOption[]>([]);
   const [search, setSearch] = useState('');
-  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const open = openId === id;
 
   useEffect(() => {
     const load = async () => {
@@ -165,18 +169,30 @@ function EntitySelector({ label, icon, table, value, onChange, onSelect }: {
     load();
   }, [table]);
 
+  useEffect(() => {
+    if (!open) return;
+    const handleClick = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpenId(null);
+        setSearch('');
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [open, setOpenId]);
+
   const filtered = options.filter(o => o.nome.toLowerCase().includes(search.toLowerCase()));
   const selectedName = options.find(o => o.id === value)?.nome || '';
 
   return (
-    <div className="space-y-1.5 relative">
+    <div className="space-y-1.5 relative" ref={containerRef}>
       <Label className="text-xs flex items-center gap-1">{icon} {label}</Label>
       <div className="relative">
         <Input
           placeholder={`Buscar ${label.toLowerCase()}...`}
           value={open ? search : selectedName}
-          onChange={(e) => { setSearch(e.target.value); setOpen(true); }}
-          onFocus={() => setOpen(true)}
+          onChange={(e) => { setSearch(e.target.value); setOpenId(id); }}
+          onFocus={() => setOpenId(id)}
         />
         {value && (
           <button type="button" onClick={() => { onChange(''); setSearch(''); }} className="absolute right-2 top-1/2 -translate-y-1/2">
@@ -194,7 +210,7 @@ function EntitySelector({ label, icon, table, value, onChange, onSelect }: {
                 onChange(o.id);
                 onSelect(o);
                 setSearch('');
-                setOpen(false);
+                setOpenId(null);
               }}
               className="w-full text-left px-3 py-2 text-sm hover:bg-accent transition-colors"
             >
@@ -209,6 +225,60 @@ function EntitySelector({ label, icon, table, value, onChange, onSelect }: {
           Nenhum encontrado
         </div>
       )}
+    </div>
+  );
+}
+
+function EntitySelectorsGroup({ form, set, handleEntitySelect }: {
+  form: any;
+  set: (k: any, v: any) => void;
+  handleEntitySelect: (entity: EntityOption) => void;
+}) {
+  const [openId, setOpenId] = useState<string | null>(null);
+  return (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <EntitySelector
+        id="edificio"
+        openId={openId}
+        setOpenId={setOpenId}
+        label="Edifício"
+        icon={<Building className="w-3.5 h-3.5" />}
+        table="edificios"
+        value={form.edificio_id}
+        onChange={(id) => {
+          set('edificio_id', id);
+          if (id) { set('condominio_id', ''); set('empreendimento_id', ''); }
+        }}
+        onSelect={handleEntitySelect}
+      />
+      <EntitySelector
+        id="condominio"
+        openId={openId}
+        setOpenId={setOpenId}
+        label="Condomínio"
+        icon={<Fence className="w-3.5 h-3.5" />}
+        table="condominios"
+        value={form.condominio_id}
+        onChange={(id) => {
+          set('condominio_id', id);
+          if (id) { set('edificio_id', ''); set('empreendimento_id', ''); }
+        }}
+        onSelect={handleEntitySelect}
+      />
+      <EntitySelector
+        id="loteamento"
+        openId={openId}
+        setOpenId={setOpenId}
+        label="Loteamento"
+        icon={<Landmark className="w-3.5 h-3.5" />}
+        table="empreendimentos"
+        value={form.empreendimento_id}
+        onChange={(id) => {
+          set('empreendimento_id', id);
+          if (id) { set('edificio_id', ''); set('condominio_id', ''); }
+        }}
+        onSelect={handleEntitySelect}
+      />
     </div>
   );
 }
@@ -801,41 +871,8 @@ export function ImovelForm({ editId }: { editId?: string }) {
       <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
         <SectionHeader icon={Landmark} title="Vincular a Edifício / Condomínio / Loteamento" />
         <p className="text-xs text-muted-foreground mb-4">Selecione apenas um. O endereço e infraestrutura serão preenchidos automaticamente.</p>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <EntitySelector
-            label="Edifício"
-            icon={<Building className="w-3.5 h-3.5" />}
-            table="edificios"
-            value={form.edificio_id}
-            onChange={(id) => {
-              set('edificio_id', id);
-              if (id) { set('condominio_id', ''); set('empreendimento_id', ''); }
-            }}
-            onSelect={handleEntitySelect}
-          />
-          <EntitySelector
-            label="Condomínio"
-            icon={<Fence className="w-3.5 h-3.5" />}
-            table="condominios"
-            value={form.condominio_id}
-            onChange={(id) => {
-              set('condominio_id', id);
-              if (id) { set('edificio_id', ''); set('empreendimento_id', ''); }
-            }}
-            onSelect={handleEntitySelect}
-          />
-          <EntitySelector
-            label="Loteamento"
-            icon={<Landmark className="w-3.5 h-3.5" />}
-            table="empreendimentos"
-            value={form.empreendimento_id}
-            onChange={(id) => {
-              set('empreendimento_id', id);
-              if (id) { set('edificio_id', ''); set('condominio_id', ''); }
-            }}
-            onSelect={handleEntitySelect}
-          />
-        </div>
+        <EntitySelectorsGroup form={form} set={set} handleEntitySelect={handleEntitySelect} />
+
       </div>
 
       {/* ===== BLOCO: ENDEREÇO COM CEP ===== */}
