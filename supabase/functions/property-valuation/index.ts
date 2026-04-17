@@ -225,6 +225,14 @@ CRITÉRIOS DE VALORIZAÇÃO:
 - Infraestrutura do condomínio/empreendimento
 - Estado de conservação e idade
 
+8. ANÁLISE DO PREÇO ANUNCIADO (priceAnalysis) — OBRIGATÓRIO quando listedPrice > 0:
+${listedPrice > 0 ? `   - O imóvel está anunciado por R$ ${listedPrice.toLocaleString("pt-BR")}.
+   - Compare ESSE preço com seu marketValue calculado e com a média dos portais.
+   - Calcule difference = listedPrice - marketValue e differencePercent.
+   - verdict: "abaixo" se mais que 5% abaixo do mercado | "condizente" se entre -5% e +5% | "acima" se mais de 5% acima.
+   - reasoning: explique objetivamente por que o preço está alinhado/desalinhado, citando comparativos internos e dos portais. Indique se é uma oportunidade, está justo ou está acima do que o mercado paga atualmente.
+   - listedPrice deve ser EXATAMENTE ${listedPrice}.` : "   - Sem preço anunciado informado: retorne listedPrice = 0 e verdict = \"condizente\" com reasoning explicando que não há preço para comparar."}
+
 Sempre responda em português brasileiro. Seja preciso, detalhado e profissional.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
