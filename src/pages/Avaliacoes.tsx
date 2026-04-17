@@ -300,6 +300,7 @@ export default function Avaliacoes() {
       floor: "",
       condominium: searchParams.get("empreendimento") || "",
       description: searchParams.get("descricao") || "",
+      currentPrice: searchParams.get("preco") || "",
     });
     const titulo = searchParams.get("titulo");
     if (titulo) toast.success(`Dados de "${titulo}" carregados para avaliação!`);
@@ -322,6 +323,7 @@ export default function Avaliacoes() {
       floor: "",
       condominium: p.empreendimento || "",
       description: p.descricao || "",
+      currentPrice: String(p.preco || ""),
     });
     toast.success("Dados do imóvel preenchidos automaticamente!");
   };
@@ -344,6 +346,7 @@ export default function Avaliacoes() {
         bathrooms: Number(form.bathrooms) || 0, parking: Number(form.parking) || 0,
         seaView: form.seaView, decorated: form.decorated,
         floor: form.floor, condominium: form.condominium, description: form.description,
+        currentPrice: Number(form.currentPrice) || 0,
       };
 
       const { data: dbProperties } = await supabase
@@ -354,11 +357,11 @@ export default function Avaliacoes() {
       const existingProperties = (dbProperties || []).map((p) => ({
         id: p.id, title: p.titulo, city: p.cidade, type: p.tipo,
         price: p.preco, area: p.area, bedrooms: p.quartos, bathrooms: p.banheiros,
-        parking: p.vagas, seaView: p.vista_mar, decorated: p.decorado, empreendimento: p.empreendimento,
+        parking: p.vagas, seaView: p.vista_mar, decorado: p.decorado, empreendimento: p.empreendimento,
       }));
 
       const { data, error } = await supabase.functions.invoke("property-valuation", {
-        body: { propertyData, existingProperties },
+        body: { propertyData, existingProperties, currentPrice: Number(form.currentPrice) || 0 },
       });
       if (error) throw error;
       if (data.error) throw new Error(data.error);
