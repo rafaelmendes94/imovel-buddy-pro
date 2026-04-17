@@ -25,24 +25,26 @@ export function useReportData() {
 
   useEffect(() => {
     const fetchSales = async () => {
+      // Busca ampla: qualquer variação de "vendido"
       const { data } = await supabase
         .from("imoveis")
-        .select("id, titulo, cidade, bairro, tipo, padrao, preco, corretor_nome, proprietario, empreendimento, quartos, vista_mar, updated_at, edificio_id, condominio_id, edificios:edificio_id(nome), condominios:condominio_id(nome)")
-        .eq("status", "Vendido")
-        .order("updated_at", { ascending: false });
+        .select("id, titulo, cidade, bairro, tipo, padrao, preco, corretor_nome, proprietario, empreendimento, quartos, vista_mar, updated_at, status, edificio_id, condominio_id, edificios:edificio_id(nome), condominios:condominio_id(nome)")
+        .ilike("status", "%vendid%")
+        .order("updated_at", { ascending: false })
+        .limit(5000);
 
       if (data) {
         const mapped: RealSaleRecord[] = data.map((row: any) => ({
           id: row.id,
-          propertyTitle: row.titulo || "",
-          city: row.cidade || "",
-          neighborhood: row.bairro || "",
-          owner: row.proprietario || "",
-          type: row.tipo || "Apartamento",
+          propertyTitle: row.titulo || "Sem título",
+          city: row.cidade || "Sem cidade",
+          neighborhood: row.bairro || "Sem bairro",
+          owner: row.proprietario || "Sem proprietário",
+          type: row.tipo || "Outros",
           segment: row.padrao || "Médio Padrão",
           broker: row.corretor_nome || "Sem corretor",
           price: Number(row.preco) || 0,
-          date: row.updated_at || "",
+          date: row.updated_at || new Date().toISOString(),
           empreendimento: row.empreendimento || "",
           edificio: row.edificios?.nome || "",
           condominio: row.condominios?.nome || "",
