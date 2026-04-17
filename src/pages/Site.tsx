@@ -243,9 +243,7 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, 
                 </Link>
               )}
               {unitParts.map((part) => (
-                <span key={part} className="text-[10px] font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
-                  {part}{property.empreendimento ? ` · ${property.empreendimento}` : ""}
-                </span>
+                <span key={part} className="text-[10px] font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">{part}</span>
               ))}
             </div>
           )}

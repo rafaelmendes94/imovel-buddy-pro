@@ -105,9 +105,7 @@ function PropertyCard({ property, onSelect }: { property: SiteProperty; onSelect
               </Link>
             )}
             {unitParts.map((part) => (
-              <span key={part} className="text-[11px] font-semibold text-gray-600 bg-gray-100 px-2 py-0.5 rounded-md">
-                {part}{property.empreendimento ? ` · ${property.empreendimento}` : ""}
-              </span>
+              <span key={part} className="text-[11px] font-semibold text-gray-600 bg-gray-100 px-2 py-0.5 rounded-md">{part}</span>
             ))}
           </div>
         )}
