@@ -30,6 +30,8 @@ export interface Property {
   edificioId?: string;
   condominioId?: string;
   empreendimentoId?: string;
+  plataformaVenda?: string;
+  dataVenda?: string;
   unitNumber?: string;
   boxNumber?: string;
   quadra?: string;

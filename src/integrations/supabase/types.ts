@@ -794,6 +794,7 @@ export type Database = {
           corretor_id: string | null
           corretor_nome: string | null
           created_at: string
+          data_venda: string | null
           decorado: boolean
           descricao: string | null
           destaque_categoria: string | null
@@ -819,6 +820,7 @@ export type Database = {
           numero: string | null
           outras_caracteristicas: string[] | null
           padrao: string | null
+          plataforma_venda: string | null
           posicao_predio: string | null
           posicao_solar: string | null
           preco: number
@@ -860,6 +862,7 @@ export type Database = {
           corretor_id?: string | null
           corretor_nome?: string | null
           created_at?: string
+          data_venda?: string | null
           decorado?: boolean
           descricao?: string | null
           destaque_categoria?: string | null
@@ -885,6 +888,7 @@ export type Database = {
           numero?: string | null
           outras_caracteristicas?: string[] | null
           padrao?: string | null
+          plataforma_venda?: string | null
           posicao_predio?: string | null
           posicao_solar?: string | null
           preco?: number
@@ -926,6 +930,7 @@ export type Database = {
           corretor_id?: string | null
           corretor_nome?: string | null
           created_at?: string
+          data_venda?: string | null
           decorado?: boolean
           descricao?: string | null
           destaque_categoria?: string | null
@@ -951,6 +956,7 @@ export type Database = {
           numero?: string | null
           outras_caracteristicas?: string[] | null
           padrao?: string | null
+          plataforma_venda?: string | null
           posicao_predio?: string | null
           posicao_solar?: string | null
           preco?: number
