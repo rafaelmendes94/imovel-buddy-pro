@@ -13,6 +13,8 @@ export interface RealSaleRecord {
   price: number;
   date: string;
   empreendimento: string;
+  edificio: string;
+  condominio: string;
   bedrooms: number;
   seaView: boolean;
 }
@@ -23,14 +25,14 @@ export function useReportData() {
 
   useEffect(() => {
     const fetchSales = async () => {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from("imoveis")
-        .select("id, titulo, cidade, bairro, tipo, padrao, preco, corretor_nome, proprietario, empreendimento, quartos, vista_mar, updated_at")
+        .select("id, titulo, cidade, bairro, tipo, padrao, preco, corretor_nome, proprietario, empreendimento, quartos, vista_mar, updated_at, edificio_id, condominio_id, edificios:edificio_id(nome), condominios:condominio_id(nome)")
         .eq("status", "Vendido")
         .order("updated_at", { ascending: false });
 
       if (data) {
-        const mapped: RealSaleRecord[] = data.map((row) => ({
+        const mapped: RealSaleRecord[] = data.map((row: any) => ({
           id: row.id,
           propertyTitle: row.titulo || "",
           city: row.cidade || "",
@@ -42,6 +44,8 @@ export function useReportData() {
           price: Number(row.preco) || 0,
           date: row.updated_at || "",
           empreendimento: row.empreendimento || "",
+          edificio: row.edificios?.nome || "",
+          condominio: row.condominios?.nome || "",
           bedrooms: row.quartos || 0,
           seaView: row.vista_mar || false,
         }));
