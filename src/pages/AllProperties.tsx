@@ -166,7 +166,7 @@ export default function AllProperties() {
       setLoading(true);
       const { data, error } = await supabase
         .from('imoveis')
-        .select('*')
+        .select('*, edificios(nome), condominios(nome), empreendimentos(nome)')
         .eq('ativo_site', true);
 
       if (!error && data) {
@@ -192,7 +192,10 @@ export default function AllProperties() {
             seaView: row.vista_mar,
             acceptsExchange: row.aceita_permuta,
             paymentConditions: row.condicoes_pagamento || [],
-            empreendimento: row.empreendimento || '',
+            empreendimento: row.empreendimento || (row as any).edificios?.nome || (row as any).condominios?.nome || (row as any).empreendimentos?.nome || '',
+            edificioId: (row as any).edificio_id || '',
+            condominioId: (row as any).condominio_id || '',
+            empreendimentoId: (row as any).empreendimento_id || '',
             unitNumber: row.unidade || '',
             boxNumber: row.box || '',
             quadra: row.quadra || '',
