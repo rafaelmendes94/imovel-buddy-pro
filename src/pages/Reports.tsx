@@ -188,7 +188,8 @@ function useRankings(filtered: RealSaleRecord[]) {
 }
 
 export default function Reports() {
-  const { sales, monthlyData, allCities, allTypes, allSegments, allYears, loading } = useReportData();
+  const { sales, manualSales, monthlyData, allCities, allTypes, allSegments, allYears, loading, refetch } = useReportData();
+  const [manualOpen, setManualOpen] = useState(false);
 
   const [activeTab, setActiveTab] = useState<TabType>("relatorio");
   const [filterCity, setFilterCity] = useState("Todas");
