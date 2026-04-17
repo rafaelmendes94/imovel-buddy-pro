@@ -243,7 +243,9 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, 
                 </Link>
               )}
               {unitParts.map((part) => (
-                <span key={part} className="text-[10px] font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">{part}</span>
+                <span key={part} className="text-[10px] font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                  {part}{property.empreendimento ? ` · ${property.empreendimento}` : ""}
+                </span>
               ))}
             </div>
           )}
@@ -704,7 +706,7 @@ export default function Site() {
     const fetchProperties = async () => {
       setLoading(true);
       const [{ data, error }, { data: brokersData }] = await Promise.all([
-        supabase.from("imoveis").select("*").eq("ativo_site", true),
+        supabase.from("imoveis").select("*, edificios(nome), condominios(nome), empreendimentos(nome)").eq("ativo_site", true),
         supabase.from("subscriber_brokers").select("name, phone").eq("status", "active"),
       ]);
 
@@ -749,7 +751,7 @@ export default function Site() {
             seaView: row.vista_mar,
             acceptsExchange: row.aceita_permuta,
             paymentConditions: row.condicoes_pagamento || [],
-            empreendimento: row.empreendimento || "",
+            empreendimento: row.empreendimento || (row as any).edificios?.nome || (row as any).condominios?.nome || (row as any).empreendimentos?.nome || "",
             unitNumber: row.unidade || "",
             boxNumber: row.box || "",
             quadra: row.quadra || "",
