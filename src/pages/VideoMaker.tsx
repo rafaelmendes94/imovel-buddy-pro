@@ -319,18 +319,65 @@ export default function VideoMaker() {
 
   const handleAddEvent = () => {
     if (!newEvent.title || !newEvent.date) return toast.error("Preencha título e data");
+    const baseId = Date.now().toString();
     if (editingEvent) {
       setEvents(prev => prev.map(e => e.id === editingEvent.id ? { ...editingEvent, ...newEvent } : e));
       toast.success("Evento atualizado!");
     } else {
-      setEvents(prev => [...prev, { id: Date.now().toString(), ...newEvent }]);
-      toast.success("Evento adicionado!");
+      const eventId = baseId;
+      const newAgendaEvent: AgendaEvent = {
+        id: eventId,
+        title: newEvent.title,
+        date: newEvent.date,
+        time: newEvent.time,
+        endTime: newEvent.endTime,
+        type: newEvent.type,
+        notes: newEvent.notes,
+        location: newEvent.location,
+      };
+      setEvents(prev => [...prev, newAgendaEvent]);
+
+      // Se o evento for de gravação OU tiver imóvel/cliente preenchidos, cria card no Kanban + Financeiro
+      const hasJobData = newEvent.property && newEvent.client;
+      if (hasJobData) {
+        const jobId = baseId + "-job";
+        const newKanbanJob: VideoJob = {
+          id: jobId,
+          property: newEvent.property,
+          client: newEvent.client,
+          address: newEvent.location,
+          value: Number(newEvent.clientValue) || 0,
+          materialType: newEvent.materialType,
+          clientType: newEvent.clientType,
+          status: "gravar",
+          dueDate: newEvent.date,
+          notes: newEvent.notes,
+          createdAt: new Date().toISOString().split("T")[0],
+        };
+        setJobs(prev => [...prev, newKanbanJob]);
+
+        const newFinanceEntry: FinanceEntry = {
+          id: baseId + "-fin",
+          property: newEvent.property,
+          client: newEvent.client,
+          materialType: newEvent.materialType,
+          clientType: newEvent.clientType,
+          clientValue: Number(newEvent.clientValue) || 0,
+          editorCost: Number(newEvent.editorCost) || 0,
+          status: "pendente",
+          dueDate: newEvent.date,
+        };
+        setFinance(prev => [...prev, newFinanceEntry]);
+        toast.success("Evento criado e enviado para Kanban e Financeiro!");
+      } else {
+        toast.success("Evento adicionado!");
+      }
     }
-    setNewEvent({ title: "", date: "", time: "", endTime: "", type: "gravacao", notes: "", location: "" });
+    setNewEvent({ title: "", date: "", time: "", endTime: "", type: "gravacao", notes: "", location: "", property: "", client: "", clientValue: "", editorCost: "", materialType: "vr", clientType: "assinante" });
     setEditingEvent(null);
     setEventDialogOpen(false);
   };
-  const handleEditEvent = (ev: AgendaEvent) => { setEditingEvent(ev); setNewEvent({ title: ev.title, date: ev.date, time: ev.time, endTime: ev.endTime, type: ev.type, notes: ev.notes, location: ev.location }); setEventDialogOpen(true); };
+  const handleEditEvent = (ev: AgendaEvent) => { setEditingEvent(ev); setNewEvent({ title: ev.title, date: ev.date, time: ev.time, endTime: ev.endTime, type: ev.type, notes: ev.notes, location: ev.location, property: "", client: "", clientValue: "", editorCost: "", materialType: "vr", clientType: "assinante" }); setEventDialogOpen(true); };
   const handleDeleteEvent = (id: string) => { setEvents(prev => prev.filter(e => e.id !== id)); toast.success("Evento removido!"); };
 
   const filteredFinance = finance.filter(f => f.property.toLowerCase().includes(searchFinance.toLowerCase()) || f.client.toLowerCase().includes(searchFinance.toLowerCase()));
