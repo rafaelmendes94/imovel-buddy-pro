@@ -36,10 +36,12 @@ export function useReportData() {
         .ilike("status", "%vendid%")
         .order("updated_at", { ascending: false })
         .limit(5000),
-      supabase
-        .from("vendas_manuais")
+      // Agenciamentos com status = vendido entram como vendas no relatório principal
+      (supabase as any)
+        .from("agenciamentos")
         .select("*")
-        .order("data_venda", { ascending: false })
+        .eq("status", "vendido")
+        .order("data_atualizacao", { ascending: false })
         .limit(5000),
     ]);
 
