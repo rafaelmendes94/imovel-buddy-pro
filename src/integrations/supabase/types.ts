@@ -1513,6 +1513,63 @@ export type Database = {
         }
         Relationships: []
       }
+      vendas_manuais: {
+        Row: {
+          bairro: string
+          cidade: string
+          cliente: string
+          comissao: number
+          corretor: string
+          created_at: string
+          data_venda: string
+          edificio_condominio: string
+          empreendimento: string
+          id: string
+          observacoes: string
+          origem: string
+          tipo: string
+          updated_at: string
+          user_id: string
+          valor: number
+        }
+        Insert: {
+          bairro?: string
+          cidade?: string
+          cliente?: string
+          comissao?: number
+          corretor?: string
+          created_at?: string
+          data_venda: string
+          edificio_condominio?: string
+          empreendimento?: string
+          id?: string
+          observacoes?: string
+          origem?: string
+          tipo?: string
+          updated_at?: string
+          user_id: string
+          valor?: number
+        }
+        Update: {
+          bairro?: string
+          cidade?: string
+          cliente?: string
+          comissao?: number
+          corretor?: string
+          created_at?: string
+          data_venda?: string
+          edificio_condominio?: string
+          empreendimento?: string
+          id?: string
+          observacoes?: string
+          origem?: string
+          tipo?: string
+          updated_at?: string
+          user_id?: string
+          valor?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

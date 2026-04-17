@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ManualSalesDialog } from "@/components/relatorios/ManualSalesDialog";
+import { Database } from "lucide-react";
 
 // ─── Constants ───
 const SEGMENT_COLORS: Record<string, string> = {
@@ -186,7 +188,8 @@ function useRankings(filtered: RealSaleRecord[]) {
 }
 
 export default function Reports() {
-  const { sales, monthlyData, allCities, allTypes, allSegments, allYears, loading } = useReportData();
+  const { sales, manualSales, monthlyData, allCities, allTypes, allSegments, allYears, loading, refetch } = useReportData();
+  const [manualOpen, setManualOpen] = useState(false);
 
   const [activeTab, setActiveTab] = useState<TabType>("relatorio");
   const [filterCity, setFilterCity] = useState("Todas");
@@ -302,15 +305,28 @@ export default function Reports() {
       <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-5">
         {/* Header */}
         <BackButton />
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Relatório de Vendas</h1>
-            <p className="text-xs text-muted-foreground mt-0.5">VGV, ranking e análise completa por segmentação</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              VGV, ranking e análise completa por segmentação
+              {manualSales.length > 0 && (
+                <Badge variant="outline" className="ml-2 bg-amber-100 text-amber-900 border-amber-300 text-[10px]">
+                  {manualSales.length} venda(s) manual(is)
+                </Badge>
+              )}
+            </p>
           </div>
-          <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity">
-            <Download className="w-4 h-4" /> Exportar PDF
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setManualOpen(true)} className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-background text-foreground text-sm font-medium hover:bg-muted transition-colors">
+              <Database className="w-4 h-4" /> Dados Manuais
+            </button>
+            <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity">
+              <Download className="w-4 h-4" /> Exportar PDF
+            </button>
+          </div>
         </div>
+        <ManualSalesDialog open={manualOpen} onOpenChange={setManualOpen} onChanged={refetch} />
 
         {/* Tabs */}
         <div className="flex gap-1 bg-muted/50 p-0.5 rounded-lg w-fit">
