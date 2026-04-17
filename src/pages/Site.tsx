@@ -1004,7 +1004,7 @@ export default function Site() {
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
               <button
                 onClick={() => setActiveCategory("todos")}
-                className="group bg-white/10 hover:bg-blue-500/90 backdrop-blur-md rounded-2xl p-4 border border-white/20 hover:border-blue-400 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-amber-500/20 text-left"
+                className="group bg-white/10 hover:bg-blue-500/90 backdrop-blur-md rounded-2xl p-4 border border-white/20 hover:border-blue-400 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-blue-500/20 text-left"
               >
                 <div className="w-10 h-10 rounded-xl bg-blue-400/20 group-hover:bg-white/20 flex items-center justify-center mb-3 transition-colors">
                   <Star className="w-5 h-5 text-blue-400 group-hover:text-white transition-colors" />
