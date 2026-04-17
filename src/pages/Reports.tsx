@@ -310,17 +310,17 @@ export default function Reports() {
           <div>
             <h1 className="text-2xl font-bold text-foreground">Relatório de Vendas</h1>
             <p className="text-xs text-muted-foreground mt-0.5">
-              VGV, ranking e análise completa por segmentação
+              VGV, ranking e BI de carteira
               {manualSales.length > 0 && (
                 <Badge variant="outline" className="ml-2 bg-amber-100 text-amber-900 border-amber-300 text-[10px]">
-                  {manualSales.length} venda(s) manual(is)
+                  {manualSales.length} agenciamento(s) vendido(s)
                 </Badge>
               )}
             </p>
           </div>
           <div className="flex items-center gap-2">
             <button onClick={() => setManualOpen(true)} className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-background text-foreground text-sm font-medium hover:bg-muted transition-colors">
-              <Database className="w-4 h-4" /> Dados Manuais
+              <Database className="w-4 h-4" /> Agenciamentos
             </button>
             <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity">
               <Download className="w-4 h-4" /> Exportar PDF
@@ -337,9 +337,12 @@ export default function Reports() {
           <button onClick={() => setActiveTab("comparativo")} className={`px-4 py-1.5 rounded-md text-xs font-medium transition-all ${activeTab === "comparativo" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
             <TrendingUp className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />Comparativo Anual
           </button>
+          <button onClick={() => setActiveTab("agenciamentos")} className={`px-4 py-1.5 rounded-md text-xs font-medium transition-all ${activeTab === "agenciamentos" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+            <Briefcase className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />BI Agenciamentos
+          </button>
         </div>
 
-        {activeTab === "relatorio" ? (
+        {activeTab === "agenciamentos" ? <AgenciamentosBI /> : activeTab === "relatorio" ? (
           <>
             {/* ─── VGV METRICS (drag to reorder) ─── */}
             <DraggableMetrics items={[
