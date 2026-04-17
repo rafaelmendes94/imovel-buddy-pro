@@ -543,7 +543,7 @@ export default function Reports() {
                           <table className="w-full text-sm">
                             <thead>
                               <tr className="border-b border-border">
-                                {["Data", "Imóvel", "Cidade", "Tipo", "Segmento", "Corretor", "Valor"].map(h => (
+                                {["Data", "Imóvel", "Cidade", "Tipo", "Segmento", "Corretor", "Plataforma", "Valor"].map(h => (
                                   <th key={h} className={`py-2 text-[10px] text-muted-foreground font-medium uppercase tracking-wider ${h === "Valor" ? "text-right" : "text-left"}`}>{h}</th>
                                 ))}
                               </tr>
@@ -557,6 +557,7 @@ export default function Reports() {
                                   <td className="py-2"><Badge variant="outline" className="text-[9px] px-1.5 py-0">{sale.type}</Badge></td>
                                   <td className="py-2"><Badge variant="secondary" className="text-[9px] px-1.5 py-0">{sale.segment}</Badge></td>
                                   <td className="py-2 text-xs text-muted-foreground">{sale.broker}</td>
+                                  <td className="py-2 text-xs">{sale.platform ? <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-accent/40 text-accent">{sale.platform}</Badge> : <span className="text-muted-foreground">—</span>}</td>
                                   <td className="py-2 text-right text-xs font-bold text-accent">{formatCurrency(sale.price)}</td>
                                 </tr>
                               ))}
@@ -591,7 +592,7 @@ export default function Reports() {
                   </div>
                   {monthSales.length === 0 ? <p className="text-sm text-muted-foreground py-8 text-center">Nenhuma venda neste mês</p> : (
                     <Table>
-                      <TableHeader><TableRow><TableHead>Imóvel</TableHead><TableHead>Cidade</TableHead><TableHead>Tipo</TableHead><TableHead>Segmento</TableHead><TableHead>Corretor</TableHead><TableHead className="text-right">Valor</TableHead></TableRow></TableHeader>
+                      <TableHeader><TableRow><TableHead>Imóvel</TableHead><TableHead>Cidade</TableHead><TableHead>Tipo</TableHead><TableHead>Segmento</TableHead><TableHead>Corretor</TableHead><TableHead>Plataforma</TableHead><TableHead className="text-right">Valor</TableHead></TableRow></TableHeader>
                       <TableBody>
                         {monthSales.map(s => (
                           <TableRow key={s.id}>
@@ -600,6 +601,7 @@ export default function Reports() {
                             <TableCell><Badge variant="outline" className="text-xs">{s.type}</Badge></TableCell>
                             <TableCell><Badge className="text-xs" style={{ background: SEGMENT_COLORS[s.segment] + "33", color: SEGMENT_COLORS[s.segment], border: "none" }}>{s.segment}</Badge></TableCell>
                             <TableCell className="text-muted-foreground">{s.broker}</TableCell>
+                            <TableCell>{s.platform ? <Badge variant="outline" className="text-xs border-accent/40 text-accent">{s.platform}</Badge> : <span className="text-muted-foreground text-xs">—</span>}</TableCell>
                             <TableCell className="text-right font-bold text-foreground">{formatCurrency(s.price)}</TableCell>
                           </TableRow>
                         ))}
