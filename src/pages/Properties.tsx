@@ -2485,26 +2485,13 @@ function PropertyRow({
             <span className="truncate">{property.city}{property.neighborhood ? ` • ${property.neighborhood}` : ""} • {property.address}</span>
           </button>
 
-          {/* Ver dados completos + Editar */}
+          {/* Ver dados completos */}
           <div className="flex items-center gap-2 mt-1 flex-wrap">
             <button
               onClick={() => onSelect?.(property)}
               className="py-1.5 px-3 rounded-lg bg-primary/10 text-primary text-[11px] font-bold hover:bg-primary/20 transition-colors flex items-center justify-center gap-1.5"
             >
               <Eye className="w-3.5 h-3.5" /> Ver dados completos
-            </button>
-            <Link
-              to={`/editar-imovel/${property.id}`}
-              onClick={(e) => e.stopPropagation()}
-              className="py-1.5 px-3 rounded-lg bg-amber-500/10 text-amber-600 text-[11px] font-bold hover:bg-amber-500/20 transition-colors flex items-center justify-center gap-1.5"
-            >
-              <Pencil className="w-3.5 h-3.5" /> Editar
-            </Link>
-            <button
-              onClick={(e) => { e.stopPropagation(); onDelete?.(property.id); }}
-              className="py-1.5 px-3 rounded-lg bg-destructive/10 text-destructive text-[11px] font-bold hover:bg-destructive/20 transition-colors flex items-center justify-center gap-1.5"
-            >
-              <Trash2 className="w-3.5 h-3.5" /> Excluir
             </button>
           </div>
         </div>
