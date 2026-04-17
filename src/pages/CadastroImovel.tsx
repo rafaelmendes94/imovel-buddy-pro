@@ -145,17 +145,21 @@ interface EntityOption {
   estado?: string;
 }
 
-function EntitySelector({ label, icon, table, value, onChange, onSelect }: {
+function EntitySelector({ label, icon, table, value, onChange, onSelect, openId, setOpenId, id }: {
   label: string;
   icon: React.ReactNode;
   table: 'edificios' | 'condominios' | 'empreendimentos';
   value: string;
   onChange: (id: string) => void;
   onSelect: (entity: EntityOption) => void;
+  openId: string | null;
+  setOpenId: (id: string | null) => void;
+  id: string;
 }) {
   const [options, setOptions] = useState<EntityOption[]>([]);
   const [search, setSearch] = useState('');
-  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const open = openId === id;
 
   useEffect(() => {
     const load = async () => {
@@ -165,18 +169,30 @@ function EntitySelector({ label, icon, table, value, onChange, onSelect }: {
     load();
   }, [table]);
 
+  useEffect(() => {
+    if (!open) return;
+    const handleClick = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpenId(null);
+        setSearch('');
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [open, setOpenId]);
+
   const filtered = options.filter(o => o.nome.toLowerCase().includes(search.toLowerCase()));
   const selectedName = options.find(o => o.id === value)?.nome || '';
 
   return (
-    <div className="space-y-1.5 relative">
+    <div className="space-y-1.5 relative" ref={containerRef}>
       <Label className="text-xs flex items-center gap-1">{icon} {label}</Label>
       <div className="relative">
         <Input
           placeholder={`Buscar ${label.toLowerCase()}...`}
           value={open ? search : selectedName}
-          onChange={(e) => { setSearch(e.target.value); setOpen(true); }}
-          onFocus={() => setOpen(true)}
+          onChange={(e) => { setSearch(e.target.value); setOpenId(id); }}
+          onFocus={() => setOpenId(id)}
         />
         {value && (
           <button type="button" onClick={() => { onChange(''); setSearch(''); }} className="absolute right-2 top-1/2 -translate-y-1/2">
@@ -194,7 +210,7 @@ function EntitySelector({ label, icon, table, value, onChange, onSelect }: {
                 onChange(o.id);
                 onSelect(o);
                 setSearch('');
-                setOpen(false);
+                setOpenId(null);
               }}
               className="w-full text-left px-3 py-2 text-sm hover:bg-accent transition-colors"
             >
