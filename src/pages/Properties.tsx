@@ -1913,7 +1913,9 @@ function PropertyCard({
                 </Link>
               )}
               {unitParts.map((part) => (
-                <span key={part} className="text-[10px] font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">{part}</span>
+                <span key={part} className="text-[10px] font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                  {part}{property.empreendimento ? ` · ${cleanEmpreendimentoName(property.empreendimento)}` : ""}
+                </span>
               ))}
             </div>
           )}
@@ -2320,7 +2322,9 @@ function PropertyRow({
                 >{cleanEmpreendimentoName(property.empreendimento)}</Link>
               )}
               {unitParts.map((part) => (
-                <span key={part} className="font-black text-foreground uppercase text-[12px] tracking-wide px-2.5 py-0.5 rounded-md border border-border bg-background shadow-sm">{part}</span>
+                <span key={part} className="font-black text-foreground uppercase text-[12px] tracking-wide px-2.5 py-0.5 rounded-md border border-border bg-background shadow-sm">
+                  {part}{property.empreendimento ? ` · ${cleanEmpreendimentoName(property.empreendimento)}` : ""}
+                </span>
               ))}
             </div>
           )}
