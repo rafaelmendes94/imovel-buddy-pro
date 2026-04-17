@@ -749,12 +749,12 @@ export default function VideoMaker() {
                   <button className={cn("px-3 py-1.5 text-xs font-medium transition-colors", agendaView === "month" ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-muted")} onClick={() => setAgendaView("month")}>Mês</button>
                   <button className={cn("px-3 py-1.5 text-xs font-medium transition-colors", agendaView === "week" ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-muted")} onClick={() => setAgendaView("week")}>Semana</button>
                 </div>
-                <Dialog open={eventDialogOpen} onOpenChange={(o) => { setEventDialogOpen(o); if (!o) { setEditingEvent(null); setNewEvent({ title: "", date: "", time: "", endTime: "", type: "gravacao", notes: "", location: "" }); } }}>
+                <Dialog open={eventDialogOpen} onOpenChange={(o) => { setEventDialogOpen(o); if (!o) { setEditingEvent(null); setNewEvent({ title: "", date: "", time: "", endTime: "", type: "gravacao", notes: "", location: "", property: "", client: "", clientValue: "", editorCost: "", materialType: "vr", clientType: "assinante" }); } }}>
                   <DialogTrigger asChild><Button size="sm" className="gap-1.5"><Plus className="w-4 h-4" /> Novo Evento</Button></DialogTrigger>
-                  <DialogContent className="max-w-md">
-                    <DialogHeader><DialogTitle>{editingEvent ? "Editar Evento" : "Novo Evento"}</DialogTitle></DialogHeader>
+                  <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+                    <DialogHeader><DialogTitle>{editingEvent ? "Editar Evento" : "Novo Evento / Agendamento de Imóvel"}</DialogTitle></DialogHeader>
                     <div className="space-y-3">
-                      <div><Label>Título *</Label><Input value={newEvent.title} onChange={e => setNewEvent(p => ({ ...p, title: e.target.value }))} /></div>
+                      <div><Label>Título *</Label><Input value={newEvent.title} onChange={e => setNewEvent(p => ({ ...p, title: e.target.value }))} placeholder="Ex: Gravar Cobertura Ed. Marina" /></div>
                       <div className="grid grid-cols-3 gap-3">
                         <div><Label>Data *</Label><Input type="date" value={newEvent.date} onChange={e => setNewEvent(p => ({ ...p, date: e.target.value }))} /></div>
                         <div><Label>Início</Label><Input type="time" value={newEvent.time} onChange={e => setNewEvent(p => ({ ...p, time: e.target.value }))} /></div>
@@ -764,6 +764,27 @@ export default function VideoMaker() {
                         <div><Label>Tipo</Label><Select value={newEvent.type} onValueChange={v => setNewEvent(p => ({ ...p, type: v as AgendaEvent["type"] }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="gravacao">Gravação</SelectItem><SelectItem value="entrega">Entrega</SelectItem><SelectItem value="reuniao">Reunião</SelectItem><SelectItem value="outro">Outro</SelectItem></SelectContent></Select></div>
                         <div><Label>Local</Label><Input value={newEvent.location} onChange={e => setNewEvent(p => ({ ...p, location: e.target.value }))} /></div>
                       </div>
+
+                      {!editingEvent && (
+                        <div className="border-t pt-3 space-y-3">
+                          <p className="text-xs text-muted-foreground">
+                            <span className="font-semibold text-accent">Agendamento de Imóvel</span> — preencha os campos abaixo para criar automaticamente um card no Kanban (Para Gravar) e um registro no Financeiro.
+                          </p>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div><Label>Imóvel</Label><Input value={newEvent.property} onChange={e => setNewEvent(p => ({ ...p, property: e.target.value }))} placeholder="Ex: Cobertura Ed. Marina" /></div>
+                            <div><Label>Cliente</Label><Input value={newEvent.client} onChange={e => setNewEvent(p => ({ ...p, client: e.target.value }))} placeholder="Ex: Construtora Alpha" /></div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div><Label>Tipo de Material</Label><Select value={newEvent.materialType} onValueChange={v => setNewEvent(p => ({ ...p, materialType: v as MaterialType }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{materialTypes.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent></Select></div>
+                            <div><Label>Tipo de Cliente</Label><Select value={newEvent.clientType} onValueChange={v => setNewEvent(p => ({ ...p, clientType: v as ClientType }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{clientTypes.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent></Select></div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div><Label>Valor Cobrado (R$)</Label><Input type="number" value={newEvent.clientValue} onChange={e => setNewEvent(p => ({ ...p, clientValue: e.target.value }))} placeholder="1500" /></div>
+                            <div><Label>Custo Editor (R$)</Label><Input type="number" value={newEvent.editorCost} onChange={e => setNewEvent(p => ({ ...p, editorCost: e.target.value }))} placeholder="400" /></div>
+                          </div>
+                        </div>
+                      )}
+
                       <div><Label>Observações</Label><Textarea value={newEvent.notes} onChange={e => setNewEvent(p => ({ ...p, notes: e.target.value }))} rows={2} /></div>
                       <Button onClick={handleAddEvent} className="w-full">{editingEvent ? "Salvar Alterações" : "Adicionar Evento"}</Button>
                     </div>
