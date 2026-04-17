@@ -14,6 +14,108 @@ export type Database = {
   }
   public: {
     Tables: {
+      agenciamentos: {
+        Row: {
+          ano_construcao_iptu: string
+          apto_quadra_lote: string
+          bairro: string
+          box: string
+          chaves_obra: string
+          cidade: string
+          cond_iptu: string
+          condicao_pagamento: string
+          created_at: string
+          data_atualizacao: string | null
+          data_inclusao: string | null
+          destaque: string
+          dormitorios: string
+          entrada: string
+          fin_bancario: string
+          id: string
+          imovel: string
+          metragem: number
+          mobiliado: string
+          observacoes: string
+          padrao: string
+          posicao: string
+          prazo_direto: string
+          proprietario: string
+          rua: string
+          status: string
+          telefone: string
+          tipo: string
+          updated_at: string
+          user_id: string
+          valor: number
+        }
+        Insert: {
+          ano_construcao_iptu?: string
+          apto_quadra_lote?: string
+          bairro?: string
+          box?: string
+          chaves_obra?: string
+          cidade?: string
+          cond_iptu?: string
+          condicao_pagamento?: string
+          created_at?: string
+          data_atualizacao?: string | null
+          data_inclusao?: string | null
+          destaque?: string
+          dormitorios?: string
+          entrada?: string
+          fin_bancario?: string
+          id?: string
+          imovel?: string
+          metragem?: number
+          mobiliado?: string
+          observacoes?: string
+          padrao?: string
+          posicao?: string
+          prazo_direto?: string
+          proprietario?: string
+          rua?: string
+          status?: string
+          telefone?: string
+          tipo?: string
+          updated_at?: string
+          user_id: string
+          valor?: number
+        }
+        Update: {
+          ano_construcao_iptu?: string
+          apto_quadra_lote?: string
+          bairro?: string
+          box?: string
+          chaves_obra?: string
+          cidade?: string
+          cond_iptu?: string
+          condicao_pagamento?: string
+          created_at?: string
+          data_atualizacao?: string | null
+          data_inclusao?: string | null
+          destaque?: string
+          dormitorios?: string
+          entrada?: string
+          fin_bancario?: string
+          id?: string
+          imovel?: string
+          metragem?: number
+          mobiliado?: string
+          observacoes?: string
+          padrao?: string
+          posicao?: string
+          prazo_direto?: string
+          proprietario?: string
+          rua?: string
+          status?: string
+          telefone?: string
+          tipo?: string
+          updated_at?: string
+          user_id?: string
+          valor?: number
+        }
+        Relationships: []
+      }
       avaliacao_utils: {
         Row: {
           avaliacao_id: string
@@ -1510,63 +1612,6 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
-        }
-        Relationships: []
-      }
-      vendas_manuais: {
-        Row: {
-          bairro: string
-          cidade: string
-          cliente: string
-          comissao: number
-          corretor: string
-          created_at: string
-          data_venda: string
-          edificio_condominio: string
-          empreendimento: string
-          id: string
-          observacoes: string
-          origem: string
-          tipo: string
-          updated_at: string
-          user_id: string
-          valor: number
-        }
-        Insert: {
-          bairro?: string
-          cidade?: string
-          cliente?: string
-          comissao?: number
-          corretor?: string
-          created_at?: string
-          data_venda: string
-          edificio_condominio?: string
-          empreendimento?: string
-          id?: string
-          observacoes?: string
-          origem?: string
-          tipo?: string
-          updated_at?: string
-          user_id: string
-          valor?: number
-        }
-        Update: {
-          bairro?: string
-          cidade?: string
-          cliente?: string
-          comissao?: number
-          corretor?: string
-          created_at?: string
-          data_venda?: string
-          edificio_condominio?: string
-          empreendimento?: string
-          id?: string
-          observacoes?: string
-          origem?: string
-          tipo?: string
-          updated_at?: string
-          user_id?: string
-          valor?: number
         }
         Relationships: []
       }
