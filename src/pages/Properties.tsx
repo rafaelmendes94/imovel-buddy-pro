@@ -1976,8 +1976,8 @@ function PropertyCard({
       <div className="p-4 space-y-3">
         <div>
           <h3 className="font-semibold text-card-foreground text-sm cursor-pointer hover:text-primary transition-colors uppercase"
-            onClick={() => onFilterByTitle?.(property.title)}
-            title="Clique para ver títulos semelhantes"
+            onClick={() => onSelect?.(property)}
+            title="Ver detalhes do imóvel"
           >{property.title}</h3>
           {(property.empreendimento || unitParts.length > 0) && (
             <div className="flex flex-wrap items-center gap-1 mt-1">
@@ -2381,8 +2381,8 @@ function PropertyRow({
           <div className="flex items-center gap-2 min-w-0">
             <h3
               className="font-bold text-card-foreground text-base truncate hover:text-primary cursor-pointer transition-colors leading-tight uppercase"
-              onClick={() => onFilterByTitle?.(property.title)}
-              title="Ver títulos semelhantes"
+              onClick={() => onSelect?.(property)}
+              title="Ver detalhes do imóvel"
             >{property.title}</h3>
             {property.code && (
               <span className="text-[11px] font-black text-muted-foreground bg-muted px-2 py-0.5 rounded flex-shrink-0">{property.code}</span>
