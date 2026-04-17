@@ -50,6 +50,7 @@ import logoImg from "@/assets/logo.png";
 import { RoutePlanner } from "@/components/RoutePlanner";
 import { SharkAI } from "@/components/SharkAI";
 import { useAuth } from "@/hooks/useAuth";
+import { useGoogleMapsLoader } from "@/hooks/useGoogleMapsLoader";
 
 // Site property type mapped from DB
 interface SiteProperty {
@@ -308,107 +309,133 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, 
 function SiteMap({ properties: mapProperties }: { properties: typeof siteProperties }) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
-  const tileLayerRef = useRef<any>(null);
-  const labelsLayerRef = useRef<any[]>([]);
-  const markersLayerRef = useRef<any>(null);
-  const [selectedProperty, setSelectedProperty] = useState<typeof siteProperties[0] | null>(null);
+  const markersRef = useRef<any[]>([]);
+  const infoWindowRef = useRef<any>(null);
+  const searchMarkerRef = useRef<any>(null);
+  const geocoderRef = useRef<any>(null);
   const [mapStyle, setMapStyle] = useState<"satellite" | "streets" | "dark">("satellite");
   const [mapFilterType, setMapFilterType] = useState("");
   const [mapFilterEmpreendimento, setMapFilterEmpreendimento] = useState("");
   const [mapFilterAddress, setMapFilterAddress] = useState("");
+  const [debouncedAddress, setDebouncedAddress] = useState("");
   const [mapFilterPriceMax, setMapFilterPriceMax] = useState("");
+  const { ready: gmapsReady } = useGoogleMapsLoader();
 
   const uniqueMapEmpreendimentos = [...new Set(mapProperties.map((p) => p.empreendimento).filter(Boolean))].sort();
+
+  // Debounce address input for geocoding
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedAddress(mapFilterAddress.trim()), 500);
+    return () => clearTimeout(t);
+  }, [mapFilterAddress]);
 
   const filteredMapProperties = mapProperties.filter((p) => {
     const matchType = !mapFilterType || p.type === mapFilterType;
     const matchEmp = !mapFilterEmpreendimento || p.empreendimento === mapFilterEmpreendimento;
-    const matchAddr = !mapFilterAddress || p.address.toLowerCase().includes(mapFilterAddress.toLowerCase()) || p.city.toLowerCase().includes(mapFilterAddress.toLowerCase()) || (p.neighborhood || '').toLowerCase().includes(mapFilterAddress.toLowerCase());
+    const term = mapFilterAddress.toLowerCase();
+    const matchAddr = !term || p.address.toLowerCase().includes(term) || p.city.toLowerCase().includes(term) || (p.neighborhood || '').toLowerCase().includes(term);
     const matchPrice = !mapFilterPriceMax || p.price <= parseInt(mapFilterPriceMax);
     return matchType && matchEmp && matchAddr && matchPrice;
   });
 
-  const tileConfigs = {
-    satellite: {
-      url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-      attribution: '&copy; Esri, Maxar',
-      labels: [
-        "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}",
-        "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
-      ],
-    },
-    streets: {
-      url: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
-      attribution: '&copy; CARTO',
-      labels: [],
-    },
+  const mapStyleConfig: Record<string, { mapTypeId: string; styles?: any[] }> = {
+    satellite: { mapTypeId: "hybrid" },
+    streets: { mapTypeId: "roadmap" },
     dark: {
-      url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-      attribution: '&copy; CARTO',
-      labels: [],
+      mapTypeId: "roadmap",
+      styles: [
+        { elementType: "geometry", stylers: [{ color: "#1d2c4d" }] },
+        { elementType: "labels.text.fill", stylers: [{ color: "#8ec3b9" }] },
+        { elementType: "labels.text.stroke", stylers: [{ color: "#1a3646" }] },
+        { featureType: "administrative", elementType: "geometry", stylers: [{ color: "#4b6878" }] },
+        { featureType: "administrative.land_parcel", elementType: "labels.text.fill", stylers: [{ color: "#64779e" }] },
+        { featureType: "landscape.man_made", elementType: "geometry.stroke", stylers: [{ color: "#334e87" }] },
+        { featureType: "landscape.natural", elementType: "geometry", stylers: [{ color: "#023e58" }] },
+        { featureType: "poi", elementType: "geometry", stylers: [{ color: "#283d6a" }] },
+        { featureType: "poi", elementType: "labels.text.fill", stylers: [{ color: "#6f9ba5" }] },
+        { featureType: "road", elementType: "geometry", stylers: [{ color: "#304a7d" }] },
+        { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#98a5be" }] },
+        { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#2c6675" }] },
+        { featureType: "transit", elementType: "geometry", stylers: [{ color: "#1d2c4d" }] },
+        { featureType: "water", elementType: "geometry", stylers: [{ color: "#0e1626" }] },
+        { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#4e6d70" }] },
+      ],
     },
   };
 
-  // Switch tile layer
+  // Initialize Google Map
+  useEffect(() => {
+    if (!gmapsReady || !mapRef.current || mapInstanceRef.current) return;
+    const google = (window as any).google;
+
+    const map = new google.maps.Map(mapRef.current, {
+      center: { lat: -29.77, lng: -50.08 },
+      zoom: 12,
+      mapTypeId: mapStyleConfig[mapStyle].mapTypeId,
+      styles: mapStyleConfig[mapStyle].styles,
+      zoomControl: true,
+      mapTypeControl: false,
+      streetViewControl: false,
+      fullscreenControl: false,
+      zoomControlOptions: { position: google.maps.ControlPosition.RIGHT_TOP },
+    });
+    mapInstanceRef.current = map;
+    geocoderRef.current = new google.maps.Geocoder();
+    infoWindowRef.current = new google.maps.InfoWindow();
+  }, [gmapsReady]);
+
+  // Switch map style
   useEffect(() => {
     const map = mapInstanceRef.current;
-    const L = (window as any).L;
-    if (!map || !L) return;
-
-    if (tileLayerRef.current) map.removeLayer(tileLayerRef.current);
-    labelsLayerRef.current.forEach((l) => map.removeLayer(l));
-    labelsLayerRef.current = [];
-
-    const cfg = tileConfigs[mapStyle];
-    tileLayerRef.current = L.tileLayer(cfg.url, { attribution: cfg.attribution, maxZoom: 19, subdomains: "abcd" }).addTo(map);
-    cfg.labels.forEach((url: string) => {
-      const layer = L.tileLayer(url, { maxZoom: 19 }).addTo(map);
-      labelsLayerRef.current.push(layer);
-    });
+    if (!map) return;
+    const cfg = mapStyleConfig[mapStyle];
+    map.setMapTypeId(cfg.mapTypeId);
+    map.setOptions({ styles: cfg.styles || null });
   }, [mapStyle]);
 
   // Update markers when filters change
   useEffect(() => {
     const map = mapInstanceRef.current;
-    const L = (window as any).L;
-    if (!map || !L) return;
+    const google = (window as any).google;
+    if (!map || !google) return;
 
-    if (markersLayerRef.current) {
-      map.removeLayer(markersLayerRef.current);
-    }
-    const markersGroup = L.featureGroup();
-    markersLayerRef.current = markersGroup;
+    // Clear previous markers
+    markersRef.current.forEach((m) => m.setMap(null));
+    markersRef.current = [];
 
-    const getIcon = (type: string) => {
-      const colors: Record<string, string> = { Apartamento: "#f59e0b", Casa: "#3b82f6", Terreno: "#22c55e", Comercial: "#8b5cf6" };
-      const color = colors[type] || "#f59e0b";
-      const svgIcons: Record<string, string> = {
-        Apartamento: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>`,
-        Casa: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>`,
-        Terreno: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 20.777a6.942 6.942 0 0 1-2.5-12.026"/><path d="M14 16.95A6.942 6.942 0 0 0 18 11c0-3.866-3.582-7-8-7a8.093 8.093 0 0 0-2.2.3"/><path d="M2 21h20"/></svg>`,
-        Comercial: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>`,
-      };
-      const svg = svgIcons[type] || svgIcons.Apartamento;
-      return L.divIcon({
-        className: "custom-marker",
-        html: `<div style="width:32px;height:32px;background:${color};border:2px solid white;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;cursor:pointer;">
-          ${svg}
-        </div>
-        <div style="width:8px;height:8px;background:${color};transform:rotate(45deg);margin:-5px auto 0;box-shadow:1px 1px 3px rgba(0,0,0,0.25);"></div>`,
-        iconSize: [32, 42],
-        iconAnchor: [16, 42],
-        popupAnchor: [0, -42],
-      });
+    const colors: Record<string, string> = { Apartamento: "#f59e0b", Casa: "#3b82f6", Terreno: "#22c55e", Comercial: "#8b5cf6" };
+    const svgIcons: Record<string, string> = {
+      Apartamento: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/></svg>`,
+      Casa: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>`,
+      Terreno: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 20.777a6.942 6.942 0 0 1-2.5-12.026"/><path d="M14 16.95A6.942 6.942 0 0 0 18 11c0-3.866-3.582-7-8-7a8.093 8.093 0 0 0-2.2.3"/><path d="M2 21h20"/></svg>`,
+      Comercial: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/></svg>`,
     };
 
     filteredMapProperties.forEach((p) => {
       if (!p.lat || !p.lng) return;
+      const color = colors[p.type] || "#f59e0b";
+      const svg = svgIcons[p.type] || svgIcons.Apartamento;
       const broker = brokerInfo[p.broker] || { photo: "", whatsapp: "5511999999999" };
       const whatsMsg = encodeURIComponent(`Olá! Tenho interesse no imóvel: ${p.title}`);
-      const popup = L.popup({ maxWidth: 280, className: "custom-popup" }).setContent(`
-        <div style="font-family:system-ui,-apple-system,sans-serif;margin:-4px;">
-          <img src="${p.image}" alt="${p.title}" style="width:100%;height:120px;object-fit:cover;border-radius:8px 8px 0 0;margin-bottom:8px;" />
-          <div style="padding:0 4px 4px;">
+
+      const pinDiv = document.createElement("div");
+      pinDiv.innerHTML = `
+        <div style="position:relative;cursor:pointer;">
+          <div style="width:32px;height:32px;background:${color};border:2px solid white;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;">${svg}</div>
+          <div style="width:8px;height:8px;background:${color};transform:rotate(45deg);margin:-5px auto 0;box-shadow:1px 1px 3px rgba(0,0,0,0.25);"></div>
+        </div>`;
+
+      const marker = new google.maps.marker.AdvancedMarkerElement({
+        position: { lat: p.lat, lng: p.lng },
+        map,
+        content: pinDiv,
+        title: p.title,
+      });
+
+      marker.addListener("click", () => {
+        infoWindowRef.current.setContent(`
+          <div style="font-family:system-ui,-apple-system,sans-serif;max-width:260px;">
+            <img src="${p.image}" alt="${p.title}" style="width:100%;height:120px;object-fit:cover;border-radius:8px;margin-bottom:8px;" />
             <h3 style="font-size:14px;font-weight:700;color:#1a1a1a;margin:0 0 4px;">${p.title}</h3>
             <p style="font-size:11px;color:#666;margin:0 0 6px;">📍 ${p.address}, ${p.city}</p>
             <p style="font-size:18px;font-weight:800;color:#f59e0b;margin:0 0 8px;">${formatCurrency(p.price)}</p>
@@ -422,82 +449,56 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
                 ${broker.photo ? `<img src="${broker.photo}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;border:2px solid #f59e0b;" />` : ""}
                 <span style="font-size:11px;font-weight:600;color:#333;">${p.broker}</span>
               </div>
-              <a href="https://wa.me/${broker.whatsapp}?text=${whatsMsg}" target="_blank" rel="noopener noreferrer" 
-                 style="display:inline-flex;align-items:center;gap:4px;padding:5px 10px;background:#22c55e;color:white;border-radius:8px;font-size:11px;font-weight:700;text-decoration:none;">
-                📱 WhatsApp
-              </a>
+              <a href="https://wa.me/${broker.whatsapp}?text=${whatsMsg}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:4px;padding:5px 10px;background:#22c55e;color:white;border-radius:8px;font-size:11px;font-weight:700;text-decoration:none;">📱 WhatsApp</a>
             </div>
           </div>
-        </div>
-      `);
-      L.marker([p.lat, p.lng], { icon: getIcon(p.type) }).bindPopup(popup).addTo(markersGroup);
-    });
+        `);
+        infoWindowRef.current.open({ map, anchor: marker });
+      });
 
-    markersGroup.addTo(map);
+      markersRef.current.push(marker);
+    });
 
     const validProps = filteredMapProperties.filter((p) => p.lat && p.lng);
     if (validProps.length > 1) {
-      const bounds = L.latLngBounds(validProps.map((p) => [p.lat, p.lng]));
-      map.fitBounds(bounds, { padding: [40, 40] });
+      const bounds = new google.maps.LatLngBounds();
+      validProps.forEach((p) => bounds.extend({ lat: p.lat, lng: p.lng }));
+      map.fitBounds(bounds, 60);
     } else if (validProps.length === 1) {
-      map.setView([validProps[0].lat, validProps[0].lng], 14);
+      map.setCenter({ lat: validProps[0].lat, lng: validProps[0].lng });
+      map.setZoom(15);
     }
-  }, [filteredMapProperties]);
+  }, [filteredMapProperties, gmapsReady]);
 
+  // Geocode address search and pan map
   useEffect(() => {
-    if (!mapRef.current) return;
+    const map = mapInstanceRef.current;
+    const geocoder = geocoderRef.current;
+    const google = (window as any).google;
+    if (!map || !geocoder || !google) return;
 
-    if (mapInstanceRef.current) {
-      mapInstanceRef.current.remove();
-      mapInstanceRef.current = null;
+    if (searchMarkerRef.current) {
+      searchMarkerRef.current.setMap(null);
+      searchMarkerRef.current = null;
     }
+    if (!debouncedAddress || debouncedAddress.length < 3) return;
 
-    const initMap = () => {
-      const L = (window as any).L;
-      if (!L || !mapRef.current) return;
-
-      const map = L.map(mapRef.current, { zoomControl: false }).setView([-29.77, -50.08], 12);
-      mapInstanceRef.current = map;
-      L.control.zoom({ position: "topright" }).addTo(map);
-
-      const cfg = tileConfigs[mapStyle];
-      tileLayerRef.current = L.tileLayer(cfg.url, { attribution: cfg.attribution, maxZoom: 19, subdomains: "abcd" }).addTo(map);
-      cfg.labels.forEach((url: string) => {
-        const layer = L.tileLayer(url, { maxZoom: 19 }).addTo(map);
-        labelsLayerRef.current.push(layer);
-      });
-    };
-
-    const L = (window as any).L;
-    if (L) {
-      initMap();
-    } else {
-      const existingLink = document.querySelector('link[href*="leaflet"]');
-      if (!existingLink) {
-        const link = document.createElement("link");
-        link.rel = "stylesheet";
-        link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-        document.head.appendChild(link);
+    geocoder.geocode(
+      { address: `${debouncedAddress}, RS, Brasil`, region: "br" },
+      (results: any[], status: string) => {
+        if (status === "OK" && results[0]) {
+          const loc = results[0].geometry.location;
+          map.panTo(loc);
+          map.setZoom(15);
+          const dot = document.createElement("div");
+          dot.innerHTML = `<div style="width:18px;height:18px;border-radius:50%;background:#3b82f6;border:3px solid white;box-shadow:0 0 0 4px rgba(59,130,246,0.35);"></div>`;
+          searchMarkerRef.current = new google.maps.marker.AdvancedMarkerElement({
+            position: loc, map, content: dot, title: results[0].formatted_address,
+          });
+        }
       }
-      const existingScript = document.querySelector('script[src*="leaflet"]');
-      if (!existingScript) {
-        const script = document.createElement("script");
-        script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
-        script.onload = initMap;
-        document.head.appendChild(script);
-      } else {
-        existingScript.addEventListener("load", initMap);
-        setTimeout(initMap, 200);
-      }
-    }
-
-    return () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
-        mapInstanceRef.current = null;
-      }
-    };
-  }, []);
+    );
+  }, [debouncedAddress]);
 
   const mapHasFilters = mapFilterType || mapFilterEmpreendimento || mapFilterAddress || mapFilterPriceMax;
 
