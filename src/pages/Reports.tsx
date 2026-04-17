@@ -44,12 +44,20 @@ function isThisWeek(d: string) {
 function isThisMonth(d: string) { const dt = new Date(d), now = new Date(); return dt.getMonth() === now.getMonth() && dt.getFullYear() === now.getFullYear(); }
 function isThisYear(d: string) { return new Date(d).getFullYear() === new Date().getFullYear(); }
 
-// ─── Draggable Metrics Grid ───
+// ─── Draggable Blocks (genérico, persistente) ───
 const METRICS_ORDER_KEY = "mv-reports-metrics-order";
-function DraggableMetrics({ items }: { items: { key: string; node: React.ReactNode }[] }) {
+function DraggableBlocks({
+  items,
+  storageKey,
+  className = "",
+}: {
+  items: { key: string; node: React.ReactNode }[];
+  storageKey: string;
+  className?: string;
+}) {
   const [order, setOrder] = useState<string[]>(() => {
     try {
-      const saved = JSON.parse(localStorage.getItem(METRICS_ORDER_KEY) || "[]") as string[];
+      const saved = JSON.parse(localStorage.getItem(storageKey) || "[]") as string[];
       const valid = saved.filter(k => items.some(i => i.key === k));
       const missing = items.map(i => i.key).filter(k => !valid.includes(k));
       return [...valid, ...missing];
@@ -69,13 +77,13 @@ function DraggableMetrics({ items }: { items: { key: string; node: React.ReactNo
 
   const persist = (next: string[]) => {
     setOrder(next);
-    try { localStorage.setItem(METRICS_ORDER_KEY, JSON.stringify(next)); } catch {}
+    try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
   };
 
   const ordered = order.map(k => items.find(i => i.key === k)).filter(Boolean) as typeof items;
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+    <div className={className}>
       {ordered.map((it, idx) => (
         <div
           key={it.key}
@@ -95,13 +103,23 @@ function DraggableMetrics({ items }: { items: { key: string; node: React.ReactNo
             setOverIdx(null);
           }}
           onDragEnd={() => { dragIdx.current = null; setOverIdx(null); }}
-          className={`cursor-grab active:cursor-grabbing transition-all ${overIdx === idx ? "ring-2 ring-primary scale-[1.02]" : ""}`}
+          className={`cursor-grab active:cursor-grabbing transition-all ${overIdx === idx ? "ring-2 ring-primary scale-[1.01]" : ""}`}
           title="Arraste para reordenar"
         >
           {it.node}
         </div>
       ))}
     </div>
+  );
+}
+
+function DraggableMetrics({ items }: { items: { key: string; node: React.ReactNode }[] }) {
+  return (
+    <DraggableBlocks
+      items={items}
+      storageKey={METRICS_ORDER_KEY}
+      className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3"
+    />
   );
 }
 
@@ -371,129 +389,154 @@ export default function Reports() {
               </div>
             </div>
 
-            {/* ─── CHARTS ROW ─── */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {/* Revenue Bar Chart */}
-              <div className="elevated-card rounded-xl p-5">
-                <h3 className="text-sm font-semibold text-card-foreground mb-1 flex items-center gap-2">
-                  <BarChart3 className="w-4 h-4 text-accent" /> Receita Mensal
-                </h3>
-                <p className="text-[10px] text-muted-foreground mb-3">Clique em uma barra para detalhes</p>
-                <ResponsiveContainer width="100%" height={260}>
-                  <BarChart data={revenueBarData} barCategoryGap="20%" onClick={(data) => { if (data?.activeLabel) setSelectedMonth(data.activeLabel); }} style={{ cursor: "pointer" }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                    <XAxis dataKey="month" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
-                    <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v) => `${(v / 1000000).toFixed(1)}M`} />
-                    <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "11px" }} formatter={(value: number) => [formatCurrency(value), "Receita"]} />
-                    <ReferenceLine y={avgRevenue} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" />
-                    <Bar dataKey="receita" radius={[4, 4, 0, 0]} animationDuration={800}>
-                      {revenueBarData.map((entry, i) => (
-                        <Cell key={i} fill={entry.trend === "alta" ? "hsl(142, 71%, 45%)" : entry.trend === "baixa" ? "hsl(0, 72%, 51%)" : "hsl(var(--muted-foreground))"} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-                <div className="flex justify-around mt-2">
-                  {revenueBarData.map((d, i) => (
-                    <div key={i} className="flex flex-col items-center gap-0.5">
-                      <span className="text-[10px] font-medium text-muted-foreground">{d.vendas} un.</span>
-                      <span className={`text-[10px] font-bold ${d.trend === "alta" ? "text-emerald-500" : d.trend === "baixa" ? "text-destructive" : "text-muted-foreground"}`}>
-                        {i === 0 ? "—" : `${d.change > 0 ? "+" : ""}${d.change.toFixed(0)}%`}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+            {/* ─── BLOCOS PRINCIPAIS (drag para reordenar) ─── */}
+            <DraggableBlocks
+              storageKey="mv-reports-blocks-order"
+              className="space-y-4"
+              items={[
+                {
+                  key: "charts-row",
+                  node: (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      {/* Revenue Bar Chart */}
+                      <div className="elevated-card rounded-xl p-5">
+                        <h3 className="text-sm font-semibold text-card-foreground mb-1 flex items-center gap-2">
+                          <BarChart3 className="w-4 h-4 text-accent" /> Receita Mensal
+                        </h3>
+                        <p className="text-[10px] text-muted-foreground mb-3">Clique em uma barra para detalhes</p>
+                        <ResponsiveContainer width="100%" height={260}>
+                          <BarChart data={revenueBarData} barCategoryGap="20%" onClick={(data) => { if (data?.activeLabel) setSelectedMonth(data.activeLabel); }} style={{ cursor: "pointer" }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                            <XAxis dataKey="month" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+                            <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v) => `${(v / 1000000).toFixed(1)}M`} />
+                            <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "11px" }} formatter={(value: number) => [formatCurrency(value), "Receita"]} />
+                            <ReferenceLine y={avgRevenue} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" />
+                            <Bar dataKey="receita" radius={[4, 4, 0, 0]} animationDuration={800}>
+                              {revenueBarData.map((entry, i) => (
+                                <Cell key={i} fill={entry.trend === "alta" ? "hsl(142, 71%, 45%)" : entry.trend === "baixa" ? "hsl(0, 72%, 51%)" : "hsl(var(--muted-foreground))"} />
+                              ))}
+                            </Bar>
+                          </BarChart>
+                        </ResponsiveContainer>
+                        <div className="flex justify-around mt-2">
+                          {revenueBarData.map((d, i) => (
+                            <div key={i} className="flex flex-col items-center gap-0.5">
+                              <span className="text-[10px] font-medium text-muted-foreground">{d.vendas} un.</span>
+                              <span className={`text-[10px] font-bold ${d.trend === "alta" ? "text-emerald-500" : d.trend === "baixa" ? "text-destructive" : "text-muted-foreground"}`}>
+                                {i === 0 ? "—" : `${d.change > 0 ? "+" : ""}${d.change.toFixed(0)}%`}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
 
-              {/* Pie Charts */}
-              <div className="elevated-card rounded-xl p-5">
-                <h3 className="text-sm font-semibold text-card-foreground mb-3 flex items-center gap-2">
-                  <Star className="w-4 h-4 text-accent" /> Distribuição
-                </h3>
-                {segmentPie.length === 0 && typePie.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-16">Nenhuma venda registrada</p>
-                ) : (
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <p className="text-[10px] text-muted-foreground text-center mb-1 font-medium">Segmento (VGV)</p>
-                      <ResponsiveContainer width="100%" height={180}>
-                        <PieChart><Pie data={segmentPie} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={35} outerRadius={65} paddingAngle={2}>{segmentPie.map((e, i) => <Cell key={i} fill={e.fill} />)}</Pie>
-                          <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "10px" }} />
-                        </PieChart>
-                      </ResponsiveContainer>
-                      <div className="flex flex-wrap justify-center gap-x-3 gap-y-1">
-                        {segmentPie.map(s => <div key={s.name} className="flex items-center gap-1 text-[9px] text-muted-foreground"><div className="w-1.5 h-1.5 rounded-full" style={{ background: s.fill }} />{s.name}</div>)}
+                      {/* Pie Charts */}
+                      <div className="elevated-card rounded-xl p-5">
+                        <h3 className="text-sm font-semibold text-card-foreground mb-3 flex items-center gap-2">
+                          <Star className="w-4 h-4 text-accent" /> Distribuição
+                        </h3>
+                        {segmentPie.length === 0 && typePie.length === 0 ? (
+                          <p className="text-sm text-muted-foreground text-center py-16">Nenhuma venda registrada</p>
+                        ) : (
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <p className="text-[10px] text-muted-foreground text-center mb-1 font-medium">Segmento (VGV)</p>
+                              <ResponsiveContainer width="100%" height={180}>
+                                <PieChart><Pie data={segmentPie} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={35} outerRadius={65} paddingAngle={2}>{segmentPie.map((e, i) => <Cell key={i} fill={e.fill} />)}</Pie>
+                                  <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "10px" }} />
+                                </PieChart>
+                              </ResponsiveContainer>
+                              <div className="flex flex-wrap justify-center gap-x-3 gap-y-1">
+                                {segmentPie.map(s => <div key={s.name} className="flex items-center gap-1 text-[9px] text-muted-foreground"><div className="w-1.5 h-1.5 rounded-full" style={{ background: s.fill }} />{s.name}</div>)}
+                              </div>
+                            </div>
+                            <div>
+                              <p className="text-[10px] text-muted-foreground text-center mb-1 font-medium">Tipo (Qtd)</p>
+                              <ResponsiveContainer width="100%" height={180}>
+                                <PieChart><Pie data={typePie} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={35} outerRadius={65} paddingAngle={2}>{typePie.map((e, i) => <Cell key={i} fill={e.fill} />)}</Pie>
+                                  <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "10px" }} />
+                                </PieChart>
+                              </ResponsiveContainer>
+                              <div className="flex flex-wrap justify-center gap-x-3 gap-y-1">
+                                {typePie.map(s => <div key={s.name} className="flex items-center gap-1 text-[9px] text-muted-foreground"><div className="w-1.5 h-1.5 rounded-full" style={{ background: s.fill }} />{s.name}</div>)}
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
-                    <div>
-                      <p className="text-[10px] text-muted-foreground text-center mb-1 font-medium">Tipo (Qtd)</p>
-                      <ResponsiveContainer width="100%" height={180}>
-                        <PieChart><Pie data={typePie} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={35} outerRadius={65} paddingAngle={2}>{typePie.map((e, i) => <Cell key={i} fill={e.fill} />)}</Pie>
-                          <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "10px" }} />
-                        </PieChart>
-                      </ResponsiveContainer>
-                      <div className="flex flex-wrap justify-center gap-x-3 gap-y-1">
-                        {typePie.map(s => <div key={s.name} className="flex items-center gap-1 text-[9px] text-muted-foreground"><div className="w-1.5 h-1.5 rounded-full" style={{ background: s.fill }} />{s.name}</div>)}
+                  ),
+                },
+                ...(filtered.length > 0 ? [
+                  {
+                    key: "rankings-1",
+                    node: (
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <RankingBarCard title="Tipo de Imóvel" data={rankings.byType} colors={TYPE_COLORS} />
+                        <RankingBarCard title="Cidade" data={rankings.byCity} />
                       </div>
+                    ),
+                  },
+                  {
+                    key: "rankings-2",
+                    node: (
+                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                        <RankingListCard title="Top Loteamentos" icon={Building2} data={rankings.byEmpreendimento.slice(0, 6)} />
+                        <RankingProgressCard title="Top Corretores" data={rankings.byBroker} />
+                        <RankingListCard title="VGV por Segmento" icon={Star} data={rankings.bySegment} colors={SEGMENT_COLORS} />
+                      </div>
+                    ),
+                  },
+                  {
+                    key: "rankings-3",
+                    node: (
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <RankingProgressCard title="Proprietários" data={rankings.byOwner} />
+                        <RankingBarCard title="Bairros" data={rankings.byNeighborhood} />
+                      </div>
+                    ),
+                  },
+                ] : []),
+                {
+                  key: "recent-sales",
+                  node: (
+                    <div className="elevated-card rounded-xl p-5">
+                      <h3 className="text-sm font-semibold text-card-foreground mb-3 flex items-center gap-2">
+                        <DollarSign className="w-4 h-4 text-accent" /> Últimas Vendas
+                      </h3>
+                      {filtered.length === 0 ? (
+                        <p className="text-sm text-muted-foreground text-center py-8">Nenhuma venda encontrada com os filtros selecionados</p>
+                      ) : (
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm">
+                            <thead>
+                              <tr className="border-b border-border">
+                                {["Data", "Imóvel", "Cidade", "Tipo", "Segmento", "Corretor", "Valor"].map(h => (
+                                  <th key={h} className={`py-2 text-[10px] text-muted-foreground font-medium uppercase tracking-wider ${h === "Valor" ? "text-right" : "text-left"}`}>{h}</th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {filtered.slice(0, 10).map(sale => (
+                                <tr key={sale.id} className="border-b border-border/30 hover:bg-muted/20 transition-colors">
+                                  <td className="py-2 text-xs text-muted-foreground">{new Date(sale.date).toLocaleDateString("pt-BR")}</td>
+                                  <td className="py-2 text-xs font-medium text-card-foreground">{sale.propertyTitle}</td>
+                                  <td className="py-2 text-xs text-muted-foreground">{sale.city}</td>
+                                  <td className="py-2"><Badge variant="outline" className="text-[9px] px-1.5 py-0">{sale.type}</Badge></td>
+                                  <td className="py-2"><Badge variant="secondary" className="text-[9px] px-1.5 py-0">{sale.segment}</Badge></td>
+                                  <td className="py-2 text-xs text-muted-foreground">{sale.broker}</td>
+                                  <td className="py-2 text-right text-xs font-bold text-accent">{formatCurrency(sale.price)}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* ─── RANKINGS ─── */}
-            {filtered.length > 0 && (
-              <>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  <RankingBarCard title="Tipo de Imóvel" data={rankings.byType} colors={TYPE_COLORS} />
-                  <RankingBarCard title="Cidade" data={rankings.byCity} />
-                </div>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                  <RankingListCard title="Top Loteamentos" icon={Building2} data={rankings.byEmpreendimento.slice(0, 6)} />
-                  <RankingProgressCard title="Top Corretores" data={rankings.byBroker} />
-                  <RankingListCard title="VGV por Segmento" icon={Star} data={rankings.bySegment} colors={SEGMENT_COLORS} />
-                </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  <RankingProgressCard title="Proprietários" data={rankings.byOwner} />
-                  <RankingBarCard title="Bairros" data={rankings.byNeighborhood} />
-                </div>
-              </>
-            )}
-
-            {/* ─── RECENT SALES ─── */}
-            <div className="elevated-card rounded-xl p-5">
-              <h3 className="text-sm font-semibold text-card-foreground mb-3 flex items-center gap-2">
-                <DollarSign className="w-4 h-4 text-accent" /> Últimas Vendas
-              </h3>
-              {filtered.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">Nenhuma venda encontrada com os filtros selecionados</p>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-border">
-                        {["Data", "Imóvel", "Cidade", "Tipo", "Segmento", "Corretor", "Valor"].map(h => (
-                          <th key={h} className={`py-2 text-[10px] text-muted-foreground font-medium uppercase tracking-wider ${h === "Valor" ? "text-right" : "text-left"}`}>{h}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filtered.slice(0, 10).map(sale => (
-                        <tr key={sale.id} className="border-b border-border/30 hover:bg-muted/20 transition-colors">
-                          <td className="py-2 text-xs text-muted-foreground">{new Date(sale.date).toLocaleDateString("pt-BR")}</td>
-                          <td className="py-2 text-xs font-medium text-card-foreground">{sale.propertyTitle}</td>
-                          <td className="py-2 text-xs text-muted-foreground">{sale.city}</td>
-                          <td className="py-2"><Badge variant="outline" className="text-[9px] px-1.5 py-0">{sale.type}</Badge></td>
-                          <td className="py-2"><Badge variant="secondary" className="text-[9px] px-1.5 py-0">{sale.segment}</Badge></td>
-                          <td className="py-2 text-xs text-muted-foreground">{sale.broker}</td>
-                          <td className="py-2 text-right text-xs font-bold text-accent">{formatCurrency(sale.price)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
+                  ),
+                },
+              ]}
+            />
           </>
         ) : (
           /* ─── COMPARATIVO ANUAL TAB ─── */
@@ -586,60 +629,6 @@ function ComparativoAnual({ data, currentYear, previousYear }: {
             <Bar dataKey={`VGV ${previousYear}`} fill="hsl(var(--muted-foreground))" radius={[4, 4, 0, 0]} opacity={0.5} />
           </BarChart>
         </ResponsiveContainer>
-      </div>
-
-      {/* Segment Valorization Table */}
-      <div className="elevated-card rounded-xl p-5">
-        <h3 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
-          <TrendingUp className="w-4 h-4 text-accent" /> Valorização por Segmento
-        </h3>
-        {data.segmentComparison.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-8">Nenhum dado disponível</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border">
-                  {["Segmento", `VGV ${currentYear}`, `VGV ${previousYear}`, "Valorização", `Vendas ${currentYear}`, `Vendas ${previousYear}`, `Ticket Médio ${currentYear}`, "Var. Ticket"].map(h => (
-                    <th key={h} className="py-2.5 px-3 text-[10px] text-muted-foreground font-medium uppercase tracking-wider text-left first:pl-0">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {data.segmentComparison.map(seg => (
-                  <tr key={seg.segment} className="border-b border-border/30 hover:bg-muted/20 transition-colors">
-                    <td className="py-3 px-3 first:pl-0">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full" style={{ background: SEGMENT_COLORS[seg.segment] }} />
-                        <span className="text-xs font-medium text-foreground">{seg.segment}</span>
-                      </div>
-                    </td>
-                    <td className="py-3 px-3 text-xs font-semibold text-foreground">{formatCurrency(seg.curVgv)}</td>
-                    <td className="py-3 px-3 text-xs text-muted-foreground">{formatCurrency(seg.prevVgv)}</td>
-                    <td className="py-3 px-3">
-                      <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full ${
-                        seg.valorization > 0 ? "text-emerald-600 bg-emerald-500/10" :
-                        seg.valorization < 0 ? "text-destructive bg-destructive/10" :
-                        "text-muted-foreground bg-muted"
-                      }`}>
-                        {seg.valorization > 0 ? <ArrowUp className="w-3 h-3" /> : seg.valorization < 0 ? <ArrowDown className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
-                        {seg.valorization > 0 ? "+" : ""}{seg.valorization.toFixed(1)}%
-                      </span>
-                    </td>
-                    <td className="py-3 px-3 text-xs text-foreground font-medium">{seg.curCount}</td>
-                    <td className="py-3 px-3 text-xs text-muted-foreground">{seg.prevCount}</td>
-                    <td className="py-3 px-3 text-xs text-foreground font-medium">{formatCurrency(seg.curAvgTicket)}</td>
-                    <td className="py-3 px-3">
-                      <span className={`text-[10px] font-bold ${seg.ticketChange > 0 ? "text-emerald-500" : seg.ticketChange < 0 ? "text-destructive" : "text-muted-foreground"}`}>
-                        {seg.ticketChange > 0 ? "+" : ""}{seg.ticketChange.toFixed(1)}%
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
       </div>
 
       {/* Segment bars visual */}
