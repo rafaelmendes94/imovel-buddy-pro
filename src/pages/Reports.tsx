@@ -44,12 +44,20 @@ function isThisWeek(d: string) {
 function isThisMonth(d: string) { const dt = new Date(d), now = new Date(); return dt.getMonth() === now.getMonth() && dt.getFullYear() === now.getFullYear(); }
 function isThisYear(d: string) { return new Date(d).getFullYear() === new Date().getFullYear(); }
 
-// ─── Draggable Metrics Grid ───
+// ─── Draggable Blocks (genérico, persistente) ───
 const METRICS_ORDER_KEY = "mv-reports-metrics-order";
-function DraggableMetrics({ items }: { items: { key: string; node: React.ReactNode }[] }) {
+function DraggableBlocks({
+  items,
+  storageKey,
+  className = "",
+}: {
+  items: { key: string; node: React.ReactNode }[];
+  storageKey: string;
+  className?: string;
+}) {
   const [order, setOrder] = useState<string[]>(() => {
     try {
-      const saved = JSON.parse(localStorage.getItem(METRICS_ORDER_KEY) || "[]") as string[];
+      const saved = JSON.parse(localStorage.getItem(storageKey) || "[]") as string[];
       const valid = saved.filter(k => items.some(i => i.key === k));
       const missing = items.map(i => i.key).filter(k => !valid.includes(k));
       return [...valid, ...missing];
@@ -69,13 +77,13 @@ function DraggableMetrics({ items }: { items: { key: string; node: React.ReactNo
 
   const persist = (next: string[]) => {
     setOrder(next);
-    try { localStorage.setItem(METRICS_ORDER_KEY, JSON.stringify(next)); } catch {}
+    try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
   };
 
   const ordered = order.map(k => items.find(i => i.key === k)).filter(Boolean) as typeof items;
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+    <div className={className}>
       {ordered.map((it, idx) => (
         <div
           key={it.key}
@@ -95,13 +103,23 @@ function DraggableMetrics({ items }: { items: { key: string; node: React.ReactNo
             setOverIdx(null);
           }}
           onDragEnd={() => { dragIdx.current = null; setOverIdx(null); }}
-          className={`cursor-grab active:cursor-grabbing transition-all ${overIdx === idx ? "ring-2 ring-primary scale-[1.02]" : ""}`}
+          className={`cursor-grab active:cursor-grabbing transition-all ${overIdx === idx ? "ring-2 ring-primary scale-[1.01]" : ""}`}
           title="Arraste para reordenar"
         >
           {it.node}
         </div>
       ))}
     </div>
+  );
+}
+
+function DraggableMetrics({ items }: { items: { key: string; node: React.ReactNode }[] }) {
+  return (
+    <DraggableBlocks
+      items={items}
+      storageKey={METRICS_ORDER_KEY}
+      className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3"
+    />
   );
 }
 
