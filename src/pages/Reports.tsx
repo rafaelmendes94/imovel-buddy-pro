@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { BackButton } from "@/components/BackButton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -242,14 +242,15 @@ export default function Reports() {
 
         {activeTab === "relatorio" ? (
           <>
-            {/* ─── VGV METRICS ─── */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-              <MetricCard title={`VGV Ano (${currentYear})`} value={formatCurrency(vgvYear)} change={`${totalSalesYear} vendas`} changeType="positive" icon={CalendarRange} />
-              <MetricCard title={`VGV Mês (${currentMonthName})`} value={formatCurrency(vgvMonth)} change={`${filtered.filter(s => isThisMonth(s.date)).length} vendas`} changeType="positive" icon={CalendarDays} />
-              <MetricCard title="VGV Semana" value={formatCurrency(vgvWeek)} change={`${filtered.filter(s => isThisWeek(s.date)).length} vendas`} changeType="positive" icon={Calendar} />
-              <MetricCard title="Ticket Médio" value={formatCurrency(avgTicket)} change={ticketChange !== 0 ? `${ticketChange > 0 ? "+" : ""}${ticketChange.toFixed(1)}%` : "—"} changeType={ticketChange > 0 ? "positive" : ticketChange < 0 ? "negative" : "neutral"} icon={TrendingUp} />
-              <MetricCard title="Total de Vendas" value={String(totalSalesYear)} change="no período" changeType="neutral" icon={Target} />
-            </div>
+            {/* ─── VGV METRICS (drag to reorder) ─── */}
+            <DraggableMetrics items={[
+              { key: "vgv-ano", node: <MetricCard title={`VGV Ano (${currentYear})`} value={formatCurrency(vgvYear)} change={`${totalSalesYear} vendas`} changeType="positive" icon={CalendarRange} /> },
+              { key: "vgv-mes", node: <MetricCard title={`VGV Mês (${currentMonthName})`} value={formatCurrency(vgvMonth)} change={`${filtered.filter(s => isThisMonth(s.date)).length} vendas`} changeType="positive" icon={CalendarDays} /> },
+              { key: "vgv-semana", node: <MetricCard title="VGV Semana" value={formatCurrency(vgvWeek)} change={`${filtered.filter(s => isThisWeek(s.date)).length} vendas`} changeType="positive" icon={Calendar} /> },
+              { key: "ticket", node: <MetricCard title="Ticket Médio" value={formatCurrency(avgTicket)} change={ticketChange !== 0 ? `${ticketChange > 0 ? "+" : ""}${ticketChange.toFixed(1)}%` : "—"} changeType={ticketChange > 0 ? "positive" : ticketChange < 0 ? "negative" : "neutral"} icon={TrendingUp} /> },
+              { key: "total", node: <MetricCard title="Total de Vendas" value={String(totalSalesYear)} change="no período" changeType="neutral" icon={Target} /> },
+            ]} />
+
 
             {/* ─── FILTERS ─── */}
             <div className="elevated-card rounded-xl p-3">
