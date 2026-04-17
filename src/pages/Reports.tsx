@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { BackButton } from "@/components/BackButton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -44,7 +44,68 @@ function isThisWeek(d: string) {
 function isThisMonth(d: string) { const dt = new Date(d), now = new Date(); return dt.getMonth() === now.getMonth() && dt.getFullYear() === now.getFullYear(); }
 function isThisYear(d: string) { return new Date(d).getFullYear() === new Date().getFullYear(); }
 
-// ─── Filter Chip ───
+// ─── Draggable Metrics Grid ───
+const METRICS_ORDER_KEY = "mv-reports-metrics-order";
+function DraggableMetrics({ items }: { items: { key: string; node: React.ReactNode }[] }) {
+  const [order, setOrder] = useState<string[]>(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(METRICS_ORDER_KEY) || "[]") as string[];
+      const valid = saved.filter(k => items.some(i => i.key === k));
+      const missing = items.map(i => i.key).filter(k => !valid.includes(k));
+      return [...valid, ...missing];
+    } catch { return items.map(i => i.key); }
+  });
+  const dragIdx = useRef<number | null>(null);
+  const [overIdx, setOverIdx] = useState<number | null>(null);
+
+  useEffect(() => {
+    const keys = items.map(i => i.key);
+    setOrder(prev => {
+      const valid = prev.filter(k => keys.includes(k));
+      const missing = keys.filter(k => !valid.includes(k));
+      return [...valid, ...missing];
+    });
+  }, [items]);
+
+  const persist = (next: string[]) => {
+    setOrder(next);
+    try { localStorage.setItem(METRICS_ORDER_KEY, JSON.stringify(next)); } catch {}
+  };
+
+  const ordered = order.map(k => items.find(i => i.key === k)).filter(Boolean) as typeof items;
+
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+      {ordered.map((it, idx) => (
+        <div
+          key={it.key}
+          draggable
+          onDragStart={(e) => { dragIdx.current = idx; e.dataTransfer.effectAllowed = "move"; }}
+          onDragOver={(e) => { e.preventDefault(); if (overIdx !== idx) setOverIdx(idx); }}
+          onDragLeave={() => setOverIdx(null)}
+          onDrop={(e) => {
+            e.preventDefault();
+            const from = dragIdx.current;
+            if (from === null || from === idx) { setOverIdx(null); return; }
+            const next = [...order];
+            const [moved] = next.splice(from, 1);
+            next.splice(idx, 0, moved);
+            persist(next);
+            dragIdx.current = null;
+            setOverIdx(null);
+          }}
+          onDragEnd={() => { dragIdx.current = null; setOverIdx(null); }}
+          className={`cursor-grab active:cursor-grabbing transition-all ${overIdx === idx ? "ring-2 ring-primary scale-[1.02]" : ""}`}
+          title="Arraste para reordenar"
+        >
+          {it.node}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+
 function FilterChip({ label, active, onClick, onRemove, size = "sm" }: {
   label: string; active: boolean; onClick: () => void; onRemove?: () => void; size?: "sm" | "xs";
 }) {
@@ -242,14 +303,15 @@ export default function Reports() {
 
         {activeTab === "relatorio" ? (
           <>
-            {/* ─── VGV METRICS ─── */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-              <MetricCard title={`VGV Ano (${currentYear})`} value={formatCurrency(vgvYear)} change={`${totalSalesYear} vendas`} changeType="positive" icon={CalendarRange} />
-              <MetricCard title={`VGV Mês (${currentMonthName})`} value={formatCurrency(vgvMonth)} change={`${filtered.filter(s => isThisMonth(s.date)).length} vendas`} changeType="positive" icon={CalendarDays} />
-              <MetricCard title="VGV Semana" value={formatCurrency(vgvWeek)} change={`${filtered.filter(s => isThisWeek(s.date)).length} vendas`} changeType="positive" icon={Calendar} />
-              <MetricCard title="Ticket Médio" value={formatCurrency(avgTicket)} change={ticketChange !== 0 ? `${ticketChange > 0 ? "+" : ""}${ticketChange.toFixed(1)}%` : "—"} changeType={ticketChange > 0 ? "positive" : ticketChange < 0 ? "negative" : "neutral"} icon={TrendingUp} />
-              <MetricCard title="Total de Vendas" value={String(totalSalesYear)} change="no período" changeType="neutral" icon={Target} />
-            </div>
+            {/* ─── VGV METRICS (drag to reorder) ─── */}
+            <DraggableMetrics items={[
+              { key: "vgv-ano", node: <MetricCard title={`VGV Ano (${currentYear})`} value={formatCurrency(vgvYear)} change={`${totalSalesYear} vendas`} changeType="positive" icon={CalendarRange} /> },
+              { key: "vgv-mes", node: <MetricCard title={`VGV Mês (${currentMonthName})`} value={formatCurrency(vgvMonth)} change={`${filtered.filter(s => isThisMonth(s.date)).length} vendas`} changeType="positive" icon={CalendarDays} /> },
+              { key: "vgv-semana", node: <MetricCard title="VGV Semana" value={formatCurrency(vgvWeek)} change={`${filtered.filter(s => isThisWeek(s.date)).length} vendas`} changeType="positive" icon={Calendar} /> },
+              { key: "ticket", node: <MetricCard title="Ticket Médio" value={formatCurrency(avgTicket)} change={ticketChange !== 0 ? `${ticketChange > 0 ? "+" : ""}${ticketChange.toFixed(1)}%` : "—"} changeType={ticketChange > 0 ? "positive" : ticketChange < 0 ? "negative" : "neutral"} icon={TrendingUp} /> },
+              { key: "total", node: <MetricCard title="Total de Vendas" value={String(totalSalesYear)} change="no período" changeType="neutral" icon={Target} /> },
+            ]} />
+
 
             {/* ─── FILTERS ─── */}
             <div className="elevated-card rounded-xl p-3">
