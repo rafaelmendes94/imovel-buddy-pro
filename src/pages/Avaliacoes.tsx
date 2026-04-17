@@ -472,6 +472,10 @@ export default function Avaliacoes() {
               </label>
             </div>
             <div>
+              <label className="text-xs text-muted-foreground font-medium flex items-center gap-1"><DollarSign className="w-3 h-3" /> Preço Anunciado (R$) <span className="text-[10px] text-accent">— para análise comparativa</span></label>
+              <input type="number" value={form.currentPrice} onChange={(e) => updateForm("currentPrice", e.target.value)} placeholder="500000" className="w-full mt-1 px-3 py-2 rounded-lg bg-muted text-card-foreground text-sm border border-border focus:outline-none focus:ring-2 focus:ring-accent/50" />
+            </div>
+            <div>
               <label className="text-xs text-muted-foreground font-medium">Observações</label>
               <textarea value={form.description} onChange={(e) => updateForm("description", e.target.value)} placeholder="Informações adicionais sobre o imóvel..." rows={3} className="w-full mt-1 px-3 py-2 rounded-lg bg-muted text-card-foreground text-sm border border-border focus:outline-none focus:ring-2 focus:ring-accent/50 resize-none" />
             </div>
