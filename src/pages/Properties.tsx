@@ -2817,8 +2817,6 @@ function DestaqueSelector({ propertyId, compact }: { propertyId: string; compact
   const [loading, setLoading] = useState(true);
   const [existsInDb, setExistsInDb] = useState(false);
 
-  if (!isSuperAdmin) return null;
-
   useEffect(() => {
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(propertyId);
     if (!isUuid) {
