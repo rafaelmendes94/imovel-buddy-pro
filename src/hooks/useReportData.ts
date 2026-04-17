@@ -20,6 +20,7 @@ export interface RealSaleRecord {
   isManual?: boolean;
   commission?: number;
   client?: string;
+  platform?: string;
 }
 
 export function useReportData() {
@@ -32,7 +33,7 @@ export function useReportData() {
     const [imRes, mvRes] = await Promise.all([
       supabase
         .from("imoveis")
-        .select("id, titulo, cidade, bairro, tipo, padrao, preco, corretor_nome, proprietario, empreendimento, quartos, vista_mar, updated_at, status, edificio_id, condominio_id, edificios:edificio_id(nome), condominios:condominio_id(nome)")
+        .select("id, titulo, cidade, bairro, tipo, padrao, preco, corretor_nome, proprietario, empreendimento, quartos, vista_mar, updated_at, status, edificio_id, condominio_id, plataforma_venda, data_venda, edificios:edificio_id(nome), condominios:condominio_id(nome)")
         .ilike("status", "%vendid%")
         .order("updated_at", { ascending: false })
         .limit(5000),
@@ -55,13 +56,14 @@ export function useReportData() {
       segment: row.padrao || "Médio Padrão",
       broker: row.corretor_nome || "Sem corretor",
       price: Number(row.preco) || 0,
-      date: row.updated_at || new Date().toISOString(),
+      date: row.data_venda || row.updated_at || new Date().toISOString(),
       empreendimento: row.empreendimento || "",
       edificio: row.edificios?.nome || "",
       condominio: row.condominios?.nome || "",
       bedrooms: row.quartos || 0,
       seaView: row.vista_mar || false,
       isManual: false,
+      platform: row.plataforma_venda || "",
     }));
 
     const manual: RealSaleRecord[] = (mvRes.data || []).map((row: any) => ({

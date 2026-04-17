@@ -7,6 +7,7 @@ import { PropertyMap } from "@/components/PropertyMap";
 import { PropertyDetailModal } from "@/components/PropertyDetailModal";
 import { RoutePlanner } from "@/components/RoutePlanner";
 import { SharkAI } from "@/components/SharkAI";
+import { SoldConfirmDialog, SoldConfirmPayload } from "@/components/SoldConfirmDialog";
 import { properties as initialProperties, salesRecords, formatCurrency, Property } from "@/data/mockData";
 import {
   Building2, Search, Plus, MapPin, BedDouble, Bath, Car, Ruler,
@@ -608,8 +609,70 @@ export default function Properties() {
     setShowXmlMenu(false);
   };
 
-  const handleStatusChange = (propertyId: string, newStatus: Property["status"]) => {
-    setPropertyList((prev) => prev.map((p) => (p.id === propertyId ? { ...p, status: newStatus } : p)));
+  const [pendingSold, setPendingSold] = useState<Property | null>(null);
+
+  const persistStatus = async (
+    propertyId: string,
+    newStatus: Property["status"],
+    extra: Record<string, any> = {}
+  ) => {
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(propertyId);
+    if (isUuid) {
+      const { error } = await supabase
+        .from("imoveis")
+        .update({ status: newStatus, updated_at: new Date().toISOString(), ...extra })
+        .eq("id", propertyId);
+      if (error) {
+        toast.error("Erro ao atualizar status");
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const handleStatusChange = async (propertyId: string, newStatus: Property["status"]) => {
+    const target = propertyList.find((p) => p.id === propertyId);
+    if (!target) return;
+
+    // Sold flow: open confirmation dialog first
+    if (newStatus === "Vendido" && target.status !== "Vendido") {
+      setPendingSold(target);
+      return;
+    }
+
+    // Other status changes: persist immediately and clear sale-specific fields if leaving "Vendido"
+    const extra =
+      target.status === "Vendido" && newStatus !== "Vendido"
+        ? { plataforma_venda: "", data_venda: null }
+        : {};
+    const ok = await persistStatus(propertyId, newStatus, extra);
+    if (!ok) return;
+    setPropertyList((prev) =>
+      prev.map((p) =>
+        p.id === propertyId
+          ? { ...p, status: newStatus, ...(extra.plataforma_venda !== undefined ? { plataformaVenda: "", dataVenda: "" } : {}) }
+          : p
+      )
+    );
+  };
+
+  const handleConfirmSold = async ({ platform, saleDate }: SoldConfirmPayload) => {
+    if (!pendingSold) return;
+    const propertyId = pendingSold.id;
+    const ok = await persistStatus(propertyId, "Vendido", {
+      plataforma_venda: platform,
+      data_venda: saleDate,
+    });
+    if (!ok) return;
+    setPropertyList((prev) =>
+      prev.map((p) =>
+        p.id === propertyId
+          ? { ...p, status: "Vendido", plataformaVenda: platform, dataVenda: saleDate, updatedAt: new Date().toISOString() }
+          : p
+      )
+    );
+    toast.success(`Venda registrada via ${platform}! Já está no Relatório de Vendas.`);
+    setPendingSold(null);
   };
 
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
