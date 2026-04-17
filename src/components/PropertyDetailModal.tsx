@@ -6,7 +6,7 @@ import {
   CreditCard, Navigation, Share2, Heart, Maximize2, Download, Key,
   Pencil, Check, HardDrive, Flame, TrendingUp, Eye, EyeOff, User,
   Sparkles, Loader2, Target, Zap, FileText, MapPinned, DollarSign,
-  Gift, Percent, FileCheck, Hash, Scan, AlertTriangle
+  Gift, Percent, FileCheck, Hash, Scan, AlertTriangle, FolderDown
 } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -556,20 +556,20 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
 
         {/* Action bar */}
         <div className="flex items-center gap-2 px-5 py-3 bg-amber-50/50 border-b border-amber-100 flex-wrap">
-          <Link to={`/editar-imovel/${property.id}`} onClick={onClose} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
-            <Pencil className="w-4 h-4 text-amber-500" /> Editar
-          </Link>
           <button onClick={handleShare} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
             <Share2 className="w-4 h-4 text-amber-500" /> Compartilhar
           </button>
           <button onClick={handleDownload} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
-            <Download className="w-4 h-4 text-blue-500" /> Baixar Ficha
+            <Download className="w-4 h-4 text-blue-500" /> Baixar Fotos (PDF)
           </button>
           {materialUrl && (
-            <button onClick={handleMaterialDownload} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
-              <Download className="w-4 h-4 text-purple-500" /> Material Completo
-            </button>
+            <a href={materialUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
+              <FolderDown className="w-4 h-4 text-purple-500" /> Material Completo
+            </a>
           )}
+          <Link to={`/editar-imovel/${property.id}`} onClick={onClose} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
+            <Pencil className="w-4 h-4 text-amber-500" /> Editar
+          </Link>
         </div>
 
         {/* Content */}
