@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ManualSalesDialog } from "@/components/relatorios/ManualSalesDialog";
+import { Database } from "lucide-react";
 
 // ─── Constants ───
 const SEGMENT_COLORS: Record<string, string> = {
