@@ -379,7 +379,6 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
       mapTypeControl: false,
       streetViewControl: false,
       fullscreenControl: false,
-      zoomControlOptions: { position: google.maps.ControlPosition.RIGHT_TOP },
     });
     mapInstanceRef.current = map;
     geocoderRef.current = new google.maps.Geocoder();
