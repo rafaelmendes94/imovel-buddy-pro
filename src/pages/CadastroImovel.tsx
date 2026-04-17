@@ -229,7 +229,60 @@ function EntitySelector({ label, icon, table, value, onChange, onSelect, openId,
   );
 }
 
-const descriptionStyles = [
+function EntitySelectorsGroup({ form, set, handleEntitySelect }: {
+  form: any;
+  set: (k: any, v: any) => void;
+  handleEntitySelect: (entity: EntityOption) => void;
+}) {
+  const [openId, setOpenId] = useState<string | null>(null);
+  return (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <EntitySelector
+        id="edificio"
+        openId={openId}
+        setOpenId={setOpenId}
+        label="Edifício"
+        icon={<Building className="w-3.5 h-3.5" />}
+        table="edificios"
+        value={form.edificio_id}
+        onChange={(id) => {
+          set('edificio_id', id);
+          if (id) { set('condominio_id', ''); set('empreendimento_id', ''); }
+        }}
+        onSelect={handleEntitySelect}
+      />
+      <EntitySelector
+        id="condominio"
+        openId={openId}
+        setOpenId={setOpenId}
+        label="Condomínio"
+        icon={<Fence className="w-3.5 h-3.5" />}
+        table="condominios"
+        value={form.condominio_id}
+        onChange={(id) => {
+          set('condominio_id', id);
+          if (id) { set('edificio_id', ''); set('empreendimento_id', ''); }
+        }}
+        onSelect={handleEntitySelect}
+      />
+      <EntitySelector
+        id="loteamento"
+        openId={openId}
+        setOpenId={setOpenId}
+        label="Loteamento"
+        icon={<Landmark className="w-3.5 h-3.5" />}
+        table="empreendimentos"
+        value={form.empreendimento_id}
+        onChange={(id) => {
+          set('empreendimento_id', id);
+          if (id) { set('edificio_id', ''); set('condominio_id', ''); }
+        }}
+        onSelect={handleEntitySelect}
+      />
+    </div>
+  );
+}
+
   { id: "gatilhos", label: "🎯 Gatilhos de Venda", desc: "Persuasão e urgência" },
   { id: "agressiva", label: "🔥 Agressiva", desc: "Impacto e conversão" },
   { id: "informativa", label: "📋 Informativa", desc: "Detalhes técnicos" },
