@@ -529,7 +529,48 @@ export default function Avaliacoes() {
                   {result.confidenceScore != null && <ConfidenceGauge score={result.confidenceScore} />}
                 </div>
 
-                {/* Rental Analysis */}
+                {/* Price Analysis — Anunciado vs Mercado */}
+                {result.priceAnalysis && result.priceAnalysis.listedPrice > 0 && (() => {
+                  const pa = result.priceAnalysis;
+                  const verdictCfg = {
+                    abaixo: { color: "text-green-600", bg: "bg-green-500/10", border: "border-green-500/30", icon: <TrendingDown className="w-5 h-5" />, label: "Abaixo do Mercado", desc: "Oportunidade de compra" },
+                    condizente: { color: "text-blue-600", bg: "bg-blue-500/10", border: "border-blue-500/30", icon: <ClipboardCheck className="w-5 h-5" />, label: "Condizente com o Mercado", desc: "Preço alinhado" },
+                    acima: { color: "text-red-600", bg: "bg-red-500/10", border: "border-red-500/30", icon: <TrendingUp className="w-5 h-5" />, label: "Acima do Mercado", desc: "Pode dificultar a venda" },
+                  }[pa.verdict] || { color: "text-foreground", bg: "bg-muted", border: "border-border", icon: <BarChart3 className="w-5 h-5" />, label: "Análise", desc: "" };
+                  return (
+                    <div className={`elevated-card rounded-xl p-5 border-2 ${verdictCfg.border} ${verdictCfg.bg}`}>
+                      <h3 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
+                        <DollarSign className="w-4 h-4 text-accent" /> Análise do Preço Anunciado
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div className="text-center p-3 rounded-lg bg-card/60">
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Preço Anunciado</p>
+                          <p className="text-lg font-bold text-card-foreground mt-1">{formatCurrency(pa.listedPrice)}</p>
+                        </div>
+                        <div className="text-center p-3 rounded-lg bg-card/60">
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Valor de Mercado IA</p>
+                          <p className="text-lg font-bold text-accent mt-1">{formatCurrency(pa.marketValue)}</p>
+                        </div>
+                        <div className={`text-center p-3 rounded-lg bg-card/60`}>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Diferença</p>
+                          <p className={`text-lg font-bold mt-1 ${verdictCfg.color}`}>
+                            {pa.difference >= 0 ? "+" : ""}{formatCurrency(pa.difference)}
+                            <span className="text-xs ml-1">({pa.differencePercent >= 0 ? "+" : ""}{pa.differencePercent.toFixed(1)}%)</span>
+                          </p>
+                        </div>
+                      </div>
+                      <div className={`flex items-start gap-3 p-4 rounded-lg ${verdictCfg.bg} border ${verdictCfg.border}`}>
+                        <span className={verdictCfg.color}>{verdictCfg.icon}</span>
+                        <div className="flex-1">
+                          <p className={`text-sm font-bold ${verdictCfg.color}`}>{verdictCfg.label}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{pa.reasoning}</p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+
                 {result.rentalAnalysis && (
                   <div className="elevated-card rounded-xl p-5">
                     <h3 className="text-sm font-semibold text-card-foreground mb-3 flex items-center gap-2">
