@@ -174,10 +174,13 @@ function useRankings(filtered: RealSaleRecord[]) {
       });
       return Object.entries(map).map(([name, data]) => ({ name, ...data })).sort((a, b) => b.vgv - a.vgv);
     };
+    const filterEmpty = (arr: { name: string; count: number; vgv: number }[]) => arr.filter(r => r.name && r.name !== "Avulso");
     return {
       byType: rank("type"), bySegment: rank("segment"), byCity: rank("city"),
       byBroker: rank("broker"), byOwner: rank("owner"), byNeighborhood: rank("neighborhood"),
       byEmpreendimento: rank(s => s.empreendimento || "Avulso"),
+      byEdificio: filterEmpty(rank(s => s.edificio || "")),
+      byCondominio: filterEmpty(rank(s => s.condominio || "")),
     };
   }, [filtered]);
 }
@@ -478,10 +481,19 @@ export default function Reports() {
                     ),
                   },
                   {
-                    key: "rankings-2",
+                    key: "rankings-entidades",
                     node: (
                       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                        <RankingListCard title="Top Edifícios" icon={Building2} data={rankings.byEdificio.slice(0, 6)} />
+                        <RankingListCard title="Top Condomínios" icon={Building2} data={rankings.byCondominio.slice(0, 6)} />
                         <RankingListCard title="Top Loteamentos" icon={Building2} data={rankings.byEmpreendimento.slice(0, 6)} />
+                      </div>
+                    ),
+                  },
+                  {
+                    key: "rankings-2",
+                    node: (
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         <RankingProgressCard title="Top Corretores" data={rankings.byBroker} />
                         <RankingListCard title="VGV por Segmento" icon={Star} data={rankings.bySegment} colors={SEGMENT_COLORS} />
                       </div>
