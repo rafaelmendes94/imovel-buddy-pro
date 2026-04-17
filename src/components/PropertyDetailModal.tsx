@@ -6,7 +6,7 @@ import {
   CreditCard, Navigation, Share2, Heart, Maximize2, Download, Key,
   Pencil, Check, HardDrive, Flame, TrendingUp, Eye, EyeOff, User,
   Sparkles, Loader2, Target, Zap, FileText, MapPinned, DollarSign,
-  Gift, Percent, FileCheck, Hash, Scan, AlertTriangle
+  Gift, Percent, FileCheck, Hash, Scan, AlertTriangle, FolderDown
 } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
