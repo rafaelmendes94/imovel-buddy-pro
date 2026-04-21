@@ -157,7 +157,7 @@ export default function BrokerSite() {
           .eq("status", "active"),
         supabase
           .from("imoveis")
-          .select("id, titulo, endereco, cidade, tipo, status, preco, area, quartos, banheiros, vagas, imagens, vista_mar, decorado, aceita_permuta, condicoes_pagamento, empreendimento, unidade, box, quadra, lote, bairro, corretor_nome")
+          .select("id, user_id, titulo, endereco, cidade, tipo, status, preco, area, quartos, banheiros, vagas, comissao, imagens, vista_mar, decorado, aceita_permuta, condicoes_pagamento, empreendimento, unidade, box, quadra, lote, bairro, corretor_nome")
           .eq("ativo_site", true),
         supabase
           .from("site_config")
