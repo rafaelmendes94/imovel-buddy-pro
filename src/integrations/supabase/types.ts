@@ -193,6 +193,24 @@ export type Database = {
         }
         Relationships: []
       }
+      broker_page_views: {
+        Row: {
+          broker_slug: string
+          id: string
+          viewed_at: string
+        }
+        Insert: {
+          broker_slug: string
+          id?: string
+          viewed_at?: string
+        }
+        Update: {
+          broker_slug?: string
+          id?: string
+          viewed_at?: string
+        }
+        Relationships: []
+      }
       broker_ratings: {
         Row: {
           agilidade: number
@@ -1677,6 +1695,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_broker_page_view: {
+        Args: { _slug: string }
+        Returns: undefined
       }
       increment_imovel_views: {
         Args: { imovel_id: string }
