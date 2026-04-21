@@ -193,16 +193,19 @@ export default function BrokerSite() {
   }, [slug]);
 
   const filteredProperties = useMemo(() => {
-    if (!searchTerm) return properties;
-
     const term = searchTerm.toLowerCase();
-    return properties.filter((property) =>
-      property.titulo.toLowerCase().includes(term) ||
-      property.endereco.toLowerCase().includes(term) ||
-      property.cidade.toLowerCase().includes(term) ||
-      (property.bairro || "").toLowerCase().includes(term),
-    );
-  }, [properties, searchTerm]);
+    return properties.filter((property) => {
+      if (tipoFilter && property.tipo !== tipoFilter) return false;
+      if (statusFilter && property.status !== statusFilter) return false;
+      if (!term) return true;
+      return (
+        property.titulo.toLowerCase().includes(term) ||
+        property.endereco.toLowerCase().includes(term) ||
+        property.cidade.toLowerCase().includes(term) ||
+        (property.bairro || "").toLowerCase().includes(term)
+      );
+    });
+  }, [properties, searchTerm, tipoFilter, statusFilter]);
 
   const propertiesByCity = useMemo(() => {
     const grouped = filteredProperties.reduce<Record<string, DBProperty[]>>((acc, property) => {
@@ -223,6 +226,13 @@ export default function BrokerSite() {
   const lots = useMemo(() => properties.filter((property) => property.tipo === "Terreno" || property.tipo === "Lote").length, [properties]);
   const totalValue = useMemo(() => properties.reduce((sum, property) => sum + Number(property.preco), 0), [properties]);
   const soldValue = useMemo(() => soldProperties.reduce((sum, property) => sum + Number(property.preco), 0), [soldProperties]);
+  const ticketMedio = useMemo(() => (properties.length > 0 ? totalValue / properties.length : 0), [properties, totalValue]);
+  const totalComissao = useMemo(
+    () => properties.reduce((sum, p) => sum + (Number(p.preco) * (Number(p.comissao) || 0)) / 100, 0),
+    [properties],
+  );
+  const tipos = useMemo(() => Array.from(new Set(properties.map((p) => p.tipo).filter(Boolean))), [properties]);
+  const statusList = useMemo(() => Array.from(new Set(properties.map((p) => p.status).filter(Boolean))), [properties]);
 
   if (loading) {
     return (
