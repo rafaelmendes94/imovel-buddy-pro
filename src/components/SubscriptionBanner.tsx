@@ -10,7 +10,19 @@ export function SubscriptionBanner() {
   const { status, trial_ends_at, current_period_end } = subscription;
 
   if (status === "trial" && trial_ends_at) {
-    const daysLeft = Math.max(0, Math.ceil((new Date(trial_ends_at).getTime() - Date.now()) / 86400000));
+    const msLeft = new Date(trial_ends_at).getTime() - Date.now();
+    const daysLeft = Math.ceil(msLeft / 86400000);
+    if (msLeft < 0) {
+      return (
+        <div className="bg-destructive/10 border-b border-destructive/30 px-4 py-2 flex items-center gap-2 text-sm text-destructive">
+          <AlertTriangle className="w-4 h-4" />
+          <span><strong>Trial expirado.</strong> Assine para continuar usando o sistema.</span>
+          <Link to="/painel/assinatura" className="ml-auto font-medium hover:underline">
+            Assinar agora
+          </Link>
+        </div>
+      );
+    }
     if (daysLeft <= 3) {
       return (
         <div className="bg-warning/10 border-b border-warning/30 px-4 py-2 flex items-center gap-2 text-sm text-warning-foreground">
