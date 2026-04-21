@@ -24,6 +24,18 @@ export function SubscriptionBanner() {
     }
   }
 
+  if (status === "pending_payment") {
+    return (
+      <div className="bg-warning/10 border-b border-warning/30 px-4 py-2 flex items-center gap-2 text-sm text-warning-foreground">
+        <Clock className="w-4 h-4 text-warning" />
+        <span>Aguardando confirmação do pagamento.</span>
+        <Link to="/painel/assinatura" className="ml-auto text-accent font-medium hover:underline">
+          Ver detalhes
+        </Link>
+      </div>
+    );
+  }
+
   if (status === "overdue") {
     return (
       <div className="bg-destructive/10 border-b border-destructive/30 px-4 py-2 flex items-center gap-2 text-sm text-destructive">
