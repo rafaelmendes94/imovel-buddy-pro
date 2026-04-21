@@ -15,6 +15,7 @@ import {
   Paintbrush,
   Phone,
   Eye,
+  Clock,
   Ruler,
   Search,
   Star,
