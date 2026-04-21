@@ -196,7 +196,7 @@ export default function BrokerSite() {
           .eq("ativo_site", true),
         supabase
           .from("site_config")
-          .select("site_title, slogan, cover_photo_url, profile_photo_url, logo_url, whatsapp, footer_text, email_contact, bio")
+          .select("site_title, slogan, cover_photo_url, profile_photo_url, logo_url, whatsapp, footer_text, email_contact, bio, tabela_url")
           .eq("config_type", "broker_page")
           .eq("owner_id", slug)
           .maybeSingle(),
