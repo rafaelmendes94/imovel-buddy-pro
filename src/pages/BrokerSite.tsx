@@ -487,7 +487,14 @@ export default function BrokerSite() {
                       <input type="file" accept="application/pdf,image/*" className="hidden" onChange={handleUploadTabela} />
                     </label>
                   )}
-                  <button onClick={handleGeneratePdf} className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 px-5 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-105">
+                  <button
+                    onClick={handleGeneratePdf}
+                    style={accentColor ? { background: `linear-gradient(135deg, ${accentColor}cc, ${accentColor}, ${accentColor}dd)` } : undefined}
+                    className={cn(
+                      "inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-105",
+                      !accentColor && "bg-gradient-to-r from-emerald-500 to-teal-600",
+                    )}
+                  >
                     <FileDown className="h-4 w-4" /> Gerar PDF dos imóveis
                   </button>
                 </div>
@@ -500,21 +507,27 @@ export default function BrokerSite() {
         <section className="container -mt-10 relative z-10 pb-4">
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
             {[
-              { label: "Imóveis", value: properties.length, icon: Building2, gradient: "from-sky-400 via-blue-600 to-indigo-800" },
-              { label: "VGV carteira", value: formatCurrency(totalValue), icon: DollarSign, gradient: "from-sky-400 via-blue-600 to-indigo-800" },
-              { label: "Ticket médio", value: formatCurrency(ticketMedio), icon: TrendingUp, gradient: "from-sky-400 via-blue-600 to-indigo-800" },
-              { label: "Vendas", value: soldProperties.length, icon: Home, gradient: "from-sky-400 via-blue-600 to-indigo-800" },
-              { label: "VGV vendido", value: formatCurrency(soldValue), icon: DollarSign, gradient: "from-sky-400 via-blue-600 to-indigo-800" },
-              { label: "Tempo médio venda", value: tempoMedioVenda > 0 ? `${tempoMedioVenda}d` : "—", icon: Clock, gradient: "from-sky-400 via-blue-600 to-indigo-800" },
-              { label: "Visualizações", value: pageViews.toLocaleString("pt-BR"), icon: Eye, gradient: "from-sky-400 via-blue-600 to-indigo-800" },
+              { label: "Imóveis", value: properties.length, icon: Building2 },
+              { label: "VGV carteira", value: formatCurrency(totalValue), icon: DollarSign },
+              { label: "Ticket médio", value: formatCurrency(ticketMedio), icon: TrendingUp },
+              { label: "Vendas", value: soldProperties.length, icon: Home },
+              { label: "VGV vendido", value: formatCurrency(soldValue), icon: DollarSign },
+              { label: "Tempo médio venda", value: tempoMedioVenda > 0 ? `${tempoMedioVenda}d` : "—", icon: Clock },
+              { label: "Visualizações", value: pageViews.toLocaleString("pt-BR"), icon: Eye },
             ].map((metric, idx) => (
               <div
                 key={metric.label}
                 className={cn(
-                  "group relative overflow-hidden rounded-2xl bg-gradient-to-br p-3 text-white shadow-lg transition-all duration-500 hover:-translate-y-1.5 hover:shadow-2xl animate-fade-in",
-                  metric.gradient,
+                  "group relative overflow-hidden rounded-2xl p-3 text-white shadow-lg transition-all duration-500 hover:-translate-y-1.5 hover:shadow-2xl animate-fade-in",
+                  !accentColor && "bg-gradient-to-br from-sky-400 via-blue-600 to-indigo-800",
                 )}
-                style={{ animationDelay: `${idx * 70}ms`, animationFillMode: "both" }}
+                style={{
+                  animationDelay: `${idx * 70}ms`,
+                  animationFillMode: "both",
+                  ...(accentColor
+                    ? { background: `linear-gradient(135deg, ${accentColor}cc, ${accentColor}, ${accentColor}ee)` }
+                    : {}),
+                }}
               >
                 <div className="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-white/15 blur-2xl transition-transform duration-700 group-hover:scale-150" />
                 <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/0 to-white/20 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
