@@ -413,6 +413,17 @@ const propertiesWithCodes = initialProperties.map((p, i) => ({
 
 export default function Properties() {
   const navigate = useNavigate();
+  const { user, subscription, isSuperAdmin, isAdminStaff } = useAuth();
+  const [currentImoveis, setCurrentImoveis] = useState(0);
+  const maxImoveis = subscription?.plan?.max_properties ?? 0;
+  const limitReached = !isSuperAdmin && !isAdminStaff && maxImoveis > 0 && currentImoveis >= maxImoveis;
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.rpc("count_imoveis_in_subscription", { _user_id: user.id })
+      .then(({ data }) => setCurrentImoveis(Number(data) || 0));
+  }, [user, subscription?.id]);
+
   const [searchParams, setSearchParams] = useSearchParams();
   const [propertyList, setPropertyList] = useState<Property[]>([]);
   const [search, setSearch] = useState("");
