@@ -49,6 +49,7 @@ const defaults: ConfigData = {
   whatsapp: "",
   instagram: "",
   email_contact: "",
+  bio: "",
 };
 
 export function SiteConfigDialog({
