@@ -32,6 +32,7 @@ interface ConfigData {
   whatsapp: string;
   instagram: string;
   email_contact: string;
+  bio: string;
 }
 
 const defaults: ConfigData = {
