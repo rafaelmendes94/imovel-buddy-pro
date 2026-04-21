@@ -1327,6 +1327,7 @@ export type Database = {
       site_config: {
         Row: {
           accent_color: string
+          bio: string | null
           config_type: string
           cover_photo_url: string | null
           created_at: string
@@ -1347,6 +1348,7 @@ export type Database = {
         }
         Insert: {
           accent_color?: string
+          bio?: string | null
           config_type?: string
           cover_photo_url?: string | null
           created_at?: string
@@ -1367,6 +1369,7 @@ export type Database = {
         }
         Update: {
           accent_color?: string
+          bio?: string | null
           config_type?: string
           cover_photo_url?: string | null
           created_at?: string
