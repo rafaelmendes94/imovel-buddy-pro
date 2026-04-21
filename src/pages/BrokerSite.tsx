@@ -146,6 +146,9 @@ export default function BrokerSite() {
   const [config, setConfig] = useState<BrokerPageConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [tipoFilter, setTipoFilter] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<string>("");
+  const [brokerId, setBrokerId] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
