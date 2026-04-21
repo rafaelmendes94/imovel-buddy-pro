@@ -1,52 +1,114 @@
 
 
-## Melhorias na página pública do corretor
+## Sistemática SaaS Unificada — Planos Corretor + Imobiliária com Cobrança Asaas
 
-Três ajustes na hotsite do corretor (`/corretor/:slug`):
+Implementação completa do ciclo: **cadastro → escolha do plano → trial/Free → liberação por webhook Asaas → bloqueio por inadimplência ou limite estourado**, contemplando tanto **corretor solo** quanto **imobiliária com N corretores vinculados** sob a mesma assinatura.
 
-### 1. Estrela do avatar abre modal de avaliações
-- O selo de estrela sobreposto ao avatar (canto inferior direito) hoje é decorativo. Vai virar um botão clicável que:
-  - Exibe a **nota média** do corretor sobreposta na estrela (ex: `4.8` em texto pequeno) puxada das `broker_ratings`.
-  - Ao clicar, abre um **modal (Dialog)** em tela cheia/centralizado contendo o componente `BrokerRatings` já existente (radar + formulário + comentários).
-- A seção `<BrokerRatings>` que hoje está renderizada inline na página será **removida do fluxo** e movida para dentro do modal, evitando duplicação.
+### 1. Banco de dados (1 migration única)
 
-### 2. Botão "Subir tabela completa" deslocado para dentro do botão "Tabela"
-- Hoje há dois botões separados: "Baixar tabela em PDF" e "Subir tabela completa" (dono). Vamos unificar:
-  - **Visitante**: vê apenas "Baixar tabela em PDF" (se existir) ou "Tabela indisponível".
-  - **Dono**: vê o botão "Baixar tabela em PDF" **com um sub-botão / ícone de upload anexo** ao lado (mesmo container visual) — clicar no ícone de upload abre o seletor de arquivo. Se ainda não houver tabela, o botão principal vira "Subir tabela completa" diretamente.
-- Resultado: visualmente apenas 1 controle de "Tabela" + 1 controle de "Gerar PDF", como mostra o screenshot enviado.
+**Tabela `plans`**:
+- Adicionar `is_free boolean default false`.
+- `max_properties` = limite total de imóveis da assinatura (somado entre corretores da imobiliária).
+- `max_brokers` = limite de corretores quando `plan_type='imobiliaria'` (fixo 1 para `corretor`).
 
-### 3. PDF dos imóveis com design alinhado ao site
-Substituir o PDF atual (tabela seca via `jspdf-autotable`) por um **PDF visual estilo catálogo**, gerado via `html2pdf.js` (já presente em `generatePropertyPdf.ts`) replicando a identidade do site:
+**Tabela `profiles`**:
+- Adicionar `agency_id uuid` — aponta para `user_id` da imobiliária dona; `null` para corretor solo.
+- Adicionar `account_type text` (`corretor` | `imobiliaria`) gravado a partir do `raw_user_meta_data`.
 
-**Estrutura do PDF:**
-- **Capa**: gradiente navy/accent (mesma cor do site / `accent_color`), avatar circular do corretor, nome em fonte black grande, CRECI, contato (WhatsApp + e-mail), totais (X imóveis · VGV total · VGV vendido).
-- **Páginas internas**: cards de imóvel em **grid 2 colunas**, cada card com:
-  - Foto principal (proporção 4:3, cantos arredondados).
-  - Badge de status (Disponível/Vendido/Reservado) com a cor do site.
-  - Título em negrito + endereço com ícone de pin.
-  - Linha de specs: m², quartos, banheiros, vagas (ícones).
-  - **Preço** em destaque (cor accent).
-  - Tags de condições (Permuta, Financia, etc.) e diferenciais (Vista mar, Decorado).
-  - Código do imóvel no rodapé do card.
-- **Quebra de página automática** (`page-break-inside: avoid`) por card.
-- **Rodapé** em cada página: nome do corretor + número da página + data de geração.
-- Cores derivadas de `accent_color` (fallback navy padrão).
-- Imagens convertidas para base64 (mesma técnica de `generatePropertyPdf.ts`) para embed offline.
+**Tabela `subscriptions`**: adicionar `pending_payment` ao enum `subscription_status`. Assinatura sempre pertence ao dono (corretor solo OU imobiliária); corretores vinculados herdam via `agency_id`.
 
-### Detalhes técnicos
+**Funções SECURITY DEFINER**:
+- `get_effective_subscription(_user_id)` — se tem `agency_id`, retorna a subscription da imobiliária; senão a própria.
+- `count_imoveis_in_subscription(_user_id)` — soma imóveis do dono + todos os corretores vinculados.
+- `create_trial_subscription(_user_id, _plan_id)` — cria subscription `trial` (ou `active` se `is_free`); calcula `trial_ends_at`.
+- `link_broker_to_agency(_broker_email, _agency_user_id)` — vincula corretor existente à imobiliária.
 
-- Novo arquivo: **`src/utils/generateBrokerCatalogPdf.ts`** — função `generateBrokerCatalogPdf({ broker, properties, soldProperties, config, accentColor })`.
-- Lazy import de `html2pdf.js` para não pesar o bundle.
-- Reaproveita o helper `imageToBase64` (extrair para `src/utils/imageToBase64.ts` ou copiar inline).
-- Em `BrokerSite.tsx`:
-  - Adicionar estado `ratingModalOpen` + `avgRating` (busca rápida em `broker_ratings` por `broker_id`).
-  - Importar `Dialog` de `@/components/ui/dialog` para o modal de avaliações.
-  - Trocar a chamada de `handleGeneratePdf` para usar a nova função de catálogo.
-  - Remover o bloco `<BrokerRatings ... />` inline (agora vive no modal).
+**Triggers**:
+- `enforce_imovel_limit()` BEFORE INSERT em `imoveis` — bloqueia se atingiu `plan.max_properties` (Super Admin/Staff isentos).
+- `enforce_broker_limit()` BEFORE INSERT/UPDATE em `profiles` quando `agency_id IS NOT NULL` — bloqueia se exceder `plan.max_brokers`.
+
+**Seeds**:
+- Plano "Free Corretor" (R$0, 5 imóveis, 1 corretor, `is_free=true`, `plan_type=corretor`).
+- Plano "Free Imobiliária" (R$0, 10 imóveis, 2 corretores, `is_free=true`, `plan_type=imobiliaria`).
+
+### 2. Cadastro e onboarding
+
+**`Registro.tsx`** — após `signUp`, redirecionar para `/escolher-plano` (account_type já vai no metadata).
+
+**Nova `/escolher-plano`** (`src/pages/EscolherPlano.tsx`):
+- Filtra planos por `account_type` do usuário.
+- Card "Free" destacado → RPC `create_trial_subscription` → `/painel`.
+- Cards pagos → edge `asaas-checkout` (cria subscription local `pending_payment` ou `trial`) → abre `invoiceUrl` em nova aba → redireciona para `/painel/assinatura`.
+
+**`AuthGuard.tsx`**:
+- Sem subscription efetiva e não é Super Admin/Staff → redireciona para `/escolher-plano`.
+- `status='blocked'` ou `pending_payment` → libera só `/painel/assinatura` e `/escolher-plano`.
+
+**`useAuth.tsx`**: trocar fetch de subscription por RPC `get_effective_subscription` para herdar a da imobiliária quando aplicável.
+
+### 3. Gestão de corretores pela imobiliária
+
+Nova aba em `Brokers.tsx` (visível só para `account_type='imobiliaria'`):
+- "Meus corretores (X de Y)" — lista `profiles.agency_id = user.id`.
+- Botão "Convidar corretor" → modal e-mail+nome → RPC `link_broker_to_agency`. Trigger bloqueia se exceder limite, erro vira toast.
+- Botão "Remover do quadro" → seta `agency_id = null`.
+- Cada corretor vinculado loga normalmente, vê só seus imóveis, mas o limite total é da imobiliária.
+
+### 4. Cobrança Asaas
+
+**`asaas-checkout/index.ts`**: criar `subscription` local com `status='pending_payment'` (ou `trial` se `trial_days>0`) **antes** de chamar Asaas. Mantém `externalReference={user_id, plan_id}`.
+
+**`asaas-webhook/index.ts`**:
+- `PAYMENT_CONFIRMED/RECEIVED` → calcular `current_period_end` correto (30/90/365 conforme `plan.billing_cycle`), zerar `blocked_at`, status=`active`.
+- `PAYMENT_OVERDUE` → status=`overdue`; se `current_period_end + 7 dias < now()` → `blocked` + `blocked_at=now()`.
+- Subscription da imobiliária bloqueada → todos os corretores vinculados bloqueiam automaticamente (mesma subscription efetiva).
+
+### 5. UI de limites e estados
+
+- **`Properties.tsx`**: badge "X de Y imóveis usados" via `count_imoveis_in_subscription`. Botão "Novo imóvel" desabilitado ao atingir limite + tooltip + link upgrade.
+- **`SubscriptionBanner.tsx`**: adicionar caso `pending_payment` ("Aguardando confirmação do pagamento").
+
+### 6. Super Admin (`AdminPlanos.tsx`)
+
+- Toggle "Plano gratuito (Free)" (`is_free`).
+- Campo `max_brokers` visível apenas quando `plan_type='imobiliaria'`.
+- Validação: máximo 1 plano `is_free=true` por `plan_type`.
+- Badge "FREE" no card.
+
+### 7. Diagrama do modelo
+
+```text
+Imobiliária (user A) ─ subscription S1 (10 im, 2 cor)
+   ├─ profile A   (agency_id=null)
+   ├─ profile B1  (agency_id=A)
+   └─ profile B2  (agency_id=A)
+        soma imóveis A+B1+B2 ≤ S1.max_properties
+        contagem B1+B2       ≤ S1.max_brokers
+
+Corretor solo (user C) ─ subscription S2 (5 im, 1 cor)
+   └─ profile C (agency_id=null)
+
+Fluxo: Registro → /escolher-plano
+   ├─ Free  → RPC create_trial → active   → /painel
+   └─ Pago  → asaas-checkout   → trial/pending → invoiceUrl
+                                       │
+                          Webhook PAYMENT_CONFIRMED
+                                       ▼
+                  active + period_end pelo billing_cycle
+```
 
 ### Arquivos afetados
 
-- `src/pages/BrokerSite.tsx` (modal de avaliações, unificação dos botões de tabela, troca da função de PDF)
-- `src/utils/generateBrokerCatalogPdf.ts` (novo — geração visual do catálogo)
+- **Migration única**: `is_free`, `agency_id`, `account_type`, enum `pending_payment`, funções `get_effective_subscription`/`create_trial_subscription`/`link_broker_to_agency`/`count_imoveis_in_subscription`, triggers `enforce_imovel_limit` e `enforce_broker_limit`, seeds Free.
+- `src/pages/Registro.tsx` — redirect pós-cadastro.
+- `src/pages/EscolherPlano.tsx` — **novo**.
+- `src/App.tsx` — rota `/escolher-plano`.
+- `src/components/AuthGuard.tsx` — redirect quando sem subscription efetiva.
+- `src/components/SubscriptionBanner.tsx` — caso `pending_payment`.
+- `src/hooks/useAuth.tsx` — usar `get_effective_subscription`.
+- `src/pages/admin/AdminPlanos.tsx` — toggle Free + badge + campo max_brokers condicional.
+- `src/pages/Brokers.tsx` — aba "Meus corretores" para imobiliária.
+- `src/pages/Properties.tsx` — contador + bloqueio UI.
+- `supabase/functions/asaas-checkout/index.ts` — cria subscription local antes do redirect.
+- `supabase/functions/asaas-webhook/index.ts` — ciclo correto + auto-block.
 
