@@ -2,11 +2,16 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { BackButton } from "@/components/BackButton";
-import { Plus, Mail, Phone, Award, Search, ExternalLink, Building2, Palette } from "lucide-react";
+import { Plus, Mail, Phone, Award, Search, ExternalLink, Building2, Palette, UserPlus, X, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { SiteConfigDialog } from "@/components/SiteConfigDialog";
+import { useAuth } from "@/hooks/useAuth";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 
 interface BrokerData {
   id: string;
@@ -27,10 +32,29 @@ const toSlug = (name: string) =>
   name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
 export default function Brokers() {
+  const { user, profile, subscription } = useAuth();
+  const { toast } = useToast();
+  const isAgency = profile?.account_type === "imobiliaria";
+
   const [search, setSearch] = useState("");
   const [brokers, setBrokers] = useState<BrokerData[]>([]);
   const [loading, setLoading] = useState(true);
   const [appearanceFor, setAppearanceFor] = useState<{ slug: string; name: string } | null>(null);
+
+  const [agencyBrokers, setAgencyBrokers] = useState<any[]>([]);
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviting, setInviting] = useState(false);
+  const maxAgencyBrokers = subscription?.plan?.max_brokers ?? 0;
+
+  const fetchAgencyBrokers = async () => {
+    if (!user || !isAgency) return;
+    const { data } = await supabase
+      .from("profiles")
+      .select("user_id, full_name, email, phone, avatar_url")
+      .eq("agency_id", user.id);
+    setAgencyBrokers(data || []);
+  };
 
   useEffect(() => {
     const fetchBrokers = async () => {
@@ -41,7 +65,6 @@ export default function Brokers() {
 
       if (!brokersData) { setLoading(false); return; }
 
-      // Get property counts per broker
       const { data: imoveis } = await supabase
         .from("imoveis")
         .select("corretor_nome, preco, status");
@@ -62,7 +85,40 @@ export default function Brokers() {
       setLoading(false);
     };
     fetchBrokers();
-  }, []);
+    fetchAgencyBrokers();
+  }, [user?.id, isAgency]);
+
+  const handleInvite = async () => {
+    if (!user || !inviteEmail) return;
+    setInviting(true);
+    const { error } = await supabase.rpc("link_broker_to_agency", {
+      _broker_email: inviteEmail.trim(),
+      _agency_user_id: user.id,
+    });
+    setInviting(false);
+    if (error) {
+      toast({ title: "Não foi possível vincular", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Corretor vinculado!" });
+    setInviteEmail("");
+    setInviteOpen(false);
+    fetchAgencyBrokers();
+  };
+
+  const handleRemoveAgencyBroker = async (broker_user_id: string) => {
+    if (!confirm("Remover este corretor do quadro da imobiliária?")) return;
+    const { error } = await supabase
+      .from("profiles")
+      .update({ agency_id: null })
+      .eq("user_id", broker_user_id);
+    if (error) {
+      toast({ title: "Erro", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Corretor removido do quadro" });
+    fetchAgencyBrokers();
+  };
 
   const filtered = brokers.filter((b) =>
     b.name.toLowerCase().includes(search.toLowerCase())
@@ -72,6 +128,44 @@ export default function Brokers() {
     <AppLayout>
       <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
         <BackButton />
+
+        {isAgency && (
+          <div className="elevated-card rounded-xl p-5 space-y-4 border-2 border-accent/30">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Users className="w-5 h-5 text-accent" />
+                <h2 className="text-lg font-bold text-foreground">
+                  Meus corretores ({agencyBrokers.length} de {maxAgencyBrokers})
+                </h2>
+              </div>
+              <Button size="sm" onClick={() => setInviteOpen(true)} disabled={agencyBrokers.length >= maxAgencyBrokers}>
+                <UserPlus className="w-4 h-4 mr-1" /> Convidar corretor
+              </Button>
+            </div>
+            {agencyBrokers.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Nenhum corretor vinculado ainda.</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {agencyBrokers.map(b => (
+                  <div key={b.user_id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-foreground truncate">{b.full_name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{b.email}</p>
+                    </div>
+                    <button
+                      onClick={() => handleRemoveAgencyBroker(b.user_id)}
+                      className="p-1.5 text-muted-foreground hover:text-destructive transition-colors"
+                      title="Remover do quadro"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Corretores</h1>
@@ -188,6 +282,26 @@ export default function Brokers() {
           title={`Aparência da página de ${appearanceFor.name}`}
         />
       )}
+
+      <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle>Vincular corretor</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Informe o e-mail do corretor (ele já precisa ter uma conta).
+            </p>
+            <Input
+              type="email"
+              placeholder="email@corretor.com"
+              value={inviteEmail}
+              onChange={e => setInviteEmail(e.target.value)}
+            />
+            <Button onClick={handleInvite} disabled={inviting || !inviteEmail} className="w-full">
+              {inviting ? "Vinculando..." : "Vincular"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }
