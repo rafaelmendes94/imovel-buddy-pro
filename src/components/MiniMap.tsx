@@ -17,30 +17,55 @@ export function MiniMap({ lat, lng, name, height = "250px", zoom = 15 }: MiniMap
 
   useEffect(() => {
     if (!ready || !mapRef.current) return;
+    const maps = (window as any).google?.maps;
+    if (!maps) return;
 
-    const map = new (window as any).google.maps.Map(mapRef.current, {
-      center: { lat, lng },
-      zoom,
-      mapId: "MINI_MAP",
-      mapTypeId: "hybrid",
-      zoomControl: true,
-      streetViewControl: false,
-      mapTypeControl: false,
-      fullscreenControl: false,
-    });
-    mapInstanceRef.current = map;
+    let cancelled = false;
+    let markerInstance: any = null;
 
-    const marker = new (window as any).google.maps.marker.AdvancedMarkerElement({
-      position: { lat, lng },
-      map,
-      title: name,
-    });
+    (async () => {
+      const MapCtor =
+        maps.Map ||
+        (typeof maps.importLibrary === "function"
+          ? (await maps.importLibrary("maps")).Map
+          : null);
+      if (!MapCtor || cancelled || !mapRef.current) return;
 
-    const infoWindow = new (window as any).google.maps.InfoWindow({ content: `<b>${name}</b>` });
-    infoWindow.open(map, marker);
+      const markerLib =
+        maps.marker ||
+        (typeof maps.importLibrary === "function"
+          ? await maps.importLibrary("marker").catch(() => null)
+          : null);
+
+      const map = new MapCtor(mapRef.current, {
+        center: { lat, lng },
+        zoom,
+        mapId: "MINI_MAP",
+        mapTypeId: "hybrid",
+        zoomControl: true,
+        streetViewControl: false,
+        mapTypeControl: false,
+        fullscreenControl: false,
+      });
+      mapInstanceRef.current = map;
+
+      const AdvancedMarker = markerLib?.AdvancedMarkerElement;
+      if (AdvancedMarker) {
+        markerInstance = new AdvancedMarker({ position: { lat, lng }, map, title: name });
+      } else {
+        markerInstance = new maps.Marker({ position: { lat, lng }, map, title: name });
+      }
+
+      const infoWindow = new maps.InfoWindow({ content: `<b>${name}</b>` });
+      infoWindow.open(map, markerInstance);
+    })();
 
     return () => {
-      marker.map = null;
+      cancelled = true;
+      if (markerInstance) {
+        if ("map" in markerInstance) markerInstance.map = null;
+        else if (typeof markerInstance.setMap === "function") markerInstance.setMap(null);
+      }
     };
   }, [ready, lat, lng, name, zoom]);
 
