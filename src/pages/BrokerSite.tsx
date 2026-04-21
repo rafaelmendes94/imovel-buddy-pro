@@ -337,61 +337,45 @@ export default function BrokerSite() {
     }
   };
 
-  const loadImageAsDataURL = (url: string): Promise<string | null> =>
-    new Promise((resolve) => {
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.onload = () => {
-        try {
-          const canvas = document.createElement("canvas");
-          const size = 80;
-          canvas.width = size; canvas.height = size;
-          const ctx = canvas.getContext("2d");
-          if (!ctx) return resolve(null);
-          ctx.drawImage(img, 0, 0, size, size);
-          resolve(canvas.toDataURL("image/jpeg", 0.7));
-        } catch { resolve(null); }
-      };
-      img.onerror = () => resolve(null);
-      img.src = url;
-    });
+  useEffect(() => {
+    if (!brokerId) { setAvgRating(null); setRatingsCount(0); return; }
+    (async () => {
+      const { data } = await (supabase as any)
+        .from("broker_ratings")
+        .select("pontualidade, agilidade, transparencia, credibilidade, negociacao")
+        .eq("broker_id", brokerId);
+      const rows = (data as any[]) || [];
+      setRatingsCount(rows.length);
+      if (!rows.length) { setAvgRating(null); return; }
+      const total = rows.reduce((s, r) =>
+        s + ((r.pontualidade + r.agilidade + r.transparencia + r.credibilidade + r.negociacao) / 5), 0);
+      setAvgRating(Number((total / rows.length).toFixed(1)));
+    })();
+  }, [brokerId]);
 
   const handleGeneratePdf = async () => {
-    const allProps = [...properties, ...soldProperties];
-    if (allProps.length === 0) {
+    const all = [...properties, ...soldProperties];
+    if (all.length === 0) {
       toast.info("Sem imóveis para exportar");
       return;
     }
-    toast.info("Gerando PDF...");
-    const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
-    doc.setFontSize(16);
-    doc.text(`Tabela de Imóveis - ${brokerName}`, 40, 40);
-    doc.setFontSize(9);
-    doc.text(`Total: ${allProps.length} imóveis`, 40, 56);
-
-    const images = await Promise.all(allProps.map((p) => p.imagens?.[0] ? loadImageAsDataURL(p.imagens[0]) : Promise.resolve(null)));
-
-    autoTable(doc, {
-      startY: 70,
-      head: [["Foto", "Título", "Tipo", "Cidade / Bairro", "Quartos", "Área", "Preço", "Status"]],
-      body: allProps.map((p) => ["", p.titulo, p.tipo, `${p.cidade}${p.bairro ? " / " + p.bairro : ""}`, String(p.quartos || "-"), p.area ? `${p.area}m²` : "-", formatCurrency(p.preco), p.status]),
-      styles: { fontSize: 8, cellPadding: 4, valign: "middle", minCellHeight: 50 },
-      headStyles: { fillColor: [30, 58, 95], textColor: 255, fontStyle: "bold" },
-      columnStyles: { 0: { cellWidth: 55 }, 1: { cellWidth: 160 }, 2: { cellWidth: 70 }, 3: { cellWidth: 140 }, 4: { cellWidth: 50, halign: "center" }, 5: { cellWidth: 55, halign: "center" }, 6: { cellWidth: 90, halign: "right" }, 7: { cellWidth: 65, halign: "center" } },
-      didDrawCell: (data) => {
-        if (data.section === "body" && data.column.index === 0) {
-          const img = images[data.row.index];
-          if (img) {
-            try {
-              doc.addImage(img, "JPEG", data.cell.x + 4, data.cell.y + 4, 42, 42);
-            } catch { /* ignore */ }
-          }
-        }
-      },
-    });
-
-    doc.save(`tabela-imoveis-${slug}.pdf`);
-    toast.success("PDF gerado!");
+    toast.info("Gerando catálogo em PDF...");
+    try {
+      await generateBrokerCatalogPdf({
+        brokerName,
+        creci,
+        whatsapp,
+        email,
+        avatarUrl: config?.profile_photo_url || null,
+        properties,
+        soldProperties,
+        accentColor: config?.accent_color || null,
+        fileSlug: slug || "broker",
+      });
+      toast.success("Catálogo gerado!");
+    } catch (err: any) {
+      toast.error("Erro ao gerar PDF: " + (err?.message || ""));
+    }
   };
 
   const whatsapp = normalizePhone(config?.whatsapp || brokerRecord?.phone || "");
