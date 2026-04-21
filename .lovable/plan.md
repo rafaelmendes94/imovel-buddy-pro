@@ -1,45 +1,52 @@
 
 
-## Personalização do perfil do corretor
+## Melhorias na página pública do corretor
 
-Adicionar ao cadastro do corretor (página interna) duas novas opções de personalização da sua hotsite pública: **foto de perfil personalizada** e **cor de destaque** (com paleta pré-definida + seletor livre).
+Três ajustes na hotsite do corretor (`/corretor/:slug`):
 
-### O que será feito
+### 1. Estrela do avatar abre modal de avaliações
+- O selo de estrela sobreposto ao avatar (canto inferior direito) hoje é decorativo. Vai virar um botão clicável que:
+  - Exibe a **nota média** do corretor sobreposta na estrela (ex: `4.8` em texto pequeno) puxada das `broker_ratings`.
+  - Ao clicar, abre um **modal (Dialog)** em tela cheia/centralizado contendo o componente `BrokerRatings` já existente (radar + formulário + comentários).
+- A seção `<BrokerRatings>` que hoje está renderizada inline na página será **removida do fluxo** e movida para dentro do modal, evitando duplicação.
 
-**1. Banco de dados**
-- Migration adicionando 2 colunas em `profiles`:
-  - `avatar_url text` — URL da foto personalizada
-  - `accent_color text` — cor hex de destaque (ex: `#2563eb`)
+### 2. Botão "Subir tabela completa" deslocado para dentro do botão "Tabela"
+- Hoje há dois botões separados: "Baixar tabela em PDF" e "Subir tabela completa" (dono). Vamos unificar:
+  - **Visitante**: vê apenas "Baixar tabela em PDF" (se existir) ou "Tabela indisponível".
+  - **Dono**: vê o botão "Baixar tabela em PDF" **com um sub-botão / ícone de upload anexo** ao lado (mesmo container visual) — clicar no ícone de upload abre o seletor de arquivo. Se ainda não houver tabela, o botão principal vira "Subir tabela completa" diretamente.
+- Resultado: visualmente apenas 1 controle de "Tabela" + 1 controle de "Gerar PDF", como mostra o screenshot enviado.
 
-**2. Tela de cadastro/edição do corretor** (`src/pages/Brokers.tsx` — formulário de criar/editar corretor)
-- Novo bloco **"Aparência da página pública"** contendo:
-  - **Upload de foto de perfil**: preview circular + botão "Enviar foto" / "Trocar foto" / "Remover". Upload para o bucket `site-assets` na pasta `broker-avatars/`.
-  - **Cor de destaque**: 8 swatches pré-definidos clicáveis (Azul, Índigo, Roxo, Rosa, Vermelho, Laranja, Verde, Turquesa) + input `type="color"` para cor livre + campo hex editável. O swatch selecionado fica com anel destacado.
+### 3. PDF dos imóveis com design alinhado ao site
+Substituir o PDF atual (tabela seca via `jspdf-autotable`) por um **PDF visual estilo catálogo**, gerado via `html2pdf.js` (já presente em `generatePropertyPdf.ts`) replicando a identidade do site:
 
-**3. Aplicação na hotsite pública** (`src/pages/BrokerSite.tsx`)
-- Se `profile.avatar_url` existir → renderizar `<img>` no lugar do avatar com iniciais "DD".
-- Aplicar `profile.accent_color` ao gradiente dos 7 cards de métricas e ao botão "Gerar PDF" (substituindo o degradê azul fixo atual `from-sky-400 via-blue-600 to-indigo-800` por um gradiente derivado dinamicamente da cor escolhida via inline style).
-
-### Paleta pré-definida
-
-```text
-Azul     #2563eb    Índigo   #4f46e5
-Roxo     #7c3aed    Rosa     #db2777
-Vermelho #dc2626    Laranja  #ea580c
-Verde    #16a34a    Turquesa #0d9488
-```
+**Estrutura do PDF:**
+- **Capa**: gradiente navy/accent (mesma cor do site / `accent_color`), avatar circular do corretor, nome em fonte black grande, CRECI, contato (WhatsApp + e-mail), totais (X imóveis · VGV total · VGV vendido).
+- **Páginas internas**: cards de imóvel em **grid 2 colunas**, cada card com:
+  - Foto principal (proporção 4:3, cantos arredondados).
+  - Badge de status (Disponível/Vendido/Reservado) com a cor do site.
+  - Título em negrito + endereço com ícone de pin.
+  - Linha de specs: m², quartos, banheiros, vagas (ícones).
+  - **Preço** em destaque (cor accent).
+  - Tags de condições (Permuta, Financia, etc.) e diferenciais (Vista mar, Decorado).
+  - Código do imóvel no rodapé do card.
+- **Quebra de página automática** (`page-break-inside: avoid`) por card.
+- **Rodapé** em cada página: nome do corretor + número da página + data de geração.
+- Cores derivadas de `accent_color` (fallback navy padrão).
+- Imagens convertidas para base64 (mesma técnica de `generatePropertyPdf.ts`) para embed offline.
 
 ### Detalhes técnicos
 
-- Bucket reutilizado: `site-assets` (já público, já configurado).
-- Upload usa `supabase.storage.from("site-assets").upload("broker-avatars/{userId}-{ts}.{ext}")`.
-- Gradiente dinâmico: `linear-gradient(135deg, {accent}99, {accent}, {accent}cc)` aplicado via `style={{ background: ... }}`.
-- Fallback: se `accent_color` for null, mantém o azul atual.
-- A foto e cor são editáveis apenas pelo dono do perfil ou Super Admin (RLS já existente em `profiles` cobre isso).
+- Novo arquivo: **`src/utils/generateBrokerCatalogPdf.ts`** — função `generateBrokerCatalogPdf({ broker, properties, soldProperties, config, accentColor })`.
+- Lazy import de `html2pdf.js` para não pesar o bundle.
+- Reaproveita o helper `imageToBase64` (extrair para `src/utils/imageToBase64.ts` ou copiar inline).
+- Em `BrokerSite.tsx`:
+  - Adicionar estado `ratingModalOpen` + `avgRating` (busca rápida em `broker_ratings` por `broker_id`).
+  - Importar `Dialog` de `@/components/ui/dialog` para o modal de avaliações.
+  - Trocar a chamada de `handleGeneratePdf` para usar a nova função de catálogo.
+  - Remover o bloco `<BrokerRatings ... />` inline (agora vive no modal).
 
 ### Arquivos afetados
 
-- `supabase/migrations/{timestamp}_broker_appearance.sql` (novo)
-- `src/pages/Brokers.tsx` (formulário de cadastro/edição)
-- `src/pages/BrokerSite.tsx` (aplicar avatar + cor dinâmica)
+- `src/pages/BrokerSite.tsx` (modal de avaliações, unificação dos botões de tabela, troca da função de PDF)
+- `src/utils/generateBrokerCatalogPdf.ts` (novo — geração visual do catálogo)
 
