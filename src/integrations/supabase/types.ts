@@ -1273,6 +1273,7 @@ export type Database = {
           created_at: string
           id: string
           is_active: boolean
+          is_free: boolean
           max_brokers: number
           max_properties: number
           modules: Json
@@ -1286,6 +1287,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_active?: boolean
+          is_free?: boolean
           max_brokers?: number
           max_properties?: number
           modules?: Json
@@ -1299,6 +1301,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_active?: boolean
+          is_free?: boolean
           max_brokers?: number
           max_properties?: number
           modules?: Json
@@ -1311,6 +1314,8 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_type: string
+          agency_id: string | null
           asaas_customer_id: string | null
           avatar_url: string | null
           created_at: string
@@ -1321,6 +1326,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          account_type?: string
+          agency_id?: string | null
           asaas_customer_id?: string | null
           avatar_url?: string | null
           created_at?: string
@@ -1331,6 +1338,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          account_type?: string
+          agency_id?: string | null
           asaas_customer_id?: string | null
           avatar_url?: string | null
           created_at?: string
@@ -1692,6 +1701,28 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      count_imoveis_in_subscription: {
+        Args: { _user_id: string }
+        Returns: number
+      }
+      create_trial_subscription: {
+        Args: { _plan_id: string; _user_id: string }
+        Returns: string
+      }
+      get_effective_subscription: {
+        Args: { _user_id: string }
+        Returns: {
+          blocked_at: string
+          current_period_end: string
+          current_period_start: string
+          effective_owner: string
+          id: string
+          plan_id: string
+          status: Database["public"]["Enums"]["subscription_status"]
+          trial_ends_at: string
+          user_id: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1707,6 +1738,10 @@ export type Database = {
         Args: { imovel_id: string }
         Returns: undefined
       }
+      link_broker_to_agency: {
+        Args: { _agency_user_id: string; _broker_email: string }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "super_admin" | "admin_staff" | "broker"
@@ -1717,6 +1752,7 @@ export type Database = {
         | "overdue"
         | "blocked"
         | "cancelled"
+        | "pending_payment"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1852,6 +1888,7 @@ export const Constants = {
         "overdue",
         "blocked",
         "cancelled",
+        "pending_payment",
       ],
     },
   },

@@ -98,10 +98,17 @@ serve(async (req) => {
 
     const now = new Date();
 
-    if (event === "PAYMENT_CONFIRMED" || event === "PAYMENT_RECEIVED") {
-      const periodEnd = new Date(now.getTime() + 30 * 86400000);
+    // Buscar plano para calcular período correto
+    const getPeriodEnd = async (plan_id: string) => {
+      const { data: plan } = await supabase.from("plans").select("billing_cycle").eq("id", plan_id).maybeSingle();
+      const cycle = (plan as any)?.billing_cycle || "monthly";
+      const days = cycle === "annual" ? 365 : cycle === "quarterly" ? 90 : 30;
+      return new Date(now.getTime() + days * 86400000);
+    };
 
-      // Find or create subscription
+    if (event === "PAYMENT_CONFIRMED" || event === "PAYMENT_RECEIVED") {
+      const periodEnd = await getPeriodEnd(externalRef.plan_id);
+
       const { data: existingSub } = await supabase
         .from("subscriptions")
         .select("id")
@@ -152,15 +159,18 @@ serve(async (req) => {
     } else if (event === "PAYMENT_OVERDUE") {
       const { data: existingSub } = await supabase
         .from("subscriptions")
-        .select("id")
+        .select("id, current_period_end")
         .eq("user_id", externalRef.user_id)
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
 
       if (existingSub) {
+        const periodEnd = (existingSub as any).current_period_end ? new Date((existingSub as any).current_period_end) : null;
+        const shouldBlock = periodEnd && (periodEnd.getTime() + 7 * 86400000 < now.getTime());
         await supabase.from("subscriptions").update({
-          status: "overdue",
+          status: shouldBlock ? "blocked" : "overdue",
+          blocked_at: shouldBlock ? now.toISOString() : null,
         }).eq("id", existingSub.id);
       }
     } else if (event === "PAYMENT_REFUNDED" || event === "PAYMENT_DELETED") {

@@ -38,9 +38,10 @@ export default function Registro() {
 
     toast({
       title: "Conta criada!",
-      description: "Você já pode fazer login.",
+      description: "Agora escolha seu plano para começar.",
     });
-    navigate("/login");
+    // Login automático já foi feito pelo signUp; redireciona pra escolha de plano
+    navigate("/escolher-plano");
     setLoading(false);
   };
 

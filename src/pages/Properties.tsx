@@ -413,6 +413,17 @@ const propertiesWithCodes = initialProperties.map((p, i) => ({
 
 export default function Properties() {
   const navigate = useNavigate();
+  const { user, subscription, isSuperAdmin, isAdminStaff } = useAuth();
+  const [currentImoveis, setCurrentImoveis] = useState(0);
+  const maxImoveis = subscription?.plan?.max_properties ?? 0;
+  const limitReached = !isSuperAdmin && !isAdminStaff && maxImoveis > 0 && currentImoveis >= maxImoveis;
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.rpc("count_imoveis_in_subscription", { _user_id: user.id })
+      .then(({ data }) => setCurrentImoveis(Number(data) || 0));
+  }, [user, subscription?.id]);
+
   const [searchParams, setSearchParams] = useSearchParams();
   const [propertyList, setPropertyList] = useState<Property[]>([]);
   const [search, setSearch] = useState("");
@@ -918,12 +929,30 @@ export default function Properties() {
                   </div>
                 )}
               </div>
-              <button
-                onClick={() => navigate("/cadastro-imovel")}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg gradient-gold text-primary text-xs font-semibold hover:opacity-90 transition-opacity"
-              >
-                <Plus className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Novo</span> Imóvel
-              </button>
+              <div className="flex flex-col items-end gap-0.5">
+                <button
+                  onClick={() => {
+                    if (limitReached) {
+                      toast.error(`Limite de ${maxImoveis} imóveis atingido. Faça upgrade do plano.`);
+                      return;
+                    }
+                    navigate("/cadastro-imovel");
+                  }}
+                  disabled={limitReached}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-opacity",
+                    limitReached ? "bg-muted text-muted-foreground cursor-not-allowed" : "gradient-gold text-primary hover:opacity-90"
+                  )}
+                  title={limitReached ? "Limite atingido — faça upgrade" : "Novo imóvel"}
+                >
+                  <Plus className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Novo</span> Imóvel
+                </button>
+                {maxImoveis > 0 && (
+                  <span className={cn("text-[10px] font-medium", limitReached ? "text-destructive" : "text-muted-foreground")}>
+                    {currentImoveis} de {maxImoveis} imóveis
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 

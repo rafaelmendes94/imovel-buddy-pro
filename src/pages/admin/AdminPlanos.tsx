@@ -33,11 +33,12 @@ interface PlanForm {
   max_brokers: string;
   modules: string[];
   plan_type: string;
+  is_free: boolean;
 }
 
 const emptyForm: PlanForm = {
   name: "", price: "", billing_cycle: "monthly", trial_days: "7",
-  max_properties: "50", max_brokers: "5", modules: [], plan_type: "corretor",
+  max_properties: "50", max_brokers: "5", modules: [], plan_type: "corretor", is_free: false,
 };
 
 export default function AdminPlanos() {
@@ -58,18 +59,29 @@ export default function AdminPlanos() {
   useEffect(() => { fetchPlans(); }, []);
 
   const handleSave = async () => {
-    if (!form.name || !form.price) return;
+    if (!form.name || form.price === "") return;
     setSaving(true);
+
+    // Validação: só 1 plano free por plan_type
+    if (form.is_free) {
+      const conflict = plans.find(p => p.is_free && p.plan_type === form.plan_type && p.id !== editId);
+      if (conflict) {
+        toast({ title: "Já existe um plano Free para este tipo", description: `Conflito com: ${conflict.name}`, variant: "destructive" });
+        setSaving(false);
+        return;
+      }
+    }
 
     const payload = {
       name: form.name,
-      price: parseFloat(form.price),
+      price: form.is_free ? 0 : parseFloat(form.price),
       billing_cycle: form.billing_cycle as any,
-      trial_days: parseInt(form.trial_days),
+      trial_days: form.is_free ? 0 : parseInt(form.trial_days),
       max_properties: parseInt(form.max_properties),
       max_brokers: form.plan_type === "corretor" ? 1 : parseInt(form.max_brokers),
       modules: form.modules,
       plan_type: form.plan_type,
+      is_free: form.is_free,
     };
 
     if (editId) {
@@ -98,6 +110,7 @@ export default function AdminPlanos() {
       max_brokers: String(plan.max_brokers),
       modules: Array.isArray(plan.modules) ? plan.modules : [],
       plan_type: plan.plan_type || "corretor",
+      is_free: !!plan.is_free,
     });
     setDialogOpen(true);
   };
@@ -144,9 +157,16 @@ export default function AdminPlanos() {
                     </SelectContent>
                   </Select>
                 </div>
+                <div className="flex items-center justify-between bg-muted/40 rounded-lg p-3">
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Plano gratuito (Free)</p>
+                    <p className="text-xs text-muted-foreground">Libera acesso imediato sem pagamento</p>
+                  </div>
+                  <Switch checked={form.is_free} onCheckedChange={v => setForm(p => ({ ...p, is_free: v, price: v ? "0" : p.price, trial_days: v ? "0" : p.trial_days }))} />
+                </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <Input type="number" placeholder="Preço (R$)" value={form.price} onChange={e => setForm(p => ({ ...p, price: e.target.value }))} />
-                  <Input type="number" placeholder="Dias trial" value={form.trial_days} onChange={e => setForm(p => ({ ...p, trial_days: e.target.value }))} />
+                  <Input type="number" placeholder="Preço (R$)" value={form.price} disabled={form.is_free} onChange={e => setForm(p => ({ ...p, price: e.target.value }))} />
+                  <Input type="number" placeholder="Dias trial" value={form.trial_days} disabled={form.is_free} onChange={e => setForm(p => ({ ...p, trial_days: e.target.value }))} />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <Input type="number" placeholder="Máx imóveis" value={form.max_properties} onChange={e => setForm(p => ({ ...p, max_properties: e.target.value }))} />
@@ -183,7 +203,10 @@ export default function AdminPlanos() {
               <div key={plan.id} className="bg-card border border-border rounded-xl p-5 space-y-3">
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold text-foreground">{plan.name}</h3>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 flex-wrap">
+                    {plan.is_free && (
+                      <Badge className="bg-accent text-accent-foreground">FREE</Badge>
+                    )}
                     <Badge variant="outline" className={plan.plan_type === "imobiliaria" ? "border-blue-400 text-blue-600" : "border-emerald-400 text-emerald-600"}>
                       {plan.plan_type === "imobiliaria" ? "Imobiliária" : "Corretor"}
                     </Badge>
