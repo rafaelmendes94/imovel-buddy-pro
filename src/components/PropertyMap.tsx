@@ -171,13 +171,15 @@ export function PropertyMap({ properties, onSelectProperty }: PropertyMapProps) 
       markersRef.current.push(marker);
     });
 
-    if (properties.length > 1) {
-      const bounds = new maps.LatLngBounds();
-      properties.forEach((p) => bounds.extend({ lat: p.lat, lng: p.lng }));
-      map.fitBounds(bounds, 40);
-    }
+      if (properties.length > 1) {
+        const bounds = new maps.LatLngBounds();
+        properties.forEach((p) => bounds.extend({ lat: p.lat, lng: p.lng }));
+        map.fitBounds(bounds, 40);
+      }
+    })();
 
     return () => {
+      cancelled = true;
       markersRef.current.forEach(clearMarker);
       markersRef.current = [];
     };
