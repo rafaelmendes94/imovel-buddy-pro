@@ -506,6 +506,7 @@ export default function BrokerSite() {
             </div>
           </section>
         )}
+        <BrokerRatings brokerId={brokerId} brokerName={brokerName} />
       </main>
 
       <footer className="border-t border-border bg-card">
