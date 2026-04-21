@@ -10,9 +10,24 @@ export function useGoogleMapsLoader() {
   useEffect(() => {
     if (!apiKey) return;
 
-    if ((window as any).google?.maps) {
+    const ensureLibs = async () => {
+      const g = (window as any).google;
+      if (g?.maps && typeof g.maps.importLibrary === "function") {
+        await Promise.all([
+          g.maps.importLibrary("maps"),
+          g.maps.importLibrary("marker"),
+          g.maps.importLibrary("geocoding"),
+        ]);
+      }
+    };
+
+    if ((window as any).google?.maps?.Map) {
       setReady(true);
       return;
+    }
+
+    if ((window as any).google?.maps && !loadPromise) {
+      loadPromise = ensureLibs();
     }
 
     if (!loadPromise) {
