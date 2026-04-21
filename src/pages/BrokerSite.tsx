@@ -78,6 +78,8 @@ interface DBProperty {
   lote: string | null;
   bairro: string | null;
   corretor_nome: string | null;
+  created_at: string;
+  data_venda: string | null;
 }
 
 function PropertyCard({ p, brokerName, whatsapp }: { p: DBProperty; brokerName: string; whatsapp: string }) {
