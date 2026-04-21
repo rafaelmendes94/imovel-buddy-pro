@@ -469,13 +469,16 @@ export default function BrokerSite() {
                       <Phone className="h-4 w-4" /> Chamar no WhatsApp
                     </a>
                   )}
-                  <Link to="/site" className="inline-flex items-center gap-2 rounded-2xl border border-white/20 bg-white/10 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-white/15">
-                    <Building2 className="h-4 w-4" /> Ver vitrine completa
-                  </Link>
-                  {config?.tabela_url && (
-                    <a href={config.tabela_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 px-5 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-105">
-                      <FileText className="h-4 w-4" /> Tabela completa
+                  {config?.tabela_url ? (
+                    <a href={config.tabela_url} download target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 px-5 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-105">
+                      <FileDown className="h-4 w-4" /> Baixar tabela em PDF
                     </a>
+                  ) : (
+                    !isOwner && (
+                      <span className="inline-flex items-center gap-2 rounded-2xl border border-white/20 bg-white/5 px-5 py-3 text-sm font-bold text-white/60">
+                        <FileText className="h-4 w-4" /> Tabela indisponível
+                      </span>
+                    )
                   )}
                   {isOwner && (
                     <label className={cn("inline-flex cursor-pointer items-center gap-2 rounded-2xl border border-white/20 bg-white/10 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-white/15", uploading && "opacity-60 pointer-events-none")}>
