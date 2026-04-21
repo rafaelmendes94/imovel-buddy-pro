@@ -1758,6 +1758,14 @@ export type Database = {
         }
         Returns: string
       }
+      test_lifecycle_flow: {
+        Args: { _subscription_id: string }
+        Returns: {
+          blocked_at_resultado: string
+          etapa: string
+          status_resultado: string
+        }[]
+      }
     }
     Enums: {
       app_role: "super_admin" | "admin_staff" | "broker"
