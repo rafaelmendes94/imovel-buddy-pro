@@ -2,10 +2,11 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { BackButton } from "@/components/BackButton";
-import { Plus, Mail, Phone, Award, Search, ExternalLink, Building2 } from "lucide-react";
+import { Plus, Mail, Phone, Award, Search, ExternalLink, Building2, Palette } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
+import { SiteConfigDialog } from "@/components/SiteConfigDialog";
 
 interface BrokerData {
   id: string;
@@ -29,6 +30,7 @@ export default function Brokers() {
   const [search, setSearch] = useState("");
   const [brokers, setBrokers] = useState<BrokerData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [appearanceFor, setAppearanceFor] = useState<{ slug: string; name: string } | null>(null);
 
   useEffect(() => {
     const fetchBrokers = async () => {
@@ -153,19 +155,39 @@ export default function Brokers() {
                   </div>
                 </div>
 
-                <Link
-                  to={`/corretor/${toSlug(broker.name)}`}
-                  target="_blank"
-                  className="flex items-center justify-center gap-2 w-full py-2 rounded-lg bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/20 transition-colors"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  Ver Página do Corretor
-                </Link>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => setAppearanceFor({ slug: toSlug(broker.name), name: broker.name })}
+                    className="flex items-center justify-center gap-1.5 py-2 rounded-lg bg-accent/10 text-accent text-xs font-semibold hover:bg-accent/20 transition-colors"
+                  >
+                    <Palette className="w-3.5 h-3.5" />
+                    Aparência
+                  </button>
+                  <Link
+                    to={`/corretor/${toSlug(broker.name)}`}
+                    target="_blank"
+                    className="flex items-center justify-center gap-1.5 py-2 rounded-lg bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/20 transition-colors"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    Ver Página
+                  </Link>
+                </div>
               </div>
             ))}
           </div>
         )}
       </div>
+
+      {appearanceFor && (
+        <SiteConfigDialog
+          open={!!appearanceFor}
+          onOpenChange={(open) => !open && setAppearanceFor(null)}
+          configType="broker_page"
+          ownerId={appearanceFor.slug}
+          showProfilePhoto
+          title={`Aparência da página de ${appearanceFor.name}`}
+        />
+      )}
     </AppLayout>
   );
 }
