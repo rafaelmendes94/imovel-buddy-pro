@@ -418,9 +418,17 @@ export default function BrokerSite() {
               <div className="mx-auto lg:mx-0">
                 <div className="relative animate-scale-in">
                   <img src={avatarUrl} alt={brokerName} className="h-40 w-40 rounded-full border-4 border-background/80 object-cover shadow-2xl md:h-52 md:w-52" />
-                  <span className="absolute bottom-3 right-3 flex h-12 w-12 items-center justify-center rounded-full bg-accent text-accent-foreground shadow-xl">
-                    <Star className="h-5 w-5" />
-                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setRatingModalOpen(true)}
+                    title={avgRating !== null ? `${avgRating}/5 · ${ratingsCount} avaliação${ratingsCount === 1 ? "" : "ões"} — clique para ver` : "Ver avaliações"}
+                    className="absolute bottom-3 right-3 flex min-h-[3rem] min-w-[3rem] items-center justify-center gap-1 rounded-full bg-accent px-2 text-accent-foreground shadow-xl transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white/60"
+                  >
+                    <Star className="h-5 w-5 fill-current" />
+                    {avgRating !== null && (
+                      <span className="text-sm font-black leading-none">{avgRating.toFixed(1)}</span>
+                    )}
+                  </button>
                 </div>
               </div>
 
