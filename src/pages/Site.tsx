@@ -406,21 +406,41 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
   useEffect(() => {
     if (!gmapsReady || !mapRef.current || mapInstanceRef.current) return;
     const google = (window as any).google;
+    if (!google?.maps) return;
 
-    const map = new google.maps.Map(mapRef.current, {
-      center: { lat: -29.77, lng: -50.08 },
-      zoom: 12,
-      mapId: "SITE_HOME_MAP",
-      mapTypeId: mapStyleConfig[mapStyle].mapTypeId,
-      styles: mapStyleConfig[mapStyle].styles,
-      zoomControl: true,
-      mapTypeControl: false,
-      streetViewControl: false,
-      fullscreenControl: false,
-    });
-    mapInstanceRef.current = map;
-    geocoderRef.current = new google.maps.Geocoder();
-    infoWindowRef.current = new google.maps.InfoWindow();
+    let cancelled = false;
+    (async () => {
+      const MapCtor =
+        google.maps.Map ||
+        (typeof google.maps.importLibrary === "function"
+          ? (await google.maps.importLibrary("maps")).Map
+          : null);
+      if (!MapCtor || cancelled || !mapRef.current || mapInstanceRef.current) return;
+
+      if (typeof google.maps.importLibrary === "function") {
+        await Promise.all([
+          google.maps.importLibrary("marker").catch(() => null),
+          google.maps.importLibrary("geocoding").catch(() => null),
+        ]);
+      }
+
+      const map = new MapCtor(mapRef.current, {
+        center: { lat: -29.77, lng: -50.08 },
+        zoom: 12,
+        mapId: "SITE_HOME_MAP",
+        mapTypeId: mapStyleConfig[mapStyle].mapTypeId,
+        styles: mapStyleConfig[mapStyle].styles,
+        zoomControl: true,
+        mapTypeControl: false,
+        streetViewControl: false,
+        fullscreenControl: false,
+      });
+      mapInstanceRef.current = map;
+      geocoderRef.current = new google.maps.Geocoder();
+      infoWindowRef.current = new google.maps.InfoWindow();
+    })();
+
+    return () => { cancelled = true; };
   }, [gmapsReady]);
 
   // Switch map style
