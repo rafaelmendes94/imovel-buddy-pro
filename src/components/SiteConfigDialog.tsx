@@ -195,9 +195,38 @@ export function SiteConfigDialog({
   const update = (field: keyof ConfigData, value: string | null) =>
     setConfig(prev => ({ ...prev, [field]: value }));
 
-  const ColorField = ({ label, field }: { label: string; field: keyof ConfigData }) => (
+  const PRESET_COLORS = [
+    { name: "Azul", value: "#2563eb" },
+    { name: "Índigo", value: "#4f46e5" },
+    { name: "Roxo", value: "#7c3aed" },
+    { name: "Rosa", value: "#db2777" },
+    { name: "Vermelho", value: "#dc2626" },
+    { name: "Laranja", value: "#ea580c" },
+    { name: "Verde", value: "#16a34a" },
+    { name: "Turquesa", value: "#0d9488" },
+  ];
+
+  const ColorField = ({ label, field, withPresets = false }: { label: string; field: keyof ConfigData; withPresets?: boolean }) => (
     <div className="space-y-1.5">
       <Label className="text-xs">{label}</Label>
+      {withPresets && (
+        <div className="flex flex-wrap gap-1.5">
+          {PRESET_COLORS.map(c => {
+            const selected = (config[field] as string)?.toLowerCase() === c.value.toLowerCase();
+            return (
+              <button
+                key={c.value}
+                type="button"
+                title={c.name}
+                onClick={() => update(field, c.value)}
+                className={`w-7 h-7 rounded-full border-2 transition-all hover:scale-110 ${selected ? "border-foreground ring-2 ring-ring ring-offset-1 ring-offset-background" : "border-border"}`}
+                style={{ backgroundColor: c.value }}
+                aria-label={c.name}
+              />
+            );
+          })}
+        </div>
+      )}
       <div className="flex items-center gap-2">
         <input
           type="color"
@@ -311,7 +340,9 @@ export function SiteConfigDialog({
               <div className="grid grid-cols-2 gap-4">
                 <ColorField label="Cor do Cabeçalho" field="header_color" />
                 <ColorField label="Cor do Rodapé" field="footer_color" />
-                <ColorField label="Cor de Destaque" field="accent_color" />
+                <div className="col-span-2">
+                  <ColorField label="Cor de Destaque (cards e botões da página)" field="accent_color" withPresets />
+                </div>
                 <ColorField label="Cor do Título / Logo" field="title_color" />
               </div>
 
