@@ -56,6 +56,7 @@ interface BrokerPageConfig {
   footer_text: string | null;
   email_contact: string | null;
   bio: string | null;
+  tabela_url: string | null;
 }
 
 interface DBProperty {
