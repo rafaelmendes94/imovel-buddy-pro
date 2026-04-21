@@ -542,7 +542,6 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
           dot.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="9" fill="#3b82f6" stroke="white" stroke-width="4"/><circle cx="20" cy="20" r="16" fill="#3b82f6" fill-opacity="0.22"/></svg>`;
           searchMarkerRef.current = createMapMarker(google, map, {
             position: loc,
-            map,
             content: dot,
             title: results[0].formatted_address,
           });
