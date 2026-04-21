@@ -178,7 +178,7 @@ export default function BrokerSite() {
         .filter((property) => toSlug(property.corretor_nome || "") === slug)
         .sort((a, b) => Number(b.preco) - Number(a.preco));
 
-      const resolvedName = matchedBroker?.name || matchedProperties[0]?.corretor_nome || "";
+      const resolvedName = matchedBroker?.name || matchedProperties[0]?.corretor_nome || (slug ? slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) : "");
 
       setBrokerName(resolvedName);
       setBrokerRecord(matchedBroker);
@@ -242,7 +242,7 @@ export default function BrokerSite() {
     );
   }
 
-  if (!brokerName && properties.length === 0 && soldProperties.length === 0) {
+  if (!brokerName) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background px-4">
         <div className="space-y-4 text-center">
