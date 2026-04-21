@@ -328,19 +328,21 @@ export default function BrokerSite() {
                   </Link>
                 </div>
 
-                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
                   {[
                     { label: "Imóveis em carteira", value: properties.length, icon: Building2 },
                     { label: "VGV em carteira", value: formatCurrency(totalValue), icon: DollarSign },
-                    { label: "Vendas públicas", value: soldProperties.length, icon: Star },
-                    { label: "VGV vendido", value: formatCurrency(soldValue), icon: Home },
+                    { label: "Ticket médio", value: formatCurrency(ticketMedio), icon: TrendingUp },
+                    { label: "Comissão estimada", value: formatCurrency(totalComissao), icon: Star },
+                    { label: "Vendas públicas", value: soldProperties.length, icon: Home },
+                    { label: "VGV vendido", value: formatCurrency(soldValue), icon: DollarSign },
                   ].map((metric) => (
                     <div key={metric.label} className="rounded-3xl border border-white/10 bg-white/10 p-4 backdrop-blur-sm">
                       <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10 text-white">
                         <metric.icon className="h-5 w-5" />
                       </div>
-                      <p className="text-2xl font-black text-white">{metric.value}</p>
-                      <p className="text-xs uppercase tracking-[0.2em] text-white/60">{metric.label}</p>
+                      <p className="text-xl font-black text-white">{metric.value}</p>
+                      <p className="text-[10px] uppercase tracking-[0.2em] text-white/60">{metric.label}</p>
                     </div>
                   ))}
                 </div>
