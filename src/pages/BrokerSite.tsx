@@ -29,9 +29,9 @@ import {
 } from "lucide-react";
 import { cn, toSlug } from "@/lib/utils";
 import { BrokerRatings } from "@/components/BrokerRatings";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+import { generateBrokerCatalogPdf } from "@/utils/generateBrokerCatalogPdf";
 
 const formatCurrency = (v: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
 
@@ -166,6 +166,9 @@ export default function BrokerSite() {
   const [pageViews, setPageViews] = useState(0);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [ratingModalOpen, setRatingModalOpen] = useState(false);
+  const [avgRating, setAvgRating] = useState<number | null>(null);
+  const [ratingsCount, setRatingsCount] = useState(0);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setCurrentUserId(data.user?.id || null));
@@ -277,6 +280,22 @@ export default function BrokerSite() {
   const tipos = useMemo(() => Array.from(new Set(properties.map((p) => p.tipo).filter(Boolean))), [properties]);
   const statusList = useMemo(() => Array.from(new Set(properties.map((p) => p.status).filter(Boolean))), [properties]);
 
+  useEffect(() => {
+    if (!brokerId) { setAvgRating(null); setRatingsCount(0); return; }
+    (async () => {
+      const { data } = await (supabase as any)
+        .from("broker_ratings")
+        .select("pontualidade, agilidade, transparencia, credibilidade, negociacao")
+        .eq("broker_id", brokerId);
+      const rows = (data as any[]) || [];
+      setRatingsCount(rows.length);
+      if (!rows.length) { setAvgRating(null); return; }
+      const total = rows.reduce((s, r) =>
+        s + ((r.pontualidade + r.agilidade + r.transparencia + r.credibilidade + r.negociacao) / 5), 0);
+      setAvgRating(Number((total / rows.length).toFixed(1)));
+    })();
+  }, [brokerId]);
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
@@ -334,61 +353,29 @@ export default function BrokerSite() {
     }
   };
 
-  const loadImageAsDataURL = (url: string): Promise<string | null> =>
-    new Promise((resolve) => {
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.onload = () => {
-        try {
-          const canvas = document.createElement("canvas");
-          const size = 80;
-          canvas.width = size; canvas.height = size;
-          const ctx = canvas.getContext("2d");
-          if (!ctx) return resolve(null);
-          ctx.drawImage(img, 0, 0, size, size);
-          resolve(canvas.toDataURL("image/jpeg", 0.7));
-        } catch { resolve(null); }
-      };
-      img.onerror = () => resolve(null);
-      img.src = url;
-    });
-
   const handleGeneratePdf = async () => {
-    const allProps = [...properties, ...soldProperties];
-    if (allProps.length === 0) {
+    const all = [...properties, ...soldProperties];
+    if (all.length === 0) {
       toast.info("Sem imóveis para exportar");
       return;
     }
-    toast.info("Gerando PDF...");
-    const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
-    doc.setFontSize(16);
-    doc.text(`Tabela de Imóveis - ${brokerName}`, 40, 40);
-    doc.setFontSize(9);
-    doc.text(`Total: ${allProps.length} imóveis`, 40, 56);
-
-    const images = await Promise.all(allProps.map((p) => p.imagens?.[0] ? loadImageAsDataURL(p.imagens[0]) : Promise.resolve(null)));
-
-    autoTable(doc, {
-      startY: 70,
-      head: [["Foto", "Título", "Tipo", "Cidade / Bairro", "Quartos", "Área", "Preço", "Status"]],
-      body: allProps.map((p) => ["", p.titulo, p.tipo, `${p.cidade}${p.bairro ? " / " + p.bairro : ""}`, String(p.quartos || "-"), p.area ? `${p.area}m²` : "-", formatCurrency(p.preco), p.status]),
-      styles: { fontSize: 8, cellPadding: 4, valign: "middle", minCellHeight: 50 },
-      headStyles: { fillColor: [30, 58, 95], textColor: 255, fontStyle: "bold" },
-      columnStyles: { 0: { cellWidth: 55 }, 1: { cellWidth: 160 }, 2: { cellWidth: 70 }, 3: { cellWidth: 140 }, 4: { cellWidth: 50, halign: "center" }, 5: { cellWidth: 55, halign: "center" }, 6: { cellWidth: 90, halign: "right" }, 7: { cellWidth: 65, halign: "center" } },
-      didDrawCell: (data) => {
-        if (data.section === "body" && data.column.index === 0) {
-          const img = images[data.row.index];
-          if (img) {
-            try {
-              doc.addImage(img, "JPEG", data.cell.x + 4, data.cell.y + 4, 42, 42);
-            } catch { /* ignore */ }
-          }
-        }
-      },
-    });
-
-    doc.save(`tabela-imoveis-${slug}.pdf`);
-    toast.success("PDF gerado!");
+    toast.info("Gerando catálogo em PDF...");
+    try {
+      await generateBrokerCatalogPdf({
+        brokerName,
+        creci,
+        whatsapp,
+        email,
+        avatarUrl: config?.profile_photo_url || null,
+        properties,
+        soldProperties,
+        accentColor: config?.accent_color || null,
+        fileSlug: slug || "broker",
+      });
+      toast.success("Catálogo gerado!");
+    } catch (err: any) {
+      toast.error("Erro ao gerar PDF: " + (err?.message || ""));
+    }
   };
 
   const whatsapp = normalizePhone(config?.whatsapp || brokerRecord?.phone || "");
@@ -431,9 +418,17 @@ export default function BrokerSite() {
               <div className="mx-auto lg:mx-0">
                 <div className="relative animate-scale-in">
                   <img src={avatarUrl} alt={brokerName} className="h-40 w-40 rounded-full border-4 border-background/80 object-cover shadow-2xl md:h-52 md:w-52" />
-                  <span className="absolute bottom-3 right-3 flex h-12 w-12 items-center justify-center rounded-full bg-accent text-accent-foreground shadow-xl">
-                    <Star className="h-5 w-5" />
-                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setRatingModalOpen(true)}
+                    title={avgRating !== null ? `${avgRating}/5 · ${ratingsCount} avaliação${ratingsCount === 1 ? "" : "ões"} — clique para ver` : "Ver avaliações"}
+                    className="absolute bottom-3 right-3 flex min-h-[3rem] min-w-[3rem] items-center justify-center gap-1 rounded-full bg-accent px-2 text-accent-foreground shadow-xl transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white/60"
+                  >
+                    <Star className="h-5 w-5 fill-current" />
+                    {avgRating !== null && (
+                      <span className="text-sm font-black leading-none">{avgRating.toFixed(1)}</span>
+                    )}
+                  </button>
                 </div>
               </div>
 
@@ -471,22 +466,40 @@ export default function BrokerSite() {
                       <Phone className="h-4 w-4" /> Chamar no WhatsApp
                     </a>
                   )}
+                  {/* Tabela: download + upload (dono) unificados */}
                   {config?.tabela_url ? (
-                    <a href={config.tabela_url} download target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 px-5 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-105">
-                      <FileDown className="h-4 w-4" /> Baixar tabela em PDF
-                    </a>
-                  ) : (
-                    !isOwner && (
-                      <span className="inline-flex items-center gap-2 rounded-2xl border border-white/20 bg-white/5 px-5 py-3 text-sm font-bold text-white/60">
-                        <FileText className="h-4 w-4" /> Tabela indisponível
-                      </span>
-                    )
-                  )}
-                  {isOwner && (
-                    <label className={cn("inline-flex cursor-pointer items-center gap-2 rounded-2xl border border-white/20 bg-white/10 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-white/15", uploading && "opacity-60 pointer-events-none")}>
-                      <Upload className="h-4 w-4" /> {uploading ? "Enviando..." : config?.tabela_url ? "Trocar tabela" : "Subir tabela completa"}
+                    <div className="inline-flex items-stretch overflow-hidden rounded-2xl shadow-lg">
+                      <a
+                        href={config.tabela_url}
+                        download
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-400 to-orange-500 px-5 py-3 text-sm font-bold text-white transition-all hover:brightness-110"
+                      >
+                        <FileDown className="h-4 w-4" /> Baixar tabela em PDF
+                      </a>
+                      {isOwner && (
+                        <label
+                          title={uploading ? "Enviando..." : "Trocar tabela"}
+                          className={cn(
+                            "inline-flex cursor-pointer items-center justify-center border-l border-white/20 bg-orange-600 px-3 text-white transition-colors hover:bg-orange-700",
+                            uploading && "pointer-events-none opacity-60",
+                          )}
+                        >
+                          <Upload className="h-4 w-4" />
+                          <input type="file" accept="application/pdf,image/*" className="hidden" onChange={handleUploadTabela} />
+                        </label>
+                      )}
+                    </div>
+                  ) : isOwner ? (
+                    <label className={cn("inline-flex cursor-pointer items-center gap-2 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 px-5 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-105", uploading && "opacity-60 pointer-events-none")}>
+                      <Upload className="h-4 w-4" /> {uploading ? "Enviando..." : "Subir tabela completa"}
                       <input type="file" accept="application/pdf,image/*" className="hidden" onChange={handleUploadTabela} />
                     </label>
+                  ) : (
+                    <span className="inline-flex items-center gap-2 rounded-2xl border border-white/20 bg-white/5 px-5 py-3 text-sm font-bold text-white/60">
+                      <FileText className="h-4 w-4" /> Tabela indisponível
+                    </span>
                   )}
                   <button
                     onClick={handleGeneratePdf}
@@ -699,7 +712,17 @@ export default function BrokerSite() {
             </div>
           </section>
         )}
-        <BrokerRatings brokerId={brokerId} brokerName={brokerName} />
+
+        <Dialog open={ratingModalOpen} onOpenChange={setRatingModalOpen}>
+          <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto p-0">
+            <DialogHeader className="border-b border-border px-6 pt-6 pb-4">
+              <DialogTitle className="text-2xl font-black">Avaliações de {brokerName}</DialogTitle>
+            </DialogHeader>
+            <div className="px-2 pb-4">
+              <BrokerRatings brokerId={brokerId} brokerName={brokerName} />
+            </div>
+          </DialogContent>
+        </Dialog>
       </main>
 
       <footer className="border-t border-border bg-card">
