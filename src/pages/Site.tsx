@@ -1345,27 +1345,23 @@ export default function Site() {
               subtitle={`${soldProperties.length} imóveis vendidos`}
               icon={TrendingUp}
             />
-            <div className="relative overflow-hidden">
+            <div className="relative overflow-hidden w-full">
               <div
                 className="flex w-max animate-scroll"
                 style={{
                   animationDuration: `${soldProperties.length * 12}s`,
+                  gap: 0,
                 }}
               >
-                <div className="flex gap-6 pr-6">
-                  {soldProperties.map((p, idx) => (
-                    <div key={`a-${p.id}-${idx}`} className="w-[300px] md:w-[340px] flex-shrink-0">
-                      <PropertyCard property={{ ...p, status: "Vendido" as const }} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} hideStamp isFavorited={favoriteIds.includes(p.id)} onToggleFavorite={toggleFavorite} isInRoute={routeIds.includes(p.id)} onToggleRoute={toggleRoute} />
-                    </div>
-                  ))}
-                </div>
-                <div className="flex gap-6 pr-6" aria-hidden="true">
-                  {soldProperties.map((p, idx) => (
-                    <div key={`b-${p.id}-${idx}`} className="w-[300px] md:w-[340px] flex-shrink-0">
-                      <PropertyCard property={{ ...p, status: "Vendido" as const }} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} hideStamp isFavorited={favoriteIds.includes(p.id)} onToggleFavorite={toggleFavorite} isInRoute={routeIds.includes(p.id)} onToggleRoute={toggleRoute} />
-                    </div>
-                  ))}
-                </div>
+                {[...soldProperties, ...soldProperties].map((p, idx) => (
+                  <div
+                    key={`sold-${p.id}-${idx}`}
+                    className="flex-shrink-0 px-3 w-[calc(100vw/1.2)] sm:w-[calc(100vw/2.4)] md:w-[calc(100vw/3.4)] lg:w-[calc((100vw-4rem)/4)] xl:w-[calc((100vw-6rem)/4)]"
+                    aria-hidden={idx >= soldProperties.length ? "true" : undefined}
+                  >
+                    <PropertyCard property={{ ...p, status: "Vendido" as const }} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} hideStamp isFavorited={favoriteIds.includes(p.id)} onToggleFavorite={toggleFavorite} isInRoute={routeIds.includes(p.id)} onToggleRoute={toggleRoute} />
+                  </div>
+                ))}
               </div>
             </div>
           </section>
