@@ -12,14 +12,15 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   roles: AppRole[];
-  profile: { id: string; full_name: string; email: string | null; phone: string | null; avatar_url: string | null } | null;
+  profile: { id: string; full_name: string; email: string | null; phone: string | null; avatar_url: string | null; agency_id: string | null; account_type: string } | null;
   subscription: {
     id: string;
     plan_id: string;
     status: string;
     trial_ends_at: string | null;
     current_period_end: string | null;
-    plan?: { name: string; modules: string[]; max_properties: number; max_brokers: number };
+    effective_owner: string | null;
+    plan?: { name: string; modules: string[]; max_properties: number; max_brokers: number; is_free: boolean };
   } | null;
   staffPermissions: StaffPermissions | null;
   signOut: () => Promise<void>;
@@ -42,10 +43,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [staffPermissions, setStaffPermissions] = useState<StaffPermissions | null>(null);
 
   const fetchUserData = async (userId: string) => {
-    const [rolesRes, profileRes, subRes, staffRes] = await Promise.all([
+    const [rolesRes, profileRes, effSubRes, staffRes] = await Promise.all([
       supabase.from("user_roles").select("role").eq("user_id", userId),
       supabase.from("profiles").select("*").eq("user_id", userId).single(),
-      supabase.from("subscriptions").select("*, plans(name, modules, max_properties, max_brokers)").eq("user_id", userId).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+      supabase.rpc("get_effective_subscription", { _user_id: userId }),
       supabase.from("staff_permissions").select("*").eq("user_id", userId).maybeSingle(),
     ]);
 
@@ -55,17 +56,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (profileRes.data) {
       setProfile(profileRes.data as any);
     }
-    if (subRes.data) {
-      const sub = subRes.data as any;
+
+    const effSub = Array.isArray(effSubRes.data) ? effSubRes.data[0] : null;
+    if (effSub) {
+      // Buscar dados do plano
+      const { data: planData } = await supabase
+        .from("plans")
+        .select("name, modules, max_properties, max_brokers, is_free")
+        .eq("id", (effSub as any).plan_id)
+        .maybeSingle();
+
       setSubscription({
-        ...sub,
-        plan: sub.plans ? {
-          name: sub.plans.name,
-          modules: Array.isArray(sub.plans.modules) ? sub.plans.modules : [],
-          max_properties: sub.plans.max_properties,
-          max_brokers: sub.plans.max_brokers,
+        id: (effSub as any).id,
+        plan_id: (effSub as any).plan_id,
+        status: (effSub as any).status,
+        trial_ends_at: (effSub as any).trial_ends_at,
+        current_period_end: (effSub as any).current_period_end,
+        effective_owner: (effSub as any).effective_owner,
+        plan: planData ? {
+          name: (planData as any).name,
+          modules: Array.isArray((planData as any).modules) ? (planData as any).modules : [],
+          max_properties: (planData as any).max_properties,
+          max_brokers: (planData as any).max_brokers,
+          is_free: (planData as any).is_free,
         } : undefined,
       });
+    } else {
+      setSubscription(null);
     }
     if (staffRes.data) {
       setStaffPermissions((staffRes.data as any).permissions || null);
