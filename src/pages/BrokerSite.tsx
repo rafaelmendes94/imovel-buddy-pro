@@ -57,6 +57,7 @@ interface BrokerPageConfig {
   email_contact: string | null;
   bio: string | null;
   tabela_url: string | null;
+  accent_color: string | null;
 }
 
 interface DBProperty {
@@ -196,7 +197,7 @@ export default function BrokerSite() {
           .eq("ativo_site", true),
         supabase
           .from("site_config")
-          .select("site_title, slogan, cover_photo_url, profile_photo_url, logo_url, whatsapp, footer_text, email_contact, bio, tabela_url")
+          .select("site_title, slogan, cover_photo_url, profile_photo_url, logo_url, whatsapp, footer_text, email_contact, bio, tabela_url, accent_color")
           .eq("config_type", "broker_page")
           .eq("owner_id", slug)
           .maybeSingle(),
@@ -323,7 +324,7 @@ export default function BrokerSite() {
       } else {
         await (supabase.from("site_config") as any).insert({ config_type: "broker_page", owner_id: slug, tabela_url: url, site_title: brokerName });
       }
-      setConfig((prev) => prev ? { ...prev, tabela_url: url } : { site_title: brokerName, slogan: "", cover_photo_url: null, profile_photo_url: null, logo_url: null, whatsapp: null, footer_text: null, email_contact: null, bio: null, tabela_url: url });
+      setConfig((prev) => prev ? { ...prev, tabela_url: url } : { site_title: brokerName, slogan: "", cover_photo_url: null, profile_photo_url: null, logo_url: null, whatsapp: null, footer_text: null, email_contact: null, bio: null, tabela_url: url, accent_color: null });
       toast.success("Tabela completa enviada!");
     } catch (err: any) {
       toast.error("Erro ao enviar tabela: " + (err?.message || ""));
