@@ -8,6 +8,8 @@ import {
   Building2,
   Car,
   DollarSign,
+  FileDown,
+  FileText,
   Filter,
   Home,
   Mail,
@@ -21,11 +23,15 @@ import {
   Star,
   TrendingUp,
   TreePine,
+  Upload,
   Waves,
   X,
 } from "lucide-react";
 import { cn, toSlug } from "@/lib/utils";
 import { BrokerRatings } from "@/components/BrokerRatings";
+import { toast } from "sonner";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const formatCurrency = (v: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
 
