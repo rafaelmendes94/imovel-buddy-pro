@@ -358,7 +358,7 @@ export default function BrokerSite() {
 
         {/* Animated vibrant metric cards */}
         <section className="container -mt-10 relative z-10 pb-4">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-7">
             {[
               { label: "Imóveis em carteira", value: properties.length, icon: Building2, gradient: "from-sky-500 via-blue-600 to-indigo-700" },
               { label: "VGV em carteira", value: formatCurrency(totalValue), icon: DollarSign, gradient: "from-emerald-400 via-teal-500 to-cyan-600" },
@@ -366,6 +366,7 @@ export default function BrokerSite() {
               { label: "Comissão estimada", value: formatCurrency(totalComissao), icon: Star, gradient: "from-amber-400 via-orange-500 to-rose-600" },
               { label: "Vendas públicas", value: soldProperties.length, icon: Home, gradient: "from-pink-500 via-rose-500 to-red-600" },
               { label: "VGV vendido", value: formatCurrency(soldValue), icon: DollarSign, gradient: "from-lime-400 via-green-500 to-emerald-700" },
+              { label: "Visualizações da página", value: pageViews.toLocaleString("pt-BR"), icon: Eye, gradient: "from-violet-500 via-purple-600 to-fuchsia-700" },
             ].map((metric, idx) => (
               <div
                 key={metric.label}
