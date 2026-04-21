@@ -147,40 +147,57 @@ export function AddressMapPicker({ latitude, longitude, onChange }: AddressMapPi
     const maps = getGoogleMaps();
     if (!ready || !maps || !mapRef.current || mapInstanceRef.current) return;
 
-    const center = getCenter();
-    const zoom = center === DEFAULT_CENTER ? DEFAULT_ZOOM : PIN_ZOOM;
+    let cancelled = false;
+    let clickListener: any = null;
 
-    const map = new maps.Map(mapRef.current, {
-      center,
-      zoom,
-      mapId: "address-picker",
-      mapTypeControl: false,
-      streetViewControl: false,
-      fullscreenControl: false,
-    });
+    (async () => {
+      const MapCtor =
+        maps.Map ||
+        (typeof maps.importLibrary === "function"
+          ? (await maps.importLibrary("maps")).Map
+          : null);
+      if (!MapCtor || cancelled || !mapRef.current) return;
 
-    mapInstanceRef.current = map;
+      if (typeof maps.importLibrary === "function") {
+        await maps.importLibrary("marker").catch(() => null);
+      }
 
-    if (center !== DEFAULT_CENTER) {
-      markerRef.current = createDraggableMarker(maps, map, center);
-      addDragListener(markerRef.current);
-    }
+      const center = getCenter();
+      const zoom = center === DEFAULT_CENTER ? DEFAULT_ZOOM : PIN_ZOOM;
 
-    const clickListener = map.addListener("click", (e: any) => {
-      if (!e.latLng) return;
-      skipCenterRef.current = true;
+      const map = new MapCtor(mapRef.current, {
+        center,
+        zoom,
+        mapId: "address-picker",
+        mapTypeControl: false,
+        streetViewControl: false,
+        fullscreenControl: false,
+      });
 
-      if (markerRef.current) {
-        setMarkerPosition(markerRef.current, e.latLng);
-      } else {
-        markerRef.current = createDraggableMarker(maps, map, e.latLng);
+      mapInstanceRef.current = map;
+
+      if (center !== DEFAULT_CENTER) {
+        markerRef.current = createDraggableMarker(maps, map, center);
         addDragListener(markerRef.current);
       }
 
-      reverseGeocode(e.latLng);
-    });
+      clickListener = map.addListener("click", (e: any) => {
+        if (!e.latLng) return;
+        skipCenterRef.current = true;
+
+        if (markerRef.current) {
+          setMarkerPosition(markerRef.current, e.latLng);
+        } else {
+          markerRef.current = createDraggableMarker(maps, map, e.latLng);
+          addDragListener(markerRef.current);
+        }
+
+        reverseGeocode(e.latLng);
+      });
+    })();
 
     return () => {
+      cancelled = true;
       clickListener?.remove?.();
       removeMarker(markerRef.current);
       markerRef.current = null;
