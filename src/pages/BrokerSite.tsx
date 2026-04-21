@@ -466,22 +466,40 @@ export default function BrokerSite() {
                       <Phone className="h-4 w-4" /> Chamar no WhatsApp
                     </a>
                   )}
+                  {/* Tabela: download + upload (dono) unificados */}
                   {config?.tabela_url ? (
-                    <a href={config.tabela_url} download target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 px-5 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-105">
-                      <FileDown className="h-4 w-4" /> Baixar tabela em PDF
-                    </a>
-                  ) : (
-                    !isOwner && (
-                      <span className="inline-flex items-center gap-2 rounded-2xl border border-white/20 bg-white/5 px-5 py-3 text-sm font-bold text-white/60">
-                        <FileText className="h-4 w-4" /> Tabela indisponível
-                      </span>
-                    )
-                  )}
-                  {isOwner && (
-                    <label className={cn("inline-flex cursor-pointer items-center gap-2 rounded-2xl border border-white/20 bg-white/10 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-white/15", uploading && "opacity-60 pointer-events-none")}>
-                      <Upload className="h-4 w-4" /> {uploading ? "Enviando..." : config?.tabela_url ? "Trocar tabela" : "Subir tabela completa"}
+                    <div className="inline-flex items-stretch overflow-hidden rounded-2xl shadow-lg">
+                      <a
+                        href={config.tabela_url}
+                        download
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-400 to-orange-500 px-5 py-3 text-sm font-bold text-white transition-all hover:brightness-110"
+                      >
+                        <FileDown className="h-4 w-4" /> Baixar tabela em PDF
+                      </a>
+                      {isOwner && (
+                        <label
+                          title={uploading ? "Enviando..." : "Trocar tabela"}
+                          className={cn(
+                            "inline-flex cursor-pointer items-center justify-center border-l border-white/20 bg-orange-600 px-3 text-white transition-colors hover:bg-orange-700",
+                            uploading && "pointer-events-none opacity-60",
+                          )}
+                        >
+                          <Upload className="h-4 w-4" />
+                          <input type="file" accept="application/pdf,image/*" className="hidden" onChange={handleUploadTabela} />
+                        </label>
+                      )}
+                    </div>
+                  ) : isOwner ? (
+                    <label className={cn("inline-flex cursor-pointer items-center gap-2 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 px-5 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-105", uploading && "opacity-60 pointer-events-none")}>
+                      <Upload className="h-4 w-4" /> {uploading ? "Enviando..." : "Subir tabela completa"}
                       <input type="file" accept="application/pdf,image/*" className="hidden" onChange={handleUploadTabela} />
                     </label>
+                  ) : (
+                    <span className="inline-flex items-center gap-2 rounded-2xl border border-white/20 bg-white/5 px-5 py-3 text-sm font-bold text-white/60">
+                      <FileText className="h-4 w-4" /> Tabela indisponível
+                    </span>
                   )}
                   <button
                     onClick={handleGeneratePdf}
