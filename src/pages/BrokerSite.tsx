@@ -472,6 +472,20 @@ export default function BrokerSite() {
                   <Link to="/site" className="inline-flex items-center gap-2 rounded-2xl border border-white/20 bg-white/10 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-white/15">
                     <Building2 className="h-4 w-4" /> Ver vitrine completa
                   </Link>
+                  {config?.tabela_url && (
+                    <a href={config.tabela_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 px-5 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-105">
+                      <FileText className="h-4 w-4" /> Tabela completa
+                    </a>
+                  )}
+                  {isOwner && (
+                    <label className={cn("inline-flex cursor-pointer items-center gap-2 rounded-2xl border border-white/20 bg-white/10 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-white/15", uploading && "opacity-60 pointer-events-none")}>
+                      <Upload className="h-4 w-4" /> {uploading ? "Enviando..." : config?.tabela_url ? "Trocar tabela" : "Subir tabela completa"}
+                      <input type="file" accept="application/pdf,image/*" className="hidden" onChange={handleUploadTabela} />
+                    </label>
+                  )}
+                  <button onClick={handleGeneratePdf} className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 px-5 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-105">
+                    <FileDown className="h-4 w-4" /> Gerar PDF dos imóveis
+                  </button>
                 </div>
               </div>
             </div>
