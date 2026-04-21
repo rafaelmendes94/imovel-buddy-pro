@@ -166,6 +166,9 @@ export default function BrokerSite() {
   const [pageViews, setPageViews] = useState(0);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [ratingModalOpen, setRatingModalOpen] = useState(false);
+  const [avgRating, setAvgRating] = useState<number | null>(null);
+  const [ratingsCount, setRatingsCount] = useState(0);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setCurrentUserId(data.user?.id || null));
