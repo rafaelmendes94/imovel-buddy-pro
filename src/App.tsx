@@ -9,6 +9,7 @@ import { AuthGuard } from "@/components/AuthGuard";
 // Public pages
 import Login from "./pages/Login";
 import Registro from "./pages/Registro";
+import EscolherPlano from "./pages/EscolherPlano";
 import NotFound from "./pages/NotFound";
 import BrokerSite from "./pages/BrokerSite";
 import Home from "./pages/Home";
@@ -83,6 +84,7 @@ const App = () => (
             <Route path="/" element={<Site />} />
             <Route path="/login" element={<Login />} />
             <Route path="/registro" element={<Registro />} />
+            <Route path="/escolher-plano" element={<AuthGuard allowNoSubscription><EscolherPlano /></AuthGuard>} />
             <Route path="/corretor/:slug" element={<BrokerSite />} />
             <Route path="/empreendimento/:slug" element={<EmpreendimentoDetail />} />
             <Route path="/parceiro/:slug" element={<PartnerDetail />} />
