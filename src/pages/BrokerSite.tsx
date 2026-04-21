@@ -297,7 +297,99 @@ export default function BrokerSite() {
     );
   }
 
-  const whatsapp = normalizePhone(config?.whatsapp || brokerRecord?.phone || "");
+  const isOwner = !!currentUserId && !!brokerId && currentUserId === brokerId;
+
+  const handleUploadTabela = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !slug || !currentUserId) return;
+    try {
+      setUploading(true);
+      const ext = file.name.split(".").pop() || "pdf";
+      const path = `broker-tables/${currentUserId}/${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("tabelas").upload(path, file, { upsert: true, contentType: file.type });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from("tabelas").getPublicUrl(path);
+      const url = pub.publicUrl;
+
+      const { data: existing } = await supabase
+        .from("site_config")
+        .select("id")
+        .eq("config_type", "broker_page")
+        .eq("owner_id", slug)
+        .maybeSingle();
+
+      if (existing?.id) {
+        await (supabase.from("site_config") as any).update({ tabela_url: url }).eq("id", existing.id);
+      } else {
+        await (supabase.from("site_config") as any).insert({ config_type: "broker_page", owner_id: slug, tabela_url: url, site_title: brokerName });
+      }
+      setConfig((prev) => prev ? { ...prev, tabela_url: url } : { site_title: brokerName, slogan: "", cover_photo_url: null, profile_photo_url: null, logo_url: null, whatsapp: null, footer_text: null, email_contact: null, bio: null, tabela_url: url });
+      toast.success("Tabela completa enviada!");
+    } catch (err: any) {
+      toast.error("Erro ao enviar tabela: " + (err?.message || ""));
+    } finally {
+      setUploading(false);
+      event.target.value = "";
+    }
+  };
+
+  const loadImageAsDataURL = (url: string): Promise<string | null> =>
+    new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        try {
+          const canvas = document.createElement("canvas");
+          const size = 80;
+          canvas.width = size; canvas.height = size;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) return resolve(null);
+          ctx.drawImage(img, 0, 0, size, size);
+          resolve(canvas.toDataURL("image/jpeg", 0.7));
+        } catch { resolve(null); }
+      };
+      img.onerror = () => resolve(null);
+      img.src = url;
+    });
+
+  const handleGeneratePdf = async () => {
+    const allProps = [...properties, ...soldProperties];
+    if (allProps.length === 0) {
+      toast.info("Sem imóveis para exportar");
+      return;
+    }
+    toast.info("Gerando PDF...");
+    const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
+    doc.setFontSize(16);
+    doc.text(`Tabela de Imóveis - ${brokerName}`, 40, 40);
+    doc.setFontSize(9);
+    doc.text(`Total: ${allProps.length} imóveis`, 40, 56);
+
+    const images = await Promise.all(allProps.map((p) => p.imagens?.[0] ? loadImageAsDataURL(p.imagens[0]) : Promise.resolve(null)));
+
+    autoTable(doc, {
+      startY: 70,
+      head: [["Foto", "Título", "Tipo", "Cidade / Bairro", "Quartos", "Área", "Preço", "Status"]],
+      body: allProps.map((p) => ["", p.titulo, p.tipo, `${p.cidade}${p.bairro ? " / " + p.bairro : ""}`, String(p.quartos || "-"), p.area ? `${p.area}m²` : "-", formatCurrency(p.preco), p.status]),
+      styles: { fontSize: 8, cellPadding: 4, valign: "middle", minCellHeight: 50 },
+      headStyles: { fillColor: [30, 58, 95], textColor: 255, fontStyle: "bold" },
+      columnStyles: { 0: { cellWidth: 55 }, 1: { cellWidth: 160 }, 2: { cellWidth: 70 }, 3: { cellWidth: 140 }, 4: { cellWidth: 50, halign: "center" }, 5: { cellWidth: 55, halign: "center" }, 6: { cellWidth: 90, halign: "right" }, 7: { cellWidth: 65, halign: "center" } },
+      didDrawCell: (data) => {
+        if (data.section === "body" && data.column.index === 0) {
+          const img = images[data.row.index];
+          if (img) {
+            try {
+              doc.addImage(img, "JPEG", data.cell.x + 4, data.cell.y + 4, 42, 42);
+            } catch { /* ignore */ }
+          }
+        }
+      },
+    });
+
+    doc.save(`tabela-imoveis-${slug}.pdf`);
+    toast.success("PDF gerado!");
+  };
+
   const email = config?.email_contact || brokerRecord?.email || "";
   const creci = brokerRecord?.creci || "";
   const avatarUrl = config?.profile_photo_url || getAvatarFallback(brokerName);
