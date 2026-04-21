@@ -106,6 +106,7 @@ export function SiteConfigDialog({
         whatsapp: (data as any).whatsapp || "",
         instagram: (data as any).instagram || "",
         email_contact: (data as any).email_contact || "",
+        bio: (data as any).bio || "",
       });
     } else {
       setConfig(defaults);
