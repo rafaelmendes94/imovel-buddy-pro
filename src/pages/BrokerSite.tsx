@@ -242,7 +242,7 @@ export default function BrokerSite() {
     );
   }
 
-  if (!brokerName && properties.length === 0 && soldProperties.length === 0) {
+  if (!brokerName) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background px-4">
         <div className="space-y-4 text-center">
