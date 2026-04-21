@@ -247,6 +247,19 @@ export default function BrokerSite() {
     () => properties.reduce((sum, p) => sum + (Number(p.preco) * (Number(p.comissao) || 0)) / 100, 0),
     [properties],
   );
+  const tempoMedioVenda = useMemo(() => {
+    const days = soldProperties
+      .map((p) => {
+        if (!p.data_venda || !p.created_at) return null;
+        const start = new Date(p.created_at).getTime();
+        const end = new Date(p.data_venda).getTime();
+        if (isNaN(start) || isNaN(end) || end < start) return null;
+        return Math.round((end - start) / (1000 * 60 * 60 * 24));
+      })
+      .filter((d): d is number => d !== null);
+    if (days.length === 0) return 0;
+    return Math.round(days.reduce((a, b) => a + b, 0) / days.length);
+  }, [soldProperties]);
   const tipos = useMemo(() => Array.from(new Set(properties.map((p) => p.tipo).filter(Boolean))), [properties]);
   const statusList = useMemo(() => Array.from(new Set(properties.map((p) => p.status).filter(Boolean))), [properties]);
 
