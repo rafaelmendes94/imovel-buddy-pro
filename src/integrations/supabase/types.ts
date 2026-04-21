@@ -193,6 +193,48 @@ export type Database = {
         }
         Relationships: []
       }
+      broker_ratings: {
+        Row: {
+          agilidade: number
+          broker_id: string
+          comentario: string | null
+          created_at: string
+          credibilidade: number
+          id: string
+          negociacao: number
+          pontualidade: number
+          rater_id: string
+          transparencia: number
+          updated_at: string
+        }
+        Insert: {
+          agilidade?: number
+          broker_id: string
+          comentario?: string | null
+          created_at?: string
+          credibilidade?: number
+          id?: string
+          negociacao?: number
+          pontualidade?: number
+          rater_id: string
+          transparencia?: number
+          updated_at?: string
+        }
+        Update: {
+          agilidade?: number
+          broker_id?: string
+          comentario?: string | null
+          created_at?: string
+          credibilidade?: number
+          id?: string
+          negociacao?: number
+          pontualidade?: number
+          rater_id?: string
+          transparencia?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       city_galleries: {
         Row: {
           capa_url: string

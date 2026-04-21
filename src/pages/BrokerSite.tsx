@@ -8,6 +8,7 @@ import {
   Building2,
   Car,
   DollarSign,
+  Filter,
   Home,
   Mail,
   MapPin,
@@ -16,11 +17,13 @@ import {
   Ruler,
   Search,
   Star,
+  TrendingUp,
   TreePine,
   Waves,
   X,
 } from "lucide-react";
 import { cn, toSlug } from "@/lib/utils";
+import { BrokerRatings } from "@/components/BrokerRatings";
 
 const formatCurrency = (v: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
 
@@ -47,6 +50,7 @@ interface BrokerPageConfig {
 
 interface DBProperty {
   id: string;
+  user_id: string;
   titulo: string;
   endereco: string;
   cidade: string;
@@ -57,6 +61,7 @@ interface DBProperty {
   quartos: number;
   banheiros: number;
   vagas: number;
+  comissao: number | null;
   imagens: string[] | null;
   vista_mar: boolean;
   decorado: boolean;
@@ -141,6 +146,9 @@ export default function BrokerSite() {
   const [config, setConfig] = useState<BrokerPageConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [tipoFilter, setTipoFilter] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<string>("");
+  const [brokerId, setBrokerId] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -155,7 +163,7 @@ export default function BrokerSite() {
           .eq("status", "active"),
         supabase
           .from("imoveis")
-          .select("id, titulo, endereco, cidade, tipo, status, preco, area, quartos, banheiros, vagas, imagens, vista_mar, decorado, aceita_permuta, condicoes_pagamento, empreendimento, unidade, box, quadra, lote, bairro, corretor_nome")
+          .select("id, user_id, titulo, endereco, cidade, tipo, status, preco, area, quartos, banheiros, vagas, comissao, imagens, vista_mar, decorado, aceita_permuta, condicoes_pagamento, empreendimento, unidade, box, quadra, lote, bairro, corretor_nome")
           .eq("ativo_site", true),
         supabase
           .from("site_config")
@@ -175,6 +183,7 @@ export default function BrokerSite() {
       setBrokerName(resolvedName);
       setBrokerRecord(matchedBroker);
       setConfig((pageConfig as BrokerPageConfig | null) || null);
+      setBrokerId(matchedProperties[0]?.user_id || null);
       setProperties(matchedProperties.filter((property) => property.status !== "Vendido"));
       setSoldProperties(matchedProperties.filter((property) => property.status === "Vendido"));
       setLoading(false);
@@ -184,16 +193,19 @@ export default function BrokerSite() {
   }, [slug]);
 
   const filteredProperties = useMemo(() => {
-    if (!searchTerm) return properties;
-
     const term = searchTerm.toLowerCase();
-    return properties.filter((property) =>
-      property.titulo.toLowerCase().includes(term) ||
-      property.endereco.toLowerCase().includes(term) ||
-      property.cidade.toLowerCase().includes(term) ||
-      (property.bairro || "").toLowerCase().includes(term),
-    );
-  }, [properties, searchTerm]);
+    return properties.filter((property) => {
+      if (tipoFilter && property.tipo !== tipoFilter) return false;
+      if (statusFilter && property.status !== statusFilter) return false;
+      if (!term) return true;
+      return (
+        property.titulo.toLowerCase().includes(term) ||
+        property.endereco.toLowerCase().includes(term) ||
+        property.cidade.toLowerCase().includes(term) ||
+        (property.bairro || "").toLowerCase().includes(term)
+      );
+    });
+  }, [properties, searchTerm, tipoFilter, statusFilter]);
 
   const propertiesByCity = useMemo(() => {
     const grouped = filteredProperties.reduce<Record<string, DBProperty[]>>((acc, property) => {
@@ -214,6 +226,13 @@ export default function BrokerSite() {
   const lots = useMemo(() => properties.filter((property) => property.tipo === "Terreno" || property.tipo === "Lote").length, [properties]);
   const totalValue = useMemo(() => properties.reduce((sum, property) => sum + Number(property.preco), 0), [properties]);
   const soldValue = useMemo(() => soldProperties.reduce((sum, property) => sum + Number(property.preco), 0), [soldProperties]);
+  const ticketMedio = useMemo(() => (properties.length > 0 ? totalValue / properties.length : 0), [properties, totalValue]);
+  const totalComissao = useMemo(
+    () => properties.reduce((sum, p) => sum + (Number(p.preco) * (Number(p.comissao) || 0)) / 100, 0),
+    [properties],
+  );
+  const tipos = useMemo(() => Array.from(new Set(properties.map((p) => p.tipo).filter(Boolean))), [properties]);
+  const statusList = useMemo(() => Array.from(new Set(properties.map((p) => p.status).filter(Boolean))), [properties]);
 
   if (loading) {
     return (
@@ -309,19 +328,21 @@ export default function BrokerSite() {
                   </Link>
                 </div>
 
-                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
                   {[
                     { label: "Imóveis em carteira", value: properties.length, icon: Building2 },
                     { label: "VGV em carteira", value: formatCurrency(totalValue), icon: DollarSign },
-                    { label: "Vendas públicas", value: soldProperties.length, icon: Star },
-                    { label: "VGV vendido", value: formatCurrency(soldValue), icon: Home },
+                    { label: "Ticket médio", value: formatCurrency(ticketMedio), icon: TrendingUp },
+                    { label: "Comissão estimada", value: formatCurrency(totalComissao), icon: Star },
+                    { label: "Vendas públicas", value: soldProperties.length, icon: Home },
+                    { label: "VGV vendido", value: formatCurrency(soldValue), icon: DollarSign },
                   ].map((metric) => (
                     <div key={metric.label} className="rounded-3xl border border-white/10 bg-white/10 p-4 backdrop-blur-sm">
                       <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10 text-white">
                         <metric.icon className="h-5 w-5" />
                       </div>
-                      <p className="text-2xl font-black text-white">{metric.value}</p>
-                      <p className="text-xs uppercase tracking-[0.2em] text-white/60">{metric.label}</p>
+                      <p className="text-xl font-black text-white">{metric.value}</p>
+                      <p className="text-[10px] uppercase tracking-[0.2em] text-white/60">{metric.label}</p>
                     </div>
                   ))}
                 </div>
@@ -354,9 +375,58 @@ export default function BrokerSite() {
               <span className="inline-flex items-center gap-2 rounded-full bg-muted px-3 py-2 text-sm font-medium text-muted-foreground"><TreePine className="h-4 w-4" /> {lots} terrenos</span>
             </div>
           </div>
+
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <Filter className="h-3 w-3" /> Filtros:
+            </span>
+            <button
+              onClick={() => setTipoFilter("")}
+              className={cn(
+                "rounded-full px-3 py-1 text-xs font-semibold transition-colors",
+                !tipoFilter ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80",
+              )}
+            >
+              Todos os tipos
+            </button>
+            {tipos.map((t) => (
+              <button
+                key={t}
+                onClick={() => setTipoFilter(t)}
+                className={cn(
+                  "rounded-full px-3 py-1 text-xs font-semibold transition-colors",
+                  tipoFilter === t ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80",
+                )}
+              >
+                {t}
+              </button>
+            ))}
+            <span className="mx-2 h-4 w-px bg-border" />
+            <button
+              onClick={() => setStatusFilter("")}
+              className={cn(
+                "rounded-full px-3 py-1 text-xs font-semibold transition-colors",
+                !statusFilter ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80",
+              )}
+            >
+              Qualquer status
+            </button>
+            {statusList.map((s) => (
+              <button
+                key={s}
+                onClick={() => setStatusFilter(s)}
+                className={cn(
+                  "rounded-full px-3 py-1 text-xs font-semibold transition-colors",
+                  statusFilter === s ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80",
+                )}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
         </section>
 
-        {!searchTerm && featuredProperties.length > 0 && (
+        {!searchTerm && !tipoFilter && !statusFilter && featuredProperties.length > 0 && (
           <section className="container pb-6">
             <div className="mb-6 space-y-2">
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">Seleção especial</p>
@@ -436,6 +506,7 @@ export default function BrokerSite() {
             </div>
           </section>
         )}
+        <BrokerRatings brokerId={brokerId} brokerName={brokerName} />
       </main>
 
       <footer className="border-t border-border bg-card">
