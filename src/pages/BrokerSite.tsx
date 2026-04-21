@@ -499,13 +499,13 @@ export default function BrokerSite() {
         <section className="container -mt-10 relative z-10 pb-4">
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
             {[
-              { label: "Imóveis", value: properties.length, icon: Building2, gradient: "from-sky-500 via-blue-600 to-indigo-700" },
-              { label: "VGV carteira", value: formatCurrency(totalValue), icon: DollarSign, gradient: "from-emerald-400 via-teal-500 to-cyan-600" },
-              { label: "Ticket médio", value: formatCurrency(ticketMedio), icon: TrendingUp, gradient: "from-fuchsia-500 via-purple-600 to-indigo-700" },
-              { label: "Vendas", value: soldProperties.length, icon: Home, gradient: "from-pink-500 via-rose-500 to-red-600" },
-              { label: "VGV vendido", value: formatCurrency(soldValue), icon: DollarSign, gradient: "from-lime-400 via-green-500 to-emerald-700" },
-              { label: "Tempo médio venda", value: tempoMedioVenda > 0 ? `${tempoMedioVenda}d` : "—", icon: Clock, gradient: "from-cyan-400 via-sky-500 to-blue-700" },
-              { label: "Visualizações", value: pageViews.toLocaleString("pt-BR"), icon: Eye, gradient: "from-violet-500 via-purple-600 to-fuchsia-700" },
+              { label: "Imóveis", value: properties.length, icon: Building2, gradient: "from-sky-400 via-blue-600 to-indigo-800" },
+              { label: "VGV carteira", value: formatCurrency(totalValue), icon: DollarSign, gradient: "from-sky-400 via-blue-600 to-indigo-800" },
+              { label: "Ticket médio", value: formatCurrency(ticketMedio), icon: TrendingUp, gradient: "from-sky-400 via-blue-600 to-indigo-800" },
+              { label: "Vendas", value: soldProperties.length, icon: Home, gradient: "from-sky-400 via-blue-600 to-indigo-800" },
+              { label: "VGV vendido", value: formatCurrency(soldValue), icon: DollarSign, gradient: "from-sky-400 via-blue-600 to-indigo-800" },
+              { label: "Tempo médio venda", value: tempoMedioVenda > 0 ? `${tempoMedioVenda}d` : "—", icon: Clock, gradient: "from-sky-400 via-blue-600 to-indigo-800" },
+              { label: "Visualizações", value: pageViews.toLocaleString("pt-BR"), icon: Eye, gradient: "from-sky-400 via-blue-600 to-indigo-800" },
             ].map((metric, idx) => (
               <div
                 key={metric.label}
