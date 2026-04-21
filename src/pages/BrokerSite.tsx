@@ -8,6 +8,7 @@ import {
   Building2,
   Car,
   DollarSign,
+  Filter,
   Home,
   Mail,
   MapPin,
@@ -16,11 +17,13 @@ import {
   Ruler,
   Search,
   Star,
+  TrendingUp,
   TreePine,
   Waves,
   X,
 } from "lucide-react";
 import { cn, toSlug } from "@/lib/utils";
+import { BrokerRatings } from "@/components/BrokerRatings";
 
 const formatCurrency = (v: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
 
