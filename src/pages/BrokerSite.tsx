@@ -280,6 +280,22 @@ export default function BrokerSite() {
   const tipos = useMemo(() => Array.from(new Set(properties.map((p) => p.tipo).filter(Boolean))), [properties]);
   const statusList = useMemo(() => Array.from(new Set(properties.map((p) => p.status).filter(Boolean))), [properties]);
 
+  useEffect(() => {
+    if (!brokerId) { setAvgRating(null); setRatingsCount(0); return; }
+    (async () => {
+      const { data } = await (supabase as any)
+        .from("broker_ratings")
+        .select("pontualidade, agilidade, transparencia, credibilidade, negociacao")
+        .eq("broker_id", brokerId);
+      const rows = (data as any[]) || [];
+      setRatingsCount(rows.length);
+      if (!rows.length) { setAvgRating(null); return; }
+      const total = rows.reduce((s, r) =>
+        s + ((r.pontualidade + r.agilidade + r.transparencia + r.credibilidade + r.negociacao) / 5), 0);
+      setAvgRating(Number((total / rows.length).toFixed(1)));
+    })();
+  }, [brokerId]);
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
