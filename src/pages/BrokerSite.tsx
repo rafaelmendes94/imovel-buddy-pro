@@ -183,6 +183,7 @@ export default function BrokerSite() {
       setBrokerName(resolvedName);
       setBrokerRecord(matchedBroker);
       setConfig((pageConfig as BrokerPageConfig | null) || null);
+      setBrokerId(matchedProperties[0]?.user_id || null);
       setProperties(matchedProperties.filter((property) => property.status !== "Vendido"));
       setSoldProperties(matchedProperties.filter((property) => property.status === "Vendido"));
       setLoading(false);
