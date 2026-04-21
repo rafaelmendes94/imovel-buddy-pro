@@ -21,19 +21,24 @@ export function useGoogleMapsLoader() {
         const onReady = async () => {
           try {
             const g = (window as any).google;
-            await Promise.all([
-              g.maps.importLibrary("maps"),
-              g.maps.importLibrary("marker"),
-              g.maps.importLibrary("geocoding"),
-            ]);
+            if (!g?.maps) {
+              throw new Error("Google Maps indisponível");
+            }
+            if (typeof g.maps.importLibrary === "function") {
+              await Promise.all([
+                g.maps.importLibrary("maps"),
+                g.maps.importLibrary("marker"),
+                g.maps.importLibrary("geocoding"),
+              ]);
+            }
             resolve();
           } catch (e) {
             reject(e as Error);
           }
         };
         if (existing) {
-          if ((window as any).google?.maps?.importLibrary) onReady();
-          else existing.addEventListener("load", onReady);
+          if ((window as any).google?.maps) onReady();
+          else existing.addEventListener("load", onReady, { once: true });
           return;
         }
         const script = document.createElement("script");
