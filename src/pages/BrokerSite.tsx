@@ -43,9 +43,11 @@ interface BrokerPageConfig {
   slogan: string;
   cover_photo_url: string | null;
   profile_photo_url: string | null;
+  logo_url: string | null;
   whatsapp: string | null;
   footer_text: string | null;
   email_contact: string | null;
+  bio: string | null;
 }
 
 interface DBProperty {
@@ -167,7 +169,7 @@ export default function BrokerSite() {
           .eq("ativo_site", true),
         supabase
           .from("site_config")
-          .select("site_title, slogan, cover_photo_url, profile_photo_url, whatsapp, footer_text, email_contact")
+          .select("site_title, slogan, cover_photo_url, profile_photo_url, logo_url, whatsapp, footer_text, email_contact, bio")
           .eq("config_type", "broker_page")
           .eq("owner_id", slug)
           .maybeSingle(),

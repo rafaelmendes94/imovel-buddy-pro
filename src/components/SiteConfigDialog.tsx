@@ -159,6 +159,7 @@ export function SiteConfigDialog({
       whatsapp: config.whatsapp || null,
       instagram: config.instagram || null,
       email_contact: config.email_contact || null,
+      bio: config.bio || null,
       updated_at: new Date().toISOString(),
     };
 
@@ -269,6 +270,15 @@ export function SiteConfigDialog({
                   onChange={e => update("footer_text", e.target.value)}
                   placeholder="© 2026 MV BROKER CONNECT..."
                   rows={2}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">Sobre mim / Bio (exibida abaixo do nome)</Label>
+                <Textarea
+                  value={config.bio}
+                  onChange={e => update("bio", e.target.value)}
+                  placeholder="Conte um pouco sobre sua trajetória, especialidades e diferenciais..."
+                  rows={4}
                 />
               </div>
 
