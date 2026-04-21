@@ -14,6 +14,7 @@ import {
   MapPin,
   Paintbrush,
   Phone,
+  Eye,
   Ruler,
   Search,
   Star,
@@ -151,6 +152,16 @@ export default function BrokerSite() {
   const [tipoFilter, setTipoFilter] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [brokerId, setBrokerId] = useState<string | null>(null);
+  const [pageViews, setPageViews] = useState(0);
+
+  useEffect(() => {
+    if (!slug) return;
+    (supabase.rpc as any)("increment_broker_page_view", { _slug: slug });
+    (supabase.from as any)("broker_page_views")
+      .select("id", { count: "exact", head: true })
+      .eq("broker_slug", slug)
+      .then(({ count }: { count: number | null }) => setPageViews(count || 0));
+  }, [slug]);
 
   useEffect(() => {
     const load = async () => {
