@@ -396,6 +396,7 @@ export default function BrokerSite() {
   const creci = brokerRecord?.creci || "";
   const avatarUrl = config?.profile_photo_url || getAvatarFallback(brokerName);
   const coverUrl = config?.cover_photo_url;
+  const accentColor = config?.accent_color && config.accent_color.trim() !== "" ? config.accent_color : null;
   const eyebrow = config?.site_title || "Portfólio do corretor";
   const slogan = config?.slogan || "Confira os imóveis disponíveis e o histórico de vendas deste corretor.";
   const whatsappGeneral = encodeURIComponent(`Olá ${brokerName}! Vi sua página pública e gostaria de mais informações.`);
