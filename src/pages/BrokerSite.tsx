@@ -8,6 +8,8 @@ import {
   Building2,
   Car,
   DollarSign,
+  FileDown,
+  FileText,
   Filter,
   Home,
   Mail,
@@ -21,11 +23,15 @@ import {
   Star,
   TrendingUp,
   TreePine,
+  Upload,
   Waves,
   X,
 } from "lucide-react";
 import { cn, toSlug } from "@/lib/utils";
 import { BrokerRatings } from "@/components/BrokerRatings";
+import { toast } from "sonner";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const formatCurrency = (v: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
 
@@ -50,6 +56,7 @@ interface BrokerPageConfig {
   footer_text: string | null;
   email_contact: string | null;
   bio: string | null;
+  tabela_url: string | null;
 }
 
 interface DBProperty {
@@ -156,6 +163,12 @@ export default function BrokerSite() {
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [brokerId, setBrokerId] = useState<string | null>(null);
   const [pageViews, setPageViews] = useState(0);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setCurrentUserId(data.user?.id || null));
+  }, []);
 
   useEffect(() => {
     if (!slug) return;
@@ -183,7 +196,7 @@ export default function BrokerSite() {
           .eq("ativo_site", true),
         supabase
           .from("site_config")
-          .select("site_title, slogan, cover_photo_url, profile_photo_url, logo_url, whatsapp, footer_text, email_contact, bio")
+          .select("site_title, slogan, cover_photo_url, profile_photo_url, logo_url, whatsapp, footer_text, email_contact, bio, tabela_url")
           .eq("config_type", "broker_page")
           .eq("owner_id", slug)
           .maybeSingle(),
@@ -284,6 +297,99 @@ export default function BrokerSite() {
     );
   }
 
+  const isOwner = !!currentUserId && !!brokerId && currentUserId === brokerId;
+
+  const handleUploadTabela = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !slug || !currentUserId) return;
+    try {
+      setUploading(true);
+      const ext = file.name.split(".").pop() || "pdf";
+      const path = `broker-tables/${currentUserId}/${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("tabelas").upload(path, file, { upsert: true, contentType: file.type });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from("tabelas").getPublicUrl(path);
+      const url = pub.publicUrl;
+
+      const { data: existing } = await supabase
+        .from("site_config")
+        .select("id")
+        .eq("config_type", "broker_page")
+        .eq("owner_id", slug)
+        .maybeSingle();
+
+      if (existing?.id) {
+        await (supabase.from("site_config") as any).update({ tabela_url: url }).eq("id", existing.id);
+      } else {
+        await (supabase.from("site_config") as any).insert({ config_type: "broker_page", owner_id: slug, tabela_url: url, site_title: brokerName });
+      }
+      setConfig((prev) => prev ? { ...prev, tabela_url: url } : { site_title: brokerName, slogan: "", cover_photo_url: null, profile_photo_url: null, logo_url: null, whatsapp: null, footer_text: null, email_contact: null, bio: null, tabela_url: url });
+      toast.success("Tabela completa enviada!");
+    } catch (err: any) {
+      toast.error("Erro ao enviar tabela: " + (err?.message || ""));
+    } finally {
+      setUploading(false);
+      event.target.value = "";
+    }
+  };
+
+  const loadImageAsDataURL = (url: string): Promise<string | null> =>
+    new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        try {
+          const canvas = document.createElement("canvas");
+          const size = 80;
+          canvas.width = size; canvas.height = size;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) return resolve(null);
+          ctx.drawImage(img, 0, 0, size, size);
+          resolve(canvas.toDataURL("image/jpeg", 0.7));
+        } catch { resolve(null); }
+      };
+      img.onerror = () => resolve(null);
+      img.src = url;
+    });
+
+  const handleGeneratePdf = async () => {
+    const allProps = [...properties, ...soldProperties];
+    if (allProps.length === 0) {
+      toast.info("Sem imóveis para exportar");
+      return;
+    }
+    toast.info("Gerando PDF...");
+    const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
+    doc.setFontSize(16);
+    doc.text(`Tabela de Imóveis - ${brokerName}`, 40, 40);
+    doc.setFontSize(9);
+    doc.text(`Total: ${allProps.length} imóveis`, 40, 56);
+
+    const images = await Promise.all(allProps.map((p) => p.imagens?.[0] ? loadImageAsDataURL(p.imagens[0]) : Promise.resolve(null)));
+
+    autoTable(doc, {
+      startY: 70,
+      head: [["Foto", "Título", "Tipo", "Cidade / Bairro", "Quartos", "Área", "Preço", "Status"]],
+      body: allProps.map((p) => ["", p.titulo, p.tipo, `${p.cidade}${p.bairro ? " / " + p.bairro : ""}`, String(p.quartos || "-"), p.area ? `${p.area}m²` : "-", formatCurrency(p.preco), p.status]),
+      styles: { fontSize: 8, cellPadding: 4, valign: "middle", minCellHeight: 50 },
+      headStyles: { fillColor: [30, 58, 95], textColor: 255, fontStyle: "bold" },
+      columnStyles: { 0: { cellWidth: 55 }, 1: { cellWidth: 160 }, 2: { cellWidth: 70 }, 3: { cellWidth: 140 }, 4: { cellWidth: 50, halign: "center" }, 5: { cellWidth: 55, halign: "center" }, 6: { cellWidth: 90, halign: "right" }, 7: { cellWidth: 65, halign: "center" } },
+      didDrawCell: (data) => {
+        if (data.section === "body" && data.column.index === 0) {
+          const img = images[data.row.index];
+          if (img) {
+            try {
+              doc.addImage(img, "JPEG", data.cell.x + 4, data.cell.y + 4, 42, 42);
+            } catch { /* ignore */ }
+          }
+        }
+      },
+    });
+
+    doc.save(`tabela-imoveis-${slug}.pdf`);
+    toast.success("PDF gerado!");
+  };
+
   const whatsapp = normalizePhone(config?.whatsapp || brokerRecord?.phone || "");
   const email = config?.email_contact || brokerRecord?.email || "";
   const creci = brokerRecord?.creci || "";
@@ -366,6 +472,20 @@ export default function BrokerSite() {
                   <Link to="/site" className="inline-flex items-center gap-2 rounded-2xl border border-white/20 bg-white/10 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-white/15">
                     <Building2 className="h-4 w-4" /> Ver vitrine completa
                   </Link>
+                  {config?.tabela_url && (
+                    <a href={config.tabela_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 px-5 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-105">
+                      <FileText className="h-4 w-4" /> Tabela completa
+                    </a>
+                  )}
+                  {isOwner && (
+                    <label className={cn("inline-flex cursor-pointer items-center gap-2 rounded-2xl border border-white/20 bg-white/10 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-white/15", uploading && "opacity-60 pointer-events-none")}>
+                      <Upload className="h-4 w-4" /> {uploading ? "Enviando..." : config?.tabela_url ? "Trocar tabela" : "Subir tabela completa"}
+                      <input type="file" accept="application/pdf,image/*" className="hidden" onChange={handleUploadTabela} />
+                    </label>
+                  )}
+                  <button onClick={handleGeneratePdf} className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 px-5 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-105">
+                    <FileDown className="h-4 w-4" /> Gerar PDF dos imóveis
+                  </button>
                 </div>
               </div>
             </div>
