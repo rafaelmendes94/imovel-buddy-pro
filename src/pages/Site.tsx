@@ -321,6 +321,44 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
   const [mapFilterPriceMax, setMapFilterPriceMax] = useState("");
   const { ready: gmapsReady } = useGoogleMapsLoader();
 
+  const clearMarker = useCallback((marker: any) => {
+    if (!marker) return;
+    if (typeof marker.setMap === "function") {
+      marker.setMap(null);
+      return;
+    }
+    if ("map" in marker) {
+      marker.map = null;
+    }
+  }, []);
+
+  const createMapMarker = useCallback((google: any, map: any, options: { position: any; title?: string; content?: HTMLElement }) => {
+    const AdvancedMarkerElement = google?.maps?.marker?.AdvancedMarkerElement;
+
+    if (AdvancedMarkerElement) {
+      return new AdvancedMarkerElement({
+        map,
+        position: options.position,
+        title: options.title,
+        ...(options.content ? { content: options.content } : {}),
+      });
+    }
+
+    return new google.maps.Marker({
+      map,
+      position: options.position,
+      title: options.title,
+      ...(options.content
+        ? {
+            icon: {
+              url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(options.content.innerHTML)}`,
+              anchor: new google.maps.Point(20, 40),
+            },
+          }
+        : {}),
+    });
+  }, []);
+
   const uniqueMapEmpreendimentos = [...new Set(mapProperties.map((p) => p.empreendimento).filter(Boolean))].sort();
   const uniqueMapTypes = [...new Set(mapProperties.map((p) => p.type).filter(Boolean))].sort();
 
@@ -401,7 +439,7 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
     if (!map || !google) return;
 
     // Clear previous markers
-    markersRef.current.forEach((m) => m.setMap(null));
+    markersRef.current.forEach(clearMarker);
     markersRef.current = [];
 
     const colors: Record<string, string> = { Apartamento: "#2563eb", Casa: "#3b82f6", Terreno: "#22c55e", Comercial: "#8b5cf6" };
@@ -426,7 +464,7 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
       const whatsMsg = encodeURIComponent(`Olá! Tenho interesse no imóvel: ${p.title}`);
 
       const pinDiv = document.createElement("div");
-      pinDiv.innerHTML = `
+      const pinMarkup = `
         <div style="position:relative;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;">
           <div style="background:white;color:${color};border:1.5px solid ${color};border-radius:999px;padding:2px 8px;font-size:11px;font-weight:800;font-family:system-ui,-apple-system,sans-serif;box-shadow:0 2px 6px rgba(0,0,0,0.18);white-space:nowrap;letter-spacing:-0.2px;">${shortPrice(p.price)}</div>
           <div style="position:relative;">
@@ -434,10 +472,10 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
             <div style="width:8px;height:8px;background:${color};transform:rotate(45deg);margin:-5px auto 0;box-shadow:1px 1px 3px rgba(0,0,0,0.25);"></div>
           </div>
         </div>`;
+      pinDiv.innerHTML = pinMarkup;
 
-      const marker = new google.maps.marker.AdvancedMarkerElement({
+      const marker = createMapMarker(google, map, {
         position: { lat: p.lat, lng: p.lng },
-        map,
         content: pinDiv,
         title: p.title,
       });
@@ -478,7 +516,7 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
       map.setCenter({ lat: validProps[0].lat, lng: validProps[0].lng });
       map.setZoom(15);
     }
-  }, [filteredMapProperties, gmapsReady]);
+  }, [filteredMapProperties, gmapsReady, clearMarker, createMapMarker]);
 
   // Geocode address search and pan map
   useEffect(() => {
@@ -488,7 +526,7 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
     if (!map || !geocoder || !google) return;
 
     if (searchMarkerRef.current) {
-      searchMarkerRef.current.setMap(null);
+      clearMarker(searchMarkerRef.current);
       searchMarkerRef.current = null;
     }
     if (!debouncedAddress || debouncedAddress.length < 3) return;
@@ -501,14 +539,17 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
           map.panTo(loc);
           map.setZoom(15);
           const dot = document.createElement("div");
-          dot.innerHTML = `<div style="width:18px;height:18px;border-radius:50%;background:#3b82f6;border:3px solid white;box-shadow:0 0 0 4px rgba(59,130,246,0.35);"></div>`;
-          searchMarkerRef.current = new google.maps.marker.AdvancedMarkerElement({
-            position: loc, map, content: dot, title: results[0].formatted_address,
+          dot.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="9" fill="#3b82f6" stroke="white" stroke-width="4"/><circle cx="20" cy="20" r="16" fill="#3b82f6" fill-opacity="0.22"/></svg>`;
+          searchMarkerRef.current = createMapMarker(google, map, {
+            position: loc,
+            map,
+            content: dot,
+            title: results[0].formatted_address,
           });
         }
       }
     );
-  }, [debouncedAddress]);
+  }, [debouncedAddress, clearMarker, createMapMarker]);
 
   const mapHasFilters = mapFilterType || mapFilterEmpreendimento || mapFilterAddress || mapFilterPriceMax;
 
