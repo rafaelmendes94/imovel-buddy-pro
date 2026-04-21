@@ -1742,6 +1742,22 @@ export type Database = {
         Args: { _agency_user_id: string; _broker_email: string }
         Returns: string
       }
+      process_subscription_lifecycle: {
+        Args: never
+        Returns: {
+          action: string
+          subscription_id: string
+          user_id: string
+        }[]
+      }
+      simulate_payment_approval: { Args: { _user_id: string }; Returns: string }
+      simulate_subscription_status: {
+        Args: {
+          _new_status: Database["public"]["Enums"]["subscription_status"]
+          _user_id: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "super_admin" | "admin_staff" | "broker"

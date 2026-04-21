@@ -42,9 +42,21 @@ export function AuthGuard({ children, requiredRoles, allowBlocked = false, allow
     return <Navigate to="/escolher-plano" replace />;
   }
 
-  // pending_payment ou blocked → libera só assinatura/escolher-plano
+  // Trial expirado conta como pending_payment
   const status = subscription?.status;
-  if (!isStaff && (status === "pending_payment" || isBlocked) && !allowBlocked && !allowNoSubscription) {
+  const trialExpired =
+    status === "trial" &&
+    subscription?.trial_ends_at &&
+    new Date(subscription.trial_ends_at).getTime() < Date.now();
+
+  // pending_payment, blocked, cancelled ou trial expirado → libera só assinatura
+  const needsPayment =
+    status === "pending_payment" ||
+    status === "cancelled" ||
+    isBlocked ||
+    trialExpired;
+
+  if (!isStaff && needsPayment && !allowBlocked && !allowNoSubscription) {
     return <Navigate to="/painel/assinatura" replace />;
   }
 

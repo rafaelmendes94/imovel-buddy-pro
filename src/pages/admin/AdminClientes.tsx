@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Ban, PlayCircle, Pause } from "lucide-react";
+import { Plus, Ban, PlayCircle, Pause, CheckCircle2, Clock, RefreshCw } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -110,11 +110,43 @@ export default function AdminClientes() {
     fetchData();
   };
 
+  const simulatePayment = async (userId: string) => {
+    const { error } = await supabase.rpc("simulate_payment_approval", { _user_id: userId });
+    if (error) {
+      toast({ title: "Erro", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Pagamento simulado", description: "Assinatura ativada por 30 dias." });
+    fetchData();
+  };
+
+  const expireTrial = async (subId: string) => {
+    await supabase.from("subscriptions")
+      .update({ trial_ends_at: new Date(Date.now() - 86400000).toISOString() })
+      .eq("id", subId);
+    toast({ title: "Trial expirado (data forçada para ontem)" });
+    fetchData();
+  };
+
+  const runLifecycle = async () => {
+    const { error } = await supabase.rpc("process_subscription_lifecycle");
+    if (error) {
+      toast({ title: "Erro", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Ciclo de vida processado", description: "Trials expirados e bloqueios aplicados." });
+    fetchData();
+  };
+
   return (
     <AdminLayout>
       <div className="p-6 space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-foreground">Clientes (Corretores)</h1>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={runLifecycle} title="Processa trials expirados, bloqueios e cancelamentos agora">
+              <RefreshCw className="w-4 h-4 mr-2" />Rodar ciclo agora
+            </Button>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <Button><Plus className="w-4 h-4 mr-2" />Novo Cliente</Button>
@@ -143,6 +175,7 @@ export default function AdminClientes() {
               </div>
             </DialogContent>
           </Dialog>
+          </div>
         </div>
 
         {loading ? (
@@ -166,18 +199,26 @@ export default function AdminClientes() {
                       {(c.subscription as any).plans?.name || "Sem plano"}
                     </span>
                     <div className="flex gap-1">
+                      <Button size="sm" variant="ghost" title="Simular pagamento aprovado" onClick={() => simulatePayment(c.user_id)}>
+                        <CheckCircle2 className="w-4 h-4 text-success" />
+                      </Button>
+                      {c.subscription.status === "trial" && (
+                        <Button size="sm" variant="ghost" title="Forçar trial expirado" onClick={() => expireTrial(c.subscription.id)}>
+                          <Clock className="w-4 h-4 text-warning" />
+                        </Button>
+                      )}
                       {c.subscription.status !== "active" && (
-                        <Button size="sm" variant="ghost" onClick={() => updateSubscriptionStatus(c.subscription.id, "active")}>
+                        <Button size="sm" variant="ghost" title="Marcar ativo" onClick={() => updateSubscriptionStatus(c.subscription.id, "active")}>
                           <PlayCircle className="w-4 h-4 text-success" />
                         </Button>
                       )}
                       {c.subscription.status !== "blocked" && (
-                        <Button size="sm" variant="ghost" onClick={() => updateSubscriptionStatus(c.subscription.id, "blocked")}>
+                        <Button size="sm" variant="ghost" title="Bloquear" onClick={() => updateSubscriptionStatus(c.subscription.id, "blocked")}>
                           <Ban className="w-4 h-4 text-destructive" />
                         </Button>
                       )}
                       {c.subscription.status !== "cancelled" && (
-                        <Button size="sm" variant="ghost" onClick={() => updateSubscriptionStatus(c.subscription.id, "cancelled")}>
+                        <Button size="sm" variant="ghost" title="Cancelar" onClick={() => updateSubscriptionStatus(c.subscription.id, "cancelled")}>
                           <Pause className="w-4 h-4 text-muted-foreground" />
                         </Button>
                       )}
