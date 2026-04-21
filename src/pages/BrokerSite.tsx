@@ -163,6 +163,12 @@ export default function BrokerSite() {
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [brokerId, setBrokerId] = useState<string | null>(null);
   const [pageViews, setPageViews] = useState(0);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setCurrentUserId(data.user?.id || null));
+  }, []);
 
   useEffect(() => {
     if (!slug) return;
