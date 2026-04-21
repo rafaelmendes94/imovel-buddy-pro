@@ -1360,6 +1360,7 @@ export type Database = {
           profile_photo_url: string | null
           site_title: string
           slogan: string
+          tabela_url: string | null
           title_color: string
           updated_at: string
           whatsapp: string | null
@@ -1381,6 +1382,7 @@ export type Database = {
           profile_photo_url?: string | null
           site_title?: string
           slogan?: string
+          tabela_url?: string | null
           title_color?: string
           updated_at?: string
           whatsapp?: string | null
@@ -1402,6 +1404,7 @@ export type Database = {
           profile_photo_url?: string | null
           site_title?: string
           slogan?: string
+          tabela_url?: string | null
           title_color?: string
           updated_at?: string
           whatsapp?: string | null
