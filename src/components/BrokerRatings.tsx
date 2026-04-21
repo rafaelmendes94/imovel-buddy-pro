@@ -39,7 +39,6 @@ export function BrokerRatings({ brokerId, brokerName }: { brokerId: string | nul
   });
   const [comentario, setComentario] = useState("");
 
-  const isBroker = role === "broker";
   const canRate = !!user && isBroker && !!brokerId && user.id !== brokerId;
   const myRating = ratings.find((r) => r.rater_id === user?.id);
 
