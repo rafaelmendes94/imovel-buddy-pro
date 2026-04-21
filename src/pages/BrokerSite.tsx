@@ -375,9 +375,58 @@ export default function BrokerSite() {
               <span className="inline-flex items-center gap-2 rounded-full bg-muted px-3 py-2 text-sm font-medium text-muted-foreground"><TreePine className="h-4 w-4" /> {lots} terrenos</span>
             </div>
           </div>
+
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <Filter className="h-3 w-3" /> Filtros:
+            </span>
+            <button
+              onClick={() => setTipoFilter("")}
+              className={cn(
+                "rounded-full px-3 py-1 text-xs font-semibold transition-colors",
+                !tipoFilter ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80",
+              )}
+            >
+              Todos os tipos
+            </button>
+            {tipos.map((t) => (
+              <button
+                key={t}
+                onClick={() => setTipoFilter(t)}
+                className={cn(
+                  "rounded-full px-3 py-1 text-xs font-semibold transition-colors",
+                  tipoFilter === t ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80",
+                )}
+              >
+                {t}
+              </button>
+            ))}
+            <span className="mx-2 h-4 w-px bg-border" />
+            <button
+              onClick={() => setStatusFilter("")}
+              className={cn(
+                "rounded-full px-3 py-1 text-xs font-semibold transition-colors",
+                !statusFilter ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80",
+              )}
+            >
+              Qualquer status
+            </button>
+            {statusList.map((s) => (
+              <button
+                key={s}
+                onClick={() => setStatusFilter(s)}
+                className={cn(
+                  "rounded-full px-3 py-1 text-xs font-semibold transition-colors",
+                  statusFilter === s ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80",
+                )}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
         </section>
 
-        {!searchTerm && featuredProperties.length > 0 && (
+        {!searchTerm && !tipoFilter && !statusFilter && featuredProperties.length > 0 && (
           <section className="container pb-6">
             <div className="mb-6 space-y-2">
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">Seleção especial</p>
