@@ -43,9 +43,11 @@ interface BrokerPageConfig {
   slogan: string;
   cover_photo_url: string | null;
   profile_photo_url: string | null;
+  logo_url: string | null;
   whatsapp: string | null;
   footer_text: string | null;
   email_contact: string | null;
+  bio: string | null;
 }
 
 interface DBProperty {
@@ -167,7 +169,7 @@ export default function BrokerSite() {
           .eq("ativo_site", true),
         supabase
           .from("site_config")
-          .select("site_title, slogan, cover_photo_url, profile_photo_url, whatsapp, footer_text, email_contact")
+          .select("site_title, slogan, cover_photo_url, profile_photo_url, logo_url, whatsapp, footer_text, email_contact, bio")
           .eq("config_type", "broker_page")
           .eq("owner_id", slug)
           .maybeSingle(),
@@ -290,9 +292,9 @@ export default function BrokerSite() {
           <div className="absolute inset-0 bg-gradient-to-br from-foreground/90 via-foreground/75 to-primary/70" aria-hidden />
 
           <div className="container relative py-16 md:py-24">
-            <div className="grid gap-8 lg:grid-cols-[220px,1fr] lg:items-end">
+            <div className="grid gap-8 lg:grid-cols-[220px,1fr] lg:items-start">
               <div className="mx-auto lg:mx-0">
-                <div className="relative">
+                <div className="relative animate-scale-in">
                   <img src={avatarUrl} alt={brokerName} className="h-40 w-40 rounded-full border-4 border-background/80 object-cover shadow-2xl md:h-52 md:w-52" />
                   <span className="absolute bottom-3 right-3 flex h-12 w-12 items-center justify-center rounded-full bg-accent text-accent-foreground shadow-xl">
                     <Star className="h-5 w-5" />
@@ -300,13 +302,24 @@ export default function BrokerSite() {
                 </div>
               </div>
 
-              <div className="space-y-6 text-center lg:text-left">
+              <div className="space-y-6 text-center lg:text-left animate-fade-in">
                 <div className="space-y-4">
                   <p className="inline-flex items-center rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-white/80">
                     {eyebrow}
                   </p>
-                  <h1 className="text-4xl font-black tracking-tight text-white md:text-6xl">{brokerName}</h1>
-                  <p className="max-w-3xl text-base text-white/80 md:text-xl">{slogan}</p>
+                  <div className="flex flex-col items-center gap-4 lg:flex-row lg:items-center lg:gap-5">
+                    {config?.logo_url && (
+                      <img src={config.logo_url} alt="Logo" className="h-16 w-16 rounded-2xl border border-white/20 bg-white/10 object-contain p-1.5 shadow-xl backdrop-blur md:h-20 md:w-20" />
+                    )}
+                    <h1 className="text-4xl font-black tracking-tight text-white md:text-6xl">{brokerName}</h1>
+                  </div>
+                  {config?.bio ? (
+                    <p className="max-w-3xl whitespace-pre-line rounded-2xl border border-white/10 bg-white/5 p-4 text-base leading-relaxed text-white/90 backdrop-blur-sm md:text-lg">
+                      {config.bio}
+                    </p>
+                  ) : (
+                    <p className="max-w-3xl text-base text-white/80 md:text-xl">{slogan}</p>
+                  )}
                   <div className="flex flex-wrap items-center justify-center gap-3 text-sm text-white/75 lg:justify-start">
                     {creci && <span className="rounded-full bg-white/10 px-3 py-1 font-semibold text-white/85">CRECI {creci}</span>}
                     {email && (
@@ -319,7 +332,7 @@ export default function BrokerSite() {
 
                 <div className="flex flex-wrap justify-center gap-3 lg:justify-start">
                   {whatsapp && (
-                    <a href={`https://wa.me/${whatsapp}?text=${whatsappGeneral}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-2xl bg-accent px-5 py-3 text-sm font-bold text-accent-foreground transition-opacity hover:opacity-90">
+                    <a href={`https://wa.me/${whatsapp}?text=${whatsappGeneral}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-2xl bg-accent px-5 py-3 text-sm font-bold text-accent-foreground transition-all hover:scale-105 hover:opacity-90">
                       <Phone className="h-4 w-4" /> Chamar no WhatsApp
                     </a>
                   )}
@@ -327,27 +340,41 @@ export default function BrokerSite() {
                     <Building2 className="h-4 w-4" /> Ver vitrine completa
                   </Link>
                 </div>
-
-                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
-                  {[
-                    { label: "Imóveis em carteira", value: properties.length, icon: Building2 },
-                    { label: "VGV em carteira", value: formatCurrency(totalValue), icon: DollarSign },
-                    { label: "Ticket médio", value: formatCurrency(ticketMedio), icon: TrendingUp },
-                    { label: "Comissão estimada", value: formatCurrency(totalComissao), icon: Star },
-                    { label: "Vendas públicas", value: soldProperties.length, icon: Home },
-                    { label: "VGV vendido", value: formatCurrency(soldValue), icon: DollarSign },
-                  ].map((metric) => (
-                    <div key={metric.label} className="rounded-3xl border border-white/10 bg-white/10 p-4 backdrop-blur-sm">
-                      <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10 text-white">
-                        <metric.icon className="h-5 w-5" />
-                      </div>
-                      <p className="text-xl font-black text-white">{metric.value}</p>
-                      <p className="text-[10px] uppercase tracking-[0.2em] text-white/60">{metric.label}</p>
-                    </div>
-                  ))}
-                </div>
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* Animated vibrant metric cards */}
+        <section className="container -mt-10 relative z-10 pb-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+            {[
+              { label: "Imóveis em carteira", value: properties.length, icon: Building2, gradient: "from-sky-500 via-blue-600 to-indigo-700" },
+              { label: "VGV em carteira", value: formatCurrency(totalValue), icon: DollarSign, gradient: "from-emerald-400 via-teal-500 to-cyan-600" },
+              { label: "Ticket médio", value: formatCurrency(ticketMedio), icon: TrendingUp, gradient: "from-fuchsia-500 via-purple-600 to-indigo-700" },
+              { label: "Comissão estimada", value: formatCurrency(totalComissao), icon: Star, gradient: "from-amber-400 via-orange-500 to-rose-600" },
+              { label: "Vendas públicas", value: soldProperties.length, icon: Home, gradient: "from-pink-500 via-rose-500 to-red-600" },
+              { label: "VGV vendido", value: formatCurrency(soldValue), icon: DollarSign, gradient: "from-lime-400 via-green-500 to-emerald-700" },
+            ].map((metric, idx) => (
+              <div
+                key={metric.label}
+                className={cn(
+                  "group relative overflow-hidden rounded-3xl bg-gradient-to-br p-5 text-white shadow-xl transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl animate-fade-in",
+                  metric.gradient,
+                )}
+                style={{ animationDelay: `${idx * 80}ms`, animationFillMode: "both" }}
+              >
+                <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/15 blur-2xl transition-transform duration-700 group-hover:scale-150" />
+                <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/0 to-white/20 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                <div className="relative">
+                  <div className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white/25 backdrop-blur-sm transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6">
+                    <metric.icon className="h-5 w-5" />
+                  </div>
+                  <p className="text-2xl font-black drop-shadow-sm">{metric.value}</p>
+                  <p className="mt-1 text-[10px] uppercase tracking-[0.2em] text-white/80">{metric.label}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </section>
 
