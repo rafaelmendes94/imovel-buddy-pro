@@ -47,6 +47,7 @@ interface BrokerPageConfig {
 
 interface DBProperty {
   id: string;
+  user_id: string;
   titulo: string;
   endereco: string;
   cidade: string;
@@ -57,6 +58,7 @@ interface DBProperty {
   quartos: number;
   banheiros: number;
   vagas: number;
+  comissao: number | null;
   imagens: string[] | null;
   vista_mar: boolean;
   decorado: boolean;
