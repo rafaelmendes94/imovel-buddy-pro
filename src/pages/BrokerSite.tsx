@@ -15,6 +15,7 @@ import {
   Paintbrush,
   Phone,
   Eye,
+  Clock,
   Ruler,
   Search,
   Star,
@@ -77,6 +78,8 @@ interface DBProperty {
   lote: string | null;
   bairro: string | null;
   corretor_nome: string | null;
+  created_at: string;
+  data_venda: string | null;
 }
 
 function PropertyCard({ p, brokerName, whatsapp }: { p: DBProperty; brokerName: string; whatsapp: string }) {
@@ -176,7 +179,7 @@ export default function BrokerSite() {
           .eq("status", "active"),
         supabase
           .from("imoveis")
-          .select("id, user_id, titulo, endereco, cidade, tipo, status, preco, area, quartos, banheiros, vagas, comissao, imagens, vista_mar, decorado, aceita_permuta, condicoes_pagamento, empreendimento, unidade, box, quadra, lote, bairro, corretor_nome")
+          .select("id, user_id, titulo, endereco, cidade, tipo, status, preco, area, quartos, banheiros, vagas, comissao, imagens, vista_mar, decorado, aceita_permuta, condicoes_pagamento, empreendimento, unidade, box, quadra, lote, bairro, corretor_nome, created_at, data_venda")
           .eq("ativo_site", true),
         supabase
           .from("site_config")
@@ -244,6 +247,19 @@ export default function BrokerSite() {
     () => properties.reduce((sum, p) => sum + (Number(p.preco) * (Number(p.comissao) || 0)) / 100, 0),
     [properties],
   );
+  const tempoMedioVenda = useMemo(() => {
+    const days = soldProperties
+      .map((p) => {
+        if (!p.data_venda || !p.created_at) return null;
+        const start = new Date(p.created_at).getTime();
+        const end = new Date(p.data_venda).getTime();
+        if (isNaN(start) || isNaN(end) || end < start) return null;
+        return Math.round((end - start) / (1000 * 60 * 60 * 24));
+      })
+      .filter((d): d is number => d !== null);
+    if (days.length === 0) return 0;
+    return Math.round(days.reduce((a, b) => a + b, 0) / days.length);
+  }, [soldProperties]);
   const tipos = useMemo(() => Array.from(new Set(properties.map((p) => p.tipo).filter(Boolean))), [properties]);
   const statusList = useMemo(() => Array.from(new Set(properties.map((p) => p.status).filter(Boolean))), [properties]);
 
@@ -358,32 +374,33 @@ export default function BrokerSite() {
 
         {/* Animated vibrant metric cards */}
         <section className="container -mt-10 relative z-10 pb-4">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-7">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-8">
             {[
-              { label: "Imóveis em carteira", value: properties.length, icon: Building2, gradient: "from-sky-500 via-blue-600 to-indigo-700" },
-              { label: "VGV em carteira", value: formatCurrency(totalValue), icon: DollarSign, gradient: "from-emerald-400 via-teal-500 to-cyan-600" },
+              { label: "Imóveis", value: properties.length, icon: Building2, gradient: "from-sky-500 via-blue-600 to-indigo-700" },
+              { label: "VGV carteira", value: formatCurrency(totalValue), icon: DollarSign, gradient: "from-emerald-400 via-teal-500 to-cyan-600" },
               { label: "Ticket médio", value: formatCurrency(ticketMedio), icon: TrendingUp, gradient: "from-fuchsia-500 via-purple-600 to-indigo-700" },
-              { label: "Comissão estimada", value: formatCurrency(totalComissao), icon: Star, gradient: "from-amber-400 via-orange-500 to-rose-600" },
-              { label: "Vendas públicas", value: soldProperties.length, icon: Home, gradient: "from-pink-500 via-rose-500 to-red-600" },
+              { label: "Comissão est.", value: formatCurrency(totalComissao), icon: Star, gradient: "from-amber-400 via-orange-500 to-rose-600" },
+              { label: "Vendas", value: soldProperties.length, icon: Home, gradient: "from-pink-500 via-rose-500 to-red-600" },
               { label: "VGV vendido", value: formatCurrency(soldValue), icon: DollarSign, gradient: "from-lime-400 via-green-500 to-emerald-700" },
-              { label: "Visualizações da página", value: pageViews.toLocaleString("pt-BR"), icon: Eye, gradient: "from-violet-500 via-purple-600 to-fuchsia-700" },
+              { label: "Tempo médio venda", value: tempoMedioVenda > 0 ? `${tempoMedioVenda}d` : "—", icon: Clock, gradient: "from-cyan-400 via-sky-500 to-blue-700" },
+              { label: "Visualizações", value: pageViews.toLocaleString("pt-BR"), icon: Eye, gradient: "from-violet-500 via-purple-600 to-fuchsia-700" },
             ].map((metric, idx) => (
               <div
                 key={metric.label}
                 className={cn(
-                  "group relative overflow-hidden rounded-3xl bg-gradient-to-br p-5 text-white shadow-xl transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl animate-fade-in",
+                  "group relative overflow-hidden rounded-2xl bg-gradient-to-br p-3 text-white shadow-lg transition-all duration-500 hover:-translate-y-1.5 hover:shadow-2xl animate-fade-in",
                   metric.gradient,
                 )}
-                style={{ animationDelay: `${idx * 80}ms`, animationFillMode: "both" }}
+                style={{ animationDelay: `${idx * 70}ms`, animationFillMode: "both" }}
               >
-                <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/15 blur-2xl transition-transform duration-700 group-hover:scale-150" />
+                <div className="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-white/15 blur-2xl transition-transform duration-700 group-hover:scale-150" />
                 <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/0 to-white/20 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
                 <div className="relative">
-                  <div className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white/25 backdrop-blur-sm transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6">
-                    <metric.icon className="h-5 w-5" />
+                  <div className="mb-2 inline-flex h-8 w-8 items-center justify-center rounded-xl bg-white/25 backdrop-blur-sm transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6">
+                    <metric.icon className="h-4 w-4" />
                   </div>
-                  <p className="text-2xl font-black drop-shadow-sm">{metric.value}</p>
-                  <p className="mt-1 text-[10px] uppercase tracking-[0.2em] text-white/80">{metric.label}</p>
+                  <p className="text-base font-black drop-shadow-sm leading-tight truncate">{metric.value}</p>
+                  <p className="mt-1 text-[9px] uppercase tracking-[0.15em] text-white/80 leading-tight">{metric.label}</p>
                 </div>
               </div>
             ))}
