@@ -95,28 +95,42 @@ export function PropertyMap({ properties, onSelectProperty }: PropertyMapProps) 
 
   useEffect(() => {
     const maps = (window as any).google?.maps;
-    if (!ready || !mapRef.current || !maps?.Map) return;
+    if (!ready || !mapRef.current || !maps) return;
 
-    const center = properties.length > 0
-      ? { lat: properties[0].lat, lng: properties[0].lng }
-      : { lat: -23.55, lng: -46.63 };
+    let cancelled = false;
 
-    const map = new maps.Map(mapRef.current, {
-      center,
-      zoom: 11,
-      mapId: "PROPERTY_MAP",
-      zoomControl: true,
-      streetViewControl: false,
-      mapTypeControl: false,
-      fullscreenControl: false,
-    });
-    mapInstanceRef.current = map;
-    infoWindowRef.current = new maps.InfoWindow();
+    (async () => {
+      const MapCtor =
+        maps.Map ||
+        (typeof maps.importLibrary === "function"
+          ? (await maps.importLibrary("maps")).Map
+          : null);
+      if (!MapCtor || cancelled || !mapRef.current) return;
 
-    markersRef.current.forEach(clearMarker);
-    markersRef.current = [];
+      if (typeof maps.importLibrary === "function") {
+        await maps.importLibrary("marker").catch(() => null);
+      }
 
-    properties.forEach((property) => {
+      const center = properties.length > 0
+        ? { lat: properties[0].lat, lng: properties[0].lng }
+        : { lat: -23.55, lng: -46.63 };
+
+      const map = new MapCtor(mapRef.current, {
+        center,
+        zoom: 11,
+        mapId: "PROPERTY_MAP",
+        zoomControl: true,
+        streetViewControl: false,
+        mapTypeControl: false,
+        fullscreenControl: false,
+      });
+      mapInstanceRef.current = map;
+      infoWindowRef.current = new maps.InfoWindow();
+
+      markersRef.current.forEach(clearMarker);
+      markersRef.current = [];
+
+      properties.forEach((property) => {
       const cfg = typeConfig[property.type] || defaultCfg;
       const shortPrice = formatShortPrice(property.price);
       const marker = createMarker(maps, map, property, cfg, shortPrice);
