@@ -29,9 +29,9 @@ import {
 } from "lucide-react";
 import { cn, toSlug } from "@/lib/utils";
 import { BrokerRatings } from "@/components/BrokerRatings";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+import { generateBrokerCatalogPdf } from "@/utils/generateBrokerCatalogPdf";
 
 const formatCurrency = (v: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
 
