@@ -712,7 +712,17 @@ export default function BrokerSite() {
             </div>
           </section>
         )}
-        <BrokerRatings brokerId={brokerId} brokerName={brokerName} />
+
+        <Dialog open={ratingModalOpen} onOpenChange={setRatingModalOpen}>
+          <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto p-0">
+            <DialogHeader className="border-b border-border px-6 pt-6 pb-4">
+              <DialogTitle className="text-2xl font-black">Avaliações de {brokerName}</DialogTitle>
+            </DialogHeader>
+            <div className="px-2 pb-4">
+              <BrokerRatings brokerId={brokerId} brokerName={brokerName} />
+            </div>
+          </DialogContent>
+        </Dialog>
       </main>
 
       <footer className="border-t border-border bg-card">
