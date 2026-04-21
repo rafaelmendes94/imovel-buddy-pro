@@ -390,6 +390,7 @@ export default function BrokerSite() {
     toast.success("PDF gerado!");
   };
 
+  const whatsapp = normalizePhone(config?.whatsapp || brokerRecord?.phone || "");
   const email = config?.email_contact || brokerRecord?.email || "";
   const creci = brokerRecord?.creci || "";
   const avatarUrl = config?.profile_photo_url || getAvatarFallback(brokerName);
