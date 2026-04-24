@@ -130,7 +130,7 @@ export function generateReportPdf(data: ReportData) {
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       .map(s => [
         new Date(s.date).toLocaleDateString("pt-BR"),
-        s.title || "—",
+        s.propertyTitle || "—",
         s.city || "—",
         s.type || "—",
         s.broker || "—",
