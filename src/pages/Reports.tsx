@@ -324,7 +324,26 @@ export default function Reports() {
             <button onClick={() => setManualOpen(true)} className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-background text-foreground text-sm font-medium hover:bg-muted transition-colors">
               <Database className="w-4 h-4" /> Agenciamentos
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity">
+            <button
+              onClick={() => {
+                try {
+                  generateReportPdf({
+                    filtered, vgvYear, vgvMonth, vgvWeek, totalSalesYear, avgTicket,
+                    currentYear, rankings,
+                    filters: {
+                      city: filterCity, type: filterType, segment: filterSegment,
+                      seaView: filterSeaView, period: filterPeriod,
+                      month: filterMonth, year: filterYear,
+                    },
+                  });
+                  toast.success("Relatório PDF gerado com sucesso!");
+                } catch (e) {
+                  console.error(e);
+                  toast.error("Erro ao gerar PDF");
+                }
+              }}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity"
+            >
               <Download className="w-4 h-4" /> Exportar PDF
             </button>
           </div>
