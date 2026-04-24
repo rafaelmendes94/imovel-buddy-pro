@@ -20,6 +20,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ManualSalesDialog } from "@/components/relatorios/ManualSalesDialog";
 import { AgenciamentosBI } from "@/components/relatorios/AgenciamentosBI";
 import { Database, Briefcase } from "lucide-react";
+import { generateReportPdf } from "@/utils/generateReportPdf";
+import { toast } from "sonner";
 
 // ─── Constants ───
 const SEGMENT_COLORS: Record<string, string> = {
