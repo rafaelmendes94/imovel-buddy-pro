@@ -152,5 +152,18 @@ export function generateReportPdf(data: ReportData) {
     doc.text("MV Broker Connect — Relatório de Vendas", margin, doc.internal.pageSize.getHeight() - 6);
   }
 
-  doc.save(`relatorio-vendas-${new Date().toISOString().slice(0, 10)}.pdf`);
+  // Force download via blob URL (mais compatível com sandbox/iframes do que doc.save)
+  const filename = `relatorio-vendas-${new Date().toISOString().slice(0, 10)}.pdf`;
+  const blob = doc.output("blob");
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.rel = "noopener";
+  document.body.appendChild(link);
+  link.click();
+  setTimeout(() => {
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }, 1000);
 }
