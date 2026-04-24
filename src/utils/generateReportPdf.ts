@@ -46,23 +46,33 @@ interface ReportData {
   };
 }
 
-export function generateReportPdf(data: ReportData) {
+export async function generateReportPdf(data: ReportData) {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 14;
   let y = 14;
 
-  // Header
-  doc.setFillColor(30, 58, 95);
-  doc.rect(0, 0, pageWidth, 24, "F");
+  // Header com gradiente simulado
+  doc.setFillColor(20, 40, 80);
+  doc.rect(0, 0, pageWidth, 28, "F");
+  doc.setFillColor(30, 58, 120);
+  doc.rect(0, 22, pageWidth, 6, "F");
+
+  // Logo
+  const logoData = await loadImageAsDataUrl(logoUrl);
+  if (logoData) {
+    try { doc.addImage(logoData, "PNG", margin, 5, 18, 18); } catch {}
+  }
+
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(16);
   doc.setFont("helvetica", "bold");
-  doc.text("Relatório de Vendas", margin, 11);
+  doc.text("Relatório de Vendas", margin + 22, 13);
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
-  doc.text(`Gerado em ${new Date().toLocaleString("pt-BR")}`, margin, 18);
-  y = 32;
+  doc.text("MV Broker Connect", margin + 22, 19);
+  doc.text(`Gerado em ${new Date().toLocaleString("pt-BR")}`, pageWidth - margin, 13, { align: "right" });
+  y = 36;
 
   // Filtros aplicados
   const fp: string[] = [];
