@@ -129,11 +129,13 @@ export default function Parceiros() {
               const Icon = categoryIcons[category] || Building2;
               return (
                 <section key={category}>
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center", categoryColors[category] || "bg-blue-100 text-blue-800")}>
-                      <Icon className="w-4 h-4" />
+                  <div className="flex items-center gap-2.5 mb-4">
+                    <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-gradient-to-br from-blue-700 via-blue-600 to-blue-500 text-white shadow-md shadow-blue-600/30 ring-1 ring-blue-400/30">
+                      <Icon className="w-4.5 h-4.5" strokeWidth={2.5} />
                     </div>
-                    <h2 className="text-lg font-bold text-foreground">{category}</h2>
+                    <h2 className="text-lg font-extrabold bg-gradient-to-r from-blue-800 via-blue-600 to-blue-500 bg-clip-text text-transparent tracking-tight">
+                      {category}
+                    </h2>
                     <span className="text-xs text-muted-foreground ml-1">({partners.length})</span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
