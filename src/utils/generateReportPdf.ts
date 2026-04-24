@@ -1,0 +1,156 @@
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { formatCurrency } from "@/data/mockData";
+import type { RealSaleRecord } from "@/hooks/useReportData";
+
+interface RankRow { name: string; count: number; vgv: number }
+
+interface ReportData {
+  filtered: RealSaleRecord[];
+  vgvYear: number;
+  vgvMonth: number;
+  vgvWeek: number;
+  totalSalesYear: number;
+  avgTicket: number;
+  currentYear: number;
+  rankings: {
+    byType: RankRow[];
+    bySegment: RankRow[];
+    byCity: RankRow[];
+    byBroker: RankRow[];
+    byOwner: RankRow[];
+    byNeighborhood: RankRow[];
+    byEmpreendimento: RankRow[];
+    byEdificio: RankRow[];
+    byCondominio: RankRow[];
+  };
+  filters: {
+    city: string; type: string; segment: string; seaView: string;
+    period: string; month: number | null; year: number | null;
+  };
+}
+
+export function generateReportPdf(data: ReportData) {
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const margin = 14;
+  let y = 14;
+
+  // Header
+  doc.setFillColor(30, 58, 95);
+  doc.rect(0, 0, pageWidth, 24, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(16);
+  doc.setFont("helvetica", "bold");
+  doc.text("Relatório de Vendas", margin, 11);
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.text(`Gerado em ${new Date().toLocaleString("pt-BR")}`, margin, 18);
+  y = 32;
+
+  // Filtros aplicados
+  const fp: string[] = [];
+  if (data.filters.city !== "Todas") fp.push(`Cidade: ${data.filters.city}`);
+  if (data.filters.type !== "Todos") fp.push(`Tipo: ${data.filters.type}`);
+  if (data.filters.segment !== "Todos") fp.push(`Segmento: ${data.filters.segment}`);
+  if (data.filters.seaView !== "Todos") fp.push(`Vista mar: ${data.filters.seaView}`);
+  if (data.filters.period !== "Todos") fp.push(`Período: ${data.filters.period}`);
+  if (data.filters.year) fp.push(`Ano: ${data.filters.year}`);
+  doc.setTextColor(80, 80, 80);
+  doc.setFontSize(9);
+  doc.text(fp.length ? `Filtros: ${fp.join(" | ")}` : "Sem filtros aplicados", margin, y);
+  y += 6;
+
+  // Métricas principais
+  doc.setTextColor(20, 20, 20);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.text("Indicadores", margin, y);
+  y += 2;
+
+  autoTable(doc, {
+    startY: y + 1,
+    theme: "grid",
+    head: [["Indicador", "Valor"]],
+    body: [
+      [`VGV ${data.currentYear}`, formatCurrency(data.vgvYear)],
+      ["VGV do Mês", formatCurrency(data.vgvMonth)],
+      ["VGV da Semana", formatCurrency(data.vgvWeek)],
+      [`Vendas ${data.currentYear}`, String(data.totalSalesYear)],
+      ["Ticket Médio", formatCurrency(data.avgTicket)],
+    ],
+    headStyles: { fillColor: [30, 58, 95], fontSize: 9 },
+    bodyStyles: { fontSize: 9 },
+    margin: { left: margin, right: margin },
+  });
+  y = (doc as any).lastAutoTable.finalY + 8;
+
+  // Função utilitária para tabelas de ranking
+  const drawRanking = (title: string, rows: RankRow[]) => {
+    if (!rows.length) return;
+    if (y > 250) { doc.addPage(); y = 16; }
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(20, 20, 20);
+    doc.text(title, margin, y);
+    autoTable(doc, {
+      startY: y + 2,
+      theme: "striped",
+      head: [["#", "Nome", "Vendas", "VGV"]],
+      body: rows.slice(0, 10).map((r, i) => [String(i + 1), r.name, String(r.count), formatCurrency(r.vgv)]),
+      headStyles: { fillColor: [30, 58, 95], fontSize: 9 },
+      bodyStyles: { fontSize: 8.5 },
+      margin: { left: margin, right: margin },
+      columnStyles: { 0: { cellWidth: 10 }, 2: { cellWidth: 20, halign: "center" }, 3: { cellWidth: 40, halign: "right" } },
+    });
+    y = (doc as any).lastAutoTable.finalY + 6;
+  };
+
+  drawRanking("Top Cidades", data.rankings.byCity);
+  drawRanking("Top Segmentos", data.rankings.bySegment);
+  drawRanking("Top Tipos de Imóvel", data.rankings.byType);
+  drawRanking("Top Bairros", data.rankings.byNeighborhood);
+  drawRanking("Top Corretores", data.rankings.byBroker);
+  drawRanking("Top Proprietários", data.rankings.byOwner);
+  drawRanking("Top Empreendimentos", data.rankings.byEmpreendimento);
+  drawRanking("Top Edifícios", data.rankings.byEdificio);
+  drawRanking("Top Condomínios", data.rankings.byCondominio);
+
+  // Detalhamento de vendas
+  if (y > 240) { doc.addPage(); y = 16; }
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.text(`Detalhamento de Vendas (${data.filtered.length})`, margin, y);
+  autoTable(doc, {
+    startY: y + 2,
+    theme: "grid",
+    head: [["Data", "Imóvel", "Cidade", "Tipo", "Corretor", "Valor"]],
+    body: data.filtered
+      .slice()
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .map(s => [
+        new Date(s.date).toLocaleDateString("pt-BR"),
+        s.title || "—",
+        s.city || "—",
+        s.type || "—",
+        s.broker || "—",
+        formatCurrency(s.price),
+      ]),
+    headStyles: { fillColor: [30, 58, 95], fontSize: 8.5 },
+    bodyStyles: { fontSize: 8 },
+    margin: { left: margin, right: margin },
+    columnStyles: { 5: { halign: "right" } },
+  });
+
+  // Footer com numeração
+  const pageCount = doc.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setTextColor(120, 120, 120);
+    doc.text(`Página ${i} de ${pageCount}`, pageWidth - margin, doc.internal.pageSize.getHeight() - 6, { align: "right" });
+    doc.text("MV Broker Connect — Relatório de Vendas", margin, doc.internal.pageSize.getHeight() - 6);
+  }
+
+  doc.save(`relatorio-vendas-${new Date().toISOString().slice(0, 10)}.pdf`);
+}
