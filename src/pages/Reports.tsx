@@ -325,9 +325,9 @@ export default function Reports() {
               <Database className="w-4 h-4" /> Agenciamentos
             </button>
             <button
-              onClick={() => {
+              onClick={async () => {
                 try {
-                  generateReportPdf({
+                  await generateReportPdf({
                     filtered, vgvYear, vgvMonth, vgvWeek, totalSalesYear, avgTicket,
                     currentYear, rankings,
                     filters: {
