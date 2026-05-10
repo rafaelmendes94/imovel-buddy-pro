@@ -63,7 +63,7 @@ const buildQuery = (result: any) => {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  mockUser = { id: "user-123", user_metadata: { account_type: "corretor" } };
+  h.mockUser = { id: "user-123", user_metadata: { account_type: "corretor" } };
 });
 
 describe("Fluxo Login → Escolher Plano → Painel", () => {
