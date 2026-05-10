@@ -1094,7 +1094,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                   />
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={() => { saveField("description"); setEditingField(null); }}
+                      onClick={() => { saveEdit("description"); }}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90"
                     >
                       <Check className="w-3.5 h-3.5" /> Salvar
