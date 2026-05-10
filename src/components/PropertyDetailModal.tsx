@@ -541,16 +541,72 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
 
         {/* Thumbnail strip */}
         {images.length > 1 && (
-          <div className="flex gap-1 p-2 bg-gray-50 overflow-x-auto">
+          <div className="flex gap-1 p-2 bg-muted overflow-x-auto">
             {images.map((img, i) => (
               <button key={i} onClick={() => setCurrentImageIndex(i)}
                 className={cn("flex-shrink-0 w-16 h-12 rounded-lg overflow-hidden border-2 transition-all",
-                  i === currentImageIndex ? "border-amber-500 opacity-100" : "border-transparent opacity-60 hover:opacity-90"
+                  i === currentImageIndex ? "border-primary opacity-100" : "border-transparent opacity-60 hover:opacity-90"
                 )}
               >
                 <img src={img} alt="" className="w-full h-full object-cover" />
               </button>
             ))}
+          </div>
+        )}
+
+        {/* Media: Vídeo + Tour 360° (logo após as fotos) */}
+        {(videoUrl || link360) && (
+          <div className="px-5 sm:px-6 pt-5 space-y-4">
+            {videoUrl && (
+              <div className="rounded-xl overflow-hidden border border-border bg-card shadow-sm">
+                <button onClick={() => setShowVideo(!showVideo)} className="w-full flex items-center justify-between p-4 bg-muted/40 hover:bg-muted transition-colors">
+                  <span className="flex items-center gap-2 text-sm font-bold text-foreground">
+                    <span className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <Play className="w-4 h-4 text-primary fill-primary" />
+                    </span>
+                    Vídeo do Imóvel
+                  </span>
+                  <ChevronRight className={cn("w-4 h-4 text-muted-foreground transition-transform", showVideo && "rotate-90")} />
+                </button>
+                {showVideo && (
+                  isEmbeddableVideo ? (
+                    <div className="aspect-video bg-foreground">
+                      <iframe src={youtubeEmbed!} title="Vídeo do imóvel" className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+                    </div>
+                  ) : (
+                    <div className="p-4">
+                      <a href={videoUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-primary hover:underline font-medium">
+                        <ExternalLink className="w-4 h-4" /> {videoUrl}
+                      </a>
+                    </div>
+                  )
+                )}
+              </div>
+            )}
+
+            {link360 && (
+              <div className="rounded-xl overflow-hidden border border-border bg-card shadow-sm">
+                <div className="flex items-center justify-between p-4 bg-muted/40">
+                  <span className="flex items-center gap-2 text-sm font-bold text-foreground">
+                    <span className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center">
+                      <Eye className="w-4 h-4 text-accent" />
+                    </span>
+                    Tour Virtual 360°
+                  </span>
+                </div>
+                {link360.startsWith("<") ? (
+                  <div className="aspect-video" dangerouslySetInnerHTML={{ __html: link360 }} />
+                ) : link360.includes("http") ? (
+                  <div className="aspect-video">
+                    <iframe src={link360} title="Tour 360°" className="w-full h-full border-0" allowFullScreen />
+                  </div>
+                ) : (
+                  <div className="p-4">
+                    <p className="text-sm text-muted-foreground">{link360}</p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 
