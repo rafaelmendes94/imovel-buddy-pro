@@ -1100,8 +1100,8 @@ export function ImovelForm({ editId }: { editId?: string }) {
           </label>
         </div>
       </div>
+      </DraggableBlocks>
 
-      {/* === HISTÓRICO DE ALTERAÇÕES === */}
       {isEdit && (
         <div className="bg-card border border-border rounded-2xl p-4 sm:p-6">
           <SectionHeader icon={History} title="Histórico de Alterações" />
