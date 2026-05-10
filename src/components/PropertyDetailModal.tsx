@@ -1071,27 +1071,6 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
 
           {/* Vídeo e Tour 360° foram movidos para o topo, logo após as fotos */}
 
-          {/* Tour 360 section */}
-          {link360 && (
-            <div className="rounded-xl overflow-hidden border border-gray-200">
-              <div className="flex items-center justify-between p-4 bg-gray-50">
-                <span className="flex items-center gap-2 text-sm font-bold text-gray-800">
-                  <Eye className="w-4 h-4 text-blue-500" /> Tour Virtual 360°
-                </span>
-              </div>
-              {link360.startsWith("<") ? (
-                <div className="aspect-video" dangerouslySetInnerHTML={{ __html: link360 }} />
-              ) : link360.includes("http") ? (
-                <div className="aspect-video">
-                  <iframe src={link360} title="Tour 360°" className="w-full h-full border-0" allowFullScreen />
-                </div>
-              ) : (
-                <div className="p-4 bg-white">
-                  <p className="text-sm text-muted-foreground">{link360}</p>
-                </div>
-              )}
-            </div>
-          )}
 
           {/* Broker + WhatsApp */}
           <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
