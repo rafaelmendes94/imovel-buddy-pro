@@ -998,7 +998,7 @@ export default function Site() {
             <button
               onClick={() => setShowFavorites(true)}
               className="relative p-2 text-gray-600 hover:text-red-500 transition-colors"
-              title="Favoritos"
+              title="Minha Lista"
             >
               <Heart className={cn("w-5 h-5", favoriteIds.length > 0 && "fill-red-500 text-red-500")} />
               {favoriteIds.length > 0 && (
@@ -1776,7 +1776,7 @@ function FavoritesPage({
               <ChevronLeft className="w-5 h-5 text-gray-700" />
             </button>
             <Heart className="w-5 h-5 text-red-500 fill-red-500" />
-            <h1 className="text-lg font-bold text-gray-900">Meus Favoritos</h1>
+            <h1 className="text-lg font-bold text-gray-900">Minha Lista</h1>
             <span className="text-sm text-gray-500">({favorites.length} imóveis)</span>
           </div>
           <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
