@@ -1069,8 +1069,51 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
             return null;
           })}
 
-          {/* Vídeo e Tour 360° foram movidos para o topo, logo após as fotos */}
-
+          {/* Descrição do imóvel */}
+          {property.description && (
+            <div className="bg-muted/50 rounded-xl p-5 border border-border">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                  <FileText className="w-4 h-4 text-primary" /> Descrição
+                </p>
+                <button
+                  onClick={() => setEditingField(editingField === "description" ? null : "description")}
+                  className={cn("p-1.5 rounded-lg transition-colors", editingField === "description" ? "bg-primary/20 text-primary" : "hover:bg-muted text-muted-foreground")}
+                  title="Editar descrição"
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                </button>
+              </div>
+              {editingField === "description" ? (
+                <div className="space-y-2">
+                  <textarea
+                    value={editValues.description ?? property.description}
+                    onChange={(e) => setEditValues((prev) => ({ ...prev, description: e.target.value }))}
+                    rows={10}
+                    className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-y"
+                  />
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => { saveField("description"); setEditingField(null); }}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90"
+                    >
+                      <Check className="w-3.5 h-3.5" /> Salvar
+                    </button>
+                    <button
+                      onClick={() => { setEditingField(null); setEditValues((prev) => { const n = { ...prev }; delete n.description; return n; }); }}
+                      className="px-3 py-1.5 rounded-lg bg-muted text-foreground text-xs font-bold hover:bg-muted/70"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-foreground/90 whitespace-pre-line leading-relaxed">
+                  {property.description}
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Broker + WhatsApp */}
           <div className="flex items-center justify-between p-4 bg-muted/40 rounded-xl border border-border">
