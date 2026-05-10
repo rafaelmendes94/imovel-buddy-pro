@@ -22,7 +22,7 @@ interface Plan {
 }
 
 export default function EscolherPlano() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, refreshUserData } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [plans, setPlans] = useState<Plan[]>([]);
@@ -65,33 +65,40 @@ export default function EscolherPlano() {
       _user_id: user.id,
       _plan_id: plan.id,
     });
-    setSelectingId(null);
     if (error) {
       toast({ title: "Erro", description: error.message, variant: "destructive" });
+      setSelectingId(null);
       return;
     }
+    await refreshUserData();
     toast({ title: "Plano ativado!", description: "Aproveite o MV BROKER CONNECT." });
-    window.location.href = "/painel";
+    setSelectingId(null);
+    navigate("/painel", { replace: true });
   };
 
   const handleSelectPaid = async (plan: Plan) => {
     if (!user) return;
     setSelectingId(plan.id);
 
-    // Cria subscription local primeiro (trial ou pending_payment)
-    const initialStatus = plan.trial_days > 0 ? "trial" : "pending_payment";
-    const trialEndsAt = plan.trial_days > 0
-      ? new Date(Date.now() + plan.trial_days * 86400000).toISOString()
-      : null;
-
-    await supabase.from("subscriptions").insert({
-      user_id: user.id,
-      plan_id: plan.id,
-      status: initialStatus as any,
-      trial_ends_at: trialEndsAt,
-      current_period_start: new Date().toISOString(),
-      current_period_end: trialEndsAt,
+    const { error: subscriptionError } = await supabase.rpc("create_trial_subscription", {
+      _user_id: user.id,
+      _plan_id: plan.id,
     });
+
+    if (subscriptionError) {
+      toast({ title: "Erro", description: subscriptionError.message, variant: "destructive" });
+      setSelectingId(null);
+      return;
+    }
+
+    await refreshUserData();
+
+    if (plan.trial_days > 0) {
+      toast({ title: "Trial ativado!", description: "Você já pode acessar o painel." });
+      setSelectingId(null);
+      navigate("/painel", { replace: true });
+      return;
+    }
 
     const { data, error } = await supabase.functions.invoke("asaas-checkout", {
       body: { plan_id: plan.id, user_id: user.id },
