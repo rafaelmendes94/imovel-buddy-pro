@@ -1069,30 +1069,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
             return null;
           })}
 
-          {/* Video section */}
-          {videoUrl && (
-            <div className="rounded-xl overflow-hidden border border-gray-200">
-              <button onClick={() => setShowVideo(!showVideo)} className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors">
-                <span className="flex items-center gap-2 text-sm font-bold text-gray-800">
-                  <Play className="w-4 h-4 text-red-500" /> Vídeo do Imóvel
-                </span>
-                <ChevronRight className={cn("w-4 h-4 text-gray-400 transition-transform", showVideo && "rotate-90")} />
-              </button>
-              {showVideo && (
-                isEmbeddableVideo ? (
-                  <div className="aspect-video bg-black">
-                    <iframe src={youtubeEmbed!} title="Vídeo do imóvel" className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
-                  </div>
-                ) : (
-                  <div className="p-4 bg-white">
-                    <a href={videoUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-primary hover:underline font-medium">
-                      <ExternalLink className="w-4 h-4" /> {videoUrl}
-                    </a>
-                  </div>
-                )
-              )}
-            </div>
-          )}
+          {/* Vídeo e Tour 360° foram movidos para o topo, logo após as fotos */}
 
           {/* Tour 360 section */}
           {link360 && (
