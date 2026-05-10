@@ -870,7 +870,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
       </div>
 
       {/* ===== BLOCO: VINCULAÇÃO DE ENTIDADE ===== */}
-      <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
+      <div key="vinculacao" className="bg-card border border-border rounded-xl p-4 sm:p-5">
         <SectionHeader icon={Landmark} title="Vincular a Edifício / Condomínio / Loteamento" />
         <p className="text-xs text-muted-foreground mb-4">Selecione apenas um. O endereço e infraestrutura serão preenchidos automaticamente.</p>
         <EntitySelectorsGroup form={form} set={set} handleEntitySelect={handleEntitySelect} />
@@ -878,13 +878,13 @@ export function ImovelForm({ editId }: { editId?: string }) {
       </div>
 
       {/* ===== BLOCO: ENDEREÇO COM CEP ===== */}
-      <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
+      <div key="endereco" className="bg-card border border-border rounded-xl p-4 sm:p-5">
         <SectionHeader icon={MapPin} title="Endereço" />
         <CepAutoFill data={addressData} onChange={handleAddressChange} />
       </div>
 
       {/* ===== BLOCO 2: VALOR E CONDIÇÕES ===== */}
-      <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
+      <div key="valor" className="bg-card border border-border rounded-xl p-4 sm:p-5">
         <SectionHeader icon={DollarSign} title="Valor e Condições" />
 
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 sm:gap-4 mb-4">
@@ -942,7 +942,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
       </div>
 
       {/* ===== BLOCO 3: PROPRIETÁRIO ===== */}
-      <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
+      <div key="proprietario" className="bg-card border border-border rounded-xl p-4 sm:p-5">
         <SectionHeader icon={User} title="Proprietário" />
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4">
           <div className="space-y-1.5">
@@ -968,7 +968,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
       </div>
 
       {/* ===== BLOCO 4: CARACTERÍSTICAS ===== */}
-      <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
+      <div key="caracteristicas" className="bg-card border border-border rounded-xl p-4 sm:p-5">
         <SectionHeader icon={Sparkles} title="Características" />
 
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 sm:gap-4 mb-4">
@@ -1051,14 +1051,14 @@ export function ImovelForm({ editId }: { editId?: string }) {
       </div>
 
       {/* ===== BLOCO 5: DESCRIÇÃO COM IA ===== */}
-      <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
+      <div key="descricao" className="bg-card border border-border rounded-xl p-4 sm:p-5">
         <SectionHeader icon={FileText} title="Descrição" />
         <DescriptionAI form={form} onGenerated={(text) => set('descricao', text)} />
         <Textarea placeholder="Descreva o imóvel com o máximo de detalhes..." value={form.descricao} onChange={e => set('descricao', e.target.value)} rows={6} className="resize-y" />
       </div>
 
       {/* ===== BLOCO 5B: LINKS DE MÍDIA ===== */}
-      <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
+      <div key="midia" className="bg-card border border-border rounded-xl p-4 sm:p-5">
         <SectionHeader icon={Play} title="Vídeo e Material" />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div className="space-y-1.5">
@@ -1077,7 +1077,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
       </div>
 
       {/* ===== BLOCO 6: FOTOS ===== */}
-      <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
+      <div key="fotos" className="bg-card border border-border rounded-xl p-4 sm:p-5">
         <SectionHeader icon={Image} title="Fotos do Imóvel" />
         <div className="grid grid-cols-3 sm:flex sm:flex-wrap gap-2 sm:gap-3 mb-4">
           {existingImages.map((src, i) => (
