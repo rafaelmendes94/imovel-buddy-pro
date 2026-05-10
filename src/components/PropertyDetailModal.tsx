@@ -33,9 +33,9 @@ interface PropertyDetailModalProps {
 const statusColors: Record<string, string> = {
   "Disponível": "bg-emerald-500 text-white",
   "Vendido": "bg-red-500 text-white",
-  "Reservado": "bg-amber-500 text-white",
+  "Reservado": "bg-primary/100 text-white",
   "Alugado": "bg-blue-500 text-white",
-  "Suspenso": "bg-gray-500 text-white",
+  "Suspenso": "bg-muted/400 text-white",
 };
 
 function StatusSelectWithConfirm({ currentStatus, onConfirm }: { currentStatus: string; onConfirm: (s: string) => void }) {
@@ -59,12 +59,12 @@ function StatusSelectWithConfirm({ currentStatus, onConfirm }: { currentStatus: 
         defaultValue={currentStatus}
         onChange={handleChange}
         className={cn(
-          "px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide flex-shrink-0 cursor-pointer border-0 focus:outline-none focus:ring-2 focus:ring-amber-400",
-          statusColors[currentStatus] || "bg-gray-500 text-white"
+          "px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide flex-shrink-0 cursor-pointer border-0 focus:outline-none focus:ring-2 focus:ring-ring",
+          statusColors[currentStatus] || "bg-muted/400 text-white"
         )}
       >
         {(["Disponível", "Vendido", "Reservado", "Alugado", "Suspenso"] as const).map(s => (
-          <option key={s} value={s} className="text-gray-900 bg-white">{s}</option>
+          <option key={s} value={s} className="text-foreground bg-card">{s}</option>
         ))}
       </select>
 
@@ -72,7 +72,7 @@ function StatusSelectWithConfirm({ currentStatus, onConfirm }: { currentStatus: 
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-amber-500" />
+              <AlertTriangle className="w-5 h-5 text-primary" />
               Confirmar alteração de status
             </AlertDialogTitle>
             <AlertDialogDescription>
@@ -377,7 +377,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
             type={type}
             value={editValues[field] ?? String(value)}
             onChange={(e) => setEditValues((prev) => ({ ...prev, [field]: e.target.value }))}
-            className="bg-white border border-amber-300 rounded px-2 py-1 text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-400 min-w-0"
+            className="bg-card border border-amber-300 rounded px-2 py-1 text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-ring min-w-0"
             style={{ width: Math.max(80, String(editValues[field] ?? value).length * 9) }}
             autoFocus
             onKeyDown={(e) => { if (e.key === "Enter") saveEdit(field); if (e.key === "Escape") cancelEdit(); }}
@@ -385,33 +385,33 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
           <button onClick={() => saveEdit(field)} className="w-6 h-6 rounded bg-emerald-500 text-white flex items-center justify-center hover:bg-emerald-600 transition-colors">
             <Check className="w-3.5 h-3.5" />
           </button>
-          <button onClick={cancelEdit} className="w-6 h-6 rounded bg-gray-300 text-gray-600 flex items-center justify-center hover:bg-gray-400 transition-colors">
+          <button onClick={cancelEdit} className="w-6 h-6 rounded bg-gray-300 text-muted-foreground flex items-center justify-center hover:bg-gray-400 transition-colors">
             <X className="w-3.5 h-3.5" />
           </button>
         </div>
       );
     }
     return (
-      <span className={cn("group/edit inline-flex items-center gap-1 cursor-pointer hover:bg-amber-50 rounded px-1 -mx-1 transition-colors", className)}
+      <span className={cn("group/edit inline-flex items-center gap-1 cursor-pointer hover:bg-primary/10 rounded px-1 -mx-1 transition-colors", className)}
         onClick={(e) => { e.stopPropagation(); startEdit(field, value); }}
         title={`Clique para editar ${label || field}`}
       >
         {type === "number" && field === "price" ? formatCurrency(Number(value)) : value}
-        <Pencil className="w-3 h-3 text-amber-400 opacity-0 group-hover/edit:opacity-100 transition-opacity flex-shrink-0" />
+        <Pencil className="w-3 h-3 text-primary/70 opacity-0 group-hover/edit:opacity-100 transition-opacity flex-shrink-0" />
       </span>
     );
   };
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[2000] flex items-start justify-center overflow-y-auto overflow-x-hidden p-0 sm:p-4 sm:pt-6 sm:pb-8" onClick={handleClose}>
-      <div className="bg-white sm:rounded-2xl shadow-2xl w-full max-w-5xl min-h-screen sm:min-h-0 animate-in fade-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-card sm:rounded-2xl shadow-2xl w-full max-w-5xl min-h-screen sm:min-h-0 animate-in fade-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
 
         {/* Header */}
-        <div className="flex flex-wrap items-center gap-2 p-3 sm:p-4 border-b border-gray-100">
+        <div className="flex flex-wrap items-center gap-2 p-3 sm:p-4 border-b border-border">
           <div className="flex items-center gap-2 min-w-0 flex-1">
-            <h2 className="text-sm sm:text-lg font-bold text-gray-900 truncate">
+            <h2 className="text-sm sm:text-lg font-bold text-foreground truncate">
               <span
-                className="cursor-pointer hover:text-amber-600 transition-colors"
+                className="cursor-pointer hover:text-primary transition-colors"
                 onClick={() => onFilterByTitle?.(property.title)}
                 title="Clique para ver títulos semelhantes"
               >
@@ -419,7 +419,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
               </span>
             </h2>
             {property.code && (
-              <span className="text-[10px] sm:text-[11px] font-black text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded flex-shrink-0">
+              <span className="text-[10px] sm:text-[11px] font-black text-muted-foreground bg-muted px-1.5 py-0.5 rounded flex-shrink-0">
                 <EditableField field="code" value={property.code} label="código" />
               </span>
             )}
@@ -438,7 +438,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
             <div className="flex items-center gap-1.5 flex-shrink-0">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Link to={`/editar-imovel/${property.id}`} onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-amber-600">
+                  <Link to={`/editar-imovel/${property.id}`} onClick={onClose} className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-primary">
                     <Pencil className="w-4.5 h-4.5" />
                   </Link>
                 </TooltipTrigger>
@@ -446,7 +446,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <button onClick={handleShare} className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-amber-600">
+                  <button onClick={handleShare} className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-primary">
                     <Share2 className="w-4.5 h-4.5" />
                   </button>
                 </TooltipTrigger>
@@ -454,7 +454,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <button onClick={handleDownload} className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-blue-600">
+                  <button onClick={handleDownload} className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-blue-600">
                     <Download className="w-4.5 h-4.5" />
                   </button>
                 </TooltipTrigger>
@@ -463,7 +463,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
               {materialUrl && (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <button onClick={handleMaterialDownload} className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-purple-600">
+                    <button onClick={handleMaterialDownload} className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-purple-600">
                       <Download className="w-4.5 h-4.5" />
                     </button>
                   </TooltipTrigger>
@@ -472,8 +472,8 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
               )}
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <button onClick={handleClose} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
-                    <X className="w-5 h-5 text-gray-500" />
+                  <button onClick={handleClose} className="p-2 rounded-lg hover:bg-muted transition-colors">
+                    <X className="w-5 h-5 text-muted-foreground" />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent><p>Fechar</p></TooltipContent>
@@ -489,11 +489,11 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
 
           {images.length > 1 && (
             <>
-              <button onClick={prevImage} className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 hover:bg-white flex items-center justify-center shadow-lg transition-all hover:scale-105">
-                <ChevronLeft className="w-5 h-5 text-gray-800" />
+              <button onClick={prevImage} className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-card/90 hover:bg-card flex items-center justify-center shadow-lg transition-all hover:scale-105">
+                <ChevronLeft className="w-5 h-5 text-foreground" />
               </button>
-              <button onClick={nextImage} className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 hover:bg-white flex items-center justify-center shadow-lg transition-all hover:scale-105">
-                <ChevronRight className="w-5 h-5 text-gray-800" />
+              <button onClick={nextImage} className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-card/90 hover:bg-card flex items-center justify-center shadow-lg transition-all hover:scale-105">
+                <ChevronRight className="w-5 h-5 text-foreground" />
               </button>
             </>
           )}
@@ -524,7 +524,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
           {/* Price - editable */}
           <div className="absolute bottom-3 left-3">
             <p className="text-3xl font-black text-white drop-shadow-lg">
-              <EditableField field="price" value={property.price} label="preço" type="number" className="text-white hover:bg-white/20" />
+              <EditableField field="price" value={property.price} label="preço" type="number" className="text-white hover:bg-card/20" />
             </p>
           </div>
 
@@ -532,7 +532,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
             <div className="absolute bottom-3 right-3 flex gap-1.5">
               {images.map((_, i) => (
                 <button key={i} onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(i); }}
-                  className={cn("w-2.5 h-2.5 rounded-full transition-all", i === currentImageIndex ? "bg-white w-5" : "bg-white/50 hover:bg-white/80")}
+                  className={cn("w-2.5 h-2.5 rounded-full transition-all", i === currentImageIndex ? "bg-card w-5" : "bg-card/50 hover:bg-card/80")}
                 />
               ))}
             </div>
@@ -611,20 +611,20 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
         )}
 
         {/* Action bar */}
-        <div className="flex items-center gap-2 px-5 py-3 bg-amber-50/50 border-b border-amber-100 flex-wrap">
-          <button onClick={handleShare} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
-            <Share2 className="w-4 h-4 text-amber-500" /> Compartilhar
+        <div className="flex items-center gap-2 px-5 py-3 bg-primary/5 border-b border-primary/20 flex-wrap">
+          <button onClick={handleShare} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card border border-border text-sm font-semibold text-foreground hover:bg-muted/40 transition-colors shadow-sm">
+            <Share2 className="w-4 h-4 text-primary" /> Compartilhar
           </button>
-          <button onClick={handleDownload} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
+          <button onClick={handleDownload} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card border border-border text-sm font-semibold text-foreground hover:bg-muted/40 transition-colors shadow-sm">
             <Download className="w-4 h-4 text-blue-500" /> Baixar Fotos (PDF)
           </button>
           {materialUrl && (
-            <a href={materialUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
+            <a href={materialUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card border border-border text-sm font-semibold text-foreground hover:bg-muted/40 transition-colors shadow-sm">
               <FolderDown className="w-4 h-4 text-purple-500" /> Material Completo
             </a>
           )}
-          <Link to={`/editar-imovel/${property.id}`} onClick={onClose} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
-            <Pencil className="w-4 h-4 text-amber-500" /> Editar
+          <Link to={`/editar-imovel/${property.id}`} onClick={onClose} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card border border-border text-sm font-semibold text-foreground hover:bg-muted/40 transition-colors shadow-sm">
+            <Pencil className="w-4 h-4 text-primary" /> Editar
           </Link>
         </div>
 
@@ -637,7 +637,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
               {property.empreendimento && (
                 <Link
                   to={`/empreendimento/${property.empreendimento.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`}
-                  className="text-xs font-semibold text-amber-700 bg-amber-50 px-3 py-1.5 rounded-lg hover:bg-amber-100 transition-colors flex items-center gap-1.5"
+                  className="text-xs font-semibold text-primary bg-primary/10 px-3 py-1.5 rounded-lg hover:bg-primary/20 transition-colors flex items-center gap-1.5"
                   onClick={onClose}
                 >
                   <Building2 className="w-3.5 h-3.5" />
@@ -645,7 +645,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                 </Link>
               )}
               {unitParts.map((part) => (
-                <span key={part} className="text-xs font-semibold text-gray-600 bg-gray-100 px-3 py-1.5 rounded-lg">
+                <span key={part} className="text-xs font-semibold text-muted-foreground bg-muted px-3 py-1.5 rounded-lg">
                   {part}
                 </span>
               ))}
@@ -657,52 +657,52 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
             href={googleMapsUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 text-gray-600 hover:text-amber-600 transition-colors group"
+            className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors group"
           >
-            <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center group-hover:bg-amber-100 transition-colors">
-              <MapPin className="w-4 h-4 text-amber-500" />
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+              <MapPin className="w-4 h-4 text-primary" />
             </div>
             <div className="flex-1 min-w-0" onClick={(e) => e.preventDefault()}>
               <div className="text-sm font-medium">
                 <EditableField field="address" value={property.address} label="endereço" /> ,{" "}
                 <EditableField field="city" value={property.city} label="cidade" />
               </div>
-              <p className="text-[10px] text-gray-400 flex items-center gap-1">
+              <p className="text-[10px] text-muted-foreground/70 flex items-center gap-1">
                 <Navigation className="w-3 h-3" /> Clique para abrir no Google Maps
               </p>
             </div>
-            <ExternalLink className="w-3.5 h-3.5 text-gray-400 ml-auto flex-shrink-0" />
+            <ExternalLink className="w-3.5 h-3.5 text-muted-foreground/70 ml-auto flex-shrink-0" />
           </a>
 
           {/* Specs grid - editable */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="bg-gray-50 rounded-xl p-4 text-center border border-gray-100">
-              <Maximize2 className="w-5 h-5 mx-auto text-amber-500 mb-1.5" />
-              <p className="text-xl font-bold text-gray-900">
+            <div className="bg-muted/40 rounded-xl p-4 text-center border border-border">
+              <Maximize2 className="w-5 h-5 mx-auto text-primary mb-1.5" />
+              <p className="text-xl font-bold text-foreground">
                 <EditableField field="area" value={property.area} label="área" type="number" />m²
               </p>
-              <p className="text-[11px] text-gray-500 font-medium">Área Total</p>
+              <p className="text-[11px] text-muted-foreground font-medium">Área Total</p>
             </div>
-            <div className="bg-gray-50 rounded-xl p-4 text-center border border-gray-100">
-              <BedDouble className="w-5 h-5 mx-auto text-amber-500 mb-1.5" />
-              <p className="text-xl font-bold text-gray-900">
+            <div className="bg-muted/40 rounded-xl p-4 text-center border border-border">
+              <BedDouble className="w-5 h-5 mx-auto text-primary mb-1.5" />
+              <p className="text-xl font-bold text-foreground">
                 <EditableField field="bedrooms" value={property.bedrooms} label="quartos" type="number" />
               </p>
-              <p className="text-[11px] text-gray-500 font-medium">Quartos</p>
+              <p className="text-[11px] text-muted-foreground font-medium">Quartos</p>
             </div>
-            <div className="bg-gray-50 rounded-xl p-4 text-center border border-gray-100">
-              <Bath className="w-5 h-5 mx-auto text-amber-500 mb-1.5" />
-              <p className="text-xl font-bold text-gray-900">
+            <div className="bg-muted/40 rounded-xl p-4 text-center border border-border">
+              <Bath className="w-5 h-5 mx-auto text-primary mb-1.5" />
+              <p className="text-xl font-bold text-foreground">
                 <EditableField field="bathrooms" value={property.bathrooms} label="banheiros" type="number" />
               </p>
-              <p className="text-[11px] text-gray-500 font-medium">Banheiros</p>
+              <p className="text-[11px] text-muted-foreground font-medium">Banheiros</p>
             </div>
-            <div className="bg-gray-50 rounded-xl p-4 text-center border border-gray-100">
-              <Car className="w-5 h-5 mx-auto text-amber-500 mb-1.5" />
-              <p className="text-xl font-bold text-gray-900">
+            <div className="bg-muted/40 rounded-xl p-4 text-center border border-border">
+              <Car className="w-5 h-5 mx-auto text-primary mb-1.5" />
+              <p className="text-xl font-bold text-foreground">
                 <EditableField field="parking" value={property.parking} label="vagas" type="number" />
               </p>
-              <p className="text-[11px] text-gray-500 font-medium">Vagas</p>
+              <p className="text-[11px] text-muted-foreground font-medium">Vagas</p>
             </div>
           </div>
 
@@ -772,9 +772,9 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                   <div className="flex items-center justify-between mb-4">
                     <p className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
                       <span className="cursor-grab active:cursor-grabbing mr-1 text-muted-foreground/50 hover:text-muted-foreground">⠿</span>
-                      <Hash className="w-4 h-4 text-amber-500" /> Identificação
+                      <Hash className="w-4 h-4 text-primary" /> Identificação
                     </p>
-                    <button onClick={() => setEditingBlock(isEditing ? null : "identificacao")} className={cn("p-1.5 rounded-lg transition-colors", isEditing ? "bg-amber-100 text-amber-600" : "hover:bg-muted text-muted-foreground")}>
+                    <button onClick={() => setEditingBlock(isEditing ? null : "identificacao")} className={cn("p-1.5 rounded-lg transition-colors", isEditing ? "bg-primary/20 text-primary" : "hover:bg-muted text-muted-foreground")}>
                       <Pencil className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -799,9 +799,9 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                   <div className="flex items-center justify-between mb-4">
                     <p className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
                       <span className="cursor-grab active:cursor-grabbing mr-1 text-muted-foreground/50 hover:text-muted-foreground">⠿</span>
-                      <DollarSign className="w-4 h-4 text-amber-500" /> Valor e Condições
+                      <DollarSign className="w-4 h-4 text-primary" /> Valor e Condições
                     </p>
-                    <button onClick={() => setEditingBlock(isEditingValor ? null : "valor")} className={cn("p-1.5 rounded-lg transition-colors", isEditingValor ? "bg-amber-100 text-amber-600" : "hover:bg-muted text-muted-foreground")}>
+                    <button onClick={() => setEditingBlock(isEditingValor ? null : "valor")} className={cn("p-1.5 rounded-lg transition-colors", isEditingValor ? "bg-primary/20 text-primary" : "hover:bg-muted text-muted-foreground")}>
                       <Pencil className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -839,7 +839,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                           <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider whitespace-nowrap">Aceita Permuta</label>
                           <button onClick={() => { if (onUpdateProperty) { updateProperty({ ...property, acceptsExchange: !property.acceptsExchange }); toast.success(property.acceptsExchange ? "Permuta desativada" : "Permuta ativada"); } }}
                             className={cn("w-10 h-6 rounded-full transition-colors relative", property.acceptsExchange ? "bg-emerald-500" : "bg-gray-300")}>
-                            <span className={cn("absolute w-4 h-4 rounded-full bg-white top-1 transition-all shadow-sm", property.acceptsExchange ? "left-5" : "left-1")} />
+                            <span className={cn("absolute w-4 h-4 rounded-full bg-card top-1 transition-all shadow-sm", property.acceptsExchange ? "left-5" : "left-1")} />
                           </button>
                         </div>
                       </div>
@@ -850,7 +850,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                         <div className="flex flex-wrap gap-2">
                           {(["Oferta", "Bom Negócio", "Normal", "Acima da Média"] as const).map((lbl) => {
                             const isSelected = property.dealLabel === lbl;
-                            const styles: Record<string, string> = { "Oferta": "text-emerald-700 bg-emerald-50 border-emerald-300 ring-emerald-400", "Bom Negócio": "text-emerald-600 bg-emerald-50 border-emerald-200 ring-emerald-300", "Normal": "text-amber-700 bg-amber-50 border-amber-300 ring-amber-400", "Acima da Média": "text-red-600 bg-red-50 border-red-300 ring-red-400" };
+                            const styles: Record<string, string> = { "Oferta": "text-emerald-700 bg-emerald-50 border-emerald-300 ring-emerald-400", "Bom Negócio": "text-emerald-600 bg-emerald-50 border-emerald-200 ring-emerald-300", "Normal": "text-primary bg-primary/10 border-amber-300 ring-amber-400", "Acima da Média": "text-red-600 bg-red-50 border-red-300 ring-red-400" };
                             return (
                               <button key={lbl} onClick={() => { const newLabel = isSelected ? null : lbl; if (onUpdateProperty) { updateProperty({ ...property, dealLabel: newLabel }); } toast.success(newLabel ? `Classificado como "${newLabel}"` : "Classificação removida"); }}
                                 className={cn("px-4 py-2 rounded-lg text-sm font-bold border-2 transition-all", isSelected ? styles[lbl] + " ring-2 ring-offset-1 shadow-sm" : "text-muted-foreground bg-background border-border hover:bg-muted")}>
@@ -918,9 +918,9 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                   <div className="flex items-center justify-between mb-4">
                     <p className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
                       <span className="cursor-grab active:cursor-grabbing mr-1 text-muted-foreground/50 hover:text-muted-foreground">⠿</span>
-                      <User className="w-4 h-4 text-amber-500" /> Proprietário
+                      <User className="w-4 h-4 text-primary" /> Proprietário
                     </p>
-                    <button onClick={() => setEditingBlock(editingBlock === "proprietario" ? null : "proprietario")} className={cn("p-1.5 rounded-lg transition-colors", editingBlock === "proprietario" ? "bg-amber-100 text-amber-600" : "hover:bg-muted text-muted-foreground")}>
+                    <button onClick={() => setEditingBlock(editingBlock === "proprietario" ? null : "proprietario")} className={cn("p-1.5 rounded-lg transition-colors", editingBlock === "proprietario" ? "bg-primary/20 text-primary" : "hover:bg-muted text-muted-foreground")}>
                       <Pencil className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -1000,9 +1000,9 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                   <div className="flex items-center justify-between mb-4">
                     <p className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
                       <span className="cursor-grab active:cursor-grabbing mr-1 text-muted-foreground/50 hover:text-muted-foreground">⠿</span>
-                      <Building2 className="w-4 h-4 text-amber-500" /> Características do Imóvel
+                      <Building2 className="w-4 h-4 text-primary" /> Características do Imóvel
                     </p>
-                    <button onClick={() => setEditingBlock(isEditingCaract ? null : "caracteristicas")} className={cn("p-1.5 rounded-lg transition-colors", isEditingCaract ? "bg-amber-100 text-amber-600" : "hover:bg-muted text-muted-foreground")}>
+                    <button onClick={() => setEditingBlock(isEditingCaract ? null : "caracteristicas")} className={cn("p-1.5 rounded-lg transition-colors", isEditingCaract ? "bg-primary/20 text-primary" : "hover:bg-muted text-muted-foreground")}>
                       <Pencil className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -1017,7 +1017,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                             const isActive = property.infraestrutura?.includes(item);
                             return (
                               <button key={item} onClick={() => { if (!onUpdateProperty) return; const current = property.infraestrutura || []; const updated = isActive ? current.filter(i => i !== item) : [...current, item]; updateProperty({ ...property, infraestrutura: updated }); toast.success(isActive ? `"${item}" removido` : `"${item}" adicionado`); }}
-                                className={cn("px-3 py-1.5 rounded-lg text-xs font-bold border transition-all", isActive ? "bg-amber-50 text-amber-700 border-amber-300" : "bg-background text-muted-foreground border-border hover:bg-muted")}>{item}</button>
+                                className={cn("px-3 py-1.5 rounded-lg text-xs font-bold border transition-all", isActive ? "bg-primary/10 text-primary border-amber-300" : "bg-background text-muted-foreground border-border hover:bg-muted")}>{item}</button>
                             );
                           })}
                         </div>
@@ -1049,7 +1049,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                       {property.infraestrutura && property.infraestrutura.length > 0 && (
                         <div className="flex flex-wrap gap-1.5">
                           {property.infraestrutura.map((i) => (
-                            <span key={i} className="px-2 py-1 rounded text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">{i}</span>
+                            <span key={i} className="px-2 py-1 rounded text-[11px] font-bold bg-primary/10 text-primary border border-primary/30">{i}</span>
                           ))}
                         </div>
                       )}
@@ -1073,21 +1073,21 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
 
 
           {/* Broker + WhatsApp */}
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
+          <div className="flex items-center justify-between p-4 bg-muted/40 rounded-xl border border-border">
             {broker ? (
               <Link
                 to={`/corretor/${toSlug(property.broker)}`}
                 className="flex items-center gap-3 hover:opacity-80 transition-opacity"
                 onClick={onClose}
               >
-                <img src={broker.photo} alt={property.broker} className="w-12 h-12 rounded-full object-cover border-2 border-amber-400" />
+                <img src={broker.photo} alt={property.broker} className="w-12 h-12 rounded-full object-cover border-2 border-primary" />
                 <div>
-                  <p className="text-sm font-bold text-amber-700 hover:underline">{property.broker}</p>
-                  <p className="text-[11px] text-gray-400">Corretor(a) responsável</p>
+                  <p className="text-sm font-bold text-primary hover:underline">{property.broker}</p>
+                  <p className="text-[11px] text-muted-foreground/70">Corretor(a) responsável</p>
                 </div>
               </Link>
             ) : (
-              <p className="text-sm text-gray-600 font-medium">{property.broker}</p>
+              <p className="text-sm text-muted-foreground font-medium">{property.broker}</p>
             )}
             <div className="flex items-center gap-2">
               <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer"
@@ -1104,8 +1104,8 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
 
         {/* Outros imóveis do proprietário */}
         {ownerProperties.length > 0 && (
-          <div className="border-t border-gray-100 p-5 sm:p-6">
-            <h3 className="text-base font-bold text-gray-900 mb-4">Outros imóveis de {property.owner}</h3>
+          <div className="border-t border-border p-5 sm:p-6">
+            <h3 className="text-base font-bold text-foreground mb-4">Outros imóveis de {property.owner}</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {ownerProperties.map((sp) => (
                 <SimilarCard key={sp.id} property={sp} onSelect={() => { setCurrentImageIndex(0); setShowVideo(false); onSelectSimilar?.(sp); }} />
@@ -1135,17 +1135,17 @@ function SimilarCard({ property, onSelect }: { property: Property; onSelect: () 
   const imgs = property.images && property.images.length > 0 ? property.images : [property.image];
 
   return (
-    <button onClick={onSelect} className="rounded-xl overflow-hidden bg-gray-50 hover:bg-gray-100 transition-colors text-left border border-gray-100 group">
+    <button onClick={onSelect} className="rounded-xl overflow-hidden bg-muted/40 hover:bg-muted transition-colors text-left border border-border group">
       <div className="relative h-28 overflow-hidden">
         <img src={imgs[imgIndex]} alt={property.title} className="w-full h-full object-cover" />
         {imgs.length > 1 && (
           <>
             <button onClick={(e) => { e.stopPropagation(); setImgIndex((prev) => (prev > 0 ? prev - 1 : imgs.length - 1)); }}
-              className="absolute left-1 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              className="absolute left-1 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-card/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
               <ChevronLeft className="w-3 h-3" />
             </button>
             <button onClick={(e) => { e.stopPropagation(); setImgIndex((prev) => (prev < imgs.length - 1 ? prev + 1 : 0)); }}
-              className="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              className="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-card/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
               <ChevronRight className="w-3 h-3" />
             </button>
           </>
@@ -1155,8 +1155,8 @@ function SimilarCard({ property, onSelect }: { property: Property; onSelect: () 
         </div>
       </div>
       <div className="p-2.5">
-        <p className="text-xs font-semibold text-gray-900 line-clamp-1">{property.title}</p>
-        <p className="text-[10px] text-gray-500 mt-0.5">{property.city} · {property.area}m²</p>
+        <p className="text-xs font-semibold text-foreground line-clamp-1">{property.title}</p>
+        <p className="text-[10px] text-muted-foreground mt-0.5">{property.city} · {property.area}m²</p>
       </div>
     </button>
   );
