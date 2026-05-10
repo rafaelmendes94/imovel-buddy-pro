@@ -3,40 +3,46 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 
 // ---------- Mocks ----------
-const navigateMock = vi.fn();
+const h = vi.hoisted(() => ({
+  navigateMock: vi.fn(),
+  toastMock: vi.fn(),
+  signInMock: vi.fn(),
+  fromMock: vi.fn(),
+  rpcMock: vi.fn(),
+  functionsInvokeMock: vi.fn(),
+  refreshUserDataMock: vi.fn(),
+  signOutMock: vi.fn(),
+  mockUser: { id: "user-123", user_metadata: { account_type: "corretor" } } as any,
+}));
+const {
+  navigateMock, toastMock, signInMock, fromMock, rpcMock,
+  functionsInvokeMock, refreshUserDataMock, signOutMock,
+} = h;
+
 vi.mock("react-router-dom", async () => {
   const actual = await vi.importActual<any>("react-router-dom");
-  return { ...actual, useNavigate: () => navigateMock };
+  return { ...actual, useNavigate: () => h.navigateMock };
 });
 
-const toastMock = vi.fn();
 vi.mock("@/hooks/use-toast", () => ({
-  useToast: () => ({ toast: toastMock }),
-  toast: toastMock,
+  useToast: () => ({ toast: h.toastMock }),
+  toast: h.toastMock,
 }));
-
-const signInMock = vi.fn();
-const fromMock = vi.fn();
-const rpcMock = vi.fn();
-const functionsInvokeMock = vi.fn();
 
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
-    auth: { signInWithPassword: (...a: any[]) => signInMock(...a) },
-    from: (...a: any[]) => fromMock(...a),
-    rpc: (...a: any[]) => rpcMock(...a),
-    functions: { invoke: (...a: any[]) => functionsInvokeMock(...a) },
+    auth: { signInWithPassword: (...a: any[]) => h.signInMock(...a) },
+    from: (...a: any[]) => h.fromMock(...a),
+    rpc: (...a: any[]) => h.rpcMock(...a),
+    functions: { invoke: (...a: any[]) => h.functionsInvokeMock(...a) },
   },
 }));
 
-const refreshUserDataMock = vi.fn();
-const signOutMock = vi.fn();
-let mockUser: any = { id: "user-123", user_metadata: { account_type: "corretor" } };
 vi.mock("@/hooks/useAuth", () => ({
   useAuth: () => ({
-    user: mockUser,
-    signOut: signOutMock,
-    refreshUserData: refreshUserDataMock,
+    user: h.mockUser,
+    signOut: h.signOutMock,
+    refreshUserData: h.refreshUserDataMock,
   }),
 }));
 
