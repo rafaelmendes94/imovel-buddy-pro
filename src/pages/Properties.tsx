@@ -1466,7 +1466,7 @@ export default function Properties() {
           <div className="bg-card rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-5 py-4 border-b border-border">
               <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
-                <Heart className="w-5 h-5 text-accent fill-current" /> Meus Favoritos ({favoriteIds.length})
+                <Heart className="w-5 h-5 text-accent fill-current" /> Minha Lista ({favoriteIds.length})
               </h3>
               <button onClick={() => setShowFavoritesModal(false)} className="p-2 rounded-lg hover:bg-muted transition-colors">
                 <X className="w-5 h-5 text-muted-foreground" />
