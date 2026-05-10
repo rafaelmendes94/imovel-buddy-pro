@@ -23,6 +23,7 @@ interface AuthContextType {
     plan?: { name: string; modules: string[]; max_properties: number; max_brokers: number; is_free: boolean };
   } | null;
   staffPermissions: StaffPermissions | null;
+  refreshUserData: () => Promise<void>;
   signOut: () => Promise<void>;
   isSuperAdmin: boolean;
   isAdminStaff: boolean;
@@ -45,17 +46,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const fetchUserData = async (userId: string) => {
     const [rolesRes, profileRes, effSubRes, staffRes] = await Promise.all([
       supabase.from("user_roles").select("role").eq("user_id", userId),
-      supabase.from("profiles").select("*").eq("user_id", userId).single(),
+      supabase.from("profiles").select("*").eq("user_id", userId).maybeSingle(),
       supabase.rpc("get_effective_subscription", { _user_id: userId }),
       supabase.from("staff_permissions").select("*").eq("user_id", userId).maybeSingle(),
     ]);
 
-    if (rolesRes.data) {
-      setRoles(rolesRes.data.map((r: any) => r.role as AppRole));
-    }
-    if (profileRes.data) {
-      setProfile(profileRes.data as any);
-    }
+    setRoles(rolesRes.data ? rolesRes.data.map((r: any) => r.role as AppRole) : []);
+    setProfile(profileRes.data ? profileRes.data as any : null);
 
     const effSub = Array.isArray(effSubRes.data) ? effSubRes.data[0] : null;
     if (effSub) {
@@ -84,8 +81,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } else {
       setSubscription(null);
     }
-    if (staffRes.data) {
-      setStaffPermissions((staffRes.data as any).permissions || null);
+    setStaffPermissions(staffRes.data ? (staffRes.data as any).permissions || null : null);
+  };
+
+  const refreshUserData = async () => {
+    const currentUserId = user?.id || session?.user?.id;
+    if (currentUserId) {
+      await fetchUserData(currentUserId);
     }
   };
 
@@ -136,7 +138,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, roles, profile, subscription, staffPermissions, signOut, isSuperAdmin, isAdminStaff, isBroker, isBlocked, hasModuleAccess }}>
+    <AuthContext.Provider value={{ user, session, loading, roles, profile, subscription, staffPermissions, refreshUserData, signOut, isSuperAdmin, isAdminStaff, isBroker, isBlocked, hasModuleAccess }}>
       {children}
     </AuthContext.Provider>
   );
