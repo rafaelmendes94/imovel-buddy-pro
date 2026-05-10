@@ -1345,7 +1345,7 @@ export default function Properties() {
               onClick={() => setShowFavoritesModal(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent/10 border border-accent/20 text-accent text-sm font-semibold hover:bg-accent/20 transition-colors"
             >
-              <Heart className="w-3.5 h-3.5 fill-current" /> {favoriteIds.length} Favorito{favoriteIds.length !== 1 ? "s" : ""}
+              <Heart className="w-3.5 h-3.5 fill-current" /> Minha Lista ({favoriteIds.length})
             </button>
           )}
         </div>
