@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -27,18 +28,23 @@ export default function Login() {
       return;
     }
 
-    // Check roles to redirect
-    const { data: rolesData } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", data.user.id);
+    const [{ data: rolesData }, { data: subscriptionData }] = await Promise.all([
+      supabase.from("user_roles").select("role").eq("user_id", data.user.id),
+      supabase.rpc("get_effective_subscription", { _user_id: data.user.id }),
+    ]);
 
     const roles = rolesData?.map(r => r.role) || [];
+    const subscription = Array.isArray(subscriptionData) ? subscriptionData[0] : null;
+    const requestedPath = (location.state as any)?.from?.pathname;
 
-    if (roles.includes("super_admin") || roles.includes("admin_staff")) {
-      navigate("/dashboard");
+    if (requestedPath && requestedPath !== "/login") {
+      navigate(requestedPath, { replace: true });
+    } else if (roles.includes("super_admin") || roles.includes("admin_staff")) {
+      navigate("/dashboard", { replace: true });
+    } else if (subscription) {
+      navigate("/painel", { replace: true });
     } else {
-      navigate("/painel");
+      navigate("/escolher-plano", { replace: true });
     }
 
     setLoading(false);
