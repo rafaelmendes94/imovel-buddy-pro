@@ -998,7 +998,7 @@ export default function Site() {
             <button
               onClick={() => setShowFavorites(true)}
               className="relative p-2 text-gray-600 hover:text-red-500 transition-colors"
-              title="Favoritos"
+              title="Minha Lista"
             >
               <Heart className={cn("w-5 h-5", favoriteIds.length > 0 && "fill-red-500 text-red-500")} />
               {favoriteIds.length > 0 && (
