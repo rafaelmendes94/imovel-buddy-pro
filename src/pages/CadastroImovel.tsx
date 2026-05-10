@@ -774,8 +774,9 @@ export function ImovelForm({ editId }: { editId?: string }) {
         </Button>
       </div>
 
+      <DraggableBlocks storageKey="cadastro-imovel-blocks-order">
       {/* ===== BLOCO 1: IDENTIFICAÇÃO ===== */}
-      <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
+      <div key="identificacao" className="bg-card border border-border rounded-xl p-4 sm:p-5">
         <SectionHeader icon={Building2} title="Identificação" />
 
         <div className="grid grid-cols-1 sm:grid-cols-6 gap-3 sm:gap-4 mb-4">
