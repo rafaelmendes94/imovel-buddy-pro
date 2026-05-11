@@ -1285,6 +1285,24 @@ export default function Properties() {
             className="flex items-center gap-2 overflow-x-auto scrollbar-hide bg-card border border-border rounded-lg px-8 py-2"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
+            {user && (
+              <>
+                <button
+                  onClick={() => setFilterMine(v => !v)}
+                  className={cn(
+                    "flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold whitespace-nowrap transition-all",
+                    filterMine
+                      ? "bg-accent text-accent-foreground shadow-sm"
+                      : "bg-secondary text-secondary-foreground hover:bg-muted"
+                  )}
+                  title="Mostrar apenas meus imóveis"
+                >
+                  <User className="w-3 h-3" />
+                  Meus Imóveis
+                </button>
+                <div className="w-px h-5 bg-border mx-1 flex-shrink-0" />
+              </>
+            )}
             {categories.map((cat, idx) => (
               <button
                 key={cat.key}
