@@ -4,6 +4,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { BackButton } from "@/components/BackButton";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import {
   Landmark, Plus, Search, MapPin, Edit, Trash2, Loader2, Calendar, Building2,
