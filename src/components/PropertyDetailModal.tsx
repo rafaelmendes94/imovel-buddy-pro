@@ -482,10 +482,21 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
           </TooltipProvider>
         </div>
 
-        {/* Main image gallery */}
-        <div className="relative h-72 sm:h-96 bg-gray-900">
-          <img src={images[currentImageIndex]} alt={property.title} className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20" />
+        {/* Main image gallery - 2 imagens quadradas por vez */}
+        <div className="relative bg-gray-900">
+          <div className="grid grid-cols-2 gap-1">
+            <div className="relative aspect-square bg-gray-800 overflow-hidden">
+              <img src={images[currentImageIndex]} alt={property.title} className="w-full h-full object-cover" />
+            </div>
+            <div className="relative aspect-square bg-gray-800 overflow-hidden">
+              {images[currentImageIndex + 1] ? (
+                <img src={images[currentImageIndex + 1]} alt={property.title} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-gray-800" />
+              )}
+            </div>
+          </div>
+          <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/40 via-transparent to-black/20" />
 
           {images.length > 1 && (
             <>
