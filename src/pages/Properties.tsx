@@ -439,6 +439,7 @@ export default function Properties() {
   const [filterEmpreendimento, setFilterEmpreendimento] = useState("");
   const [filterType, setFilterType] = useState("");
   const [filterOwner, setFilterOwner] = useState("");
+  const [filterMine, setFilterMine] = useState(false);
   const [filterNeighborhood, setFilterNeighborhood] = useState("");
   const [filterStreet, setFilterStreet] = useState("");
   const [filterCode, setFilterCode] = useState("");
@@ -506,6 +507,7 @@ export default function Properties() {
 
       const mapped: Property[] = (data || []).map((row, index) => ({
         id: row.id,
+        userId: row.user_id,
         code: `MV${String(index + 1).padStart(2, "0")}`,
         title: row.titulo || "Imóvel",
         address: row.endereco || "",
@@ -853,10 +855,11 @@ export default function Properties() {
       if (filterStreet && p.address !== filterStreet) return false;
       if (filterCode && !(p.code || "").toLowerCase().includes(filterCode.toLowerCase())) return false;
       if (filterParking && p.parking < parseInt(filterParking)) return false;
+      if (filterMine && user && p.userId !== user.id) return false;
 
       return true;
     });
-  }, [propertyList, activeCategory, search, filterCity, filterBedrooms, filterPriceMin, filterPriceMax, filterCondition, filterFreshness, filterEmpreendimento, filterType, filterOwner, filterNeighborhood, filterStreet, filterCode, filterParking, showInactive]);
+  }, [propertyList, activeCategory, search, filterCity, filterBedrooms, filterPriceMin, filterPriceMax, filterCondition, filterFreshness, filterEmpreendimento, filterType, filterOwner, filterNeighborhood, filterStreet, filterCode, filterParking, filterMine, user, showInactive]);
 
   // Reset page when filters change
   useEffect(() => {
@@ -1282,6 +1285,24 @@ export default function Properties() {
             className="flex items-center gap-2 overflow-x-auto scrollbar-hide bg-card border border-border rounded-lg px-8 py-2"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
+            {user && (
+              <>
+                <button
+                  onClick={() => setFilterMine(v => !v)}
+                  className={cn(
+                    "flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold whitespace-nowrap transition-all",
+                    filterMine
+                      ? "bg-accent text-accent-foreground shadow-sm"
+                      : "bg-secondary text-secondary-foreground hover:bg-muted"
+                  )}
+                  title="Mostrar apenas meus imóveis"
+                >
+                  <User className="w-3 h-3" />
+                  Meus Imóveis
+                </button>
+                <div className="w-px h-5 bg-border mx-1 flex-shrink-0" />
+              </>
+            )}
             {categories.map((cat, idx) => (
               <button
                 key={cat.key}
@@ -1367,6 +1388,7 @@ export default function Properties() {
                 onFilterByTitle={(title) => { setSearch(title.split(" ").slice(0, 2).join(" ")); setActiveCategory("todos"); }}
                 onFilterByCondition={(cond) => { setFilterCondition(cond); setShowFilters(true); setActiveCategory("todos"); }}
                 onFilterByOwner={(owner) => { setFilterOwner(owner); setShowFilters(true); setActiveCategory("todos"); }}
+                canManage={isSuperAdmin || isAdminStaff || property.userId === user?.id}
                 onDelete={(id) => setDeleteConfirmId(id)}
               />
             ))}
@@ -1393,6 +1415,7 @@ export default function Properties() {
                 onNavigateToContract={handleNavigateToContract}
                 onQuickUpdate={handleQuickUpdate}
                 onDuplicate={handleDuplicate}
+                canManage={isSuperAdmin || isAdminStaff || property.userId === user?.id}
                 onDelete={(id) => setDeleteConfirmId(id)}
               />
             ))}
@@ -1900,7 +1923,7 @@ function SoldCelebration() {
 
 // ---- PropertyCard (enhanced) ----
 function PropertyCard({
-  property, onStatusChange, onSelect, onViewTerm, isFavorited, onToggleFavorite, isInRoute, onToggleRoute, onFilterByTitle, onFilterByCondition, onDelete,
+  property, onStatusChange, onSelect, onViewTerm, isFavorited, onToggleFavorite, isInRoute, onToggleRoute, onFilterByTitle, onFilterByCondition, onDelete, canManage = true,
 }: {
   property: Property;
   onStatusChange: (id: string, status: Property["status"]) => void;
@@ -1914,6 +1937,7 @@ function PropertyCard({
   onFilterByCondition?: (cond: string) => void;
   onFilterByOwner?: (owner: string) => void;
   onDelete?: (id: string) => void;
+  canManage?: boolean;
 }) {
   const [showCelebration, setShowCelebration] = useState(false);
   const [animatePulse, setAnimatePulse] = useState(false);
@@ -2092,19 +2116,23 @@ function PropertyCard({
 
         {/* Edit + Delete + Status */}
         <div className="flex items-center gap-2 pt-2 border-t border-border">
-          <Link
-            to={`/editar-imovel/${property.id}`}
-            onClick={(e) => e.stopPropagation()}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-amber-500/10 text-amber-600 text-[11px] font-bold hover:bg-amber-500/20 transition-colors"
-          >
-            <Pencil className="w-3 h-3" /> Editar
-          </Link>
-          <button
-            onClick={(e) => { e.stopPropagation(); onDelete?.(property.id); }}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-destructive/10 text-destructive text-[11px] font-bold hover:bg-destructive/20 transition-colors"
-          >
-            <Trash2 className="w-3 h-3" /> Excluir
-          </button>
+          {canManage && (
+            <>
+              <Link
+                to={`/editar-imovel/${property.id}`}
+                onClick={(e) => e.stopPropagation()}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-amber-500/10 text-amber-600 text-[11px] font-bold hover:bg-amber-500/20 transition-colors"
+              >
+                <Pencil className="w-3 h-3" /> Editar
+              </Link>
+              <button
+                onClick={(e) => { e.stopPropagation(); onDelete?.(property.id); }}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-destructive/10 text-destructive text-[11px] font-bold hover:bg-destructive/20 transition-colors"
+              >
+                <Trash2 className="w-3 h-3" /> Excluir
+              </button>
+            </>
+          )}
           <div className="flex-1">
             <StatusBar currentStatus={property.status} onChangeStatus={handleStatusChange} />
           </div>
@@ -2318,7 +2346,7 @@ const cleanEmpreendimentoName = (name: string) => name.replace(/^(Ed\.\s*|Cond\.
 
 // ---- PropertyRow (redesigned) ----
 function PropertyRow({
-  property, onStatusChange, onSelect, isFavorited, onToggleFavorite, isInRoute, onToggleRoute, onFilterByTitle, onFilterByCondition, onFilterByOwner, onPriceChange, allProperties, onDealLabelChange, onNavigateToValuation, onNavigateToContract, onQuickUpdate, onDuplicate, onDelete,
+  property, onStatusChange, onSelect, isFavorited, onToggleFavorite, isInRoute, onToggleRoute, onFilterByTitle, onFilterByCondition, onFilterByOwner, onPriceChange, allProperties, onDealLabelChange, onNavigateToValuation, onNavigateToContract, onQuickUpdate, onDuplicate, onDelete, canManage = true,
 }: {
   property: Property;
   onStatusChange: (id: string, status: Property["status"]) => void;
@@ -2338,6 +2366,7 @@ function PropertyRow({
   onQuickUpdate?: (id: string) => void;
   onDuplicate?: (id: string) => void;
   onDelete?: (id: string) => void;
+  canManage?: boolean;
 }) {
   const dealScore = useMemo(() => analyzeDealScore(property, allProperties || []), [property, allProperties]);
   const [showCelebration, setShowCelebration] = useState(false);
@@ -2695,10 +2724,12 @@ function PropertyRow({
 
         {/* ── COL 5: Ações (ícones) ── */}
         <div className="w-full md:w-[52px] flex-shrink-0 flex flex-row md:flex-col items-center justify-start gap-1.5 py-2 px-3 md:px-0" onClick={(e) => e.stopPropagation()}>
-          <button
-            onClick={() => window.location.href = `/editar-imovel/${property.id}`}
-            className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors" title="Editar"
-          ><Pencil className="w-3.5 h-3.5 text-primary" /></button>
+          {canManage && (
+            <button
+              onClick={() => window.location.href = `/editar-imovel/${property.id}`}
+              className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors" title="Editar"
+            ><Pencil className="w-3.5 h-3.5 text-primary" /></button>
+          )}
           <button
             onClick={async () => {
               if (!property.images || property.images.length === 0) { toast.error("Nenhuma foto disponível."); return; }
@@ -2741,10 +2772,12 @@ function PropertyRow({
             onClick={() => onDuplicate?.(property.id)}
             className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors" title="Duplicar imóvel"
           ><Copy className="w-3.5 h-3.5 text-foreground" /></button>
-          <button
-            onClick={() => onDelete?.(property.id)}
-            className="w-8 h-8 rounded-lg bg-destructive/10 flex items-center justify-center hover:bg-destructive/20 transition-colors" title="Excluir imóvel"
-          ><Trash2 className="w-3.5 h-3.5 text-destructive" /></button>
+          {canManage && (
+            <button
+              onClick={() => onDelete?.(property.id)}
+              className="w-8 h-8 rounded-lg bg-destructive/10 flex items-center justify-center hover:bg-destructive/20 transition-colors" title="Excluir imóvel"
+            ><Trash2 className="w-3.5 h-3.5 text-destructive" /></button>
+          )}
         </div>
       </div>
     </div>

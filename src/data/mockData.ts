@@ -58,6 +58,7 @@ export interface Property {
   linkVideo?: string;
   linkMaterial?: string;
   link360?: string;
+  userId?: string;
 }
 
 export interface Broker {
