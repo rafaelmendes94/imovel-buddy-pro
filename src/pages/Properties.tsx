@@ -1389,6 +1389,11 @@ export default function Properties() {
                 onFilterByCondition={(cond) => { setFilterCondition(cond); setShowFilters(true); setActiveCategory("todos"); }}
                 onFilterByOwner={(owner) => { setFilterOwner(owner); setShowFilters(true); setActiveCategory("todos"); }}
                 canManage={isSuperAdmin || isAdminStaff || property.userId === user?.id}
+                onDelete={(id) => setDeleteConfirmId(id)}
+              />
+            ))}
+          </div>
+        ) : view === "list" ? (
           <div className="space-y-3">
             {paginated.map((property) => (
               <PropertyRow
@@ -1410,6 +1415,7 @@ export default function Properties() {
                 onNavigateToContract={handleNavigateToContract}
                 onQuickUpdate={handleQuickUpdate}
                 onDuplicate={handleDuplicate}
+                canManage={isSuperAdmin || isAdminStaff || property.userId === user?.id}
                 onDelete={(id) => setDeleteConfirmId(id)}
               />
             ))}
