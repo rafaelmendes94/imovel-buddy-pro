@@ -31,8 +31,20 @@ const formatCurrency = (value: number) =>
 const toSlug = (name: string) =>
   name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
+interface ProfileRow {
+  user_id: string;
+  full_name: string;
+  email: string | null;
+  phone: string | null;
+  account_type: string;
+  agency_id: string | null;
+  created_at: string;
+  plan_name?: string;
+  sub_status?: string;
+}
+
 export default function Brokers() {
-  const { user, profile, subscription } = useAuth();
+  const { user, profile, subscription, isSuperAdmin } = useAuth();
   const { toast } = useToast();
   const isAgency = profile?.account_type === "imobiliaria";
 
@@ -47,6 +59,13 @@ export default function Brokers() {
   const [inviting, setInviting] = useState(false);
   const maxAgencyBrokers = subscription?.plan?.max_brokers ?? 0;
 
+  // Super admin: all accounts + plan registration
+  const [allUsers, setAllUsers] = useState<ProfileRow[]>([]);
+  const [plans, setPlans] = useState<any[]>([]);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [form, setForm] = useState({ full_name: "", email: "", password: "", phone: "", account_type: "corretor", plan_id: "" });
+
   const fetchAgencyBrokers = async () => {
     if (!user || !isAgency) return;
     const { data } = await supabase
@@ -54,6 +73,24 @@ export default function Brokers() {
       .select("user_id, full_name, email, phone, avatar_url")
       .eq("agency_id", user.id);
     setAgencyBrokers(data || []);
+  };
+
+  const fetchAllUsers = async () => {
+    const { data: profs } = await supabase
+      .from("profiles")
+      .select("user_id, full_name, email, phone, account_type, agency_id, created_at")
+      .order("created_at", { ascending: false });
+    if (!profs) return;
+    const { data: subs } = await supabase
+      .from("subscriptions")
+      .select("user_id, status, plan_id, plans(name)");
+    const subMap = new Map<string, any>();
+    (subs || []).forEach((s: any) => { subMap.set(s.user_id, s); });
+    setAllUsers(profs.map((p: any) => ({
+      ...p,
+      plan_name: subMap.get(p.user_id)?.plans?.name,
+      sub_status: subMap.get(p.user_id)?.status,
+    })));
   };
 
   useEffect(() => {
@@ -86,7 +123,34 @@ export default function Brokers() {
     };
     fetchBrokers();
     fetchAgencyBrokers();
-  }, [user?.id, isAgency]);
+    if (isSuperAdmin) {
+      fetchAllUsers();
+      supabase.from("plans").select("id, name, price, plan_type").eq("is_active", true).order("price")
+        .then(({ data }) => setPlans(data || []));
+    }
+  }, [user?.id, isAgency, isSuperAdmin]);
+
+  const handleCreateBroker = async () => {
+    if (!form.full_name || !form.email || !form.password) {
+      toast({ title: "Preencha nome, email e senha", variant: "destructive" });
+      return;
+    }
+    setCreating(true);
+    const { data, error } = await supabase.functions.invoke("admin-create-broker", { body: form });
+    setCreating(false);
+    if (error || (data as any)?.error) {
+      toast({ title: "Erro ao cadastrar", description: error?.message || (data as any)?.error, variant: "destructive" });
+      return;
+    }
+    if ((data as any)?.warning) {
+      toast({ title: "Conta criada com aviso", description: (data as any).warning });
+    } else {
+      toast({ title: "Corretor cadastrado e plano vinculado!" });
+    }
+    setCreateOpen(false);
+    setForm({ full_name: "", email: "", password: "", phone: "", account_type: "corretor", plan_id: "" });
+    fetchAllUsers();
+  };
 
   const handleInvite = async () => {
     if (!user || !inviteEmail) return;
@@ -173,11 +237,68 @@ export default function Brokers() {
               {brokers.length} corretores cadastrados
             </p>
           </div>
-          <button className="flex items-center gap-2 px-4 py-2.5 rounded-lg gradient-gold text-primary text-sm font-semibold hover:opacity-90 transition-opacity self-start">
+          <button
+            onClick={() => isSuperAdmin && setCreateOpen(true)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg gradient-gold text-primary text-sm font-semibold hover:opacity-90 transition-opacity self-start"
+          >
             <Plus className="w-4 h-4" />
             Novo Corretor
           </button>
         </div>
+
+        {isSuperAdmin && (
+          <div className="elevated-card rounded-xl p-5 space-y-4 border-2 border-primary/30">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center gap-2">
+                <Users className="w-5 h-5 text-primary" />
+                <h2 className="text-lg font-bold text-foreground">
+                  Todas as contas ({allUsers.length})
+                </h2>
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs uppercase tracking-wider text-muted-foreground border-b border-border">
+                    <th className="py-2 px-2">Nome</th>
+                    <th className="py-2 px-2">Email</th>
+                    <th className="py-2 px-2">Telefone</th>
+                    <th className="py-2 px-2">Tipo</th>
+                    <th className="py-2 px-2">Plano</th>
+                    <th className="py-2 px-2">Status</th>
+                    <th className="py-2 px-2">Criado em</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {allUsers
+                    .filter(u => !search || u.full_name?.toLowerCase().includes(search.toLowerCase()) || u.email?.toLowerCase().includes(search.toLowerCase()))
+                    .map(u => (
+                      <tr key={u.user_id} className="border-b border-border/40 hover:bg-muted/30">
+                        <td className="py-2 px-2 font-medium text-foreground">{u.full_name || "—"}</td>
+                        <td className="py-2 px-2 text-muted-foreground">{u.email || "—"}</td>
+                        <td className="py-2 px-2 text-muted-foreground">{u.phone || "—"}</td>
+                        <td className="py-2 px-2">
+                          <Badge variant="outline" className="text-[10px]">{u.account_type}</Badge>
+                        </td>
+                        <td className="py-2 px-2 text-muted-foreground">{u.plan_name || "—"}</td>
+                        <td className="py-2 px-2">
+                          {u.sub_status ? (
+                            <span className={cn(
+                              "text-[10px] font-semibold px-2 py-0.5 rounded",
+                              u.sub_status === "active" ? "bg-success/10 text-success" :
+                              u.sub_status === "trial" ? "bg-accent/10 text-accent" :
+                              "bg-destructive/10 text-destructive"
+                            )}>{u.sub_status}</span>
+                          ) : <span className="text-muted-foreground">—</span>}
+                        </td>
+                        <td className="py-2 px-2 text-muted-foreground text-xs">{new Date(u.created_at).toLocaleDateString("pt-BR")}</td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
 
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -298,6 +419,41 @@ export default function Brokers() {
             />
             <Button onClick={handleInvite} disabled={inviting || !inviteEmail} className="w-full">
               {inviting ? "Vinculando..." : "Vincular"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle>Cadastrar novo corretor</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <Input placeholder="Nome completo" value={form.full_name} onChange={e => setForm({ ...form, full_name: e.target.value })} />
+            <Input type="email" placeholder="Email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
+            <Input type="password" placeholder="Senha (mín. 6 caracteres)" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
+            <Input placeholder="Telefone (opcional)" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
+            <select
+              value={form.account_type}
+              onChange={e => setForm({ ...form, account_type: e.target.value })}
+              className="w-full px-3 py-2 bg-card border border-input rounded-md text-sm"
+            >
+              <option value="corretor">Corretor</option>
+              <option value="imobiliaria">Imobiliária</option>
+            </select>
+            <select
+              value={form.plan_id}
+              onChange={e => setForm({ ...form, plan_id: e.target.value })}
+              className="w-full px-3 py-2 bg-card border border-input rounded-md text-sm"
+            >
+              <option value="">Sem plano</option>
+              {plans
+                .filter(p => !form.account_type || p.plan_type === form.account_type || p.plan_type === "ambos")
+                .map(p => (
+                  <option key={p.id} value={p.id}>{p.name} — R$ {Number(p.price).toFixed(2)}</option>
+                ))}
+            </select>
+            <Button onClick={handleCreateBroker} disabled={creating} className="w-full">
+              {creating ? "Cadastrando..." : "Cadastrar e vincular plano"}
             </Button>
           </div>
         </DialogContent>
