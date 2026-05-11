@@ -31,8 +31,20 @@ const formatCurrency = (value: number) =>
 const toSlug = (name: string) =>
   name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
+interface ProfileRow {
+  user_id: string;
+  full_name: string;
+  email: string | null;
+  phone: string | null;
+  account_type: string;
+  agency_id: string | null;
+  created_at: string;
+  plan_name?: string;
+  sub_status?: string;
+}
+
 export default function Brokers() {
-  const { user, profile, subscription } = useAuth();
+  const { user, profile, subscription, isSuperAdmin } = useAuth();
   const { toast } = useToast();
   const isAgency = profile?.account_type === "imobiliaria";
 
@@ -47,6 +59,13 @@ export default function Brokers() {
   const [inviting, setInviting] = useState(false);
   const maxAgencyBrokers = subscription?.plan?.max_brokers ?? 0;
 
+  // Super admin: all accounts + plan registration
+  const [allUsers, setAllUsers] = useState<ProfileRow[]>([]);
+  const [plans, setPlans] = useState<any[]>([]);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [form, setForm] = useState({ full_name: "", email: "", password: "", phone: "", account_type: "corretor", plan_id: "" });
+
   const fetchAgencyBrokers = async () => {
     if (!user || !isAgency) return;
     const { data } = await supabase
@@ -54,6 +73,24 @@ export default function Brokers() {
       .select("user_id, full_name, email, phone, avatar_url")
       .eq("agency_id", user.id);
     setAgencyBrokers(data || []);
+  };
+
+  const fetchAllUsers = async () => {
+    const { data: profs } = await supabase
+      .from("profiles")
+      .select("user_id, full_name, email, phone, account_type, agency_id, created_at")
+      .order("created_at", { ascending: false });
+    if (!profs) return;
+    const { data: subs } = await supabase
+      .from("subscriptions")
+      .select("user_id, status, plan_id, plans(name)");
+    const subMap = new Map<string, any>();
+    (subs || []).forEach((s: any) => { subMap.set(s.user_id, s); });
+    setAllUsers(profs.map((p: any) => ({
+      ...p,
+      plan_name: subMap.get(p.user_id)?.plans?.name,
+      sub_status: subMap.get(p.user_id)?.status,
+    })));
   };
 
   useEffect(() => {
@@ -86,7 +123,34 @@ export default function Brokers() {
     };
     fetchBrokers();
     fetchAgencyBrokers();
-  }, [user?.id, isAgency]);
+    if (isSuperAdmin) {
+      fetchAllUsers();
+      supabase.from("plans").select("id, name, price, plan_type").eq("is_active", true).order("price")
+        .then(({ data }) => setPlans(data || []));
+    }
+  }, [user?.id, isAgency, isSuperAdmin]);
+
+  const handleCreateBroker = async () => {
+    if (!form.full_name || !form.email || !form.password) {
+      toast({ title: "Preencha nome, email e senha", variant: "destructive" });
+      return;
+    }
+    setCreating(true);
+    const { data, error } = await supabase.functions.invoke("admin-create-broker", { body: form });
+    setCreating(false);
+    if (error || (data as any)?.error) {
+      toast({ title: "Erro ao cadastrar", description: error?.message || (data as any)?.error, variant: "destructive" });
+      return;
+    }
+    if ((data as any)?.warning) {
+      toast({ title: "Conta criada com aviso", description: (data as any).warning });
+    } else {
+      toast({ title: "Corretor cadastrado e plano vinculado!" });
+    }
+    setCreateOpen(false);
+    setForm({ full_name: "", email: "", password: "", phone: "", account_type: "corretor", plan_id: "" });
+    fetchAllUsers();
+  };
 
   const handleInvite = async () => {
     if (!user || !inviteEmail) return;
