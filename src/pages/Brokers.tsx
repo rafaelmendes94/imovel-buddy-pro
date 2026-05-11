@@ -423,6 +423,41 @@ export default function Brokers() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle>Cadastrar novo corretor</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <Input placeholder="Nome completo" value={form.full_name} onChange={e => setForm({ ...form, full_name: e.target.value })} />
+            <Input type="email" placeholder="Email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
+            <Input type="password" placeholder="Senha (mín. 6 caracteres)" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
+            <Input placeholder="Telefone (opcional)" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
+            <select
+              value={form.account_type}
+              onChange={e => setForm({ ...form, account_type: e.target.value })}
+              className="w-full px-3 py-2 bg-card border border-input rounded-md text-sm"
+            >
+              <option value="corretor">Corretor</option>
+              <option value="imobiliaria">Imobiliária</option>
+            </select>
+            <select
+              value={form.plan_id}
+              onChange={e => setForm({ ...form, plan_id: e.target.value })}
+              className="w-full px-3 py-2 bg-card border border-input rounded-md text-sm"
+            >
+              <option value="">Sem plano</option>
+              {plans
+                .filter(p => !form.account_type || p.plan_type === form.account_type || p.plan_type === "ambos")
+                .map(p => (
+                  <option key={p.id} value={p.id}>{p.name} — R$ {Number(p.price).toFixed(2)}</option>
+                ))}
+            </select>
+            <Button onClick={handleCreateBroker} disabled={creating} className="w-full">
+              {creating ? "Cadastrando..." : "Cadastrar e vincular plano"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }
