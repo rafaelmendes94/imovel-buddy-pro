@@ -30,6 +30,8 @@ export default function Empreendimentos() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isSuperAdmin, isAdminStaff } = useAuth();
+  const canManage = isSuperAdmin || isAdminStaff;
 
   useEffect(() => { loadData(); }, []);
 
