@@ -191,11 +191,21 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
 
   const prevImage = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setCurrentImageIndex((prev) => (prev > 0 ? prev - 1 : images.length - 1));
+    setCurrentImageIndex((prev) => {
+      const next = prev - 2;
+      if (next < 0) {
+        const lastPair = Math.max(0, (Math.ceil(images.length / 2) - 1) * 2);
+        return lastPair;
+      }
+      return next;
+    });
   };
   const nextImage = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setCurrentImageIndex((prev) => (prev < images.length - 1 ? prev + 1 : 0));
+    setCurrentImageIndex((prev) => {
+      const next = prev + 2;
+      return next >= images.length ? 0 : next;
+    });
   };
 
   // -- Inline edit helpers --
@@ -482,10 +492,21 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
           </TooltipProvider>
         </div>
 
-        {/* Main image gallery */}
-        <div className="relative h-72 sm:h-96 bg-gray-900">
-          <img src={images[currentImageIndex]} alt={property.title} className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20" />
+        {/* Main image gallery - 2 imagens quadradas por vez */}
+        <div className="relative bg-gray-900">
+          <div className="grid grid-cols-2 gap-1">
+            <div className="relative aspect-square bg-gray-800 overflow-hidden">
+              <img src={images[currentImageIndex]} alt={property.title} className="w-full h-full object-cover" />
+            </div>
+            <div className="relative aspect-square bg-gray-800 overflow-hidden">
+              {images[currentImageIndex + 1] ? (
+                <img src={images[currentImageIndex + 1]} alt={property.title} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-gray-800" />
+              )}
+            </div>
+          </div>
+          <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/40 via-transparent to-black/20" />
 
           {images.length > 1 && (
             <>
@@ -499,7 +520,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
           )}
 
           <div className="absolute top-3 right-3 px-3 py-1.5 rounded-full bg-black/50 text-white text-xs font-bold backdrop-blur-sm">
-            {currentImageIndex + 1} / {images.length}
+            {Math.floor(currentImageIndex / 2) + 1} / {Math.ceil(images.length / 2)}
           </div>
 
           {/* Badges */}
@@ -528,13 +549,16 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
             </p>
           </div>
 
-          {images.length > 1 && (
+          {images.length > 2 && (
             <div className="absolute bottom-3 right-3 flex gap-1.5">
-              {images.map((_, i) => (
-                <button key={i} onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(i); }}
-                  className={cn("w-2.5 h-2.5 rounded-full transition-all", i === currentImageIndex ? "bg-card w-5" : "bg-card/50 hover:bg-card/80")}
-                />
-              ))}
+              {Array.from({ length: Math.ceil(images.length / 2) }).map((_, i) => {
+                const active = Math.floor(currentImageIndex / 2) === i;
+                return (
+                  <button key={i} onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(i * 2); }}
+                    className={cn("w-2.5 h-2.5 rounded-full transition-all", active ? "bg-card w-5" : "bg-card/50 hover:bg-card/80")}
+                  />
+                );
+              })}
             </div>
           )}
         </div>
