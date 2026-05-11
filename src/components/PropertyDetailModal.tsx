@@ -772,7 +772,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                   <div className="flex items-center justify-between mb-4">
                     <p className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
                       <span className="cursor-grab active:cursor-grabbing mr-1 text-muted-foreground/50 hover:text-muted-foreground">⠿</span>
-                      <Hash className="w-4 h-4 text-primary" /> Identificação
+                      <span className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center"><Hash className="w-3.5 h-3.5 text-primary" /></span> <span className="text-foreground">Identificação</span>
                     </p>
                     <button onClick={() => setEditingBlock(isEditing ? null : "identificacao")} className={cn("p-1.5 rounded-lg transition-colors", isEditing ? "bg-primary/20 text-primary" : "hover:bg-muted text-muted-foreground")}>
                       <Pencil className="w-3.5 h-3.5" />
@@ -799,7 +799,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                   <div className="flex items-center justify-between mb-4">
                     <p className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
                       <span className="cursor-grab active:cursor-grabbing mr-1 text-muted-foreground/50 hover:text-muted-foreground">⠿</span>
-                      <DollarSign className="w-4 h-4 text-primary" /> Valor e Condições
+                      <span className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center"><DollarSign className="w-3.5 h-3.5 text-emerald-600" /></span> <span className="text-foreground">Valor e Condições</span>
                     </p>
                     <button onClick={() => setEditingBlock(isEditingValor ? null : "valor")} className={cn("p-1.5 rounded-lg transition-colors", isEditingValor ? "bg-primary/20 text-primary" : "hover:bg-muted text-muted-foreground")}>
                       <Pencil className="w-3.5 h-3.5" />
@@ -918,7 +918,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                   <div className="flex items-center justify-between mb-4">
                     <p className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
                       <span className="cursor-grab active:cursor-grabbing mr-1 text-muted-foreground/50 hover:text-muted-foreground">⠿</span>
-                      <User className="w-4 h-4 text-primary" /> Proprietário
+                      <span className="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center"><User className="w-3.5 h-3.5 text-blue-600" /></span> <span className="text-foreground">Proprietário</span>
                     </p>
                     <button onClick={() => setEditingBlock(editingBlock === "proprietario" ? null : "proprietario")} className={cn("p-1.5 rounded-lg transition-colors", editingBlock === "proprietario" ? "bg-primary/20 text-primary" : "hover:bg-muted text-muted-foreground")}>
                       <Pencil className="w-3.5 h-3.5" />
@@ -1000,7 +1000,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                   <div className="flex items-center justify-between mb-4">
                     <p className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
                       <span className="cursor-grab active:cursor-grabbing mr-1 text-muted-foreground/50 hover:text-muted-foreground">⠿</span>
-                      <Building2 className="w-4 h-4 text-primary" /> Características do Imóvel
+                      <span className="w-7 h-7 rounded-lg bg-purple-500/10 flex items-center justify-center"><Building2 className="w-3.5 h-3.5 text-purple-600" /></span> <span className="text-foreground">Características do Imóvel</span>
                     </p>
                     <button onClick={() => setEditingBlock(isEditingCaract ? null : "caracteristicas")} className={cn("p-1.5 rounded-lg transition-colors", isEditingCaract ? "bg-primary/20 text-primary" : "hover:bg-muted text-muted-foreground")}>
                       <Pencil className="w-3.5 h-3.5" />
@@ -1074,7 +1074,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
             <div className="bg-card rounded-2xl p-5 border border-border/60 shadow-[0_2px_8px_-2px_hsl(var(--foreground)/0.06)] hover:shadow-[0_8px_24px_-8px_hsl(var(--foreground)/0.12)] transition-shadow">
               <div className="flex items-center justify-between mb-3">
                 <p className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
-                  <FileText className="w-4 h-4 text-primary" /> Descrição
+                  <span className="w-7 h-7 rounded-lg bg-amber-500/10 flex items-center justify-center"><FileText className="w-3.5 h-3.5 text-amber-600" /></span> <span className="text-foreground">Descrição</span>
                 </p>
                 <button
                   onClick={() => setEditingField(editingField === "description" ? null : "description")}
