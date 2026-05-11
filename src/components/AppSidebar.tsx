@@ -5,43 +5,49 @@ import {
   ChevronLeft, ChevronRight, Building, Camera, Fence,
   Globe, ClipboardCheck, Wallet, Table2, FileSignature,
   Clapperboard, Landmark, Landmark as Landmark2, HardHat, ShoppingBag, Map,
-  ChevronDown,
+  ChevronDown, CreditCard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
 import logoImg from "@/assets/logo.png";
 
 interface NavItem {
   icon: any;
   label: string;
   path: string;
-  children?: { icon: any; label: string; path: string }[];
+  /** Module key required in subscription.plan.modules to show this item for brokers. If omitted, item is admin-only. */
+  module?: string;
+  /** If true, item is shown to everyone (broker + admin). */
+  always?: boolean;
+  children?: { icon: any; label: string; path: string; module?: string }[];
 }
 
-const navItems: NavItem[] = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
-  { icon: FileText, label: "Relatórios", path: "/relatorios" },
-  { icon: Globe, label: "Site", path: "/site-editor" },
-  { icon: Building2, label: "Imóveis", path: "/imoveis" },
+const allNavItems: NavItem[] = [
+  { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard", always: true },
+  { icon: FileText, label: "Relatórios", path: "/relatorios" }, // admin
+  { icon: Globe, label: "Site", path: "/site-editor", module: "site" },
+  { icon: Building2, label: "Imóveis", path: "/imoveis", module: "imoveis" },
   {
-    icon: Landmark, label: "Empreendimentos", path: "/empreendimentos",
+    icon: Landmark, label: "Empreendimentos", path: "/empreendimentos", module: "edificios",
     children: [
-      { icon: Building, label: "Edifícios", path: "/edificios" },
-      { icon: Fence, label: "Condomínios", path: "/condominios" },
-      { icon: Landmark, label: "Loteamentos", path: "/empreendimentos" },
+      { icon: Building, label: "Edifícios", path: "/edificios", module: "edificios" },
+      { icon: Fence, label: "Condomínios", path: "/condominios", module: "condominios" },
+      { icon: Landmark, label: "Loteamentos", path: "/empreendimentos", module: "edificios" },
     ],
   },
-  { icon: Map, label: "Mapas Condomínio", path: "/mapas-condominio" },
-  { icon: Camera, label: "Fotos da Cidade", path: "/fotos-cidade" },
-  { icon: ClipboardCheck, label: "Avaliações", path: "/avaliacoes" },
-  { icon: Wallet, label: "Financeiro", path: "/financeiro" },
-  { icon: Table2, label: "Tabelas", path: "/tabelas" },
-  { icon: FileSignature, label: "Contratos", path: "/contratos" },
-  { icon: Clapperboard, label: "Material Extra", path: "/videomaker" },
-  { icon: Users, label: "Corretores", path: "/corretores" },
-  { icon: Landmark2, label: "Imobiliárias", path: "/imobiliarias" },
-  { icon: HardHat, label: "Construtoras", path: "/construtoras" },
-  { icon: ShoppingBag, label: "Brick", path: "/brick" },
-  { icon: Settings, label: "Configurações", path: "/configuracoes" },
+  { icon: Map, label: "Mapas Condomínio", path: "/mapas-condominio", module: "condominios" },
+  { icon: Camera, label: "Fotos da Cidade", path: "/fotos-cidade", module: "fotos" },
+  { icon: ClipboardCheck, label: "Avaliações", path: "/avaliacoes", module: "avaliacoes" },
+  { icon: Wallet, label: "Financeiro", path: "/financeiro", module: "financeiro" },
+  { icon: Table2, label: "Tabelas", path: "/tabelas", module: "tabelas" },
+  { icon: FileSignature, label: "Contratos", path: "/contratos", module: "contratos" },
+  { icon: Clapperboard, label: "Material Extra", path: "/videomaker", module: "videomaker" },
+  { icon: Users, label: "Corretores", path: "/corretores", module: "corretores" },
+  { icon: Landmark2, label: "Imobiliárias", path: "/imobiliarias" }, // admin
+  { icon: HardHat, label: "Construtoras", path: "/construtoras" }, // admin
+  { icon: ShoppingBag, label: "Brick", path: "/brick" }, // admin
+  { icon: CreditCard, label: "Assinatura", path: "/painel/assinatura", always: true },
+  { icon: Settings, label: "Configurações", path: "/configuracoes", always: true },
 ];
 
 interface AppSidebarProps {
