@@ -58,6 +58,25 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({});
+  const { isSuperAdmin, isAdminStaff, subscription } = useAuth();
+
+  const isAdmin = isSuperAdmin || isAdminStaff;
+  const enabledModules: string[] = subscription?.plan?.modules || [];
+
+  const navItems: NavItem[] = allNavItems
+    .filter(item => {
+      if (isAdmin) return true;
+      if (item.always) return true;
+      if (item.module) return enabledModules.includes(item.module);
+      return false; // admin-only items hidden for brokers
+    })
+    .map(item => {
+      if (!item.children) return item;
+      const filteredChildren = isAdmin
+        ? item.children
+        : item.children.filter(c => !c.module || enabledModules.includes(c.module));
+      return { ...item, children: filteredChildren };
+    });
 
   const isActive = (path: string) => location.pathname === path;
   const isChildActive = (item: NavItem) =>
