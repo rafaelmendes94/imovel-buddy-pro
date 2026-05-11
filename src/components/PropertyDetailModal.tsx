@@ -1194,6 +1194,49 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
             </button>
           )}
         </div>
+
+        {/* Lightbox / Zoom */}
+        {lightboxIndex !== null && images[lightboxIndex] && (
+          <div
+            className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 animate-in fade-in"
+            onClick={() => setLightboxIndex(null)}
+          >
+            <button
+              onClick={(e) => { e.stopPropagation(); setLightboxIndex(null); }}
+              className="absolute top-4 right-4 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+              aria-label="Fechar"
+            >
+              <X className="w-6 h-6" />
+            </button>
+            {images.length > 1 && (
+              <>
+                <button
+                  onClick={(e) => { e.stopPropagation(); setLightboxIndex((i) => (i === null ? 0 : (i - 1 + images.length) % images.length)); }}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+                  aria-label="Anterior"
+                >
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); setLightboxIndex((i) => (i === null ? 0 : (i + 1) % images.length)); }}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+                  aria-label="Próxima"
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+              </>
+            )}
+            <img
+              src={images[lightboxIndex]}
+              alt={property.title}
+              onClick={(e) => e.stopPropagation()}
+              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+            />
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-white/10 text-white text-sm font-medium backdrop-blur-sm">
+              {lightboxIndex + 1} / {images.length}
+            </div>
+          </div>
+        )}
     </div>
   );
 }
