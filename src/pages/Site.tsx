@@ -44,7 +44,10 @@ import {
   LayoutDashboard,
   Settings,
   User,
+  Share2,
+  Building,
 } from "lucide-react";
+import { toast } from "sonner";
 import { cn, toSlug } from "@/lib/utils";
 import logoImg from "@/assets/logo.png";
 import { RoutePlanner } from "@/components/RoutePlanner";
@@ -1019,7 +1022,36 @@ export default function Site() {
                   <ChevronDown className="w-3 h-3" />
                 </button>
                 {userMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                    {profile?.full_name && (
+                      <>
+                        <a
+                          href={`/corretor/${toSlug(profile.full_name)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => setUserMenuOpen(false)}
+                          className="w-full flex items-center gap-2.5 px-4 py-2 text-sm font-semibold text-primary hover:bg-gray-50 transition-colors"
+                        >
+                          <Building className="w-4 h-4" /> Meus Imóveis
+                        </a>
+                        <button
+                          onClick={async () => {
+                            const url = `${window.location.origin}/corretor/${toSlug(profile.full_name)}`;
+                            try {
+                              await navigator.clipboard.writeText(url);
+                              toast.success("Link copiado! Compartilhe com seus clientes.");
+                            } catch {
+                              toast.error("Não foi possível copiar o link.");
+                            }
+                            setUserMenuOpen(false);
+                          }}
+                          className="w-full flex items-center gap-2.5 px-4 py-1.5 text-[11px] text-gray-500 hover:bg-gray-50 transition-colors"
+                        >
+                          <Share2 className="w-3.5 h-3.5" /> Copiar link público
+                        </button>
+                        <div className="border-t border-gray-100 my-1" />
+                      </>
+                    )}
                     <button onClick={() => { navigate("/dashboard"); setUserMenuOpen(false); }} className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                       <LayoutDashboard className="w-4 h-4" /> Dashboard
                     </button>
