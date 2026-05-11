@@ -4,6 +4,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { BackButton } from "@/components/BackButton";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { InfraMediaModal } from "@/components/InfraMediaModal";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/data/mockData";
@@ -30,6 +31,8 @@ export default function Condominiums() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isSuperAdmin, isAdminStaff } = useAuth();
+  const canManage = isSuperAdmin || isAdminStaff;
 
   useEffect(() => { loadData(); }, []);
 
@@ -60,9 +63,11 @@ export default function Condominiums() {
             <h1 className="text-2xl font-bold text-foreground">Condomínios</h1>
             <p className="text-sm text-muted-foreground mt-1">{condos.length} condomínios cadastrados</p>
           </div>
-          <button onClick={() => navigate("/cadastro-condominio")} className="flex items-center gap-2 px-4 py-2.5 rounded-lg gradient-gold text-primary text-sm font-semibold hover:opacity-90 transition-opacity self-start">
-            <Plus className="w-4 h-4" /> Novo Condomínio
-          </button>
+          {canManage && (
+            <button onClick={() => navigate("/cadastro-condominio")} className="flex items-center gap-2 px-4 py-2.5 rounded-lg gradient-gold text-primary text-sm font-semibold hover:opacity-90 transition-opacity self-start">
+              <Plus className="w-4 h-4" /> Novo Condomínio
+            </button>
+          )}
         </div>
 
         <div className="relative max-w-md">
@@ -79,10 +84,12 @@ export default function Condominiums() {
                 <div className="relative h-44 overflow-hidden">
                   <img src={condo.imagem_url || "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&h=300&fit=crop"} alt={condo.nome} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   <span className={cn("absolute top-3 left-3 px-2.5 py-1 rounded-md text-[11px] font-semibold border", typeColors[condo.tipo] || "bg-muted text-muted-foreground")}>{condo.tipo}</span>
-                  <div className="absolute top-3 right-3 flex gap-1.5">
-                    <button onClick={(e) => { e.stopPropagation(); navigate(`/editar-condominio/${condo.id}`); }} className="w-7 h-7 rounded-md bg-card/90 backdrop-blur-sm flex items-center justify-center hover:bg-card transition-colors"><Edit className="w-3.5 h-3.5 text-foreground" /></button>
-                    <button onClick={(e) => { e.stopPropagation(); handleDelete(condo.id); }} className="w-7 h-7 rounded-md bg-card/90 backdrop-blur-sm flex items-center justify-center hover:bg-destructive/90 transition-colors"><Trash2 className="w-3.5 h-3.5 text-foreground" /></button>
-                  </div>
+                  {canManage && (
+                    <div className="absolute top-3 right-3 flex gap-1.5">
+                      <button onClick={(e) => { e.stopPropagation(); navigate(`/editar-condominio/${condo.id}`); }} className="w-7 h-7 rounded-md bg-card/90 backdrop-blur-sm flex items-center justify-center hover:bg-card transition-colors"><Edit className="w-3.5 h-3.5 text-foreground" /></button>
+                      <button onClick={(e) => { e.stopPropagation(); handleDelete(condo.id); }} className="w-7 h-7 rounded-md bg-card/90 backdrop-blur-sm flex items-center justify-center hover:bg-destructive/90 transition-colors"><Trash2 className="w-3.5 h-3.5 text-foreground" /></button>
+                    </div>
+                  )}
                 </div>
                 <div className="p-4 space-y-3">
                   <div>
