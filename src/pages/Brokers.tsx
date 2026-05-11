@@ -237,11 +237,68 @@ export default function Brokers() {
               {brokers.length} corretores cadastrados
             </p>
           </div>
-          <button className="flex items-center gap-2 px-4 py-2.5 rounded-lg gradient-gold text-primary text-sm font-semibold hover:opacity-90 transition-opacity self-start">
+          <button
+            onClick={() => isSuperAdmin && setCreateOpen(true)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg gradient-gold text-primary text-sm font-semibold hover:opacity-90 transition-opacity self-start"
+          >
             <Plus className="w-4 h-4" />
             Novo Corretor
           </button>
         </div>
+
+        {isSuperAdmin && (
+          <div className="elevated-card rounded-xl p-5 space-y-4 border-2 border-primary/30">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center gap-2">
+                <Users className="w-5 h-5 text-primary" />
+                <h2 className="text-lg font-bold text-foreground">
+                  Todas as contas ({allUsers.length})
+                </h2>
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs uppercase tracking-wider text-muted-foreground border-b border-border">
+                    <th className="py-2 px-2">Nome</th>
+                    <th className="py-2 px-2">Email</th>
+                    <th className="py-2 px-2">Telefone</th>
+                    <th className="py-2 px-2">Tipo</th>
+                    <th className="py-2 px-2">Plano</th>
+                    <th className="py-2 px-2">Status</th>
+                    <th className="py-2 px-2">Criado em</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {allUsers
+                    .filter(u => !search || u.full_name?.toLowerCase().includes(search.toLowerCase()) || u.email?.toLowerCase().includes(search.toLowerCase()))
+                    .map(u => (
+                      <tr key={u.user_id} className="border-b border-border/40 hover:bg-muted/30">
+                        <td className="py-2 px-2 font-medium text-foreground">{u.full_name || "—"}</td>
+                        <td className="py-2 px-2 text-muted-foreground">{u.email || "—"}</td>
+                        <td className="py-2 px-2 text-muted-foreground">{u.phone || "—"}</td>
+                        <td className="py-2 px-2">
+                          <Badge variant="outline" className="text-[10px]">{u.account_type}</Badge>
+                        </td>
+                        <td className="py-2 px-2 text-muted-foreground">{u.plan_name || "—"}</td>
+                        <td className="py-2 px-2">
+                          {u.sub_status ? (
+                            <span className={cn(
+                              "text-[10px] font-semibold px-2 py-0.5 rounded",
+                              u.sub_status === "active" ? "bg-success/10 text-success" :
+                              u.sub_status === "trial" ? "bg-accent/10 text-accent" :
+                              "bg-destructive/10 text-destructive"
+                            )}>{u.sub_status}</span>
+                          ) : <span className="text-muted-foreground">—</span>}
+                        </td>
+                        <td className="py-2 px-2 text-muted-foreground text-xs">{new Date(u.created_at).toLocaleDateString("pt-BR")}</td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
 
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
