@@ -11,7 +11,7 @@ import {
   Eye,
   Trash2,
   Loader2,
-  X,
+  Share2,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -20,193 +20,218 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-
-interface StoredFile {
-  name: string;
-  id: string;
-  created_at: string;
-  metadata: { size: number; mimetype: string };
-}
+import { useAuth } from "@/hooks/useAuth";
+import { toSlug } from "@/lib/utils";
 
 export default function Tabelas() {
-  const [files, setFiles] = useState<StoredFile[]>([]);
+  const { user, profile } = useAuth();
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [tabelaUrl, setTabelaUrl] = useState<string | null>(null);
+  const [configId, setConfigId] = useState<string | null>(null);
   const [viewerOpen, setViewerOpen] = useState(false);
-  const [viewerUrl, setViewerUrl] = useState("");
-  const [viewerName, setViewerName] = useState("");
 
-  const fetchFiles = async () => {
+  const slug = profile?.full_name ? toSlug(profile.full_name) : "";
+  const brokerName = profile?.full_name || "Corretor";
+  const publicUrl = slug ? `${window.location.origin}/corretor/${slug}` : "";
+
+  const fetchTabela = async () => {
+    if (!slug) { setLoading(false); return; }
     setLoading(true);
-    const { data, error } = await supabase.storage.from("tabelas").list("", {
-      sortBy: { column: "created_at", order: "desc" },
-    });
-    if (error) {
-      toast.error("Erro ao carregar arquivos");
+    const { data } = await (supabase.from("site_config") as any)
+      .select("id, tabela_url")
+      .eq("config_type", "broker_page")
+      .eq("owner_id", slug)
+      .maybeSingle();
+    if (data) {
+      setConfigId(data.id);
+      setTabelaUrl(data.tabela_url || null);
     } else {
-      setFiles((data || []).filter((f) => f.name !== ".emptyFolderPlaceholder") as any);
+      setConfigId(null);
+      setTabelaUrl(null);
     }
     setLoading(false);
   };
 
   useEffect(() => {
-    fetchFiles();
-  }, []);
+    fetchTabela();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slug]);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.type !== "application/pdf") {
       toast.error("Apenas arquivos PDF são permitidos");
+      e.target.value = "";
+      return;
+    }
+    if (!slug || !user) {
+      toast.error("Perfil incompleto. Configure seu nome em Configurações.");
       return;
     }
     setUploading(true);
-    const fileName = `${Date.now()}_${file.name}`;
-    const { error } = await supabase.storage
-      .from("tabelas")
-      .upload(fileName, file, { contentType: "application/pdf" });
+    try {
+      const path = `brokers/${slug}/tabela-${Date.now()}.pdf`;
+      const { error: upErr } = await supabase.storage
+        .from("tabelas")
+        .upload(path, file, { upsert: true, contentType: "application/pdf" });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from("tabelas").getPublicUrl(path);
+      const url = pub?.publicUrl || "";
+
+      if (configId) {
+        const { error } = await (supabase.from("site_config") as any)
+          .update({ tabela_url: url })
+          .eq("id", configId);
+        if (error) throw error;
+      } else {
+        const { data, error } = await (supabase.from("site_config") as any)
+          .insert({
+            config_type: "broker_page",
+            owner_id: slug,
+            tabela_url: url,
+            site_title: brokerName,
+          })
+          .select("id")
+          .maybeSingle();
+        if (error) throw error;
+        if (data) setConfigId(data.id);
+      }
+      setTabelaUrl(url);
+      toast.success("Tabela enviada! Já está disponível na sua página pública.");
+    } catch (err: any) {
+      toast.error("Erro ao enviar: " + (err?.message || "tente novamente"));
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!configId) return;
+    if (!confirm("Remover sua tabela? Os clientes não poderão mais baixá-la.")) return;
+    const { error } = await (supabase.from("site_config") as any)
+      .update({ tabela_url: null })
+      .eq("id", configId);
     if (error) {
-      toast.error("Erro ao enviar arquivo: " + error.message);
+      toast.error("Erro ao remover tabela");
     } else {
-      toast.success("Arquivo enviado com sucesso!");
-      fetchFiles();
-    }
-    setUploading(false);
-    e.target.value = "";
-  };
-
-  const handleDownload = async (fileName: string) => {
-    const { data } = supabase.storage.from("tabelas").getPublicUrl(fileName);
-    if (data?.publicUrl) {
-      const a = document.createElement("a");
-      a.href = data.publicUrl;
-      a.download = fileName.replace(/^\d+_/, "");
-      a.target = "_blank";
-      a.click();
+      setTabelaUrl(null);
+      toast.success("Tabela removida");
     }
   };
 
-  const handleView = (fileName: string) => {
-    const { data } = supabase.storage.from("tabelas").getPublicUrl(fileName);
-    if (data?.publicUrl) {
-      setViewerUrl(data.publicUrl);
-      setViewerName(fileName.replace(/^\d+_/, ""));
-      setViewerOpen(true);
+  const copyPublicLink = async () => {
+    try {
+      await navigator.clipboard.writeText(publicUrl);
+      toast.success("Link da sua página copiado!");
+    } catch {
+      toast.error("Não foi possível copiar");
     }
-  };
-
-  const handleDelete = async (fileName: string) => {
-    const { error } = await supabase.storage.from("tabelas").remove([fileName]);
-    if (error) {
-      toast.error("Erro ao excluir arquivo");
-    } else {
-      toast.success("Arquivo excluído");
-      fetchFiles();
-    }
-  };
-
-  const formatSize = (bytes: number) => {
-    if (bytes < 1024) return bytes + " B";
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
-    return (bytes / (1024 * 1024)).toFixed(1) + " MB";
   };
 
   return (
     <AppLayout>
-      <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
+      <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 max-w-3xl mx-auto">
         <BackButton />
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Tabelas</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Faça upload de PDFs para visualizar ou baixar
-            </p>
-          </div>
-          <div>
-            <Input
-              type="file"
-              accept="application/pdf"
-              onChange={handleUpload}
-              className="hidden"
-              id="pdf-upload"
-              disabled={uploading}
-            />
-            <Button asChild disabled={uploading}>
-              <label htmlFor="pdf-upload" className="cursor-pointer">
-                {uploading ? (
-                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                ) : (
-                  <Upload className="w-4 h-4 mr-2" />
-                )}
-                {uploading ? "Enviando..." : "Upload PDF"}
-              </label>
-            </Button>
-          </div>
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Minha Tabela</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Faça upload da sua tabela em PDF. Ela ficará disponível para download
+            no botão <strong>"Baixar tabela em PDF"</strong> da sua página pública de corretor.
+          </p>
+          {publicUrl && (
+            <button
+              onClick={copyPublicLink}
+              className="mt-2 inline-flex items-center gap-1.5 text-xs text-primary hover:underline"
+            >
+              <Share2 className="w-3.5 h-3.5" /> {publicUrl}
+            </button>
+          )}
         </div>
 
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
           </div>
-        ) : files.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-            <FileText className="w-16 h-16 mb-4 opacity-30" />
-            <p className="text-lg font-medium">Nenhum arquivo encontrado</p>
-            <p className="text-sm">Faça upload de um PDF para começar</p>
+        ) : tabelaUrl ? (
+          <div className="elevated-card rounded-xl p-5 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-lg bg-destructive/10 flex items-center justify-center flex-shrink-0">
+                <FileText className="w-6 h-6 text-destructive" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-foreground">
+                  Tabela ativa
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
+                  Vinculada a {brokerName}
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button variant="outline" onClick={() => setViewerOpen(true)}>
+                <Eye className="w-4 h-4 mr-2" /> Visualizar
+              </Button>
+              <Button variant="outline" asChild>
+                <a href={tabelaUrl} target="_blank" rel="noopener noreferrer" download>
+                  <Download className="w-4 h-4 mr-2" /> Baixar
+                </a>
+              </Button>
+              <div className="flex-1" />
+              <Input
+                type="file"
+                accept="application/pdf"
+                onChange={handleUpload}
+                className="hidden"
+                id="tabela-upload-replace"
+                disabled={uploading}
+              />
+              <Button asChild variant="secondary" disabled={uploading}>
+                <label htmlFor="tabela-upload-replace" className="cursor-pointer">
+                  {uploading ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Upload className="w-4 h-4 mr-2" />
+                  )}
+                  {uploading ? "Enviando..." : "Substituir"}
+                </label>
+              </Button>
+              <Button variant="ghost" onClick={handleDelete} className="text-destructive hover:text-destructive">
+                <Trash2 className="w-4 h-4 mr-2" /> Remover
+              </Button>
+            </div>
           </div>
         ) : (
-          <div className="grid gap-3">
-            {files.map((file) => (
-              <div
-                key={file.id || file.name}
-                className="elevated-card rounded-xl p-4 flex items-center justify-between gap-4"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center flex-shrink-0">
-                    <FileText className="w-5 h-5 text-destructive" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">
-                      {file.name.replace(/^\d+_/, "")}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {file.metadata?.size
-                        ? formatSize(file.metadata.size)
-                        : "—"}{" "}
-                      •{" "}
-                      {new Date(file.created_at).toLocaleDateString("pt-BR")}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1 flex-shrink-0">
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => handleView(file.name)}
-                    title="Visualizar"
-                  >
-                    <Eye className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => handleDownload(file.name)}
-                    title="Baixar"
-                  >
-                    <Download className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => handleDelete(file.name)}
-                    title="Excluir"
-                    className="text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
+          <div className="elevated-card rounded-xl p-8 flex flex-col items-center text-center gap-3">
+            <FileText className="w-14 h-14 text-muted-foreground/40" />
+            <div>
+              <p className="text-base font-medium text-foreground">
+                Nenhuma tabela enviada ainda
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Envie um PDF para disponibilizar na sua página pública.
+              </p>
+            </div>
+            <Input
+              type="file"
+              accept="application/pdf"
+              onChange={handleUpload}
+              className="hidden"
+              id="tabela-upload"
+              disabled={uploading}
+            />
+            <Button asChild disabled={uploading}>
+              <label htmlFor="tabela-upload" className="cursor-pointer">
+                {uploading ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Upload className="w-4 h-4 mr-2" />
+                )}
+                {uploading ? "Enviando..." : "Enviar minha tabela"}
+              </label>
+            </Button>
           </div>
         )}
       </div>
@@ -215,16 +240,17 @@ export default function Tabelas() {
         <DialogContent className="max-w-5xl h-[85vh] flex flex-col p-0">
           <DialogHeader className="px-6 pt-6 pb-2">
             <DialogTitle className="flex items-center gap-2">
-              <FileText className="w-5 h-5" />
-              {viewerName}
+              <FileText className="w-5 h-5" /> Minha Tabela — {brokerName}
             </DialogTitle>
           </DialogHeader>
           <div className="flex-1 px-6 pb-6">
-            <iframe
-              src={viewerUrl}
-              className="w-full h-full rounded-lg border border-border"
-              title={viewerName}
-            />
+            {tabelaUrl && (
+              <iframe
+                src={tabelaUrl}
+                className="w-full h-full rounded-lg border border-border"
+                title="Tabela"
+              />
+            )}
           </div>
         </DialogContent>
       </Dialog>
