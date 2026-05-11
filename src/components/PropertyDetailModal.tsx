@@ -520,7 +520,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
           )}
 
           <div className="absolute top-3 right-3 px-3 py-1.5 rounded-full bg-black/50 text-white text-xs font-bold backdrop-blur-sm">
-            {currentImageIndex + 1} / {images.length}
+            {Math.floor(currentImageIndex / 2) + 1} / {Math.ceil(images.length / 2)}
           </div>
 
           {/* Badges */}
