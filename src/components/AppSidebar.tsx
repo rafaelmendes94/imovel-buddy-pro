@@ -7,8 +7,10 @@ import {
   Clapperboard, Landmark, Landmark as Landmark2, HardHat, ShoppingBag, Map,
   ChevronDown, CreditCard,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Share2, Home as HomeIcon } from "lucide-react";
+import { cn, toSlug } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 import logoImg from "@/assets/logo.png";
 
 interface NavItem {
