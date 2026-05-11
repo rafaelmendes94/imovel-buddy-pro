@@ -549,13 +549,16 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
             </p>
           </div>
 
-          {images.length > 1 && (
+          {images.length > 2 && (
             <div className="absolute bottom-3 right-3 flex gap-1.5">
-              {images.map((_, i) => (
-                <button key={i} onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(i); }}
-                  className={cn("w-2.5 h-2.5 rounded-full transition-all", i === currentImageIndex ? "bg-card w-5" : "bg-card/50 hover:bg-card/80")}
-                />
-              ))}
+              {Array.from({ length: Math.ceil(images.length / 2) }).map((_, i) => {
+                const active = Math.floor(currentImageIndex / 2) === i;
+                return (
+                  <button key={i} onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(i * 2); }}
+                    className={cn("w-2.5 h-2.5 rounded-full transition-all", active ? "bg-card w-5" : "bg-card/50 hover:bg-card/80")}
+                  />
+                );
+              })}
             </div>
           )}
         </div>
