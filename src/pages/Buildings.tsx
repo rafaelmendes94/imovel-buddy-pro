@@ -84,10 +84,12 @@ export default function Buildings() {
                 <div className="relative h-44 overflow-hidden">
                   <img src={building.imagem_url || "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&h=300&fit=crop"} alt={building.nome} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   <span className={cn("absolute top-3 left-3 px-2.5 py-1 rounded-md text-[11px] font-semibold border", statusColors[building.status] || "bg-muted text-muted-foreground")}>{building.status}</span>
-                  <div className="absolute top-3 right-3 flex gap-1.5">
-                    <button onClick={(e) => { e.stopPropagation(); navigate(`/editar-edificio/${building.id}`); }} className="w-7 h-7 rounded-md bg-card/90 backdrop-blur-sm flex items-center justify-center hover:bg-card transition-colors"><Edit className="w-3.5 h-3.5 text-foreground" /></button>
-                    <button onClick={(e) => { e.stopPropagation(); handleDelete(building.id); }} className="w-7 h-7 rounded-md bg-card/90 backdrop-blur-sm flex items-center justify-center hover:bg-destructive/90 transition-colors"><Trash2 className="w-3.5 h-3.5 text-foreground" /></button>
-                  </div>
+                  {canManage && (
+                    <div className="absolute top-3 right-3 flex gap-1.5">
+                      <button onClick={(e) => { e.stopPropagation(); navigate(`/editar-edificio/${building.id}`); }} className="w-7 h-7 rounded-md bg-card/90 backdrop-blur-sm flex items-center justify-center hover:bg-card transition-colors"><Edit className="w-3.5 h-3.5 text-foreground" /></button>
+                      <button onClick={(e) => { e.stopPropagation(); handleDelete(building.id); }} className="w-7 h-7 rounded-md bg-card/90 backdrop-blur-sm flex items-center justify-center hover:bg-destructive/90 transition-colors"><Trash2 className="w-3.5 h-3.5 text-foreground" /></button>
+                    </div>
+                  )}
                 </div>
                 <div className="p-4 space-y-2">
                   <h3 className="font-semibold text-card-foreground text-sm">{building.nome}</h3>
