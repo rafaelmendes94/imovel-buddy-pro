@@ -1388,11 +1388,7 @@ export default function Properties() {
                 onFilterByTitle={(title) => { setSearch(title.split(" ").slice(0, 2).join(" ")); setActiveCategory("todos"); }}
                 onFilterByCondition={(cond) => { setFilterCondition(cond); setShowFilters(true); setActiveCategory("todos"); }}
                 onFilterByOwner={(owner) => { setFilterOwner(owner); setShowFilters(true); setActiveCategory("todos"); }}
-                onDelete={(id) => setDeleteConfirmId(id)}
-              />
-            ))}
-          </div>
-        ) : view === "list" ? (
+                canManage={isSuperAdmin || isAdminStaff || property.userId === user?.id}
           <div className="space-y-3">
             {paginated.map((property) => (
               <PropertyRow
