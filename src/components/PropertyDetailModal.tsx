@@ -191,11 +191,21 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
 
   const prevImage = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setCurrentImageIndex((prev) => (prev > 0 ? prev - 1 : images.length - 1));
+    setCurrentImageIndex((prev) => {
+      const next = prev - 2;
+      if (next < 0) {
+        const lastPair = Math.max(0, (Math.ceil(images.length / 2) - 1) * 2);
+        return lastPair;
+      }
+      return next;
+    });
   };
   const nextImage = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setCurrentImageIndex((prev) => (prev < images.length - 1 ? prev + 1 : 0));
+    setCurrentImageIndex((prev) => {
+      const next = prev + 2;
+      return next >= images.length ? 0 : next;
+    });
   };
 
   // -- Inline edit helpers --
