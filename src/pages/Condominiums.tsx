@@ -63,9 +63,11 @@ export default function Condominiums() {
             <h1 className="text-2xl font-bold text-foreground">Condomínios</h1>
             <p className="text-sm text-muted-foreground mt-1">{condos.length} condomínios cadastrados</p>
           </div>
-          <button onClick={() => navigate("/cadastro-condominio")} className="flex items-center gap-2 px-4 py-2.5 rounded-lg gradient-gold text-primary text-sm font-semibold hover:opacity-90 transition-opacity self-start">
-            <Plus className="w-4 h-4" /> Novo Condomínio
-          </button>
+          {canManage && (
+            <button onClick={() => navigate("/cadastro-condominio")} className="flex items-center gap-2 px-4 py-2.5 rounded-lg gradient-gold text-primary text-sm font-semibold hover:opacity-90 transition-opacity self-start">
+              <Plus className="w-4 h-4" /> Novo Condomínio
+            </button>
+          )}
         </div>
 
         <div className="relative max-w-md">
