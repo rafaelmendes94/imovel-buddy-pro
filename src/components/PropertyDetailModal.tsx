@@ -496,16 +496,16 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
         {/* Main image gallery - 2 imagens quadradas por vez */}
         <div className="relative bg-gray-900">
           <div className="grid grid-cols-2 gap-1">
-            <div className="relative aspect-square bg-gray-800 overflow-hidden">
-              <img src={images[currentImageIndex]} alt={property.title} className="w-full h-full object-cover" />
-            </div>
-            <div className="relative aspect-square bg-gray-800 overflow-hidden">
-              {images[currentImageIndex + 1] ? (
-                <img src={images[currentImageIndex + 1]} alt={property.title} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full bg-gray-800" />
-              )}
-            </div>
+            <button type="button" onClick={() => setLightboxIndex(currentImageIndex)} className="relative aspect-square bg-gray-800 overflow-hidden group cursor-zoom-in">
+              <img src={images[currentImageIndex]} alt={property.title} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+            </button>
+            {images[currentImageIndex + 1] ? (
+              <button type="button" onClick={() => setLightboxIndex(currentImageIndex + 1)} className="relative aspect-square bg-gray-800 overflow-hidden group cursor-zoom-in">
+                <img src={images[currentImageIndex + 1]} alt={property.title} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+              </button>
+            ) : (
+              <div className="relative aspect-square bg-gray-800" />
+            )}
           </div>
           <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/40 via-transparent to-black/20" />
 
