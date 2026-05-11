@@ -2116,19 +2116,23 @@ function PropertyCard({
 
         {/* Edit + Delete + Status */}
         <div className="flex items-center gap-2 pt-2 border-t border-border">
-          <Link
-            to={`/editar-imovel/${property.id}`}
-            onClick={(e) => e.stopPropagation()}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-amber-500/10 text-amber-600 text-[11px] font-bold hover:bg-amber-500/20 transition-colors"
-          >
-            <Pencil className="w-3 h-3" /> Editar
-          </Link>
-          <button
-            onClick={(e) => { e.stopPropagation(); onDelete?.(property.id); }}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-destructive/10 text-destructive text-[11px] font-bold hover:bg-destructive/20 transition-colors"
-          >
-            <Trash2 className="w-3 h-3" /> Excluir
-          </button>
+          {canManage && (
+            <>
+              <Link
+                to={`/editar-imovel/${property.id}`}
+                onClick={(e) => e.stopPropagation()}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-amber-500/10 text-amber-600 text-[11px] font-bold hover:bg-amber-500/20 transition-colors"
+              >
+                <Pencil className="w-3 h-3" /> Editar
+              </Link>
+              <button
+                onClick={(e) => { e.stopPropagation(); onDelete?.(property.id); }}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-destructive/10 text-destructive text-[11px] font-bold hover:bg-destructive/20 transition-colors"
+              >
+                <Trash2 className="w-3 h-3" /> Excluir
+              </button>
+            </>
+          )}
           <div className="flex-1">
             <StatusBar currentStatus={property.status} onChangeStatus={handleStatusChange} />
           </div>
