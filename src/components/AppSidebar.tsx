@@ -7,8 +7,10 @@ import {
   Clapperboard, Landmark, Landmark as Landmark2, HardHat, ShoppingBag, Map,
   ChevronDown, CreditCard,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Share2, Home as HomeIcon } from "lucide-react";
+import { cn, toSlug } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 import logoImg from "@/assets/logo.png";
 
 interface NavItem {
@@ -58,10 +60,22 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({});
-  const { isSuperAdmin, isAdminStaff, subscription } = useAuth();
+  const { isSuperAdmin, isAdminStaff, isBroker, subscription, profile } = useAuth();
 
   const isAdmin = isSuperAdmin || isAdminStaff;
   const enabledModules: string[] = subscription?.plan?.modules || [];
+  const brokerSlug = profile?.full_name ? toSlug(profile.full_name) : "";
+  const showMyPage = isBroker && !isAdmin && !!brokerSlug;
+  const myPageUrl = brokerSlug ? `${window.location.origin}/corretor/${brokerSlug}` : "";
+
+  const copyMyPageLink = async () => {
+    try {
+      await navigator.clipboard.writeText(myPageUrl);
+      toast.success("Link copiado! Compartilhe com seus clientes.");
+    } catch {
+      toast.error("Não foi possível copiar o link.");
+    }
+  };
 
   const navItems: NavItem[] = allNavItems
     .filter(item => {
@@ -116,6 +130,32 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
 
       {/* Navigation */}
       <nav className="flex-1 py-2 px-2 space-y-0.5 overflow-y-auto scrollbar-thin">
+        {showMyPage && (
+          <div className="mb-1 rounded-lg bg-sidebar-accent/40 border border-sidebar-border p-2 space-y-1">
+            <Link
+              to={`/corretor/${brokerSlug}`}
+              onClick={onNavigate}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={cn(
+                "flex items-center gap-3 px-2 py-2 rounded-md text-sm font-semibold transition-all",
+                "text-sidebar-primary hover:bg-sidebar-accent"
+              )}
+            >
+              <HomeIcon className="w-5 h-5 flex-shrink-0" />
+              {!collapsed && <span className="flex-1">Meus Imóveis</span>}
+            </Link>
+            {!collapsed && (
+              <button
+                onClick={copyMyPageLink}
+                className="flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-[11px] text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
+              >
+                <Share2 className="w-3.5 h-3.5" />
+                <span className="truncate">Copiar link público</span>
+              </button>
+            )}
+          </div>
+        )}
         {navItems.map((item) => {
           if (item.children) {
             const open = isMenuOpen(item);
