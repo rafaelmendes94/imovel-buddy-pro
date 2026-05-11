@@ -439,6 +439,7 @@ export default function Properties() {
   const [filterEmpreendimento, setFilterEmpreendimento] = useState("");
   const [filterType, setFilterType] = useState("");
   const [filterOwner, setFilterOwner] = useState("");
+  const [filterMine, setFilterMine] = useState(false);
   const [filterNeighborhood, setFilterNeighborhood] = useState("");
   const [filterStreet, setFilterStreet] = useState("");
   const [filterCode, setFilterCode] = useState("");
@@ -506,6 +507,7 @@ export default function Properties() {
 
       const mapped: Property[] = (data || []).map((row, index) => ({
         id: row.id,
+        userId: row.user_id,
         code: `MV${String(index + 1).padStart(2, "0")}`,
         title: row.titulo || "Imóvel",
         address: row.endereco || "",
@@ -853,10 +855,11 @@ export default function Properties() {
       if (filterStreet && p.address !== filterStreet) return false;
       if (filterCode && !(p.code || "").toLowerCase().includes(filterCode.toLowerCase())) return false;
       if (filterParking && p.parking < parseInt(filterParking)) return false;
+      if (filterMine && user && p.userId !== user.id) return false;
 
       return true;
     });
-  }, [propertyList, activeCategory, search, filterCity, filterBedrooms, filterPriceMin, filterPriceMax, filterCondition, filterFreshness, filterEmpreendimento, filterType, filterOwner, filterNeighborhood, filterStreet, filterCode, filterParking, showInactive]);
+  }, [propertyList, activeCategory, search, filterCity, filterBedrooms, filterPriceMin, filterPriceMax, filterCondition, filterFreshness, filterEmpreendimento, filterType, filterOwner, filterNeighborhood, filterStreet, filterCode, filterParking, filterMine, user, showInactive]);
 
   // Reset page when filters change
   useEffect(() => {
