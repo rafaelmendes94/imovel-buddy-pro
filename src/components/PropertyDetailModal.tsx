@@ -768,7 +768,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
               ];
 
               return blockWrapper("identificacao",
-                <div className="bg-muted/50 rounded-xl p-5 border border-border">
+                <div className="bg-card rounded-2xl p-5 border border-border/60 shadow-[0_2px_8px_-2px_hsl(var(--foreground)/0.06)] hover:shadow-[0_8px_24px_-8px_hsl(var(--foreground)/0.12)] transition-shadow">
                   <div className="flex items-center justify-between mb-4">
                     <p className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
                       <span className="cursor-grab active:cursor-grabbing mr-1 text-muted-foreground/50 hover:text-muted-foreground">⠿</span>
@@ -795,7 +795,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
               ];
 
               return blockWrapper("valor",
-                <div className="bg-muted/50 rounded-xl p-5 border border-border">
+                <div className="bg-card rounded-2xl p-5 border border-border/60 shadow-[0_2px_8px_-2px_hsl(var(--foreground)/0.06)] hover:shadow-[0_8px_24px_-8px_hsl(var(--foreground)/0.12)] transition-shadow">
                   <div className="flex items-center justify-between mb-4">
                     <p className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
                       <span className="cursor-grab active:cursor-grabbing mr-1 text-muted-foreground/50 hover:text-muted-foreground">⠿</span>
@@ -914,7 +914,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
               ];
 
               return blockWrapper("proprietario",
-                <div className="bg-muted/50 rounded-xl p-5 border border-border">
+                <div className="bg-card rounded-2xl p-5 border border-border/60 shadow-[0_2px_8px_-2px_hsl(var(--foreground)/0.06)] hover:shadow-[0_8px_24px_-8px_hsl(var(--foreground)/0.12)] transition-shadow">
                   <div className="flex items-center justify-between mb-4">
                     <p className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
                       <span className="cursor-grab active:cursor-grabbing mr-1 text-muted-foreground/50 hover:text-muted-foreground">⠿</span>
@@ -996,7 +996,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
               ];
 
               return blockWrapper("caracteristicas",
-                <div className="bg-muted/50 rounded-xl p-5 border border-border">
+                <div className="bg-card rounded-2xl p-5 border border-border/60 shadow-[0_2px_8px_-2px_hsl(var(--foreground)/0.06)] hover:shadow-[0_8px_24px_-8px_hsl(var(--foreground)/0.12)] transition-shadow">
                   <div className="flex items-center justify-between mb-4">
                     <p className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
                       <span className="cursor-grab active:cursor-grabbing mr-1 text-muted-foreground/50 hover:text-muted-foreground">⠿</span>
@@ -1071,7 +1071,7 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
 
           {/* Descrição do imóvel */}
           {property.description && (
-            <div className="bg-muted/50 rounded-xl p-5 border border-border">
+            <div className="bg-card rounded-2xl p-5 border border-border/60 shadow-[0_2px_8px_-2px_hsl(var(--foreground)/0.06)] hover:shadow-[0_8px_24px_-8px_hsl(var(--foreground)/0.12)] transition-shadow">
               <div className="flex items-center justify-between mb-3">
                 <p className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
                   <FileText className="w-4 h-4 text-primary" /> Descrição
