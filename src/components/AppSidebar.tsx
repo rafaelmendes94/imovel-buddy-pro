@@ -60,10 +60,22 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({});
-  const { isSuperAdmin, isAdminStaff, subscription } = useAuth();
+  const { isSuperAdmin, isAdminStaff, isBroker, subscription, profile } = useAuth();
 
   const isAdmin = isSuperAdmin || isAdminStaff;
   const enabledModules: string[] = subscription?.plan?.modules || [];
+  const brokerSlug = profile?.full_name ? toSlug(profile.full_name) : "";
+  const showMyPage = isBroker && !isAdmin && !!brokerSlug;
+  const myPageUrl = brokerSlug ? `${window.location.origin}/corretor/${brokerSlug}` : "";
+
+  const copyMyPageLink = async () => {
+    try {
+      await navigator.clipboard.writeText(myPageUrl);
+      toast.success("Link copiado! Compartilhe com seus clientes.");
+    } catch {
+      toast.error("Não foi possível copiar o link.");
+    }
+  };
 
   const navItems: NavItem[] = allNavItems
     .filter(item => {
