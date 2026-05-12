@@ -179,6 +179,12 @@ export default function Settings() {
 
   const cards = [
     {
+      icon: User,
+      title: "Meu Perfil",
+      description: "Nome, foto e WhatsApp que aparecem nos imóveis e na sua página pública",
+      onClick: () => setShowProfileDialog(true),
+    },
+    {
       icon: Building2,
       title: "Dados da Imobiliária",
       description: "Nome, CNPJ, endereço e informações de contato",
