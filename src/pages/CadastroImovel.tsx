@@ -421,6 +421,9 @@ export function ImovelForm({ editId }: { editId?: string }) {
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const { values: infraOptions } = useSystemOptions("infraestrutura");
+  const { values: posicaoPredioOptions } = useSystemOptions("posicao_predio");
+  const { values: posicaoSolarOptions } = useSystemOptions("posicao_solar");
+  const { values: vistaOptions } = useSystemOptions("vista");
   const [logs, setLogs] = useState<any[]>([]);
   const [logsLoading, setLogsLoading] = useState(false);
 
