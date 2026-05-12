@@ -421,6 +421,9 @@ export function ImovelForm({ editId }: { editId?: string }) {
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const { values: infraOptions } = useSystemOptions("infraestrutura");
+  const { values: posicaoPredioOptions } = useSystemOptions("posicao_predio");
+  const { values: posicaoSolarOptions } = useSystemOptions("posicao_solar");
+  const { values: vistaOptions } = useSystemOptions("vista");
   const [logs, setLogs] = useState<any[]>([]);
   const [logsLoading, setLogsLoading] = useState(false);
 
@@ -1017,18 +1020,24 @@ export function ImovelForm({ editId }: { editId?: string }) {
 
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 sm:gap-4 mb-4">
           <QuickPick label="Condição" options={condicaoOptions} value={form.condicao} onChange={(v) => set('condicao', String(v))} />
-          <div className="space-y-1.5">
-            <Label className="text-xs">Posição no Prédio</Label>
-            <Input placeholder="Ex: Frente, Fundos" value={form.posicaoPredio} onChange={e => set('posicaoPredio', e.target.value)} />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs">Posição Solar</Label>
-            <Input placeholder="Ex: Nascente, Poente" value={form.posicaoSolar} onChange={e => set('posicaoSolar', e.target.value)} />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs flex items-center gap-1"><Eye className="w-3.5 h-3.5" /> Vista</Label>
-            <Input placeholder="Ex: Mar, Cidade" value={form.vista} onChange={e => set('vista', e.target.value)} />
-          </div>
+          <QuickPick
+            label="Posição no Prédio"
+            options={posicaoPredioOptions.length ? posicaoPredioOptions : ["Frente", "Fundos", "Lateral", "Esquina"]}
+            value={form.posicaoPredio}
+            onChange={(v) => set('posicaoPredio', String(v))}
+          />
+          <QuickPick
+            label="Posição Solar"
+            options={posicaoSolarOptions.length ? posicaoSolarOptions : ["Nascente", "Poente", "Norte", "Sul"]}
+            value={form.posicaoSolar}
+            onChange={(v) => set('posicaoSolar', String(v))}
+          />
+          <QuickPick
+            label="Vista"
+            options={vistaOptions.length ? vistaOptions : ["Mar", "Cidade", "Lagoa", "Montanha"]}
+            value={form.vista}
+            onChange={(v) => set('vista', String(v))}
+          />
         </div>
 
         <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-3 sm:gap-6 mb-4 py-3 px-3 sm:px-4 bg-muted/50 rounded-lg">
