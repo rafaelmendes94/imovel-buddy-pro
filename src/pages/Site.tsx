@@ -84,6 +84,7 @@ interface SiteProperty {
   quadra?: string;
   lote?: string;
   exclusivityTerm?: string;
+  exclusivityTermUrl?: string;
   paymentConditionsOther?: string;
   destaqueCategoria?: string;
   destaqueHome?: boolean;
