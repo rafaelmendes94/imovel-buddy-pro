@@ -7,9 +7,11 @@ import { formatCurrency } from "@/data/mockData";
 import {
   ArrowLeft, Building, MapPin, Layers, Calendar, Wrench, Edit,
   BedDouble, Bath, Car, Ruler, Home, Share2, ExternalLink, Loader2,
+  Camera, Building2, Video, FolderDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MediaGalleryView } from "@/components/MediaGalleryView";
 
 const statusColors: Record<string, string> = {
   "Em construção": "bg-warning/10 text-warning border-warning/30",
@@ -122,6 +124,7 @@ export default function BuildingDetail() {
         <Tabs defaultValue="info" className="space-y-4">
           <TabsList className="bg-secondary">
             <TabsTrigger value="info">Informações</TabsTrigger>
+            <TabsTrigger value="midias">Mídias</TabsTrigger>
             <TabsTrigger value="imoveis">Imóveis Vinculados ({imoveis.length})</TabsTrigger>
             <TabsTrigger value="localizacao">Localização</TabsTrigger>
           </TabsList>
