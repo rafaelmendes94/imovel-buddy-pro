@@ -543,6 +543,7 @@ export default function Properties() {
         quadra: row.quadra || "",
         lote: row.lote || "",
         exclusivityTerm: row.termo_exclusividade || "",
+        exclusivityTermUrl: (row as any).termo_exclusividade_url || "",
         description: row.descricao || "",
         posicaoPredio: row.posicao_predio || "",
         posicaoSolar: row.posicao_solar || "",
@@ -1985,9 +1986,12 @@ function PropertyCard({
         })()}
 
         {/* Exclusivity badge */}
-        {property.exclusivityTerm && (
-          <button onClick={(e) => { e.stopPropagation(); onViewTerm?.(property.exclusivityTerm!); }}
-            className="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-amber-500/90 text-white backdrop-blur-sm hover:bg-amber-600 transition-colors z-20 shadow-md"
+        {(property.exclusivityTerm || property.exclusivityTermUrl) && (
+          <button
+            onClick={(e) => { e.stopPropagation(); if (property.exclusivityTermUrl) onViewTerm?.(property.exclusivityTermUrl); }}
+            disabled={!property.exclusivityTermUrl}
+            className="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-amber-500/90 text-white backdrop-blur-sm hover:bg-amber-600 transition-colors z-20 shadow-md disabled:cursor-default"
+            title={property.exclusivityTermUrl ? "Ver termo" : "Termo de exclusividade"}
           >
             <FileCheck className="w-3 h-3" /> Ex.Assinada
           </button>

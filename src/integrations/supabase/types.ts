@@ -892,6 +892,7 @@ export type Database = {
           quartos: number
           status: string
           termo_exclusividade: string | null
+          termo_exclusividade_url: string | null
           tipo: string
           titulo: string
           unidade: string | null
@@ -960,6 +961,7 @@ export type Database = {
           quartos?: number
           status?: string
           termo_exclusividade?: string | null
+          termo_exclusividade_url?: string | null
           tipo?: string
           titulo: string
           unidade?: string | null
@@ -1028,6 +1030,7 @@ export type Database = {
           quartos?: number
           status?: string
           termo_exclusividade?: string | null
+          termo_exclusividade_url?: string | null
           tipo?: string
           titulo?: string
           unidade?: string | null

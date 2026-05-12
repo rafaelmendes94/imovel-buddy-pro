@@ -1,0 +1,1 @@
+ALTER TABLE public.imoveis ADD COLUMN IF NOT EXISTS termo_exclusividade_url text DEFAULT '';

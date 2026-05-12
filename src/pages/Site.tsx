@@ -84,6 +84,7 @@ interface SiteProperty {
   quadra?: string;
   lote?: string;
   exclusivityTerm?: string;
+  exclusivityTermUrl?: string;
   paymentConditionsOther?: string;
   destaqueCategoria?: string;
   destaqueHome?: boolean;
@@ -161,10 +162,15 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, 
         )}
 
         {/* Exclusivity badge */}
-        {property.exclusivityTerm && (
+        {(property.exclusivityTerm || property.exclusivityTermUrl) && (
           <button
-            onClick={(e) => { e.stopPropagation(); onViewTerm?.(property.exclusivityTerm!); }}
-            className="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-blue-500/90 text-white backdrop-blur-sm hover:bg-blue-600 transition-colors z-20 shadow-md"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (property.exclusivityTermUrl) onViewTerm?.(property.exclusivityTermUrl);
+            }}
+            disabled={!property.exclusivityTermUrl}
+            className="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-blue-500/90 text-white backdrop-blur-sm hover:bg-blue-600 transition-colors z-20 shadow-md disabled:cursor-default"
+            title={property.exclusivityTermUrl ? "Ver termo" : "Termo de exclusividade"}
           >
             <FileCheck className="w-3 h-3" /> Ex.Assinada
           </button>
@@ -828,6 +834,7 @@ export default function Site() {
             quadra: row.quadra || "",
             lote: row.lote || "",
             exclusivityTerm: row.termo_exclusividade || "",
+            exclusivityTermUrl: (row as any).termo_exclusividade_url || "",
             destaqueCategoria: (row as any).destaque_categoria || "",
             destaqueHome: row.destaque_home,
             neighborhood: row.bairro || "",

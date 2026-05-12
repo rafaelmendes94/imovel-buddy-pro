@@ -85,6 +85,7 @@ export interface FormData {
   vista: string;
   localChaves: string;
   termoExclusividade: string;
+  termoExclusividadeUrl: string;
   vistaMar: boolean;
   decorado: boolean;
   aceitaPermuta: boolean;
@@ -112,7 +113,7 @@ export const initialForm: FormData = {
   area: '', areaPrivativa: '', quartos: 0, banheiros: 0, lavabo: 0, vagas: 0, elevadores: 0,
   descricao: '', proprietario: '', proprietarioTelefone: '', proprietarioTipo: '',
   condicao: '', padrao: '', posicaoPredio: '', posicaoSolar: '', vista: '',
-  localChaves: '', termoExclusividade: '',
+  localChaves: '', termoExclusividade: '', termoExclusividadeUrl: '',
   vistaMar: false, decorado: false, aceitaPermuta: false, destaqueHome: false, ativoSite: false,
   destaqueCategoria: 'none',
   condicoesPagemento: [], infraestrutura: [], outrasCaracteristicas: [],
@@ -475,6 +476,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         vista: data.vista || '',
         localChaves: data.local_chaves || '',
         termoExclusividade: data.termo_exclusividade || '',
+        termoExclusividadeUrl: (data as any).termo_exclusividade_url || '',
         vistaMar: data.vista_mar || false,
         decorado: data.decorado || false,
         aceitaPermuta: data.aceita_permuta || false,
@@ -508,7 +510,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         proprietarioTelefone: data.proprietario_telefone || '', proprietarioTipo: data.proprietario_tipo || '',
         condicao: data.condicao || '', padrao: data.padrao || '', posicaoPredio: data.posicao_predio || '',
         posicaoSolar: data.posicao_solar || '', vista: data.vista || '', localChaves: data.local_chaves || '',
-        termoExclusividade: data.termo_exclusividade || '', vistaMar: data.vista_mar || false,
+        termoExclusividade: data.termo_exclusividade || '', termoExclusividadeUrl: (data as any).termo_exclusividade_url || '', vistaMar: data.vista_mar || false,
         decorado: data.decorado || false, aceitaPermuta: data.aceita_permuta || false,
         destaqueHome: data.destaque_home || false, ativoSite: data.ativo_site || false,
         destaqueCategoria: data.destaque_categoria || 'none', condicoesPagemento: data.condicoes_pagamento || [],
@@ -668,6 +670,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         vista: form.vista || '',
         local_chaves: form.localChaves || '',
         termo_exclusividade: form.termoExclusividade || '',
+        termo_exclusividade_url: form.termoExclusividadeUrl || '',
         vista_mar: form.vistaMar,
         decorado: form.decorado,
         aceita_permuta: form.aceitaPermuta,
@@ -961,8 +964,49 @@ export function ImovelForm({ editId }: { editId?: string }) {
             <Input placeholder="Ex: Portaria, Imobiliária..." value={form.localChaves} onChange={e => set('localChaves', e.target.value)} />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs flex items-center gap-1"><FileText className="w-3.5 h-3.5" /> Termo de Exclusividade</Label>
+            <Label className="text-xs flex items-center gap-1"><FileText className="w-3.5 h-3.5" /> Termo de Exclusividade (data)</Label>
             <Input type="date" value={form.termoExclusividade} onChange={e => set('termoExclusividade', e.target.value)} />
+          </div>
+        </div>
+
+        {/* Upload do arquivo do termo (img/PDF) */}
+        <div className="mt-3 space-y-1.5">
+          <Label className="text-xs flex items-center gap-1"><FileText className="w-3.5 h-3.5" /> Arquivo do Termo (imagem ou PDF)</Label>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Input
+              type="file"
+              accept="image/*,application/pdf"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file || !user) return;
+                if (file.size > 10 * 1024 * 1024) {
+                  toast({ title: "Arquivo muito grande", description: "Limite de 10MB.", variant: "destructive" });
+                  return;
+                }
+                try {
+                  const ext = file.name.split('.').pop();
+                  const path = `${user.id}/exclusividade/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+                  const { error: upErr } = await supabase.storage.from('site-assets').upload(path, file);
+                  if (upErr) throw upErr;
+                  const { data: urlData } = supabase.storage.from('site-assets').getPublicUrl(path);
+                  set('termoExclusividadeUrl', urlData.publicUrl);
+                  toast({ title: "Termo enviado", description: "Arquivo carregado com sucesso." });
+                } catch (err: any) {
+                  toast({ title: "Erro no upload", description: err.message, variant: "destructive" });
+                }
+              }}
+              className="flex-1 min-w-[200px]"
+            />
+            {form.termoExclusividadeUrl && (
+              <>
+                <Button type="button" variant="outline" size="sm" onClick={() => window.open(form.termoExclusividadeUrl, '_blank')}>
+                  <Eye className="w-3.5 h-3.5 mr-1" /> Ver
+                </Button>
+                <Button type="button" variant="outline" size="sm" onClick={() => set('termoExclusividadeUrl', '')}>
+                  <X className="w-3.5 h-3.5 mr-1" /> Remover
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>
