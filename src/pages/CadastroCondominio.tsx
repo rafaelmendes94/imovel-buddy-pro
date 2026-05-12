@@ -12,7 +12,8 @@ import { QuickPick } from '@/components/QuickPick';
 import { CepAutoFill, type AddressData } from '@/components/CepAutoFill';
 import { InfraToggle } from '@/components/InfraToggle';
 import { useSystemOptions } from '@/hooks/useSystemOptions';
-import { Fence, MapPin, Layers, Save, Image, Loader2, Building2, FileText, DollarSign, FileUp, Upload } from 'lucide-react';
+import { Fence, MapPin, Layers, Save, Image, Loader2, Building2, FileText, DollarSign, FileUp, Upload, Camera, Video, FolderDown } from 'lucide-react';
+import { MediaGalleryUpload } from '@/components/MediaGalleryUpload';
 
 const typeOptions = ["Vertical", "Horizontal", "Misto"];
 
@@ -33,6 +34,8 @@ const initialForm = {
   imagem_url: '', latitude: '', longitude: '',
   implantacao_url: '',
   mapa_pdf_url: '',
+  fotos_infra: [] as string[], fotos_empreendimento: [] as string[],
+  videos: [] as string[], material_digital: [] as string[],
 };
 
 export default function CadastroCondominio() {
