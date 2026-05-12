@@ -156,12 +156,56 @@ export default function CadastroEdificio() {
         </section>
 
         <section>
-          <SectionHeader icon={Image} title="Imagem" />
+          <SectionHeader icon={Image} title="Imagem de Capa" />
           <div className="space-y-1.5">
-            <Label className="text-xs">URL da Imagem</Label>
+            <Label className="text-xs">URL da Imagem (capa)</Label>
             <Input value={form.imagem_url} onChange={(e) => setForm({ ...form, imagem_url: e.target.value })} placeholder="https://..." />
           </div>
           {form.imagem_url && <img src={form.imagem_url} alt="Preview" className="mt-3 rounded-lg max-h-48 object-cover" />}
+        </section>
+
+        <section>
+          <SectionHeader icon={Camera} title="Fotos do Empreendimento" />
+          <MediaGalleryUpload
+            label="Fachada, áreas externas, vista aérea, etc."
+            values={form.fotos_empreendimento}
+            onChange={(v) => setForm(f => ({ ...f, fotos_empreendimento: v }))}
+            folder="edificios/fotos-empreendimento"
+            kind="image"
+          />
+        </section>
+
+        <section>
+          <SectionHeader icon={Building2} title="Fotos da Infraestrutura" />
+          <MediaGalleryUpload
+            label="Piscina, academia, salão, playground, etc."
+            values={form.fotos_infra}
+            onChange={(v) => setForm(f => ({ ...f, fotos_infra: v }))}
+            folder="edificios/fotos-infra"
+            kind="image"
+          />
+        </section>
+
+        <section>
+          <SectionHeader icon={Video} title="Vídeos" />
+          <MediaGalleryUpload
+            label="Tour, drone, vídeo institucional (arquivo ou link YouTube/Vimeo)"
+            values={form.videos}
+            onChange={(v) => setForm(f => ({ ...f, videos: v }))}
+            folder="edificios/videos"
+            kind="video"
+          />
+        </section>
+
+        <section>
+          <SectionHeader icon={FolderDown} title="Material Digital" />
+          <MediaGalleryUpload
+            label="Folder, plantas, memorial, tabelas (PDF, imagens, docs)"
+            values={form.material_digital}
+            onChange={(v) => setForm(f => ({ ...f, material_digital: v }))}
+            folder="edificios/material-digital"
+            kind="file"
+          />
         </section>
 
 
