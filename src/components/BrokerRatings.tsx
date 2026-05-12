@@ -12,19 +12,19 @@ interface BrokerRating {
   rater_id: string;
   pontualidade: number;
   agilidade: number;
-  transparencia: number;
-  credibilidade: number;
+  conhecimento_mercado: number;
+  atendimento: number;
   negociacao: number;
   comentario: string | null;
   created_at: string;
 }
 
 const CRITERIA = [
-  { key: "pontualidade", label: "Pontualidade" },
-  { key: "agilidade", label: "Agilidade" },
-  { key: "transparencia", label: "Transparência" },
-  { key: "credibilidade", label: "Credibilidade" },
-  { key: "negociacao", label: "Negociação" },
+  { key: "pontualidade", label: "Pontualidade e Organização" },
+  { key: "agilidade", label: "Agilidade e Resposta" },
+  { key: "conhecimento_mercado", label: "Conhecimento de Mercado" },
+  { key: "negociacao", label: "Poder de Negociação" },
+  { key: "atendimento", label: "Atendimento e Empatia" },
 ] as const;
 
 type CriteriaKey = (typeof CRITERIA)[number]["key"];
@@ -34,8 +34,9 @@ export function BrokerRatings({ brokerId, brokerName }: { brokerId: string | nul
   const [ratings, setRatings] = useState<BrokerRating[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [ratingsPublic, setRatingsPublic] = useState<boolean>(true);
   const [scores, setScores] = useState<Record<CriteriaKey, number>>({
-    pontualidade: 0, agilidade: 0, transparencia: 0, credibilidade: 0, negociacao: 0,
+    pontualidade: 0, agilidade: 0, conhecimento_mercado: 0, atendimento: 0, negociacao: 0,
   });
   const [comentario, setComentario] = useState("");
 
@@ -46,11 +47,12 @@ export function BrokerRatings({ brokerId, brokerName }: { brokerId: string | nul
     if (!brokerId) { setLoading(false); return; }
     (async () => {
       setLoading(true);
-      const { data } = await (supabase as any)
-        .from("broker_ratings")
-        .select("*")
-        .eq("broker_id", brokerId);
+      const [{ data }, { data: prof }] = await Promise.all([
+        (supabase as any).from("broker_ratings").select("*").eq("broker_id", brokerId),
+        (supabase as any).from("profiles").select("ratings_public").eq("user_id", brokerId).maybeSingle(),
+      ]);
       setRatings((data as BrokerRating[]) || []);
+      setRatingsPublic(prof?.ratings_public !== false);
       setLoading(false);
     })();
   }, [brokerId]);
@@ -60,8 +62,8 @@ export function BrokerRatings({ brokerId, brokerName }: { brokerId: string | nul
       setScores({
         pontualidade: myRating.pontualidade,
         agilidade: myRating.agilidade,
-        transparencia: myRating.transparencia,
-        credibilidade: myRating.credibilidade,
+        conhecimento_mercado: myRating.conhecimento_mercado,
+        atendimento: myRating.atendimento,
         negociacao: myRating.negociacao,
       });
       setComentario(myRating.comentario || "");
@@ -108,6 +110,7 @@ export function BrokerRatings({ brokerId, brokerName }: { brokerId: string | nul
   };
 
   if (loading) return null;
+  if (!ratingsPublic && user?.id !== brokerId) return null;
 
   return (
     <section className="container py-12">
@@ -211,7 +214,7 @@ export function BrokerRatings({ brokerId, brokerName }: { brokerId: string | nul
       {ratings.filter((r) => r.comentario && r.comentario.trim()).length > 0 && (
         <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {ratings.filter((r) => r.comentario && r.comentario.trim()).slice(0, 6).map((r) => {
-            const media = ((r.pontualidade + r.agilidade + r.transparencia + r.credibilidade + r.negociacao) / 5).toFixed(1);
+            const media = ((r.pontualidade + r.agilidade + r.conhecimento_mercado + r.atendimento + r.negociacao) / 5).toFixed(1);
             return (
               <div key={r.id} className="rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)]">
                 <div className="mb-2 flex items-center gap-1 text-accent">

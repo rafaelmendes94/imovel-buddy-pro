@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
 import { SiteConfigDialog } from "@/components/SiteConfigDialog";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -35,6 +36,7 @@ export default function Settings() {
   const [profileName, setProfileName] = useState("");
   const [profilePhone, setProfilePhone] = useState("");
   const [profileAvatar, setProfileAvatar] = useState("");
+  const [ratingsPublic, setRatingsPublic] = useState(true);
   const [savingProfile, setSavingProfile] = useState(false);
 
   useEffect(() => {
@@ -50,13 +52,14 @@ export default function Settings() {
     if (!user) return;
     const { data } = await supabase
       .from("profiles")
-      .select("full_name, phone, avatar_url")
+      .select("full_name, phone, avatar_url, ratings_public")
       .eq("user_id", user.id)
       .maybeSingle();
     if (data) {
       setProfileName(data.full_name || "");
       setProfilePhone(data.phone || "");
       setProfileAvatar(data.avatar_url || "");
+      setRatingsPublic((data as any).ratings_public !== false);
     }
   };
 
@@ -66,7 +69,7 @@ export default function Settings() {
     if (!user) { setSavingProfile(false); return; }
     const { error } = await supabase
       .from("profiles")
-      .update({ full_name: profileName, phone: profilePhone, avatar_url: profileAvatar })
+      .update({ full_name: profileName, phone: profilePhone, avatar_url: profileAvatar, ratings_public: ratingsPublic } as any)
       .eq("user_id", user.id);
     if (error) {
       toast({ title: "Erro", description: error.message, variant: "destructive" });
@@ -431,6 +434,15 @@ export default function Settings() {
                 <p className="text-xs text-muted-foreground">
                   Esse número será usado no botão WhatsApp dos seus imóveis e na sua página pública.
                 </p>
+              </div>
+              <div className="flex items-center justify-between rounded-lg border p-3">
+                <div className="space-y-0.5">
+                  <Label className="text-sm">Exibir minhas avaliações publicamente</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Quando desativado, sua reputação não aparece na sua página pública.
+                  </p>
+                </div>
+                <Switch checked={ratingsPublic} onCheckedChange={setRatingsPublic} />
               </div>
               <Button onClick={handleSaveProfile} disabled={savingProfile} className="w-full">
                 {savingProfile && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
