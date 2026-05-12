@@ -946,9 +946,20 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                       <span className="cursor-grab active:cursor-grabbing mr-1 text-muted-foreground/50 hover:text-muted-foreground">⠿</span>
                       <span className="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center"><User className="w-3.5 h-3.5 text-blue-600" /></span> <span className="text-foreground">Proprietário</span>
                     </p>
-                    <button onClick={() => setEditingBlock(editingBlock === "proprietario" ? null : "proprietario")} className={cn("p-1.5 rounded-lg transition-colors", editingBlock === "proprietario" ? "bg-primary/20 text-primary" : "hover:bg-muted text-muted-foreground")}>
-                      <Pencil className="w-3.5 h-3.5" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      {property.exclusivityTermUrl && (
+                        <button
+                          onClick={() => setViewingTerm(true)}
+                          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 transition-colors text-[11px] font-bold uppercase tracking-wide"
+                          title="Ver termo de exclusividade"
+                        >
+                          <FileText className="w-3.5 h-3.5" /> Exclusividade
+                        </button>
+                      )}
+                      <button onClick={() => setEditingBlock(editingBlock === "proprietario" ? null : "proprietario")} className={cn("p-1.5 rounded-lg transition-colors", editingBlock === "proprietario" ? "bg-primary/20 text-primary" : "hover:bg-muted text-muted-foreground")}>
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
                   <DraggableFieldGrid storageKey="fields-proprietario" fields={propFields} editing={editingBlock === "proprietario"} />
                 </div>
