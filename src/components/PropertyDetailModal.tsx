@@ -325,49 +325,59 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
   };
 
-  // -- Download ficha --
-  const handleDownload = () => {
-    const content = `
-═══════════════════════════════════════
-       FICHA DO IMÓVEL
-═══════════════════════════════════════
+  // -- Download fotos como PDF --
+  const handleDownload = async () => {
+    const imgs = property.images || [];
+    if (!imgs.length) {
+      toast.info("Este imóvel não possui fotos para baixar.");
+      return;
+    }
+    try {
+      toast.loading("Gerando PDF...", { id: "pdf-gen" });
+      const { jsPDF } = await import("jspdf");
+      const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+      const pageW = pdf.internal.pageSize.getWidth();
+      const pageH = pdf.internal.pageSize.getHeight();
 
-Título: ${property.title}
-Tipo: ${property.type}
-Status: ${property.status}
-Preço: ${formatCurrency(property.price)}
+      // Capa
+      pdf.setFontSize(22);
+      pdf.text(property.title, pageW / 2, 30, { align: "center" });
+      pdf.setFontSize(14);
+      pdf.text(formatCurrency(property.price), pageW / 2, 42, { align: "center" });
+      pdf.setFontSize(11);
+      pdf.text(`${property.address} - ${property.city}`, pageW / 2, 52, { align: "center" });
+      pdf.text(`${property.bedrooms} quartos • ${property.bathrooms} banheiros • ${property.area}m²`, pageW / 2, 60, { align: "center" });
 
-LOCALIZAÇÃO
-Endereço: ${property.address}
-Cidade: ${property.city}
+      const loadImg = (src: string) => new Promise<HTMLImageElement>((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = src;
+      });
 
-CARACTERÍSTICAS
-Área: ${property.area}m²
-Quartos: ${property.bedrooms}
-Banheiros: ${property.bathrooms}
-Vagas: ${property.parking}
-${property.seaView ? "✓ Vista para o Mar" : ""}
-${property.decorated ? "✓ Decorado / Mobiliado" : ""}
-${property.acceptsExchange ? "✓ Aceita Permuta" : ""}
+      for (const src of imgs) {
+        try {
+          const img = await loadImg(src);
+          const canvas = document.createElement("canvas");
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          canvas.getContext("2d")!.drawImage(img, 0, 0);
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+          const ratio = img.naturalWidth / img.naturalHeight;
+          let w = pageW - 20, h = w / ratio;
+          if (h > pageH - 20) { h = pageH - 20; w = h * ratio; }
+          pdf.addPage();
+          pdf.addImage(dataUrl, "JPEG", (pageW - w) / 2, (pageH - h) / 2, w, h);
+        } catch { /* skip */ }
+      }
 
-${property.description ? `DESCRIÇÃO\n${property.description}` : ""}
-
-${property.paymentConditions?.length ? `CONDIÇÕES DE PAGAMENTO\n${property.paymentConditions.join(", ")}` : ""}
-
-Corretor: ${property.broker}
-${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
-
-═══════════════════════════════════════
-    `.trim();
-
-    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `ficha_${property.title.replace(/\s+/g, "_").toLowerCase()}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast.success("Ficha do imóvel baixada!");
+      pdf.save(`fotos_${property.title.replace(/\s+/g, "_").toLowerCase()}.pdf`);
+      toast.success("PDF gerado com sucesso!", { id: "pdf-gen" });
+    } catch (err) {
+      console.error(err);
+      toast.error("Erro ao gerar PDF", { id: "pdf-gen" });
+    }
   };
 
   // -- Download material completo --
@@ -646,8 +656,16 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
           </button>
           {materialUrl && (
             <a href={materialUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card border border-border text-sm font-semibold text-foreground hover:bg-muted/40 transition-colors shadow-sm">
-              <FolderDown className="w-4 h-4 text-purple-500" /> Material Completo
+              <HardDrive className="w-4 h-4 text-emerald-600" /> Baixar Drive
             </a>
+          )}
+          {property.exclusivityTermUrl && (
+            <button
+              onClick={() => setViewingTerm(true)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card border border-border text-sm font-semibold text-foreground hover:bg-muted/40 transition-colors shadow-sm"
+            >
+              <FileCheck className="w-4 h-4 text-amber-600" /> Exclusividade
+            </button>
           )}
           <Link to={`/editar-imovel/${property.id}`} onClick={onClose} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card border border-border text-sm font-semibold text-foreground hover:bg-muted/40 transition-colors shadow-sm">
             <Pencil className="w-4 h-4 text-primary" /> Editar
