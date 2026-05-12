@@ -60,8 +60,8 @@ export function BrokerRatings({ brokerId, brokerName }: { brokerId: string | nul
       setScores({
         pontualidade: myRating.pontualidade,
         agilidade: myRating.agilidade,
-        transparencia: myRating.transparencia,
-        credibilidade: myRating.credibilidade,
+        conhecimento_mercado: myRating.conhecimento_mercado,
+        atendimento: myRating.atendimento,
         negociacao: myRating.negociacao,
       });
       setComentario(myRating.comentario || "");
