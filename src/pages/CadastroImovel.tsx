@@ -476,6 +476,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         vista: data.vista || '',
         localChaves: data.local_chaves || '',
         termoExclusividade: data.termo_exclusividade || '',
+        termoExclusividadeUrl: (data as any).termo_exclusividade_url || '',
         vistaMar: data.vista_mar || false,
         decorado: data.decorado || false,
         aceitaPermuta: data.aceita_permuta || false,
