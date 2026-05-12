@@ -670,6 +670,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         vista: form.vista || '',
         local_chaves: form.localChaves || '',
         termo_exclusividade: form.termoExclusividade || '',
+        termo_exclusividade_url: form.termoExclusividadeUrl || '',
         vista_mar: form.vistaMar,
         decorado: form.decorado,
         aceita_permuta: form.aceitaPermuta,
