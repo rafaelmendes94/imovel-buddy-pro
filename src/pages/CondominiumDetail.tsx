@@ -126,7 +126,7 @@ export default function CondominiumDetail() {
             <TabsTrigger value="localizacao">Localização</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="info" className="space-y-4"></TabsContent>
+          <TabsContent value="info" className="space-y-4">
             {condo.descricao && (
               <div className="p-4 rounded-xl bg-card border border-border">
                 <h3 className="text-sm font-semibold text-foreground mb-2">Descrição</h3>
@@ -145,6 +145,12 @@ export default function CondominiumDetail() {
             )}
           </TabsContent>
 
+          <TabsContent value="midias" className="space-y-4">
+            <MediaGalleryView title="Fotos do Empreendimento" icon={Camera} items={(condo as any).fotos_empreendimento || []} kind="image" emptyText="Nenhuma foto cadastrada" />
+            <MediaGalleryView title="Fotos da Infraestrutura" icon={Building2} items={(condo as any).fotos_infra || []} kind="image" emptyText="Nenhuma foto cadastrada" />
+            <MediaGalleryView title="Vídeos" icon={Video} items={(condo as any).videos || []} kind="video" emptyText="Nenhum vídeo cadastrado" />
+            <MediaGalleryView title="Material Digital" icon={FolderDown} items={(condo as any).material_digital || []} kind="file" emptyText="Nenhum material disponível" />
+          </TabsContent>
           <TabsContent value="imoveis" className="space-y-4">
             {imoveis.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
