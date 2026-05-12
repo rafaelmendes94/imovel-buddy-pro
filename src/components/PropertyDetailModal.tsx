@@ -1207,6 +1207,50 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
           )}
         </div>
 
+        {/* Termo de Exclusividade Modal */}
+        {viewingTerm && property.exclusivityTermUrl && (
+          <div
+            className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4 animate-in fade-in"
+            onClick={() => setViewingTerm(false)}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="bg-card rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
+            >
+              <div className="flex items-center justify-between px-5 py-3 border-b border-border">
+                <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-amber-500" /> Termo de Exclusividade
+                </h3>
+                <div className="flex items-center gap-2">
+                  <a
+                    href={property.exclusivityTermUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    download
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:opacity-90 transition-opacity"
+                  >
+                    <Download className="w-3.5 h-3.5" /> Baixar
+                  </a>
+                  <button
+                    onClick={() => setViewingTerm(false)}
+                    className="w-8 h-8 rounded-lg hover:bg-muted flex items-center justify-center text-muted-foreground"
+                    aria-label="Fechar"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+              <div className="p-4 overflow-auto flex-1 flex items-center justify-center bg-muted/30">
+                {/\.pdf(\?|$)/i.test(property.exclusivityTermUrl) ? (
+                  <iframe src={property.exclusivityTermUrl} className="w-full h-[75vh] rounded-lg border border-border bg-card" title="Termo de Exclusividade" />
+                ) : (
+                  <img src={property.exclusivityTermUrl} alt="Termo de Exclusividade" className="max-w-full max-h-[75vh] object-contain rounded-lg shadow-md" />
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Lightbox / Zoom */}
         {lightboxIndex !== null && images[lightboxIndex] && (
           <div
