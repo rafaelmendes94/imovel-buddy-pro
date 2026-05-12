@@ -390,6 +390,56 @@ export default function Settings() {
           </DialogContent>
         </Dialog>
 
+        {/* Profile Dialog */}
+        <Dialog open={showProfileDialog} onOpenChange={setShowProfileDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <User className="w-5 h-5" /> Meu Perfil
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                {profileAvatar ? (
+                  <img src={profileAvatar} alt="Avatar" className="w-16 h-16 rounded-full object-cover border border-border" />
+                ) : (
+                  <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+                    <User className="w-7 h-7 text-muted-foreground" />
+                  </div>
+                )}
+                <div className="flex-1">
+                  <Label className="text-xs">Foto de perfil</Label>
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => e.target.files?.[0] && handleAvatarUpload(e.target.files[0])}
+                    className="text-xs"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Nome completo</Label>
+                <Input value={profileName} onChange={(e) => setProfileName(e.target.value)} placeholder="Seu nome" />
+              </div>
+              <div className="space-y-2">
+                <Label className="flex items-center gap-1.5"><Phone className="w-3.5 h-3.5" /> WhatsApp</Label>
+                <Input
+                  value={profilePhone}
+                  onChange={(e) => setProfilePhone(e.target.value)}
+                  placeholder="Ex: 5551999999999 (com DDI + DDD)"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Esse número será usado no botão WhatsApp dos seus imóveis e na sua página pública.
+                </p>
+              </div>
+              <Button onClick={handleSaveProfile} disabled={savingProfile} className="w-full">
+                {savingProfile && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                Salvar
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
         <SiteConfigDialog
           open={showSiteConfig}
           onOpenChange={setShowSiteConfig}
