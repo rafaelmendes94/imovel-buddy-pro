@@ -11,7 +11,7 @@ import { SoldConfirmDialog, SoldConfirmPayload } from "@/components/SoldConfirmD
 import { properties as initialProperties, salesRecords, formatCurrency, Property } from "@/data/mockData";
 import {
   Building2, Search, Plus, MapPin, BedDouble, Bath, Car, Ruler,
-  Download, Send, LayoutGrid, List, Map, ChevronLeft, ChevronRight,
+  Download, Send, LayoutGrid, List, Map, ChevronLeft, ChevronRight, HardDrive,
   CheckCircle2, Clock, Home, Key, Trophy, FileCode, ChevronDown,
   Star, Fence, TreePine, Waves, Paintbrush, Filter, X, SlidersHorizontal,
   Phone, Heart, FileCheck, Eye, Repeat, CreditCard, DollarSign, Ban,
