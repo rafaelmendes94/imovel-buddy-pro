@@ -103,6 +103,7 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
   const [showAIOptions, setShowAIOptions] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [editingBlock, setEditingBlock] = useState<string | null>(null);
+  const [viewingTerm, setViewingTerm] = useState(false);
 
   // Increment views when modal opens with a property
   useEffect(() => {
