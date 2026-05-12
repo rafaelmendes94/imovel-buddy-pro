@@ -103,6 +103,7 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
   const [showAIOptions, setShowAIOptions] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [editingBlock, setEditingBlock] = useState<string | null>(null);
+  const [viewingTerm, setViewingTerm] = useState(false);
 
   // Increment views when modal opens with a property
   useEffect(() => {
@@ -945,9 +946,20 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
                       <span className="cursor-grab active:cursor-grabbing mr-1 text-muted-foreground/50 hover:text-muted-foreground">⠿</span>
                       <span className="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center"><User className="w-3.5 h-3.5 text-blue-600" /></span> <span className="text-foreground">Proprietário</span>
                     </p>
-                    <button onClick={() => setEditingBlock(editingBlock === "proprietario" ? null : "proprietario")} className={cn("p-1.5 rounded-lg transition-colors", editingBlock === "proprietario" ? "bg-primary/20 text-primary" : "hover:bg-muted text-muted-foreground")}>
-                      <Pencil className="w-3.5 h-3.5" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      {property.exclusivityTermUrl && (
+                        <button
+                          onClick={() => setViewingTerm(true)}
+                          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 transition-colors text-[11px] font-bold uppercase tracking-wide"
+                          title="Ver termo de exclusividade"
+                        >
+                          <FileText className="w-3.5 h-3.5" /> Exclusividade
+                        </button>
+                      )}
+                      <button onClick={() => setEditingBlock(editingBlock === "proprietario" ? null : "proprietario")} className={cn("p-1.5 rounded-lg transition-colors", editingBlock === "proprietario" ? "bg-primary/20 text-primary" : "hover:bg-muted text-muted-foreground")}>
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
                   <DraggableFieldGrid storageKey="fields-proprietario" fields={propFields} editing={editingBlock === "proprietario"} />
                 </div>
@@ -1194,6 +1206,50 @@ ${property.empreendimento ? `Empreendimento: ${property.empreendimento}` : ""}
             </button>
           )}
         </div>
+
+        {/* Termo de Exclusividade Modal */}
+        {viewingTerm && property.exclusivityTermUrl && (
+          <div
+            className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4 animate-in fade-in"
+            onClick={() => setViewingTerm(false)}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="bg-card rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
+            >
+              <div className="flex items-center justify-between px-5 py-3 border-b border-border">
+                <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-amber-500" /> Termo de Exclusividade
+                </h3>
+                <div className="flex items-center gap-2">
+                  <a
+                    href={property.exclusivityTermUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    download
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:opacity-90 transition-opacity"
+                  >
+                    <Download className="w-3.5 h-3.5" /> Baixar
+                  </a>
+                  <button
+                    onClick={() => setViewingTerm(false)}
+                    className="w-8 h-8 rounded-lg hover:bg-muted flex items-center justify-center text-muted-foreground"
+                    aria-label="Fechar"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+              <div className="p-4 overflow-auto flex-1 flex items-center justify-center bg-muted/30">
+                {/\.pdf(\?|$)/i.test(property.exclusivityTermUrl) ? (
+                  <iframe src={property.exclusivityTermUrl} className="w-full h-[75vh] rounded-lg border border-border bg-card" title="Termo de Exclusividade" />
+                ) : (
+                  <img src={property.exclusivityTermUrl} alt="Termo de Exclusividade" className="max-w-full max-h-[75vh] object-contain rounded-lg shadow-md" />
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Lightbox / Zoom */}
         {lightboxIndex !== null && images[lightboxIndex] && (
