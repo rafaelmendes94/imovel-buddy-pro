@@ -834,6 +834,7 @@ export default function Site() {
             quadra: row.quadra || "",
             lote: row.lote || "",
             exclusivityTerm: row.termo_exclusividade || "",
+            exclusivityTermUrl: (row as any).termo_exclusividade_url || "",
             destaqueCategoria: (row as any).destaque_categoria || "",
             destaqueHome: row.destaque_home,
             neighborhood: row.bairro || "",
