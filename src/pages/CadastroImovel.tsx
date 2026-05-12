@@ -113,7 +113,7 @@ export const initialForm: FormData = {
   area: '', areaPrivativa: '', quartos: 0, banheiros: 0, lavabo: 0, vagas: 0, elevadores: 0,
   descricao: '', proprietario: '', proprietarioTelefone: '', proprietarioTipo: '',
   condicao: '', padrao: '', posicaoPredio: '', posicaoSolar: '', vista: '',
-  localChaves: '', termoExclusividade: '',
+  localChaves: '', termoExclusividade: '', termoExclusividadeUrl: '',
   vistaMar: false, decorado: false, aceitaPermuta: false, destaqueHome: false, ativoSite: false,
   destaqueCategoria: 'none',
   condicoesPagemento: [], infraestrutura: [], outrasCaracteristicas: [],
