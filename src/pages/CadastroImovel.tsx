@@ -510,7 +510,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         proprietarioTelefone: data.proprietario_telefone || '', proprietarioTipo: data.proprietario_tipo || '',
         condicao: data.condicao || '', padrao: data.padrao || '', posicaoPredio: data.posicao_predio || '',
         posicaoSolar: data.posicao_solar || '', vista: data.vista || '', localChaves: data.local_chaves || '',
-        termoExclusividade: data.termo_exclusividade || '', vistaMar: data.vista_mar || false,
+        termoExclusividade: data.termo_exclusividade || '', termoExclusividadeUrl: (data as any).termo_exclusividade_url || '', vistaMar: data.vista_mar || false,
         decorado: data.decorado || false, aceitaPermuta: data.aceita_permuta || false,
         destaqueHome: data.destaque_home || false, ativoSite: data.ativo_site || false,
         destaqueCategoria: data.destaque_categoria || 'none', condicoesPagemento: data.condicoes_pagamento || [],
