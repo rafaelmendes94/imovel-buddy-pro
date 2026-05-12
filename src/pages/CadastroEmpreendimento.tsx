@@ -12,7 +12,8 @@ import { QuickPick } from '@/components/QuickPick';
 import { CepAutoFill, type AddressData } from '@/components/CepAutoFill';
 import { InfraToggle } from '@/components/InfraToggle';
 import { useSystemOptions } from '@/hooks/useSystemOptions';
-import { Landmark, MapPin, Layers, Save, Image, Loader2, Building2, FileText, Calendar, Video, Eye, Plus, X } from 'lucide-react';
+import { Landmark, MapPin, Layers, Save, Image, Loader2, Building2, FileText, Calendar, Video, Eye, Plus, X, Camera, FolderDown } from 'lucide-react';
+import { MediaGalleryUpload } from '@/components/MediaGalleryUpload';
 
 const statusOptions = ["Lançamento", "Em construção", "Pronto", "Em vendas"];
 const tipoOptions = ["Residencial", "Comercial", "Misto", "Loteamento"];
@@ -33,6 +34,8 @@ const initialForm = {
   descricao: '', infraestrutura: [] as string[],
   imagem_url: '', latitude: '', longitude: '',
   imagens: [] as string[], link_360: '', link_video: '',
+  fotos_infra: [] as string[], fotos_empreendimento: [] as string[],
+  videos: [] as string[], material_digital: [] as string[],
 };
 
 export default function CadastroEmpreendimento() {
@@ -60,6 +63,10 @@ export default function CadastroEmpreendimento() {
             imagem_url: data.imagem_url || '', latitude: data.latitude ? String(data.latitude) : '',
             longitude: data.longitude ? String(data.longitude) : '',
             imagens: (data as any).imagens || [], link_360: (data as any).link_360 || '', link_video: (data as any).link_video || '',
+            fotos_infra: (data as any).fotos_infra || [],
+            fotos_empreendimento: (data as any).fotos_empreendimento || [],
+            videos: (data as any).videos || [],
+            material_digital: (data as any).material_digital || [],
           });
         }
         setLoading(false);
@@ -79,6 +86,8 @@ export default function CadastroEmpreendimento() {
       imagem_url: form.imagem_url,
       latitude: parseFloat(form.latitude) || 0, longitude: parseFloat(form.longitude) || 0,
       imagens: form.imagens, link_360: form.link_360, link_video: form.link_video,
+      fotos_infra: form.fotos_infra, fotos_empreendimento: form.fotos_empreendimento,
+      videos: form.videos, material_digital: form.material_digital,
     };
     if (editId) {
       await supabase.from("empreendimentos").update(payload).eq("id", editId);
