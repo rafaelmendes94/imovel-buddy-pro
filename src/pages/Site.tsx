@@ -795,14 +795,34 @@ export default function Site() {
         };
       });
 
+      // Carrega profiles dos donos dos imóveis (corretores que cadastraram)
+      const ownerIds = Array.from(new Set((data || []).map((r: any) => r.user_id).filter(Boolean)));
+      const profilesById: Record<string, { full_name: string; phone: string | null; avatar_url: string | null }> = {};
+      if (ownerIds.length) {
+        const { data: profs } = await supabase
+          .from("profiles")
+          .select("user_id, full_name, phone, avatar_url")
+          .in("user_id", ownerIds);
+        (profs || []).forEach((p: any) => {
+          profilesById[p.user_id] = { full_name: p.full_name || "", phone: p.phone, avatar_url: p.avatar_url };
+          if (p.full_name) {
+            brokerInfo[p.full_name] = {
+              photo: p.avatar_url || brokerInfo[p.full_name]?.photo || getBrokerAvatar(p.full_name),
+              whatsapp: normalizePhone(p.phone || "") || brokerInfo[p.full_name]?.whatsapp || "5511999999999",
+            };
+          }
+        });
+      }
+
       if (!error && data) {
         const mapped: SiteProperty[] = data.map((row) => {
-          const brokerName = row.corretor_nome?.trim() || "Corretor";
+          const ownerProfile = profilesById[(row as any).user_id];
+          const brokerName = (ownerProfile?.full_name?.trim()) || row.corretor_nome?.trim() || "Corretor";
 
           if (!brokerInfo[brokerName]) {
             brokerInfo[brokerName] = {
-              photo: getBrokerAvatar(brokerName),
-              whatsapp: "5511999999999",
+              photo: ownerProfile?.avatar_url || getBrokerAvatar(brokerName),
+              whatsapp: normalizePhone(ownerProfile?.phone || "") || "5511999999999",
             };
           }
 
