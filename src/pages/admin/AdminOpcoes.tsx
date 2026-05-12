@@ -21,6 +21,9 @@ const CATEGORIES = [
   { key: "status_imovel", label: "Status do Imóvel", color: "bg-amber-500/10 text-amber-500" },
   { key: "condicao_imovel", label: "Condição do Imóvel", color: "bg-orange-500/10 text-orange-500" },
   { key: "padrao_imovel", label: "Padrão do Imóvel", color: "bg-rose-500/10 text-rose-500" },
+  { key: "posicao_predio", label: "Posição no Prédio", color: "bg-cyan-500/10 text-cyan-500" },
+  { key: "posicao_solar", label: "Posição Solar", color: "bg-yellow-500/10 text-yellow-500" },
+  { key: "vista", label: "Vista", color: "bg-indigo-500/10 text-indigo-500" },
   { key: "categoria_brick", label: "Categorias do Brick", color: "bg-teal-500/10 text-teal-500" },
 ];
 
