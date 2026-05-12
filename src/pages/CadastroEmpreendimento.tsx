@@ -217,7 +217,49 @@ export default function CadastroEmpreendimento() {
           </div>
         </section>
 
+        <section>
+          <SectionHeader icon={Camera} title="Fotos do Empreendimento" />
+          <MediaGalleryUpload
+            label="Fachada, áreas externas, vista aérea, etc."
+            values={form.fotos_empreendimento}
+            onChange={(v) => setForm(f => ({ ...f, fotos_empreendimento: v }))}
+            folder="empreendimentos/fotos-empreendimento"
+            kind="image"
+          />
+        </section>
 
+        <section>
+          <SectionHeader icon={Building2} title="Fotos da Infraestrutura" />
+          <MediaGalleryUpload
+            label="Piscina, academia, salão, playground, áreas comuns, etc."
+            values={form.fotos_infra}
+            onChange={(v) => setForm(f => ({ ...f, fotos_infra: v }))}
+            folder="empreendimentos/fotos-infra"
+            kind="image"
+          />
+        </section>
+
+        <section>
+          <SectionHeader icon={Video} title="Vídeos" />
+          <MediaGalleryUpload
+            label="Tour, drone, vídeo institucional (arquivo ou link YouTube/Vimeo)"
+            values={form.videos}
+            onChange={(v) => setForm(f => ({ ...f, videos: v }))}
+            folder="empreendimentos/videos"
+            kind="video"
+          />
+        </section>
+
+        <section>
+          <SectionHeader icon={FolderDown} title="Material Digital" />
+          <MediaGalleryUpload
+            label="Folder, plantas, memorial, tabelas (PDF, imagens, docs)"
+            values={form.material_digital}
+            onChange={(v) => setForm(f => ({ ...f, material_digital: v }))}
+            folder="empreendimentos/material-digital"
+            kind="file"
+          />
+        </section>
         <div className="flex justify-end gap-3 pt-4 border-t border-border">
           <button onClick={() => navigate("/empreendimentos")} className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium hover:bg-muted transition-colors">Cancelar</button>
           <button onClick={handleSubmit} disabled={saving} className="flex items-center gap-2 px-6 py-2.5 rounded-lg gradient-gold text-primary text-sm font-semibold hover:opacity-90 transition-opacity">
