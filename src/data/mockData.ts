@@ -37,6 +37,7 @@ export interface Property {
   quadra?: string;
   lote?: string;
   exclusivityTerm?: string;
+  exclusivityTermUrl?: string;
   keysLocation?: string;
   description?: string;
   updatedAt?: string;
