@@ -2761,9 +2761,15 @@ function PropertyRow({
             className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors" title="Baixar todas as fotos (ZIP)"
           ><Image className="w-3.5 h-3.5 text-foreground" /></button>
           <button
-            onClick={async () => { toast.info("Gerando PDF..."); try { await generatePropertyPdf(property); toast.success("PDF gerado!"); } catch { toast.error("Erro ao gerar PDF."); } }}
-            className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors" title="PDF"
-          ><Download className="w-3.5 h-3.5 text-foreground" /></button>
+            onClick={() => {
+              if (property.linkMaterial) {
+                window.open(property.linkMaterial, "_blank");
+              } else {
+                toast.info("Nenhum link de Drive cadastrado para este imóvel.");
+              }
+            }}
+            className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors" title="Baixar Drive completo"
+          ><HardDrive className="w-3.5 h-3.5 text-foreground" /></button>
           <button
             onClick={() => {
               const text = `🏠 *${property.title}*\n📍 ${property.address}${property.neighborhood ? `, ${property.neighborhood}` : ""} — ${property.city}\n💰 ${formatCurrency(property.price)}${property.area ? `\n📐 ${property.area} m²` : ""}${property.bedrooms ? ` | 🛏 ${property.bedrooms} quartos` : ""}${property.bathrooms ? ` | 🚿 ${property.bathrooms} banheiros` : ""}${property.parking ? ` | 🚗 ${property.parking} vagas` : ""}${property.description ? `\n\n${property.description.substring(0, 200)}${property.description.length > 200 ? "..." : ""}` : ""}\n\n${window.location.href}`;
