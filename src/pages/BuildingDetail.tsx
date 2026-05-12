@@ -148,6 +148,12 @@ export default function BuildingDetail() {
             )}
           </TabsContent>
 
+          <TabsContent value="midias" className="space-y-4">
+            <MediaGalleryView title="Fotos do Empreendimento" icon={Camera} items={building.fotos_empreendimento || []} kind="image" emptyText="Nenhuma foto cadastrada" />
+            <MediaGalleryView title="Fotos da Infraestrutura" icon={Building2} items={building.fotos_infra || []} kind="image" emptyText="Nenhuma foto cadastrada" />
+            <MediaGalleryView title="Vídeos" icon={Video} items={building.videos || []} kind="video" emptyText="Nenhum vídeo cadastrado" />
+            <MediaGalleryView title="Material Digital" icon={FolderDown} items={building.material_digital || []} kind="file" emptyText="Nenhum material disponível" />
+          </TabsContent>
           <TabsContent value="imoveis" className="space-y-4">
             {imoveis.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
