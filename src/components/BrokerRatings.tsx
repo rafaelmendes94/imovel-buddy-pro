@@ -34,6 +34,7 @@ export function BrokerRatings({ brokerId, brokerName }: { brokerId: string | nul
   const [ratings, setRatings] = useState<BrokerRating[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [ratingsPublic, setRatingsPublic] = useState<boolean>(true);
   const [scores, setScores] = useState<Record<CriteriaKey, number>>({
     pontualidade: 0, agilidade: 0, conhecimento_mercado: 0, atendimento: 0, negociacao: 0,
   });
