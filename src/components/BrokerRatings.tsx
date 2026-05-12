@@ -110,6 +110,7 @@ export function BrokerRatings({ brokerId, brokerName }: { brokerId: string | nul
   };
 
   if (loading) return null;
+  if (!ratingsPublic && user?.id !== brokerId) return null;
 
   return (
     <section className="container py-12">
