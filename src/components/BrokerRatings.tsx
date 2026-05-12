@@ -211,7 +211,7 @@ export function BrokerRatings({ brokerId, brokerName }: { brokerId: string | nul
       {ratings.filter((r) => r.comentario && r.comentario.trim()).length > 0 && (
         <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {ratings.filter((r) => r.comentario && r.comentario.trim()).slice(0, 6).map((r) => {
-            const media = ((r.pontualidade + r.agilidade + r.transparencia + r.credibilidade + r.negociacao) / 5).toFixed(1);
+            const media = ((r.pontualidade + r.agilidade + r.conhecimento_mercado + r.atendimento + r.negociacao) / 5).toFixed(1);
             return (
               <div key={r.id} className="rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)]">
                 <div className="mb-2 flex items-center gap-1 text-accent">
