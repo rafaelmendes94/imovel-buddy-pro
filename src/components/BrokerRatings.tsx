@@ -12,19 +12,19 @@ interface BrokerRating {
   rater_id: string;
   pontualidade: number;
   agilidade: number;
-  transparencia: number;
-  credibilidade: number;
+  conhecimento_mercado: number;
+  atendimento: number;
   negociacao: number;
   comentario: string | null;
   created_at: string;
 }
 
 const CRITERIA = [
-  { key: "pontualidade", label: "Pontualidade" },
-  { key: "agilidade", label: "Agilidade" },
-  { key: "transparencia", label: "Transparência" },
-  { key: "credibilidade", label: "Credibilidade" },
-  { key: "negociacao", label: "Negociação" },
+  { key: "pontualidade", label: "Pontualidade e Organização" },
+  { key: "agilidade", label: "Agilidade e Resposta" },
+  { key: "conhecimento_mercado", label: "Conhecimento de Mercado" },
+  { key: "negociacao", label: "Poder de Negociação" },
+  { key: "atendimento", label: "Atendimento e Empatia" },
 ] as const;
 
 type CriteriaKey = (typeof CRITERIA)[number]["key"];
