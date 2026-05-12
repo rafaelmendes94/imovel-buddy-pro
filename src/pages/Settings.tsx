@@ -435,6 +435,15 @@ export default function Settings() {
                   Esse número será usado no botão WhatsApp dos seus imóveis e na sua página pública.
                 </p>
               </div>
+              <div className="flex items-center justify-between rounded-lg border p-3">
+                <div className="space-y-0.5">
+                  <Label className="text-sm">Exibir minhas avaliações publicamente</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Quando desativado, sua reputação não aparece na sua página pública.
+                  </p>
+                </div>
+                <Switch checked={ratingsPublic} onCheckedChange={setRatingsPublic} />
+              </div>
               <Button onClick={handleSaveProfile} disabled={savingProfile} className="w-full">
                 {savingProfile && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                 Salvar
