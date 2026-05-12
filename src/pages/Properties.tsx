@@ -543,6 +543,7 @@ export default function Properties() {
         quadra: row.quadra || "",
         lote: row.lote || "",
         exclusivityTerm: row.termo_exclusividade || "",
+        exclusivityTermUrl: (row as any).termo_exclusividade_url || "",
         description: row.descricao || "",
         posicaoPredio: row.posicao_predio || "",
         posicaoSolar: row.posicao_solar || "",
