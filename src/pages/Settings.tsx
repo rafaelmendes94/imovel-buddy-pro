@@ -68,7 +68,7 @@ export default function Settings() {
     if (!user) { setSavingProfile(false); return; }
     const { error } = await supabase
       .from("profiles")
-      .update({ full_name: profileName, phone: profilePhone, avatar_url: profileAvatar })
+      .update({ full_name: profileName, phone: profilePhone, avatar_url: profileAvatar, ratings_public: ratingsPublic } as any)
       .eq("user_id", user.id);
     if (error) {
       toast({ title: "Erro", description: error.message, variant: "destructive" });
