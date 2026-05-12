@@ -7,9 +7,11 @@ import { formatCurrency } from "@/data/mockData";
 import {
   ArrowLeft, Fence, MapPin, Home, Edit, Share2, ExternalLink, Loader2,
   BedDouble, Bath, Car, Ruler, Layers, Wrench, Calendar, FileUp, Download,
+  Camera, Building2, Video, FolderDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MediaGalleryView } from "@/components/MediaGalleryView";
 
 const imovelStatusColors: Record<string, string> = {
   Disponível: "bg-success/10 text-success border-success/30",
@@ -117,13 +119,14 @@ export default function CondominiumDetail() {
         <Tabs defaultValue="info" className="space-y-4">
           <TabsList className="bg-secondary flex-wrap h-auto gap-1">
             <TabsTrigger value="info">Informações</TabsTrigger>
+            <TabsTrigger value="midias">Mídias</TabsTrigger>
             <TabsTrigger value="imoveis">Imóveis ({imoveis.length})</TabsTrigger>
             {implantacaoUrl && <TabsTrigger value="implantacao">Implantação</TabsTrigger>}
             {(condo as any).mapa_pdf_url && <TabsTrigger value="mapa">Mapa PDF</TabsTrigger>}
             <TabsTrigger value="localizacao">Localização</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="info" className="space-y-4">
+          <TabsContent value="info" className="space-y-4"></TabsContent>
             {condo.descricao && (
               <div className="p-4 rounded-xl bg-card border border-border">
                 <h3 className="text-sm font-semibold text-foreground mb-2">Descrição</h3>
