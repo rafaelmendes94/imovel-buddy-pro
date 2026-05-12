@@ -12,7 +12,8 @@ import { QuickPick } from '@/components/QuickPick';
 import { CepAutoFill, type AddressData } from '@/components/CepAutoFill';
 import { InfraToggle } from '@/components/InfraToggle';
 import { useSystemOptions } from '@/hooks/useSystemOptions';
-import { Building, MapPin, Layers, Save, Image, Loader2, Building2, FileText } from 'lucide-react';
+import { Building, MapPin, Layers, Save, Image, Loader2, Building2, FileText, Video, FolderDown, Camera } from 'lucide-react';
+import { MediaGalleryUpload } from '@/components/MediaGalleryUpload';
 
 const statusOptions = ["Lançamento", "Em construção", "Pronto"];
 
@@ -30,6 +31,8 @@ const initialForm = {
   cep: '', endereco: '', numero: '', complemento: '', bairro: '', cidade: '', estado: '',
   andares: 0, total_unidades: 0, descricao: '', infraestrutura: [] as string[],
   imagem_url: '', latitude: '', longitude: '',
+  fotos_infra: [] as string[], fotos_empreendimento: [] as string[],
+  videos: [] as string[], material_digital: [] as string[],
 };
 
 export default function CadastroEdificio() {
@@ -54,6 +57,10 @@ export default function CadastroEdificio() {
             total_unidades: data.total_unidades || 0, descricao: '', infraestrutura: data.infraestrutura || [],
             imagem_url: data.imagem_url || '', latitude: data.latitude ? String(data.latitude) : '',
             longitude: data.longitude ? String(data.longitude) : '',
+            fotos_infra: (data as any).fotos_infra || [],
+            fotos_empreendimento: (data as any).fotos_empreendimento || [],
+            videos: (data as any).videos || [],
+            material_digital: (data as any).material_digital || [],
           });
         }
         setLoading(false);
