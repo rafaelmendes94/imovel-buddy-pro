@@ -1845,7 +1845,7 @@ function ImageCarousel({ images: rawImages, alt }: { images?: string[]; alt: str
 function StatusBar({ currentStatus, onChangeStatus }: { currentStatus: Property["status"]; onChangeStatus: (status: Property["status"]) => void }) {
   return (
     <div className="flex gap-1.5">
-      {allStatuses.map((status) => {
+      {allStatuses.filter(s => s !== "Reservado").map((status) => {
         const config = statusConfig[status];
         const Icon = config.icon;
         const isActive = status === currentStatus;
