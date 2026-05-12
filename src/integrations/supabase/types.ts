@@ -337,12 +337,15 @@ export type Database = {
           descricao: string | null
           endereco: string | null
           estado: string | null
+          fotos_empreendimento: string[] | null
+          fotos_infra: string[] | null
           id: string
           imagem_url: string | null
           implantacao_url: string | null
           latitude: number | null
           longitude: number | null
           mapa_pdf_url: string | null
+          material_digital: string[] | null
           nome: string
           numero: string | null
           taxa_condominio: number | null
@@ -350,6 +353,7 @@ export type Database = {
           total_unidades: number | null
           unidades_disponiveis: number | null
           user_id: string
+          videos: string[] | null
         }
         Insert: {
           amenidades?: string[] | null
@@ -363,12 +367,15 @@ export type Database = {
           descricao?: string | null
           endereco?: string | null
           estado?: string | null
+          fotos_empreendimento?: string[] | null
+          fotos_infra?: string[] | null
           id?: string
           imagem_url?: string | null
           implantacao_url?: string | null
           latitude?: number | null
           longitude?: number | null
           mapa_pdf_url?: string | null
+          material_digital?: string[] | null
           nome: string
           numero?: string | null
           taxa_condominio?: number | null
@@ -376,6 +383,7 @@ export type Database = {
           total_unidades?: number | null
           unidades_disponiveis?: number | null
           user_id: string
+          videos?: string[] | null
         }
         Update: {
           amenidades?: string[] | null
@@ -389,12 +397,15 @@ export type Database = {
           descricao?: string | null
           endereco?: string | null
           estado?: string | null
+          fotos_empreendimento?: string[] | null
+          fotos_infra?: string[] | null
           id?: string
           imagem_url?: string | null
           implantacao_url?: string | null
           latitude?: number | null
           longitude?: number | null
           mapa_pdf_url?: string | null
+          material_digital?: string[] | null
           nome?: string
           numero?: string | null
           taxa_condominio?: number | null
@@ -402,6 +413,7 @@ export type Database = {
           total_unidades?: number | null
           unidades_disponiveis?: number | null
           user_id?: string
+          videos?: string[] | null
         }
         Relationships: []
       }
@@ -666,16 +678,20 @@ export type Database = {
           created_at: string | null
           endereco: string | null
           estado: string | null
+          fotos_empreendimento: string[] | null
+          fotos_infra: string[] | null
           id: string
           imagem_url: string | null
           infraestrutura: string[] | null
           latitude: number | null
           longitude: number | null
+          material_digital: string[] | null
           nome: string
           numero: string | null
           status: string | null
           total_unidades: number | null
           user_id: string
+          videos: string[] | null
         }
         Insert: {
           andares?: number | null
@@ -688,16 +704,20 @@ export type Database = {
           created_at?: string | null
           endereco?: string | null
           estado?: string | null
+          fotos_empreendimento?: string[] | null
+          fotos_infra?: string[] | null
           id?: string
           imagem_url?: string | null
           infraestrutura?: string[] | null
           latitude?: number | null
           longitude?: number | null
+          material_digital?: string[] | null
           nome: string
           numero?: string | null
           status?: string | null
           total_unidades?: number | null
           user_id: string
+          videos?: string[] | null
         }
         Update: {
           andares?: number | null
@@ -710,16 +730,20 @@ export type Database = {
           created_at?: string | null
           endereco?: string | null
           estado?: string | null
+          fotos_empreendimento?: string[] | null
+          fotos_infra?: string[] | null
           id?: string
           imagem_url?: string | null
           infraestrutura?: string[] | null
           latitude?: number | null
           longitude?: number | null
+          material_digital?: string[] | null
           nome?: string
           numero?: string | null
           status?: string | null
           total_unidades?: number | null
           user_id?: string
+          videos?: string[] | null
         }
         Relationships: []
       }
@@ -734,6 +758,8 @@ export type Database = {
           descricao: string | null
           endereco: string | null
           estado: string | null
+          fotos_empreendimento: string[] | null
+          fotos_infra: string[] | null
           id: string
           imagem_url: string | null
           imagens: string[] | null
@@ -742,6 +768,7 @@ export type Database = {
           link_360: string | null
           link_video: string | null
           longitude: number | null
+          material_digital: string[] | null
           nome: string
           numero: string | null
           previsao_entrega: string | null
@@ -749,6 +776,7 @@ export type Database = {
           tipo: string | null
           total_unidades: number | null
           user_id: string
+          videos: string[] | null
         }
         Insert: {
           bairro?: string | null
@@ -760,6 +788,8 @@ export type Database = {
           descricao?: string | null
           endereco?: string | null
           estado?: string | null
+          fotos_empreendimento?: string[] | null
+          fotos_infra?: string[] | null
           id?: string
           imagem_url?: string | null
           imagens?: string[] | null
@@ -768,6 +798,7 @@ export type Database = {
           link_360?: string | null
           link_video?: string | null
           longitude?: number | null
+          material_digital?: string[] | null
           nome: string
           numero?: string | null
           previsao_entrega?: string | null
@@ -775,6 +806,7 @@ export type Database = {
           tipo?: string | null
           total_unidades?: number | null
           user_id: string
+          videos?: string[] | null
         }
         Update: {
           bairro?: string | null
@@ -786,6 +818,8 @@ export type Database = {
           descricao?: string | null
           endereco?: string | null
           estado?: string | null
+          fotos_empreendimento?: string[] | null
+          fotos_infra?: string[] | null
           id?: string
           imagem_url?: string | null
           imagens?: string[] | null
@@ -794,6 +828,7 @@ export type Database = {
           link_360?: string | null
           link_video?: string | null
           longitude?: number | null
+          material_digital?: string[] | null
           nome?: string
           numero?: string | null
           previsao_entrega?: string | null
@@ -801,6 +836,7 @@ export type Database = {
           tipo?: string | null
           total_unidades?: number | null
           user_id?: string
+          videos?: string[] | null
         }
         Relationships: []
       }
