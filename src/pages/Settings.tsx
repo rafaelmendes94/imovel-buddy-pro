@@ -1,6 +1,6 @@
 import { AppLayout } from "@/components/AppLayout";
 import { BackButton } from "@/components/BackButton";
-import { Building2, CreditCard, Bell, Shield, KeyRound, Palette, Eye, EyeOff, Globe, Copy, Loader2, CheckCircle, XCircle } from "lucide-react";
+import { Building2, CreditCard, Bell, Shield, KeyRound, Palette, Eye, EyeOff, Globe, Copy, Loader2, CheckCircle, XCircle, User, Phone } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -16,6 +16,7 @@ export default function Settings() {
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [showSiteConfig, setShowSiteConfig] = useState(false);
   const [showAsaasDialog, setShowAsaasDialog] = useState(false);
+  const [showProfileDialog, setShowProfileDialog] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [changing, setChanging] = useState(false);
@@ -30,9 +31,62 @@ export default function Settings() {
   const [testingAsaas, setTestingAsaas] = useState(false);
   const [testResult, setTestResult] = useState<"success" | "error" | null>(null);
 
+  // Profile state
+  const [profileName, setProfileName] = useState("");
+  const [profilePhone, setProfilePhone] = useState("");
+  const [profileAvatar, setProfileAvatar] = useState("");
+  const [savingProfile, setSavingProfile] = useState(false);
+
   useEffect(() => {
     if (showAsaasDialog) loadAsaasSettings();
   }, [showAsaasDialog]);
+
+  useEffect(() => {
+    if (showProfileDialog) loadProfile();
+  }, [showProfileDialog]);
+
+  const loadProfile = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { data } = await supabase
+      .from("profiles")
+      .select("full_name, phone, avatar_url")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (data) {
+      setProfileName(data.full_name || "");
+      setProfilePhone(data.phone || "");
+      setProfileAvatar(data.avatar_url || "");
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    setSavingProfile(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { setSavingProfile(false); return; }
+    const { error } = await supabase
+      .from("profiles")
+      .update({ full_name: profileName, phone: profilePhone, avatar_url: profileAvatar })
+      .eq("user_id", user.id);
+    if (error) {
+      toast({ title: "Erro", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Perfil atualizado!", description: "WhatsApp e foto serão usados na sua página pública." });
+      setShowProfileDialog(false);
+    }
+    setSavingProfile(false);
+  };
+
+  const handleAvatarUpload = async (file: File) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const ext = file.name.split(".").pop();
+    const path = `${user.id}/avatar-${Date.now()}.${ext}`;
+    const { error: upErr } = await supabase.storage.from("site-assets").upload(path, file, { upsert: true });
+    if (upErr) { toast({ title: "Erro no upload", description: upErr.message, variant: "destructive" }); return; }
+    const { data: pub } = supabase.storage.from("site-assets").getPublicUrl(path);
+    setProfileAvatar(pub.publicUrl);
+  };
 
   const loadAsaasSettings = async () => {
     const { data } = await supabase
@@ -124,6 +178,12 @@ export default function Settings() {
   };
 
   const cards = [
+    {
+      icon: User,
+      title: "Meu Perfil",
+      description: "Nome, foto e WhatsApp que aparecem nos imóveis e na sua página pública",
+      onClick: () => setShowProfileDialog(true),
+    },
     {
       icon: Building2,
       title: "Dados da Imobiliária",
@@ -326,6 +386,56 @@ export default function Settings() {
                   {testResult === "success" ? "✓ Conexão OK" : "✗ Falha na conexão"}
                 </Badge>
               )}
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Profile Dialog */}
+        <Dialog open={showProfileDialog} onOpenChange={setShowProfileDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <User className="w-5 h-5" /> Meu Perfil
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                {profileAvatar ? (
+                  <img src={profileAvatar} alt="Avatar" className="w-16 h-16 rounded-full object-cover border border-border" />
+                ) : (
+                  <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+                    <User className="w-7 h-7 text-muted-foreground" />
+                  </div>
+                )}
+                <div className="flex-1">
+                  <Label className="text-xs">Foto de perfil</Label>
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => e.target.files?.[0] && handleAvatarUpload(e.target.files[0])}
+                    className="text-xs"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Nome completo</Label>
+                <Input value={profileName} onChange={(e) => setProfileName(e.target.value)} placeholder="Seu nome" />
+              </div>
+              <div className="space-y-2">
+                <Label className="flex items-center gap-1.5"><Phone className="w-3.5 h-3.5" /> WhatsApp</Label>
+                <Input
+                  value={profilePhone}
+                  onChange={(e) => setProfilePhone(e.target.value)}
+                  placeholder="Ex: 5551999999999 (com DDI + DDD)"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Esse número será usado no botão WhatsApp dos seus imóveis e na sua página pública.
+                </p>
+              </div>
+              <Button onClick={handleSaveProfile} disabled={savingProfile} className="w-full">
+                {savingProfile && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                Salvar
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
