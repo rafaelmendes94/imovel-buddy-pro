@@ -127,11 +127,11 @@ export default function CadastroEdificio() {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label className="text-xs">Andares</Label>
-              <Input type="number" value={form.andares} onChange={(e) => setForm({ ...form, andares: +e.target.value })} />
+              <Input type="number" value={form.andares || ''} onChange={(e) => setForm({ ...form, andares: +e.target.value })} />
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs">Total de Unidades</Label>
-              <Input type="number" value={form.total_unidades} onChange={(e) => setForm({ ...form, total_unidades: +e.target.value })} />
+              <Input type="number" value={form.total_unidades || ''} onChange={(e) => setForm({ ...form, total_unidades: +e.target.value })} />
             </div>
           </div>
         </section>
