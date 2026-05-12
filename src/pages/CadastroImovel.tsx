@@ -85,6 +85,7 @@ export interface FormData {
   vista: string;
   localChaves: string;
   termoExclusividade: string;
+  termoExclusividadeUrl: string;
   vistaMar: boolean;
   decorado: boolean;
   aceitaPermuta: boolean;
