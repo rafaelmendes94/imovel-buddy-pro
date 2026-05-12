@@ -35,6 +35,7 @@ export default function Settings() {
   const [profileName, setProfileName] = useState("");
   const [profilePhone, setProfilePhone] = useState("");
   const [profileAvatar, setProfileAvatar] = useState("");
+  const [ratingsPublic, setRatingsPublic] = useState(true);
   const [savingProfile, setSavingProfile] = useState(false);
 
   useEffect(() => {
