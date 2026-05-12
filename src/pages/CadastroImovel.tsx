@@ -964,10 +964,49 @@ export function ImovelForm({ editId }: { editId?: string }) {
             <Input placeholder="Ex: Portaria, Imobiliária..." value={form.localChaves} onChange={e => set('localChaves', e.target.value)} />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs flex items-center gap-1"><FileText className="w-3.5 h-3.5" /> Termo de Exclusividade</Label>
+            <Label className="text-xs flex items-center gap-1"><FileText className="w-3.5 h-3.5" /> Termo de Exclusividade (data)</Label>
             <Input type="date" value={form.termoExclusividade} onChange={e => set('termoExclusividade', e.target.value)} />
           </div>
         </div>
+
+        {/* Upload do arquivo do termo (img/PDF) */}
+        <div className="mt-3 space-y-1.5">
+          <Label className="text-xs flex items-center gap-1"><FileText className="w-3.5 h-3.5" /> Arquivo do Termo (imagem ou PDF)</Label>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Input
+              type="file"
+              accept="image/*,application/pdf"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file || !user) return;
+                if (file.size > 10 * 1024 * 1024) {
+                  toast({ title: "Arquivo muito grande", description: "Limite de 10MB.", variant: "destructive" });
+                  return;
+                }
+                try {
+                  const ext = file.name.split('.').pop();
+                  const path = `${user.id}/exclusividade/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+                  const { error: upErr } = await supabase.storage.from('site-assets').upload(path, file);
+                  if (upErr) throw upErr;
+                  const { data: urlData } = supabase.storage.from('site-assets').getPublicUrl(path);
+                  set('termoExclusividadeUrl', urlData.publicUrl);
+                  toast({ title: "Termo enviado", description: "Arquivo carregado com sucesso." });
+                } catch (err: any) {
+                  toast({ title: "Erro no upload", description: err.message, variant: "destructive" });
+                }
+              }}
+              className="flex-1 min-w-[200px]"
+            />
+            {form.termoExclusividadeUrl && (
+              <>
+                <Button type="button" variant="outline" size="sm" onClick={() => window.open(form.termoExclusividadeUrl, '_blank')}>
+                  <Eye className="w-3.5 h-3.5 mr-1" /> Ver
+                </Button>
+                <Button type="button" variant="outline" size="sm" onClick={() => set('termoExclusividadeUrl', '')}>
+                  <X className="w-3.5 h-3.5 mr-1" /> Remover
+                </Button>
+              </>
+            )}
       </div>
 
       {/* ===== BLOCO 4: CARACTERÍSTICAS ===== */}
