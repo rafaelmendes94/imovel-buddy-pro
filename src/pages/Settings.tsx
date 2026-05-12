@@ -51,13 +51,14 @@ export default function Settings() {
     if (!user) return;
     const { data } = await supabase
       .from("profiles")
-      .select("full_name, phone, avatar_url")
+      .select("full_name, phone, avatar_url, ratings_public")
       .eq("user_id", user.id)
       .maybeSingle();
     if (data) {
       setProfileName(data.full_name || "");
       setProfilePhone(data.phone || "");
       setProfileAvatar(data.avatar_url || "");
+      setRatingsPublic((data as any).ratings_public !== false);
     }
   };
 
