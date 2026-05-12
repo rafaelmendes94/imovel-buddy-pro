@@ -65,6 +65,10 @@ export default function CadastroCondominio() {
             longitude: data.longitude ? String(data.longitude) : '',
             implantacao_url: (data as any).implantacao_url || '',
             mapa_pdf_url: (data as any).mapa_pdf_url || '',
+            fotos_infra: (data as any).fotos_infra || [],
+            fotos_empreendimento: (data as any).fotos_empreendimento || [],
+            videos: (data as any).videos || [],
+            material_digital: (data as any).material_digital || [],
           });
         }
         setLoading(false);
