@@ -7,9 +7,11 @@ import { formatCurrency } from "@/data/mockData";
 import {
   ArrowLeft, Fence, MapPin, Home, Edit, Share2, ExternalLink, Loader2,
   BedDouble, Bath, Car, Ruler, Layers, Wrench, Calendar, FileUp, Download,
+  Camera, Building2, Video, FolderDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MediaGalleryView } from "@/components/MediaGalleryView";
 
 const imovelStatusColors: Record<string, string> = {
   Disponível: "bg-success/10 text-success border-success/30",
@@ -117,6 +119,7 @@ export default function CondominiumDetail() {
         <Tabs defaultValue="info" className="space-y-4">
           <TabsList className="bg-secondary flex-wrap h-auto gap-1">
             <TabsTrigger value="info">Informações</TabsTrigger>
+            <TabsTrigger value="midias">Mídias</TabsTrigger>
             <TabsTrigger value="imoveis">Imóveis ({imoveis.length})</TabsTrigger>
             {implantacaoUrl && <TabsTrigger value="implantacao">Implantação</TabsTrigger>}
             {(condo as any).mapa_pdf_url && <TabsTrigger value="mapa">Mapa PDF</TabsTrigger>}
@@ -142,6 +145,12 @@ export default function CondominiumDetail() {
             )}
           </TabsContent>
 
+          <TabsContent value="midias" className="space-y-4">
+            <MediaGalleryView title="Fotos do Empreendimento" icon={Camera} items={(condo as any).fotos_empreendimento || []} kind="image" emptyText="Nenhuma foto cadastrada" />
+            <MediaGalleryView title="Fotos da Infraestrutura" icon={Building2} items={(condo as any).fotos_infra || []} kind="image" emptyText="Nenhuma foto cadastrada" />
+            <MediaGalleryView title="Vídeos" icon={Video} items={(condo as any).videos || []} kind="video" emptyText="Nenhum vídeo cadastrado" />
+            <MediaGalleryView title="Material Digital" icon={FolderDown} items={(condo as any).material_digital || []} kind="file" emptyText="Nenhum material disponível" />
+          </TabsContent>
           <TabsContent value="imoveis" className="space-y-4">
             {imoveis.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">

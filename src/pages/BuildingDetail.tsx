@@ -7,9 +7,11 @@ import { formatCurrency } from "@/data/mockData";
 import {
   ArrowLeft, Building, MapPin, Layers, Calendar, Wrench, Edit,
   BedDouble, Bath, Car, Ruler, Home, Share2, ExternalLink, Loader2,
+  Camera, Building2, Video, FolderDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MediaGalleryView } from "@/components/MediaGalleryView";
 
 const statusColors: Record<string, string> = {
   "Em construção": "bg-warning/10 text-warning border-warning/30",
@@ -122,6 +124,7 @@ export default function BuildingDetail() {
         <Tabs defaultValue="info" className="space-y-4">
           <TabsList className="bg-secondary">
             <TabsTrigger value="info">Informações</TabsTrigger>
+            <TabsTrigger value="midias">Mídias</TabsTrigger>
             <TabsTrigger value="imoveis">Imóveis Vinculados ({imoveis.length})</TabsTrigger>
             <TabsTrigger value="localizacao">Localização</TabsTrigger>
           </TabsList>
@@ -145,6 +148,12 @@ export default function BuildingDetail() {
             )}
           </TabsContent>
 
+          <TabsContent value="midias" className="space-y-4">
+            <MediaGalleryView title="Fotos do Empreendimento" icon={Camera} items={building.fotos_empreendimento || []} kind="image" emptyText="Nenhuma foto cadastrada" />
+            <MediaGalleryView title="Fotos da Infraestrutura" icon={Building2} items={building.fotos_infra || []} kind="image" emptyText="Nenhuma foto cadastrada" />
+            <MediaGalleryView title="Vídeos" icon={Video} items={building.videos || []} kind="video" emptyText="Nenhum vídeo cadastrado" />
+            <MediaGalleryView title="Material Digital" icon={FolderDown} items={building.material_digital || []} kind="file" emptyText="Nenhum material disponível" />
+          </TabsContent>
           <TabsContent value="imoveis" className="space-y-4">
             {imoveis.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">

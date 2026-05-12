@@ -12,7 +12,8 @@ import { QuickPick } from '@/components/QuickPick';
 import { CepAutoFill, type AddressData } from '@/components/CepAutoFill';
 import { InfraToggle } from '@/components/InfraToggle';
 import { useSystemOptions } from '@/hooks/useSystemOptions';
-import { Fence, MapPin, Layers, Save, Image, Loader2, Building2, FileText, DollarSign, FileUp, Upload } from 'lucide-react';
+import { Fence, MapPin, Layers, Save, Image, Loader2, Building2, FileText, DollarSign, FileUp, Upload, Camera, Video, FolderDown } from 'lucide-react';
+import { MediaGalleryUpload } from '@/components/MediaGalleryUpload';
 
 const typeOptions = ["Vertical", "Horizontal", "Misto"];
 
@@ -33,6 +34,8 @@ const initialForm = {
   imagem_url: '', latitude: '', longitude: '',
   implantacao_url: '',
   mapa_pdf_url: '',
+  fotos_infra: [] as string[], fotos_empreendimento: [] as string[],
+  videos: [] as string[], material_digital: [] as string[],
 };
 
 export default function CadastroCondominio() {
@@ -62,6 +65,10 @@ export default function CadastroCondominio() {
             longitude: data.longitude ? String(data.longitude) : '',
             implantacao_url: (data as any).implantacao_url || '',
             mapa_pdf_url: (data as any).mapa_pdf_url || '',
+            fotos_infra: (data as any).fotos_infra || [],
+            fotos_empreendimento: (data as any).fotos_empreendimento || [],
+            videos: (data as any).videos || [],
+            material_digital: (data as any).material_digital || [],
           });
         }
         setLoading(false);
@@ -99,6 +106,8 @@ export default function CadastroCondominio() {
       latitude: parseFloat(form.latitude) || 0, longitude: parseFloat(form.longitude) || 0,
       implantacao_url: form.implantacao_url,
       mapa_pdf_url: form.mapa_pdf_url,
+      fotos_infra: form.fotos_infra, fotos_empreendimento: form.fotos_empreendimento,
+      videos: form.videos, material_digital: form.material_digital,
     };
     if (editId) {
       await supabase.from("condominios").update(payload).eq("id", editId);
@@ -240,12 +249,56 @@ export default function CadastroCondominio() {
         </section>
 
         <section>
-          <SectionHeader icon={Image} title="Imagem" />
+          <SectionHeader icon={Image} title="Imagem de Capa" />
           <div className="space-y-1.5">
-            <Label className="text-xs">URL da Imagem</Label>
+            <Label className="text-xs">URL da Imagem (capa)</Label>
             <Input value={form.imagem_url} onChange={(e) => setForm({ ...form, imagem_url: e.target.value })} placeholder="https://..." />
           </div>
           {form.imagem_url && <img src={form.imagem_url} alt="Preview" className="mt-3 rounded-lg max-h-48 object-cover" />}
+        </section>
+
+        <section>
+          <SectionHeader icon={Camera} title="Fotos do Empreendimento" />
+          <MediaGalleryUpload
+            label="Fachada, áreas externas, vista aérea, etc."
+            values={form.fotos_empreendimento}
+            onChange={(v) => setForm(f => ({ ...f, fotos_empreendimento: v }))}
+            folder="condominios/fotos-empreendimento"
+            kind="image"
+          />
+        </section>
+
+        <section>
+          <SectionHeader icon={Building2} title="Fotos da Infraestrutura" />
+          <MediaGalleryUpload
+            label="Piscina, academia, salão, playground, áreas comuns, etc."
+            values={form.fotos_infra}
+            onChange={(v) => setForm(f => ({ ...f, fotos_infra: v }))}
+            folder="condominios/fotos-infra"
+            kind="image"
+          />
+        </section>
+
+        <section>
+          <SectionHeader icon={Video} title="Vídeos" />
+          <MediaGalleryUpload
+            label="Tour, drone, vídeo institucional (arquivo ou link YouTube/Vimeo)"
+            values={form.videos}
+            onChange={(v) => setForm(f => ({ ...f, videos: v }))}
+            folder="condominios/videos"
+            kind="video"
+          />
+        </section>
+
+        <section>
+          <SectionHeader icon={FolderDown} title="Material Digital" />
+          <MediaGalleryUpload
+            label="Folder, plantas, memorial, tabelas (PDF, imagens, docs)"
+            values={form.material_digital}
+            onChange={(v) => setForm(f => ({ ...f, material_digital: v }))}
+            folder="condominios/material-digital"
+            kind="file"
+          />
         </section>
 
 

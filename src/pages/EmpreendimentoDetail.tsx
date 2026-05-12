@@ -7,9 +7,11 @@ import { formatCurrency } from "@/data/mockData";
 import {
   ArrowLeft, Building2, MapPin, Home, Edit, Share2, ExternalLink, Loader2,
   BedDouble, Bath, Car, Ruler, Layers, Wrench, Calendar, Image, Video, Eye, Download, X,
+  Camera, FolderDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MediaGalleryView } from "@/components/MediaGalleryView";
 
 const statusColors: Record<string, string> = {
   "Em construção": "bg-warning/10 text-warning border-warning/30",
@@ -76,7 +78,11 @@ export default function EmpreendimentoDetail() {
 
   const fullAddress = [emp.endereco, emp.numero, emp.complemento, emp.bairro, emp.cidade, emp.estado].filter(Boolean).join(", ");
   const gallery: string[] = emp.imagens || [];
-  const hasMedia = gallery.length > 0 || emp.link_video || emp.link_360;
+  const fotosEmp: string[] = emp.fotos_empreendimento || [];
+  const fotosInfra: string[] = emp.fotos_infra || [];
+  const videosArr: string[] = emp.videos || [];
+  const materialDigital: string[] = emp.material_digital || [];
+  const hasMedia = gallery.length > 0 || emp.link_video || emp.link_360 || fotosEmp.length || fotosInfra.length || videosArr.length || materialDigital.length;
 
   function shareWhatsApp() {
     const text = `🏗️ ${emp.nome}\n📍 ${fullAddress}\n🔗 ${window.location.href}`;
@@ -198,12 +204,17 @@ export default function EmpreendimentoDetail() {
                 </div>
               )}
 
-              {gallery.length === 0 && (
+              {gallery.length === 0 && fotosEmp.length === 0 && fotosInfra.length === 0 && (
                 <div className="text-center py-8 text-muted-foreground">
                   <Image className="w-12 h-12 mx-auto mb-3 opacity-40" />
                   <p>Nenhuma foto na galeria</p>
                 </div>
               )}
+
+              <MediaGalleryView title="Fotos do Empreendimento" icon={Camera} items={fotosEmp} kind="image" />
+              <MediaGalleryView title="Fotos da Infraestrutura" icon={Building2} items={fotosInfra} kind="image" />
+              <MediaGalleryView title="Vídeos" icon={Video} items={videosArr} kind="video" />
+              <MediaGalleryView title="Material Digital" icon={FolderDown} items={materialDigital} kind="file" />
             </TabsContent>
           )}
 

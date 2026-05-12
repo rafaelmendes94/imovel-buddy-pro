@@ -12,7 +12,8 @@ import { QuickPick } from '@/components/QuickPick';
 import { CepAutoFill, type AddressData } from '@/components/CepAutoFill';
 import { InfraToggle } from '@/components/InfraToggle';
 import { useSystemOptions } from '@/hooks/useSystemOptions';
-import { Building, MapPin, Layers, Save, Image, Loader2, Building2, FileText } from 'lucide-react';
+import { Building, MapPin, Layers, Save, Image, Loader2, Building2, FileText, Video, FolderDown, Camera } from 'lucide-react';
+import { MediaGalleryUpload } from '@/components/MediaGalleryUpload';
 
 const statusOptions = ["Lançamento", "Em construção", "Pronto"];
 
@@ -30,6 +31,8 @@ const initialForm = {
   cep: '', endereco: '', numero: '', complemento: '', bairro: '', cidade: '', estado: '',
   andares: 0, total_unidades: 0, descricao: '', infraestrutura: [] as string[],
   imagem_url: '', latitude: '', longitude: '',
+  fotos_infra: [] as string[], fotos_empreendimento: [] as string[],
+  videos: [] as string[], material_digital: [] as string[],
 };
 
 export default function CadastroEdificio() {
@@ -54,6 +57,10 @@ export default function CadastroEdificio() {
             total_unidades: data.total_unidades || 0, descricao: '', infraestrutura: data.infraestrutura || [],
             imagem_url: data.imagem_url || '', latitude: data.latitude ? String(data.latitude) : '',
             longitude: data.longitude ? String(data.longitude) : '',
+            fotos_infra: (data as any).fotos_infra || [],
+            fotos_empreendimento: (data as any).fotos_empreendimento || [],
+            videos: (data as any).videos || [],
+            material_digital: (data as any).material_digital || [],
           });
         }
         setLoading(false);
@@ -64,13 +71,15 @@ export default function CadastroEdificio() {
   const handleSubmit = async () => {
     if (!form.nome || !user) return;
     setSaving(true);
-    const payload = {
+    const payload: any = {
       nome: form.nome, construtora: form.construtora, ano_construcao: form.ano_construcao,
       status: form.status, cep: form.cep, endereco: form.endereco, numero: form.numero,
       complemento: form.complemento, bairro: form.bairro, cidade: form.cidade, estado: form.estado,
       andares: form.andares, total_unidades: form.total_unidades, infraestrutura: form.infraestrutura,
       imagem_url: form.imagem_url,
       latitude: parseFloat(form.latitude) || 0, longitude: parseFloat(form.longitude) || 0,
+      fotos_infra: form.fotos_infra, fotos_empreendimento: form.fotos_empreendimento,
+      videos: form.videos, material_digital: form.material_digital,
     };
     if (editId) {
       await supabase.from("edificios").update(payload).eq("id", editId);
@@ -147,12 +156,56 @@ export default function CadastroEdificio() {
         </section>
 
         <section>
-          <SectionHeader icon={Image} title="Imagem" />
+          <SectionHeader icon={Image} title="Imagem de Capa" />
           <div className="space-y-1.5">
-            <Label className="text-xs">URL da Imagem</Label>
+            <Label className="text-xs">URL da Imagem (capa)</Label>
             <Input value={form.imagem_url} onChange={(e) => setForm({ ...form, imagem_url: e.target.value })} placeholder="https://..." />
           </div>
           {form.imagem_url && <img src={form.imagem_url} alt="Preview" className="mt-3 rounded-lg max-h-48 object-cover" />}
+        </section>
+
+        <section>
+          <SectionHeader icon={Camera} title="Fotos do Empreendimento" />
+          <MediaGalleryUpload
+            label="Fachada, áreas externas, vista aérea, etc."
+            values={form.fotos_empreendimento}
+            onChange={(v) => setForm(f => ({ ...f, fotos_empreendimento: v }))}
+            folder="edificios/fotos-empreendimento"
+            kind="image"
+          />
+        </section>
+
+        <section>
+          <SectionHeader icon={Building2} title="Fotos da Infraestrutura" />
+          <MediaGalleryUpload
+            label="Piscina, academia, salão, playground, etc."
+            values={form.fotos_infra}
+            onChange={(v) => setForm(f => ({ ...f, fotos_infra: v }))}
+            folder="edificios/fotos-infra"
+            kind="image"
+          />
+        </section>
+
+        <section>
+          <SectionHeader icon={Video} title="Vídeos" />
+          <MediaGalleryUpload
+            label="Tour, drone, vídeo institucional (arquivo ou link YouTube/Vimeo)"
+            values={form.videos}
+            onChange={(v) => setForm(f => ({ ...f, videos: v }))}
+            folder="edificios/videos"
+            kind="video"
+          />
+        </section>
+
+        <section>
+          <SectionHeader icon={FolderDown} title="Material Digital" />
+          <MediaGalleryUpload
+            label="Folder, plantas, memorial, tabelas (PDF, imagens, docs)"
+            values={form.material_digital}
+            onChange={(v) => setForm(f => ({ ...f, material_digital: v }))}
+            folder="edificios/material-digital"
+            kind="file"
+          />
         </section>
 
 

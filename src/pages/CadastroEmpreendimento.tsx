@@ -12,7 +12,8 @@ import { QuickPick } from '@/components/QuickPick';
 import { CepAutoFill, type AddressData } from '@/components/CepAutoFill';
 import { InfraToggle } from '@/components/InfraToggle';
 import { useSystemOptions } from '@/hooks/useSystemOptions';
-import { Landmark, MapPin, Layers, Save, Image, Loader2, Building2, FileText, Calendar, Video, Eye, Plus, X } from 'lucide-react';
+import { Landmark, MapPin, Layers, Save, Image, Loader2, Building2, FileText, Calendar, Video, Eye, Plus, X, Camera, FolderDown } from 'lucide-react';
+import { MediaGalleryUpload } from '@/components/MediaGalleryUpload';
 
 const statusOptions = ["Lançamento", "Em construção", "Pronto", "Em vendas"];
 const tipoOptions = ["Residencial", "Comercial", "Misto", "Loteamento"];
@@ -33,6 +34,8 @@ const initialForm = {
   descricao: '', infraestrutura: [] as string[],
   imagem_url: '', latitude: '', longitude: '',
   imagens: [] as string[], link_360: '', link_video: '',
+  fotos_infra: [] as string[], fotos_empreendimento: [] as string[],
+  videos: [] as string[], material_digital: [] as string[],
 };
 
 export default function CadastroEmpreendimento() {
@@ -60,6 +63,10 @@ export default function CadastroEmpreendimento() {
             imagem_url: data.imagem_url || '', latitude: data.latitude ? String(data.latitude) : '',
             longitude: data.longitude ? String(data.longitude) : '',
             imagens: (data as any).imagens || [], link_360: (data as any).link_360 || '', link_video: (data as any).link_video || '',
+            fotos_infra: (data as any).fotos_infra || [],
+            fotos_empreendimento: (data as any).fotos_empreendimento || [],
+            videos: (data as any).videos || [],
+            material_digital: (data as any).material_digital || [],
           });
         }
         setLoading(false);
@@ -79,6 +86,8 @@ export default function CadastroEmpreendimento() {
       imagem_url: form.imagem_url,
       latitude: parseFloat(form.latitude) || 0, longitude: parseFloat(form.longitude) || 0,
       imagens: form.imagens, link_360: form.link_360, link_video: form.link_video,
+      fotos_infra: form.fotos_infra, fotos_empreendimento: form.fotos_empreendimento,
+      videos: form.videos, material_digital: form.material_digital,
     };
     if (editId) {
       await supabase.from("empreendimentos").update(payload).eq("id", editId);
@@ -208,7 +217,49 @@ export default function CadastroEmpreendimento() {
           </div>
         </section>
 
+        <section>
+          <SectionHeader icon={Camera} title="Fotos do Empreendimento" />
+          <MediaGalleryUpload
+            label="Fachada, áreas externas, vista aérea, etc."
+            values={form.fotos_empreendimento}
+            onChange={(v) => setForm(f => ({ ...f, fotos_empreendimento: v }))}
+            folder="empreendimentos/fotos-empreendimento"
+            kind="image"
+          />
+        </section>
 
+        <section>
+          <SectionHeader icon={Building2} title="Fotos da Infraestrutura" />
+          <MediaGalleryUpload
+            label="Piscina, academia, salão, playground, áreas comuns, etc."
+            values={form.fotos_infra}
+            onChange={(v) => setForm(f => ({ ...f, fotos_infra: v }))}
+            folder="empreendimentos/fotos-infra"
+            kind="image"
+          />
+        </section>
+
+        <section>
+          <SectionHeader icon={Video} title="Vídeos" />
+          <MediaGalleryUpload
+            label="Tour, drone, vídeo institucional (arquivo ou link YouTube/Vimeo)"
+            values={form.videos}
+            onChange={(v) => setForm(f => ({ ...f, videos: v }))}
+            folder="empreendimentos/videos"
+            kind="video"
+          />
+        </section>
+
+        <section>
+          <SectionHeader icon={FolderDown} title="Material Digital" />
+          <MediaGalleryUpload
+            label="Folder, plantas, memorial, tabelas (PDF, imagens, docs)"
+            values={form.material_digital}
+            onChange={(v) => setForm(f => ({ ...f, material_digital: v }))}
+            folder="empreendimentos/material-digital"
+            kind="file"
+          />
+        </section>
         <div className="flex justify-end gap-3 pt-4 border-t border-border">
           <button onClick={() => navigate("/empreendimentos")} className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium hover:bg-muted transition-colors">Cancelar</button>
           <button onClick={handleSubmit} disabled={saving} className="flex items-center gap-2 px-6 py-2.5 rounded-lg gradient-gold text-primary text-sm font-semibold hover:opacity-90 transition-opacity">
