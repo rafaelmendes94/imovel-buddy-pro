@@ -2434,7 +2434,7 @@ function PropertyRow({
         </div>
 
         {/* ── COL 2: Identidade + Dados Técnicos ── */}
-        <div className="flex-1 min-w-0 md:border-r border-border px-4 py-2 flex flex-col justify-start gap-1 overflow-hidden">
+        <div className="flex-1 min-w-0 md:max-w-[360px] md:border-r border-border px-4 py-3 flex flex-col justify-center gap-1.5 overflow-hidden">
           {/* Row 1: Title + Code + Site/Destaque toggles */}
           <div className="flex items-center gap-2 min-w-0">
             <h3
@@ -2556,7 +2556,7 @@ function PropertyRow({
         </div>
 
         {/* ── COL 3: Financeiro ── */}
-        <div className="w-full md:w-[220px] flex-shrink-0 md:border-r border-border px-3 py-2 flex flex-col justify-start gap-0.5 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        <div className="w-full md:flex-1 md:min-w-[230px] md:max-w-[260px] flex-shrink-0 md:border-r border-border px-4 py-3 flex flex-col justify-center gap-1 overflow-hidden" onClick={(e) => e.stopPropagation()}>
           {/* Main price */}
           <div className="flex items-center gap-1.5 mb-0.5">
             <Banknote className="w-3.5 h-3.5 text-primary" />
@@ -2627,7 +2627,7 @@ function PropertyRow({
         </div>
 
         {/* ── COL 3.5: Analytics ── */}
-        <div className="w-full md:w-[170px] flex-shrink-0 md:border-r border-border px-3 py-2 flex flex-col justify-start gap-1.5" onClick={(e) => e.stopPropagation()}>
+        <div className="w-full md:flex-1 md:min-w-[200px] md:max-w-[220px] flex-shrink-0 md:border-r border-border px-4 py-3 flex flex-col justify-center gap-2" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center gap-1.5 mb-0.5">
             <BarChart3 className="w-3.5 h-3.5 text-primary" />
             <span className="text-[11px] font-black text-primary uppercase tracking-wider">Analytics</span>
@@ -2654,7 +2654,7 @@ function PropertyRow({
         </div>
 
         {/* ── COL 4: Proprietário + Chaves + Datas + Status ── */}
-        <div className="w-full md:w-[190px] flex-shrink-0 md:border-r border-border px-3 py-2 flex flex-col justify-start gap-1" onClick={(e) => e.stopPropagation()}>
+        <div className="w-full md:flex-1 md:min-w-[220px] md:max-w-[240px] flex-shrink-0 md:border-r border-border px-4 py-3 flex flex-col justify-center gap-1.5" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center gap-1.5 mb-0.5">
             <User className="w-3.5 h-3.5 text-primary" />
             <span className="text-[11px] font-black text-primary uppercase tracking-wider">Proprietário</span>
