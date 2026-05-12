@@ -16,6 +16,7 @@ export default function Settings() {
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [showSiteConfig, setShowSiteConfig] = useState(false);
   const [showAsaasDialog, setShowAsaasDialog] = useState(false);
+  const [showProfileDialog, setShowProfileDialog] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [changing, setChanging] = useState(false);
@@ -30,9 +31,62 @@ export default function Settings() {
   const [testingAsaas, setTestingAsaas] = useState(false);
   const [testResult, setTestResult] = useState<"success" | "error" | null>(null);
 
+  // Profile state
+  const [profileName, setProfileName] = useState("");
+  const [profilePhone, setProfilePhone] = useState("");
+  const [profileAvatar, setProfileAvatar] = useState("");
+  const [savingProfile, setSavingProfile] = useState(false);
+
   useEffect(() => {
     if (showAsaasDialog) loadAsaasSettings();
   }, [showAsaasDialog]);
+
+  useEffect(() => {
+    if (showProfileDialog) loadProfile();
+  }, [showProfileDialog]);
+
+  const loadProfile = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { data } = await supabase
+      .from("profiles")
+      .select("full_name, phone, avatar_url")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (data) {
+      setProfileName(data.full_name || "");
+      setProfilePhone(data.phone || "");
+      setProfileAvatar(data.avatar_url || "");
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    setSavingProfile(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { setSavingProfile(false); return; }
+    const { error } = await supabase
+      .from("profiles")
+      .update({ full_name: profileName, phone: profilePhone, avatar_url: profileAvatar })
+      .eq("user_id", user.id);
+    if (error) {
+      toast({ title: "Erro", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Perfil atualizado!", description: "WhatsApp e foto serão usados na sua página pública." });
+      setShowProfileDialog(false);
+    }
+    setSavingProfile(false);
+  };
+
+  const handleAvatarUpload = async (file: File) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const ext = file.name.split(".").pop();
+    const path = `${user.id}/avatar-${Date.now()}.${ext}`;
+    const { error: upErr } = await supabase.storage.from("site-assets").upload(path, file, { upsert: true });
+    if (upErr) { toast({ title: "Erro no upload", description: upErr.message, variant: "destructive" }); return; }
+    const { data: pub } = supabase.storage.from("site-assets").getPublicUrl(path);
+    setProfileAvatar(pub.publicUrl);
+  };
 
   const loadAsaasSettings = async () => {
     const { data } = await supabase
