@@ -1,6 +1,6 @@
 import { AppLayout } from "@/components/AppLayout";
 import { BackButton } from "@/components/BackButton";
-import { Building2, CreditCard, Bell, Shield, KeyRound, Palette, Eye, EyeOff, Globe, Copy, Loader2, CheckCircle, XCircle } from "lucide-react";
+import { Building2, CreditCard, Bell, Shield, KeyRound, Palette, Eye, EyeOff, Globe, Copy, Loader2, CheckCircle, XCircle, User, Phone } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
