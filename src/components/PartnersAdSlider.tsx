@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import { ChevronLeft, ChevronRight, Sparkles, Handshake } from "lucide-react";
 
 interface Partner {
   id: string;
@@ -108,6 +108,15 @@ export function PartnersAdSlider() {
           </div>
         </>
       )}
+      <Link
+        to="/parceiros"
+        className="absolute top-2 right-2 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-colors shadow-md"
+      >
+        <Handshake className="w-3.5 h-3.5" />
+        Ver Todos
+        <ChevronRight className="w-3.5 h-3.5" />
+      </Link>
     </div>
   );
 }
+
