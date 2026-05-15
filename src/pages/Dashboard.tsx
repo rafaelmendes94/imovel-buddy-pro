@@ -2,6 +2,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { AdminLayout } from "@/components/AdminLayout";
 import { BackButton } from "@/components/BackButton";
 import { MetricCard } from "@/components/MetricCard";
+import { PartnersAdSlider } from "@/components/PartnersAdSlider";
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
