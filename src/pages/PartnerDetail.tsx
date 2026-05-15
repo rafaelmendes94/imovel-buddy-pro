@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   ArrowLeft, Building2, Star, Phone, MapPin, Globe, Mail,
   MessageSquare, Send, ThumbsUp, Clock, Users, X, Settings as SettingsIcon
@@ -29,6 +29,7 @@ interface PartnerData {
 
 export default function PartnerDetail() {
   const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
   const [partner, setPartner] = useState<PartnerData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -97,10 +98,10 @@ export default function PartnerDetail() {
     <div className="min-h-screen bg-gray-50 font-sans">
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
-          <Link to="/site" className="flex items-center gap-2 text-gray-600 hover:text-amber-600 transition-colors">
+          <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-gray-600 hover:text-amber-600 transition-colors">
             <ArrowLeft className="w-4 h-4" />
             <span className="text-lg font-extrabold text-gray-900">MV <span className="text-amber-500">Broker</span></span>
-          </Link>
+          </button>
           <div className="flex items-center gap-2">
             <button onClick={() => setShowConfig(true)} className="p-2 rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors" title="Configurações da página">
               <SettingsIcon className="w-4 h-4" />
