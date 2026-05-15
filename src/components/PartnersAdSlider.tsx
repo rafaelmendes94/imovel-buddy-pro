@@ -41,7 +41,7 @@ export function PartnersAdSlider() {
 
   return (
     <div className="relative overflow-hidden rounded-xl border border-border elevated-card group">
-      <Link to={`/parceiros/${p.slug}`} className="block">
+      <Link to={`/parceiro/${p.slug}`} className="block">
         <div className="relative h-32 sm:h-40 w-full">
           {p.cover_url && (
             <img
