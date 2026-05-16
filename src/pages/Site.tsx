@@ -123,7 +123,7 @@ const categories: { key: Category; label: string; icon: typeof Home }[] = [
 
 function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, onToggleFavorite, isInRoute, onToggleRoute }: { property: typeof siteProperties[0]; onSelect?: (p: typeof siteProperties[0]) => void; hideStamp?: boolean; onViewTerm?: (url: string) => void; isFavorited?: boolean; onToggleFavorite?: (id: string) => void; isInRoute?: boolean; onToggleRoute?: (id: string) => void }) {
   const [imgIndex, setImgIndex] = useState(0);
-  const broker = brokerInfo[property.broker] || { photo: "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=100&h=100&fit=crop&crop=face", whatsapp: "5511999999999" };
+  const broker = brokerInfo[property.broker] || { photo: getBrokerAvatar(property.broker || "Corretor"), whatsapp: "" };
   const whatsappMessage = encodeURIComponent(`Olá! Tenho interesse no imóvel: ${property.title} - ${formatCurrency(property.price)}`);
   const unitParts = [property.unitNumber, property.boxNumber, property.quadra, property.lote].filter(Boolean);
   const imgs = property.images && property.images.length > 0 ? property.images : [property.image];
