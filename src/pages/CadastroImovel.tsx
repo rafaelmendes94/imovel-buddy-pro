@@ -432,6 +432,40 @@ export function ImovelForm({ editId }: { editId?: string }) {
   const isEdit = !!editId;
   const set = (field: keyof FormData, value: any) => setForm(prev => ({ ...prev, [field]: value }));
 
+  // Auto-fill proprietário with current user's profile (broker/imobiliária flow, new only)
+  useEffect(() => {
+    if (editId || isSuperAdmin || !profile) return;
+    setForm(prev => ({
+      ...prev,
+      proprietario: prev.proprietario || profile.full_name || '',
+      proprietarioTelefone: prev.proprietarioTelefone || profile.phone || '',
+    }));
+  }, [editId, isSuperAdmin, profile]);
+
+  // Super admin: load brokers list
+  useEffect(() => {
+    if (!isSuperAdmin) return;
+    (async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, phone')
+        .order('full_name', { ascending: true });
+      setBrokersList((data as any) || []);
+    })();
+  }, [isSuperAdmin]);
+
+  // Super admin: when selecting a broker, fill proprietário fields
+  useEffect(() => {
+    if (!isSuperAdmin || !selectedBrokerId) return;
+    const b = brokersList.find(x => x.user_id === selectedBrokerId);
+    if (!b) return;
+    setForm(prev => ({
+      ...prev,
+      proprietario: b.full_name || '',
+      proprietarioTelefone: b.phone || '',
+    }));
+  }, [selectedBrokerId, brokersList, isSuperAdmin]);
+
   useEffect(() => {
     if (!editId) return;
     const load = async () => {
