@@ -995,17 +995,40 @@ export function ImovelForm({ editId }: { editId?: string }) {
       {/* ===== BLOCO 3: PROPRIETÁRIO ===== */}
       <div key="proprietario" className="bg-card border border-border rounded-xl p-4 sm:p-5">
         <SectionHeader icon={User} title="Proprietário" />
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4">
-          <div className="space-y-1.5">
-            <Label className="text-xs flex items-center gap-1"><User className="w-3.5 h-3.5" /> Nome</Label>
-            <Input placeholder="Nome completo" value={form.proprietario} onChange={e => set('proprietario', e.target.value)} />
+
+        {isSuperAdmin && !isEdit && (
+          <div className="space-y-1.5 mb-4">
+            <Label className="text-xs flex items-center gap-1">
+              <User className="w-3.5 h-3.5" /> Corretor responsável *
+            </Label>
+            <Select value={selectedBrokerId} onValueChange={setSelectedBrokerId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione o corretor desse imóvel" />
+              </SelectTrigger>
+              <SelectContent>
+                {brokersList.map(b => (
+                  <SelectItem key={b.user_id} value={b.user_id}>
+                    {b.full_name || b.user_id}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs flex items-center gap-1"><Phone className="w-3.5 h-3.5" /> Telefone</Label>
-            <Input placeholder="(00) 00000-0000" value={form.proprietarioTelefone} onChange={e => set('proprietarioTelefone', e.target.value)} />
+        )}
+
+        {isSuperAdmin && (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4">
+            <div className="space-y-1.5">
+              <Label className="text-xs flex items-center gap-1"><User className="w-3.5 h-3.5" /> Nome</Label>
+              <Input placeholder="Nome completo" value={form.proprietario} onChange={e => set('proprietario', e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs flex items-center gap-1"><Phone className="w-3.5 h-3.5" /> Telefone</Label>
+              <Input placeholder="(00) 00000-0000" value={form.proprietarioTelefone} onChange={e => set('proprietarioTelefone', e.target.value)} />
+            </div>
+            <QuickPick label="Tipo do Proprietário" options={ownerTypeOptions} value={form.proprietarioTipo} onChange={(v) => set('proprietarioTipo', String(v))} />
           </div>
-          <QuickPick label="Tipo do Proprietário" options={ownerTypeOptions} value={form.proprietarioTipo} onChange={(v) => set('proprietarioTipo', String(v))} />
-        </div>
+        )}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><Key className="w-3.5 h-3.5" /> Local das Chaves</Label>
