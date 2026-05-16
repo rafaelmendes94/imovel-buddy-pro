@@ -1125,29 +1125,33 @@ export function ImovelForm({ editId }: { editId?: string }) {
             <Switch checked={form.aceitaPermuta} onCheckedChange={(v) => set('aceitaPermuta', v)} />
             <Label className="text-xs">Permuta</Label>
           </div>
-          <div className="flex items-center gap-2">
-            <Switch checked={form.ativoSite} onCheckedChange={(v) => set('ativoSite', v)} />
-            <Label className="text-xs font-semibold">🌐 Site</Label>
-          </div>
-          <div className="flex items-center gap-2">
-            <Switch
-              checked={form.destaqueHome}
-              onCheckedChange={(v) => { set('destaqueHome', v); if (!v) set('destaqueCategoria', 'none'); }}
-            />
-            <Label className="text-xs font-semibold">⭐ Destaque</Label>
-          </div>
-          <div className="col-span-2 sm:col-span-1">
-            <QuickPick
-              label="Tipo de Destaque"
-              options={destaqueCategoriaOptions.map(o => o.label)}
-              value={destaqueCategoriaOptions.find(o => o.value === form.destaqueCategoria)?.label || 'Sem destaque'}
-              onChange={(v) => {
-                const opt = destaqueCategoriaOptions.find(o => o.label === String(v));
-                set('destaqueCategoria', opt?.value || 'none');
-                if (opt && opt.value !== 'none') set('destaqueHome', true);
-              }}
-            />
-          </div>
+          {isSuperAdmin && (
+            <>
+              <div className="flex items-center gap-2">
+                <Switch checked={form.ativoSite} onCheckedChange={(v) => set('ativoSite', v)} />
+                <Label className="text-xs font-semibold">🌐 Site</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <Switch
+                  checked={form.destaqueHome}
+                  onCheckedChange={(v) => { set('destaqueHome', v); if (!v) set('destaqueCategoria', 'none'); }}
+                />
+                <Label className="text-xs font-semibold">⭐ Destaque</Label>
+              </div>
+              <div className="col-span-2 sm:col-span-1">
+                <QuickPick
+                  label="Tipo de Destaque"
+                  options={destaqueCategoriaOptions.map(o => o.label)}
+                  value={destaqueCategoriaOptions.find(o => o.value === form.destaqueCategoria)?.label || 'Sem destaque'}
+                  onChange={(v) => {
+                    const opt = destaqueCategoriaOptions.find(o => o.label === String(v));
+                    set('destaqueCategoria', opt?.value || 'none');
+                    if (opt && opt.value !== 'none') set('destaqueHome', true);
+                  }}
+                />
+              </div>
+            </>
+          )}
         </div>
 
         <InfraToggle
