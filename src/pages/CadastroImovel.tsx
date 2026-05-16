@@ -655,6 +655,10 @@ export function ImovelForm({ editId }: { editId?: string }) {
       toast({ title: "Erro", description: "Título é obrigatório.", variant: "destructive" });
       return;
     }
+    if (isSuperAdmin && !isEdit && !selectedBrokerId) {
+      toast({ title: "Selecione o corretor", description: "Escolha de qual corretor é esse imóvel.", variant: "destructive" });
+      return;
+    }
     setLoading(true);
 
     try {
