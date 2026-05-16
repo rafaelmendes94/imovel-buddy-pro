@@ -301,15 +301,17 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, 
               <p className="text-[9px] text-muted-foreground">Corretor(a)</p>
             </div>
           </Link>
-          <a
-            href={`https://wa.me/${broker.whatsapp}?text=${whatsappMessage}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-600 text-white text-[11px] font-bold hover:bg-emerald-700 transition-colors shadow-sm"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Phone className="w-3 h-3" /> WhatsApp
-          </a>
+          {broker.whatsapp && (
+            <a
+              href={`https://wa.me/${broker.whatsapp}?text=${whatsappMessage}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-600 text-white text-[11px] font-bold hover:bg-emerald-700 transition-colors shadow-sm"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Phone className="w-3 h-3" /> WhatsApp
+            </a>
+          )}
         </div>
       </div>
     </div>
