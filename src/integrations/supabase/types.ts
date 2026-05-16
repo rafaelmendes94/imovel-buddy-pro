@@ -1804,6 +1804,7 @@ export type Database = {
         Args: { _agency_user_id: string; _broker_email: string }
         Returns: string
       }
+      owns_site_config_slug: { Args: { _owner_id: string }; Returns: boolean }
       process_subscription_lifecycle: {
         Args: never
         Returns: {
