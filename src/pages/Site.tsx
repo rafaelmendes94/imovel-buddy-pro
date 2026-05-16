@@ -791,7 +791,7 @@ export default function Site() {
         if (!broker?.name) return;
         brokerInfo[broker.name] = {
           photo: brokerInfo[broker.name]?.photo || getBrokerAvatar(broker.name),
-          whatsapp: normalizePhone(broker.phone) || brokerInfo[broker.name]?.whatsapp || "5511999999999",
+          whatsapp: normalizePhone(broker.phone) || brokerInfo[broker.name]?.whatsapp || "",
         };
       });
 
@@ -808,7 +808,7 @@ export default function Site() {
           if (p.full_name) {
             brokerInfo[p.full_name] = {
               photo: p.avatar_url || brokerInfo[p.full_name]?.photo || getBrokerAvatar(p.full_name),
-              whatsapp: normalizePhone(p.phone || "") || brokerInfo[p.full_name]?.whatsapp || "5511999999999",
+              whatsapp: normalizePhone(p.phone || "") || brokerInfo[p.full_name]?.whatsapp || "",
             };
           }
         });
@@ -822,7 +822,7 @@ export default function Site() {
           if (!brokerInfo[brokerName]) {
             brokerInfo[brokerName] = {
               photo: ownerProfile?.avatar_url || getBrokerAvatar(brokerName),
-              whatsapp: normalizePhone(ownerProfile?.phone || "") || "5511999999999",
+              whatsapp: normalizePhone(ownerProfile?.phone || "") || "",
             };
           }
 
