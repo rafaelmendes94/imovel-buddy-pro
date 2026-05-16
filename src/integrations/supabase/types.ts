@@ -1740,7 +1740,27 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_broker_profiles: {
+        Row: {
+          avatar_url: string | null
+          full_name: string | null
+          phone: string | null
+          user_id: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          full_name?: string | null
+          phone?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          full_name?: string | null
+          phone?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       count_imoveis_in_subscription: {
