@@ -579,101 +579,97 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
   const mapHasFilters = mapFilterType || mapFilterEmpreendimento || mapFilterAddress || mapFilterPriceMax;
 
   return (
-    <div className="rounded-2xl overflow-hidden shadow-xl border border-gray-200 relative">
-      {/* Map Style Switcher */}
-      <div className="absolute top-4 left-4 z-[1000] flex flex-col gap-2">
-        <div className="bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-gray-100 p-1.5 flex gap-1">
-          {([
-            { key: "satellite" as const, label: "Satélite", iconSvg: <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg> },
-            { key: "streets" as const, label: "Ruas", iconSvg: <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 7 17l-5-5"/><path d="m22 10-7.5 7.5L13 16"/></svg> },
-            { key: "dark" as const, label: "Escuro", iconSvg: <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg> },
-          ]).map((style) => (
-            <button
-              key={style.key}
-              onClick={() => setMapStyle(style.key)}
-              className={cn(
-                "flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all",
-                mapStyle === style.key
-                  ? "bg-blue-500 text-white shadow-sm"
-                  : "text-gray-600 hover:bg-gray-100"
-              )}
-            >
-              {style.iconSvg} {style.label}
-            </button>
-          ))}
-        </div>
+    <div className="rounded-2xl overflow-hidden shadow-xl border border-gray-200">
+      {/* Controls above map */}
+      <div className="bg-white border-b border-gray-100 p-3 flex flex-col gap-3">
+        {/* Style switcher + Legend */}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="bg-gray-50 rounded-xl border border-gray-100 p-1.5 flex gap-1">
+            {([
+              { key: "satellite" as const, label: "Satélite", iconSvg: <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg> },
+              { key: "streets" as const, label: "Ruas", iconSvg: <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 7 17l-5-5"/><path d="m22 10-7.5 7.5L13 16"/></svg> },
+              { key: "dark" as const, label: "Escuro", iconSvg: <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg> },
+            ]).map((style) => (
+              <button
+                key={style.key}
+                onClick={() => setMapStyle(style.key)}
+                className={cn(
+                  "flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all",
+                  mapStyle === style.key
+                    ? "bg-blue-500 text-white shadow-sm"
+                    : "text-gray-600 hover:bg-gray-100"
+                )}
+              >
+                {style.iconSvg} {style.label}
+              </button>
+            ))}
+          </div>
 
-        {/* Legend */}
-        <div className="bg-white/95 backdrop-blur-md rounded-xl p-3 shadow-lg border border-gray-100">
-          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Legenda</p>
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2 text-xs font-medium text-gray-700"><span className="w-4 h-4 rounded bg-blue-600 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/></svg></span> Apartamento</div>
-            <div className="flex items-center gap-2 text-xs font-medium text-gray-700"><span className="w-4 h-4 rounded bg-blue-500 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span> Casa</div>
-            <div className="flex items-center gap-2 text-xs font-medium text-gray-700"><span className="w-4 h-4 rounded bg-emerald-500 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M10 20.777a6.942 6.942 0 0 1-2.5-12.026"/><path d="M2 21h20"/></svg></span> Terreno</div>
-            <div className="flex items-center gap-2 text-xs font-medium text-gray-700"><span className="w-4 h-4 rounded bg-violet-500 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/></svg></span> Comercial</div>
+          <div className="flex flex-wrap items-center gap-3 ml-1">
+            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Legenda:</span>
+            <div className="flex items-center gap-1.5 text-xs font-medium text-gray-700"><span className="w-4 h-4 rounded bg-blue-600 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/></svg></span> Apartamento</div>
+            <div className="flex items-center gap-1.5 text-xs font-medium text-gray-700"><span className="w-4 h-4 rounded bg-blue-500 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span> Casa</div>
+            <div className="flex items-center gap-1.5 text-xs font-medium text-gray-700"><span className="w-4 h-4 rounded bg-emerald-500 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M10 20.777a6.942 6.942 0 0 1-2.5-12.026"/><path d="M2 21h20"/></svg></span> Terreno</div>
+            <div className="flex items-center gap-1.5 text-xs font-medium text-gray-700"><span className="w-4 h-4 rounded bg-violet-500 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/></svg></span> Comercial</div>
           </div>
         </div>
-      </div>
 
-      {/* Filters bar */}
-      <div className="absolute bottom-4 left-4 right-4 z-[1000]">
-        <div className="bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-gray-100 p-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <select
-              value={mapFilterType}
-              onChange={(e) => setMapFilterType(e.target.value)}
-              className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
-            >
-              <option value="">Todos os tipos</option>
-              {uniqueMapTypes.map((t) => (
-                <option key={t} value={t}>{t}</option>
-              ))}
-            </select>
+        {/* Filters */}
+        <div className="flex flex-wrap items-center gap-2">
+          <select
+            value={mapFilterType}
+            onChange={(e) => setMapFilterType(e.target.value)}
+            className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+          >
+            <option value="">Todos os tipos</option>
+            {uniqueMapTypes.map((t) => (
+              <option key={t} value={t}>{t}</option>
+            ))}
+          </select>
 
-            <select
-              value={mapFilterEmpreendimento}
-              onChange={(e) => setMapFilterEmpreendimento(e.target.value)}
-              className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
-            >
-              <option value="">Todos loteamentos</option>
-              {uniqueMapEmpreendimentos.map((emp) => (
-                <option key={emp} value={emp}>{emp}</option>
-              ))}
-            </select>
+          <select
+            value={mapFilterEmpreendimento}
+            onChange={(e) => setMapFilterEmpreendimento(e.target.value)}
+            className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+          >
+            <option value="">Todos loteamentos</option>
+            {uniqueMapEmpreendimentos.map((emp) => (
+              <option key={emp} value={emp}>{emp}</option>
+            ))}
+          </select>
 
-            <input
-              type="text"
-              placeholder="🔍 Endereço ou bairro..."
-              value={mapFilterAddress}
-              onChange={(e) => setMapFilterAddress(e.target.value)}
-              className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 min-w-[160px] flex-1"
-            />
+          <input
+            type="text"
+            placeholder="🔍 Endereço ou bairro..."
+            value={mapFilterAddress}
+            onChange={(e) => setMapFilterAddress(e.target.value)}
+            className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 min-w-[160px] flex-1"
+          />
 
-            <select
-              value={mapFilterPriceMax}
-              onChange={(e) => setMapFilterPriceMax(e.target.value)}
-              className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
-            >
-              <option value="">Valor máximo</option>
-              <option value="300000">Até R$ 300 mil</option>
-              <option value="500000">Até R$ 500 mil</option>
-              <option value="800000">Até R$ 800 mil</option>
-              <option value="1000000">Até R$ 1 milhão</option>
-              <option value="1500000">Até R$ 1,5 milhão</option>
-              <option value="2000000">Até R$ 2 milhões</option>
-            </select>
+          <select
+            value={mapFilterPriceMax}
+            onChange={(e) => setMapFilterPriceMax(e.target.value)}
+            className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+          >
+            <option value="">Valor máximo</option>
+            <option value="300000">Até R$ 300 mil</option>
+            <option value="500000">Até R$ 500 mil</option>
+            <option value="800000">Até R$ 800 mil</option>
+            <option value="1000000">Até R$ 1 milhão</option>
+            <option value="1500000">Até R$ 1,5 milhão</option>
+            <option value="2000000">Até R$ 2 milhões</option>
+          </select>
 
-            <div className="flex items-center gap-2 ml-auto">
-              <span className="text-[11px] font-bold text-gray-500">{filteredMapProperties.filter(p => p.lat && p.lng).length} imóveis</span>
-              {mapHasFilters && (
-                <button
-                  onClick={() => { setMapFilterType(""); setMapFilterEmpreendimento(""); setMapFilterAddress(""); setMapFilterPriceMax(""); }}
-                  className="px-2 py-1 rounded-lg bg-gray-100 text-gray-500 text-[11px] font-medium hover:bg-gray-200 transition-colors"
-                >
-                  Limpar
-                </button>
-              )}
-            </div>
+          <div className="flex items-center gap-2 ml-auto">
+            <span className="text-[11px] font-bold text-gray-500">{filteredMapProperties.filter(p => p.lat && p.lng).length} imóveis</span>
+            {mapHasFilters && (
+              <button
+                onClick={() => { setMapFilterType(""); setMapFilterEmpreendimento(""); setMapFilterAddress(""); setMapFilterPriceMax(""); }}
+                className="px-2 py-1 rounded-lg bg-gray-100 text-gray-500 text-[11px] font-medium hover:bg-gray-200 transition-colors"
+              >
+                Limpar
+              </button>
+            )}
           </div>
         </div>
       </div>
