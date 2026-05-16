@@ -92,13 +92,8 @@ interface SiteProperty {
   vista?: string;
   caracteristicas?: string[];
 }
-// Broker info map
-const brokerInfo: Record<string, { photo: string; whatsapp: string }> = {
-  "Corretor": {
-    photo: "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=100&h=100&fit=crop&crop=face",
-    whatsapp: "5511999999999",
-  },
-};
+// Broker info map (populated from DB)
+const brokerInfo: Record<string, { photo: string; whatsapp: string }> = {};
 
 const normalizePhone = (value?: string | null) => (value || "").replace(/\D/g, "");
 const getBrokerAvatar = (name: string) =>
@@ -123,7 +118,7 @@ const categories: { key: Category; label: string; icon: typeof Home }[] = [
 
 function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, onToggleFavorite, isInRoute, onToggleRoute }: { property: typeof siteProperties[0]; onSelect?: (p: typeof siteProperties[0]) => void; hideStamp?: boolean; onViewTerm?: (url: string) => void; isFavorited?: boolean; onToggleFavorite?: (id: string) => void; isInRoute?: boolean; onToggleRoute?: (id: string) => void }) {
   const [imgIndex, setImgIndex] = useState(0);
-  const broker = brokerInfo[property.broker] || { photo: "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=100&h=100&fit=crop&crop=face", whatsapp: "5511999999999" };
+  const broker = brokerInfo[property.broker] || { photo: getBrokerAvatar(property.broker || "Corretor"), whatsapp: "" };
   const whatsappMessage = encodeURIComponent(`Olá! Tenho interesse no imóvel: ${property.title} - ${formatCurrency(property.price)}`);
   const unitParts = [property.unitNumber, property.boxNumber, property.quadra, property.lote].filter(Boolean);
   const imgs = property.images && property.images.length > 0 ? property.images : [property.image];
@@ -301,15 +296,17 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, 
               <p className="text-[9px] text-muted-foreground">Corretor(a)</p>
             </div>
           </Link>
-          <a
-            href={`https://wa.me/${broker.whatsapp}?text=${whatsappMessage}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-600 text-white text-[11px] font-bold hover:bg-emerald-700 transition-colors shadow-sm"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Phone className="w-3 h-3" /> WhatsApp
-          </a>
+          {broker.whatsapp && (
+            <a
+              href={`https://wa.me/${broker.whatsapp}?text=${whatsappMessage}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-600 text-white text-[11px] font-bold hover:bg-emerald-700 transition-colors shadow-sm"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Phone className="w-3 h-3" /> WhatsApp
+            </a>
+          )}
         </div>
       </div>
     </div>
@@ -791,7 +788,7 @@ export default function Site() {
         if (!broker?.name) return;
         brokerInfo[broker.name] = {
           photo: brokerInfo[broker.name]?.photo || getBrokerAvatar(broker.name),
-          whatsapp: normalizePhone(broker.phone) || brokerInfo[broker.name]?.whatsapp || "5511999999999",
+          whatsapp: normalizePhone(broker.phone) || brokerInfo[broker.name]?.whatsapp || "",
         };
       });
 
@@ -799,8 +796,8 @@ export default function Site() {
       const ownerIds = Array.from(new Set((data || []).map((r: any) => r.user_id).filter(Boolean)));
       const profilesById: Record<string, { full_name: string; phone: string | null; avatar_url: string | null }> = {};
       if (ownerIds.length) {
-        const { data: profs } = await supabase
-          .from("profiles")
+        const { data: profs } = await (supabase as any)
+          .from("public_broker_profiles")
           .select("user_id, full_name, phone, avatar_url")
           .in("user_id", ownerIds);
         (profs || []).forEach((p: any) => {
@@ -808,7 +805,7 @@ export default function Site() {
           if (p.full_name) {
             brokerInfo[p.full_name] = {
               photo: p.avatar_url || brokerInfo[p.full_name]?.photo || getBrokerAvatar(p.full_name),
-              whatsapp: normalizePhone(p.phone || "") || brokerInfo[p.full_name]?.whatsapp || "5511999999999",
+              whatsapp: normalizePhone(p.phone || "") || brokerInfo[p.full_name]?.whatsapp || "",
             };
           }
         });
@@ -822,7 +819,7 @@ export default function Site() {
           if (!brokerInfo[brokerName]) {
             brokerInfo[brokerName] = {
               photo: ownerProfile?.avatar_url || getBrokerAvatar(brokerName),
-              whatsapp: normalizePhone(ownerProfile?.phone || "") || "5511999999999",
+              whatsapp: normalizePhone(ownerProfile?.phone || "") || "",
             };
           }
 

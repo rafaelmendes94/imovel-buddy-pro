@@ -189,7 +189,7 @@ export default function BrokerSite() {
 
       setLoading(true);
 
-      const [{ data: brokersData }, { data: propertiesData }, { data: pageConfig }] = await Promise.all([
+      const [{ data: brokersData }, { data: propertiesData }, { data: pageConfig }, { data: profilesData }] = await Promise.all([
         supabase
           .from("subscriber_brokers")
           .select("name, phone, creci, email")
@@ -204,19 +204,25 @@ export default function BrokerSite() {
           .eq("config_type", "broker_page")
           .eq("owner_id", slug)
           .maybeSingle(),
+        (supabase as any).from("public_broker_profiles").select("user_id, full_name, phone, avatar_url"),
       ]);
 
       const matchedBroker = ((brokersData as BrokerRecord[] | null) || []).find((broker) => toSlug(broker.name) === slug) || null;
+      const matchedProfile = ((profilesData as any[]) || []).find((p) => p.full_name && toSlug(p.full_name) === slug) || null;
+
       const matchedProperties = ((propertiesData as DBProperty[] | null) || [])
-        .filter((property) => toSlug(property.corretor_nome || "") === slug)
+        .filter((property) => {
+          if (matchedProfile && property.user_id === matchedProfile.user_id) return true;
+          return toSlug(property.corretor_nome || "") === slug;
+        })
         .sort((a, b) => Number(b.preco) - Number(a.preco));
 
-      const resolvedName = matchedBroker?.name || matchedProperties[0]?.corretor_nome || (slug ? slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) : "");
+      const resolvedName = matchedProfile?.full_name || matchedBroker?.name || matchedProperties[0]?.corretor_nome || (slug ? slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) : "");
 
       setBrokerName(resolvedName);
-      setBrokerRecord(matchedBroker);
+      setBrokerRecord(matchedBroker || (matchedProfile ? { name: matchedProfile.full_name, phone: matchedProfile.phone, creci: null, email: null } as any : null));
       setConfig((pageConfig as BrokerPageConfig | null) || null);
-      setBrokerId(matchedProperties[0]?.user_id || null);
+      setBrokerId(matchedProfile?.user_id || matchedProperties[0]?.user_id || null);
       setProperties(matchedProperties.filter((property) => property.status !== "Vendido"));
       setSoldProperties(matchedProperties.filter((property) => property.status === "Vendido"));
       setLoading(false);
