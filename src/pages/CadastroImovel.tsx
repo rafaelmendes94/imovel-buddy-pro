@@ -747,7 +747,16 @@ export function ImovelForm({ editId }: { editId?: string }) {
 
         toast({ title: "Sucesso! ✅", description: "Imóvel atualizado com sucesso!" });
       } else {
-        const { data: inserted, error } = await supabase.from('imoveis').insert([{ ...payload, user_id: user.id }]).select().single();
+        const ownerUserId = isSuperAdmin && selectedBrokerId ? selectedBrokerId : user.id;
+        const ownerName = isSuperAdmin && selectedBrokerId
+          ? (brokersList.find(b => b.user_id === selectedBrokerId)?.full_name || '')
+          : (profile?.full_name || '');
+        const { data: inserted, error } = await supabase.from('imoveis').insert([{
+          ...payload,
+          user_id: ownerUserId,
+          corretor_id: ownerUserId,
+          corretor_nome: ownerName,
+        }]).select().single();
         if (error) throw error;
 
         // Insert creation log
