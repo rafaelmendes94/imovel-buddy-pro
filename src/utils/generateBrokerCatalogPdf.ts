@@ -51,7 +51,8 @@ async function imageToBase64(url: string): Promise<string | null> {
 }
 
 export async function generateBrokerCatalogPdf(params: CatalogParams) {
-  const html2pdf = (await import("html2pdf.js")).default;
+  const mod: any = await import("html2pdf.js/dist/html2pdf.bundle.min.js").catch(() => import("html2pdf.js"));
+  const html2pdf = mod.default || mod;
   const { brokerName, creci, whatsapp, email, avatarUrl, properties, soldProperties, accentColor, fileSlug } = params;
 
   const accent = accentColor && accentColor.trim() ? accentColor : "#1e3a5f";
