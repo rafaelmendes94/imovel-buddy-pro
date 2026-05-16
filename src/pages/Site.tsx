@@ -799,8 +799,8 @@ export default function Site() {
       const ownerIds = Array.from(new Set((data || []).map((r: any) => r.user_id).filter(Boolean)));
       const profilesById: Record<string, { full_name: string; phone: string | null; avatar_url: string | null }> = {};
       if (ownerIds.length) {
-        const { data: profs } = await supabase
-          .from("profiles")
+        const { data: profs } = await (supabase as any)
+          .from("public_broker_profiles")
           .select("user_id, full_name, phone, avatar_url")
           .in("user_id", ownerIds);
         (profs || []).forEach((p: any) => {
