@@ -409,7 +409,7 @@ function computeChanges(original: FormData, current: FormData): { field: string;
 
 export function ImovelForm({ editId }: { editId?: string }) {
   const { toast } = useToast();
-  const { user, profile } = useAuth();
+  const { user, profile, isSuperAdmin } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(!!editId);
@@ -417,6 +417,8 @@ export function ImovelForm({ editId }: { editId?: string }) {
   const originalFormRef = useRef<FormData>(initialForm);
   const [newInfra, setNewInfra] = useState('');
   const [newCaract, setNewCaract] = useState('');
+  const [brokersList, setBrokersList] = useState<{ user_id: string; full_name: string; phone: string | null }[]>([]);
+  const [selectedBrokerId, setSelectedBrokerId] = useState<string>('');
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
