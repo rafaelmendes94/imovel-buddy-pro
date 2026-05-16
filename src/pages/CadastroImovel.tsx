@@ -409,7 +409,7 @@ function computeChanges(original: FormData, current: FormData): { field: string;
 
 export function ImovelForm({ editId }: { editId?: string }) {
   const { toast } = useToast();
-  const { user, profile } = useAuth();
+  const { user, profile, isSuperAdmin } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(!!editId);
@@ -417,6 +417,8 @@ export function ImovelForm({ editId }: { editId?: string }) {
   const originalFormRef = useRef<FormData>(initialForm);
   const [newInfra, setNewInfra] = useState('');
   const [newCaract, setNewCaract] = useState('');
+  const [brokersList, setBrokersList] = useState<{ user_id: string; full_name: string; phone: string | null }[]>([]);
+  const [selectedBrokerId, setSelectedBrokerId] = useState<string>('');
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
@@ -429,6 +431,40 @@ export function ImovelForm({ editId }: { editId?: string }) {
 
   const isEdit = !!editId;
   const set = (field: keyof FormData, value: any) => setForm(prev => ({ ...prev, [field]: value }));
+
+  // Auto-fill proprietário with current user's profile (broker/imobiliária flow, new only)
+  useEffect(() => {
+    if (editId || isSuperAdmin || !profile) return;
+    setForm(prev => ({
+      ...prev,
+      proprietario: prev.proprietario || profile.full_name || '',
+      proprietarioTelefone: prev.proprietarioTelefone || profile.phone || '',
+    }));
+  }, [editId, isSuperAdmin, profile]);
+
+  // Super admin: load brokers list
+  useEffect(() => {
+    if (!isSuperAdmin) return;
+    (async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, phone')
+        .order('full_name', { ascending: true });
+      setBrokersList((data as any) || []);
+    })();
+  }, [isSuperAdmin]);
+
+  // Super admin: when selecting a broker, fill proprietário fields
+  useEffect(() => {
+    if (!isSuperAdmin || !selectedBrokerId) return;
+    const b = brokersList.find(x => x.user_id === selectedBrokerId);
+    if (!b) return;
+    setForm(prev => ({
+      ...prev,
+      proprietario: b.full_name || '',
+      proprietarioTelefone: b.phone || '',
+    }));
+  }, [selectedBrokerId, brokersList, isSuperAdmin]);
 
   useEffect(() => {
     if (!editId) return;
@@ -619,6 +655,10 @@ export function ImovelForm({ editId }: { editId?: string }) {
       toast({ title: "Erro", description: "Título é obrigatório.", variant: "destructive" });
       return;
     }
+    if (isSuperAdmin && !isEdit && !selectedBrokerId) {
+      toast({ title: "Selecione o corretor", description: "Escolha de qual corretor é esse imóvel.", variant: "destructive" });
+      return;
+    }
     setLoading(true);
 
     try {
@@ -711,7 +751,16 @@ export function ImovelForm({ editId }: { editId?: string }) {
 
         toast({ title: "Sucesso! ✅", description: "Imóvel atualizado com sucesso!" });
       } else {
-        const { data: inserted, error } = await supabase.from('imoveis').insert([{ ...payload, user_id: user.id }]).select().single();
+        const ownerUserId = isSuperAdmin && selectedBrokerId ? selectedBrokerId : user.id;
+        const ownerName = isSuperAdmin && selectedBrokerId
+          ? (brokersList.find(b => b.user_id === selectedBrokerId)?.full_name || '')
+          : (profile?.full_name || '');
+        const { data: inserted, error } = await supabase.from('imoveis').insert([{
+          ...payload,
+          user_id: ownerUserId,
+          corretor_id: ownerUserId,
+          corretor_nome: ownerName,
+        }]).select().single();
         if (error) throw error;
 
         // Insert creation log
@@ -950,17 +999,40 @@ export function ImovelForm({ editId }: { editId?: string }) {
       {/* ===== BLOCO 3: PROPRIETÁRIO ===== */}
       <div key="proprietario" className="bg-card border border-border rounded-xl p-4 sm:p-5">
         <SectionHeader icon={User} title="Proprietário" />
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4">
-          <div className="space-y-1.5">
-            <Label className="text-xs flex items-center gap-1"><User className="w-3.5 h-3.5" /> Nome</Label>
-            <Input placeholder="Nome completo" value={form.proprietario} onChange={e => set('proprietario', e.target.value)} />
+
+        {isSuperAdmin && !isEdit && (
+          <div className="space-y-1.5 mb-4">
+            <Label className="text-xs flex items-center gap-1">
+              <User className="w-3.5 h-3.5" /> Corretor responsável *
+            </Label>
+            <Select value={selectedBrokerId} onValueChange={setSelectedBrokerId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione o corretor desse imóvel" />
+              </SelectTrigger>
+              <SelectContent>
+                {brokersList.map(b => (
+                  <SelectItem key={b.user_id} value={b.user_id}>
+                    {b.full_name || b.user_id}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs flex items-center gap-1"><Phone className="w-3.5 h-3.5" /> Telefone</Label>
-            <Input placeholder="(00) 00000-0000" value={form.proprietarioTelefone} onChange={e => set('proprietarioTelefone', e.target.value)} />
+        )}
+
+        {isSuperAdmin && (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4">
+            <div className="space-y-1.5">
+              <Label className="text-xs flex items-center gap-1"><User className="w-3.5 h-3.5" /> Nome</Label>
+              <Input placeholder="Nome completo" value={form.proprietario} onChange={e => set('proprietario', e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs flex items-center gap-1"><Phone className="w-3.5 h-3.5" /> Telefone</Label>
+              <Input placeholder="(00) 00000-0000" value={form.proprietarioTelefone} onChange={e => set('proprietarioTelefone', e.target.value)} />
+            </div>
+            <QuickPick label="Tipo do Proprietário" options={ownerTypeOptions} value={form.proprietarioTipo} onChange={(v) => set('proprietarioTipo', String(v))} />
           </div>
-          <QuickPick label="Tipo do Proprietário" options={ownerTypeOptions} value={form.proprietarioTipo} onChange={(v) => set('proprietarioTipo', String(v))} />
-        </div>
+        )}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><Key className="w-3.5 h-3.5" /> Local das Chaves</Label>
