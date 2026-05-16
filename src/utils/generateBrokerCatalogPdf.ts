@@ -99,8 +99,22 @@ export async function generateBrokerCatalogPdf(params: CatalogParams) {
     </div>
   `;
 
-  // Build pairs (2 columns)
-  const cardsHtml = all.map((p, i) => renderCard(p, imgs[i])).join("");
+  // Build pages with 4 properties each (2x2 grid)
+  const PER_PAGE = 4;
+  const pageBlocks: string[] = [];
+  for (let i = 0; i < all.length; i += PER_PAGE) {
+    const slice = all.slice(i, i + PER_PAGE);
+    const sliceImgs = imgs.slice(i, i + PER_PAGE);
+    const pageCards = slice.map((p, idx) => renderCard(p, sliceImgs[idx])).join("");
+    pageBlocks.push(`
+      <div style="page-break-after:always;padding:14px 14px 10px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:1fr;gap:10px;height:272mm;">
+          ${pageCards}
+        </div>
+      </div>
+    `);
+  }
+  const cardsHtml = pageBlocks.join("");
 
   const html = `
 <div style="font-family:-apple-system,'Segoe UI',Arial,sans-serif;color:#111827;">
