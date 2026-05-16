@@ -153,15 +153,13 @@ export async function generateBrokerCatalogPdf(params: CatalogParams) {
   </div>
 
   <!-- PROPERTIES GRID -->
-  <div style="padding:20px 16px;">
-    <div style="margin-bottom:16px;border-left:4px solid ${accent};padding-left:12px;">
+  <div>
+    <div style="padding:16px 16px 0;margin-bottom:8px;border-left:4px solid ${accent};margin-left:14px;padding-left:12px;">
       <p style="margin:0;font-size:9px;color:#6b7280;text-transform:uppercase;letter-spacing:0.2em;font-weight:700;">Portfólio completo</p>
       <h2 style="margin:4px 0 0;font-size:20px;font-weight:900;color:#111827;">${all.length} imóve${all.length === 1 ? "l" : "is"}</h2>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-      ${cardsHtml}
-    </div>
-    <p style="margin-top:24px;text-align:center;font-size:9px;color:#9ca3af;">
+    ${cardsHtml}
+    <p style="margin-top:8px;text-align:center;font-size:9px;color:#9ca3af;">
       ${brokerName} · Gerado em ${new Date().toLocaleDateString("pt-BR")}
     </p>
   </div>
