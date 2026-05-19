@@ -1792,6 +1792,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      imovel_owner_has_active_sub: {
+        Args: { _owner: string }
+        Returns: boolean
+      }
       increment_broker_page_view: {
         Args: { _slug: string }
         Returns: undefined
