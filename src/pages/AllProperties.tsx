@@ -443,7 +443,7 @@ export default function AllProperties() {
         property={selectedProperty as any}
         onClose={() => setSelectedProperty(null)}
         allProperties={allProperties as any}
-        brokerInfo={brokerInfo}
+        brokerInfo={Object.fromEntries(allProperties.map((p) => [p.broker, { photo: p.brokerPhoto || FALLBACK_AVATAR, whatsapp: p.brokerWhatsapp || "" }]))}
         onSelectSimilar={(p: any) => setSelectedProperty(p)}
       />
     </div>
