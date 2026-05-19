@@ -967,7 +967,14 @@ export default function Site() {
                 Imóveis <ChevronDown className="w-3.5 h-3.5" />
               </button>
               {imoveisMenuOpen && (
-                <div className="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                <div className="absolute left-0 mt-2 w-52 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                  <Link
+                    to="/todos-imoveis"
+                    onClick={() => setImoveisMenuOpen(false)}
+                    className="w-full flex items-center gap-2.5 px-4 py-2 text-sm font-semibold text-primary hover:bg-gray-50 transition-colors border-b border-gray-100"
+                  >
+                    <Search className="w-4 h-4" /> Ver todos os imóveis
+                  </Link>
                   {categories.map((cat) => (
                     <button
                       key={cat.key}
