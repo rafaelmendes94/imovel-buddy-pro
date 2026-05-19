@@ -11,13 +11,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const brokerInfo: Record<string, { photo: string; whatsapp: string }> = {
-  "Corretor": {
-    photo: "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=100&h=100&fit=crop&crop=face",
-    whatsapp: "5511999999999",
-  },
-};
-
 interface SiteProperty {
   id: string;
   title: string;
@@ -31,6 +24,8 @@ interface SiteProperty {
   bathrooms: number;
   parking: number;
   broker: string;
+  brokerPhoto?: string;
+  brokerWhatsapp?: string;
   image: string;
   images: string[];
   createdAt: string;
@@ -48,9 +43,12 @@ interface SiteProperty {
   lote?: string;
 }
 
+const FALLBACK_AVATAR = "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=100&h=100&fit=crop&crop=face";
+const normalizePhone = (p?: string) => (p || "").replace(/\D/g, "");
+
 function PropertyCard({ property, onSelect }: { property: SiteProperty; onSelect?: (p: SiteProperty) => void }) {
   const [imgIndex, setImgIndex] = useState(0);
-  const broker = brokerInfo[property.broker] || { photo: "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=100&h=100&fit=crop&crop=face", whatsapp: "5511999999999" };
+  const broker = { photo: property.brokerPhoto || FALLBACK_AVATAR, whatsapp: property.brokerWhatsapp || "" };
   const whatsappMessage = encodeURIComponent(`Olá! Tenho interesse no imóvel: ${property.title} - ${formatCurrency(property.price)}`);
   const unitParts = [property.unitNumber, property.boxNumber, property.quadra, property.lote].filter(Boolean);
   const imgs = property.images && property.images.length > 0 ? property.images : [property.image];
@@ -179,37 +177,55 @@ export default function AllProperties() {
         .eq('ativo_site', true);
 
       if (!error && data) {
+        const ownerIds = Array.from(new Set(data.map((r: any) => r.user_id).filter(Boolean)));
+        const profilesById: Record<string, { full_name: string; phone: string | null; avatar_url: string | null }> = {};
+        if (ownerIds.length) {
+          const { data: profs } = await (supabase as any)
+            .from('public_broker_profiles')
+            .select('user_id, full_name, phone, avatar_url')
+            .in('user_id', ownerIds);
+          (profs || []).forEach((p: any) => {
+            profilesById[p.user_id] = { full_name: p.full_name || '', phone: p.phone, avatar_url: p.avatar_url };
+          });
+        }
+
         const mapped: SiteProperty[] = data
           .filter((row) => row.status === "Disponível")
-          .map((row) => ({
-            id: row.id,
-            title: row.titulo,
-            address: row.endereco,
-            city: row.cidade,
-            type: row.tipo,
-            status: row.status,
-            price: Number(row.preco),
-            area: Number(row.area),
-            bedrooms: row.quartos,
-            bathrooms: row.banheiros,
-            parking: row.vagas,
-            broker: "Corretor",
-            image: row.imagens?.[0] || "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&h=400&fit=crop",
-            images: row.imagens || [],
-            createdAt: row.created_at,
-            decorated: row.decorado,
-            seaView: row.vista_mar,
-            acceptsExchange: row.aceita_permuta,
-            paymentConditions: row.condicoes_pagamento || [],
-            empreendimento: row.empreendimento || (row as any).edificios?.nome || (row as any).condominios?.nome || (row as any).empreendimentos?.nome || '',
-            edificioId: (row as any).edificio_id || '',
-            condominioId: (row as any).condominio_id || '',
-            empreendimentoId: (row as any).empreendimento_id || '',
-            unitNumber: row.unidade || '',
-            boxNumber: row.box || '',
-            quadra: row.quadra || '',
-            lote: row.lote || '',
-          }));
+          .map((row) => {
+            const prof = profilesById[(row as any).user_id];
+            const brokerName = (prof?.full_name?.trim()) || (row as any).corretor_nome?.trim() || "Corretor";
+            return {
+              id: row.id,
+              title: row.titulo,
+              address: row.endereco,
+              city: row.cidade,
+              type: row.tipo,
+              status: row.status,
+              price: Number(row.preco),
+              area: Number(row.area),
+              bedrooms: row.quartos,
+              bathrooms: row.banheiros,
+              parking: row.vagas,
+              broker: brokerName,
+              brokerPhoto: prof?.avatar_url || undefined,
+              brokerWhatsapp: normalizePhone(prof?.phone || ''),
+              image: row.imagens?.[0] || "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&h=400&fit=crop",
+              images: row.imagens || [],
+              createdAt: row.created_at,
+              decorated: row.decorado,
+              seaView: row.vista_mar,
+              acceptsExchange: row.aceita_permuta,
+              paymentConditions: row.condicoes_pagamento || [],
+              empreendimento: row.empreendimento || (row as any).edificios?.nome || (row as any).condominios?.nome || (row as any).empreendimentos?.nome || '',
+              edificioId: (row as any).edificio_id || '',
+              condominioId: (row as any).condominio_id || '',
+              empreendimentoId: (row as any).empreendimento_id || '',
+              unitNumber: row.unidade || '',
+              boxNumber: row.box || '',
+              quadra: row.quadra || '',
+              lote: row.lote || '',
+            };
+          });
         setAllProperties(mapped);
       }
       setLoading(false);
@@ -445,7 +461,7 @@ export default function AllProperties() {
         property={selectedProperty as any}
         onClose={() => setSelectedProperty(null)}
         allProperties={allProperties as any}
-        brokerInfo={brokerInfo}
+        brokerInfo={Object.fromEntries(allProperties.map((p) => [p.broker, { photo: p.brokerPhoto || FALLBACK_AVATAR, whatsapp: p.brokerWhatsapp || "" }]))}
         onSelectSimilar={(p: any) => setSelectedProperty(p)}
       />
     </div>
