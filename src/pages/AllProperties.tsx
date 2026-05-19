@@ -11,13 +11,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const brokerInfo: Record<string, { photo: string; whatsapp: string }> = {
-  "Corretor": {
-    photo: "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=100&h=100&fit=crop&crop=face",
-    whatsapp: "5511999999999",
-  },
-};
-
 interface SiteProperty {
   id: string;
   title: string;
@@ -31,6 +24,8 @@ interface SiteProperty {
   bathrooms: number;
   parking: number;
   broker: string;
+  brokerPhoto?: string;
+  brokerWhatsapp?: string;
   image: string;
   images: string[];
   createdAt: string;
@@ -47,6 +42,9 @@ interface SiteProperty {
   quadra?: string;
   lote?: string;
 }
+
+const FALLBACK_AVATAR = "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=100&h=100&fit=crop&crop=face";
+const normalizePhone = (p?: string) => (p || "").replace(/\D/g, "");
 
 function PropertyCard({ property, onSelect }: { property: SiteProperty; onSelect?: (p: SiteProperty) => void }) {
   const [imgIndex, setImgIndex] = useState(0);
