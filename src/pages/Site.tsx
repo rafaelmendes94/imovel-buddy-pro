@@ -1124,8 +1124,8 @@ export default function Site() {
 
             {/* Dashboard Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-              <button
-                onClick={() => setActiveCategory("todos")}
+              <Link
+                to="/todos-imoveis"
                 className="group bg-white/10 hover:bg-blue-500/90 backdrop-blur-md rounded-2xl p-4 border border-white/20 hover:border-blue-400 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-blue-500/20 text-left"
               >
                 <div className="w-10 h-10 rounded-xl bg-blue-400/20 group-hover:bg-white/20 flex items-center justify-center mb-3 transition-colors">
@@ -1133,7 +1133,7 @@ export default function Site() {
                 </div>
                 <p className="text-2xl font-black text-white">{available.length}</p>
                 <p className="text-[11px] font-semibold text-gray-300 group-hover:text-blue-100 uppercase tracking-wider">Total Imóveis</p>
-              </button>
+              </Link>
 
               <button
                 onClick={() => setActiveCategory("apartamentos")}
