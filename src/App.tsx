@@ -125,7 +125,7 @@ const App = () => (
             <Route path="/relatorios" element={<AuthGuard><Reports /></AuthGuard>} />
             <Route path="/configuracoes" element={<AuthGuard><Settings /></AuthGuard>} />
             <Route path="/site-editor" element={<AuthGuard><Site /></AuthGuard>} />
-            <Route path="/todos-imoveis" element={<AuthGuard><AllProperties /></AuthGuard>} />
+            <Route path="/todos-imoveis" element={<AllProperties />} />
             <Route path="/ranking" element={<AuthGuard><RankingPage /></AuthGuard>} />
             <Route path="/avaliacoes" element={<AuthGuard><Avaliacoes /></AuthGuard>} />
             <Route path="/financeiro" element={<AuthGuard><Financeiro /></AuthGuard>} />
