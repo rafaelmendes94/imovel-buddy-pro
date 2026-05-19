@@ -48,7 +48,8 @@ const normalizePhone = (p?: string) => (p || "").replace(/\D/g, "");
 
 function PropertyCard({ property, onSelect }: { property: SiteProperty; onSelect?: (p: SiteProperty) => void }) {
   const [imgIndex, setImgIndex] = useState(0);
-  const broker = { photo: property.brokerPhoto || FALLBACK_AVATAR, whatsapp: property.brokerWhatsapp || "" };
+  const broker = { photo: property.brokerPhoto || "", whatsapp: property.brokerWhatsapp || "" };
+  const brokerInitials = (property.broker || "C").split(/\s+/).filter(Boolean).slice(0, 2).map(s => s[0]?.toUpperCase()).join("") || "C";
   const whatsappMessage = encodeURIComponent(`Olá! Tenho interesse no imóvel: ${property.title} - ${formatCurrency(property.price)}`);
   const unitParts = [property.unitNumber, property.boxNumber, property.quadra, property.lote].filter(Boolean);
   const imgs = property.images && property.images.length > 0 ? property.images : [property.image];
@@ -138,7 +139,13 @@ function PropertyCard({ property, onSelect }: { property: SiteProperty; onSelect
         )}
         <div className="flex items-center justify-between pt-2 border-t border-gray-100">
           <div className="flex items-center gap-2">
-            {broker.photo && <img src={broker.photo} alt={property.broker} className="w-8 h-8 rounded-full object-cover border-2 border-amber-400" />}
+            {broker.photo ? (
+              <img src={broker.photo} alt={property.broker} className="w-8 h-8 rounded-full object-cover border-2 border-amber-400" />
+            ) : (
+              <div className="w-8 h-8 rounded-full border-2 border-amber-400 bg-amber-100 text-amber-700 text-xs font-bold flex items-center justify-center">
+                {brokerInitials}
+              </div>
+            )}
             <div>
               <p className="text-xs font-semibold text-amber-700 leading-tight">{property.broker}</p>
               <p className="text-[10px] text-gray-400">Corretor(a)</p>
