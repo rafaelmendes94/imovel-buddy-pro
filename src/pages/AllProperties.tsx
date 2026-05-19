@@ -139,7 +139,13 @@ function PropertyCard({ property, onSelect }: { property: SiteProperty; onSelect
         )}
         <div className="flex items-center justify-between pt-2 border-t border-gray-100">
           <div className="flex items-center gap-2">
-            {broker.photo && <img src={broker.photo} alt={property.broker} className="w-8 h-8 rounded-full object-cover border-2 border-amber-400" />}
+            {broker.photo ? (
+              <img src={broker.photo} alt={property.broker} className="w-8 h-8 rounded-full object-cover border-2 border-amber-400" />
+            ) : (
+              <div className="w-8 h-8 rounded-full border-2 border-amber-400 bg-amber-100 text-amber-700 text-xs font-bold flex items-center justify-center">
+                {brokerInitials}
+              </div>
+            )}
             <div>
               <p className="text-xs font-semibold text-amber-700 leading-tight">{property.broker}</p>
               <p className="text-[10px] text-gray-400">Corretor(a)</p>
