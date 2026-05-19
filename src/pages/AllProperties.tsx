@@ -177,37 +177,55 @@ export default function AllProperties() {
         .eq('ativo_site', true);
 
       if (!error && data) {
+        const ownerIds = Array.from(new Set(data.map((r: any) => r.user_id).filter(Boolean)));
+        const profilesById: Record<string, { full_name: string; phone: string | null; avatar_url: string | null }> = {};
+        if (ownerIds.length) {
+          const { data: profs } = await (supabase as any)
+            .from('public_broker_profiles')
+            .select('user_id, full_name, phone, avatar_url')
+            .in('user_id', ownerIds);
+          (profs || []).forEach((p: any) => {
+            profilesById[p.user_id] = { full_name: p.full_name || '', phone: p.phone, avatar_url: p.avatar_url };
+          });
+        }
+
         const mapped: SiteProperty[] = data
           .filter((row) => row.status === "Disponível")
-          .map((row) => ({
-            id: row.id,
-            title: row.titulo,
-            address: row.endereco,
-            city: row.cidade,
-            type: row.tipo,
-            status: row.status,
-            price: Number(row.preco),
-            area: Number(row.area),
-            bedrooms: row.quartos,
-            bathrooms: row.banheiros,
-            parking: row.vagas,
-            broker: "Corretor",
-            image: row.imagens?.[0] || "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&h=400&fit=crop",
-            images: row.imagens || [],
-            createdAt: row.created_at,
-            decorated: row.decorado,
-            seaView: row.vista_mar,
-            acceptsExchange: row.aceita_permuta,
-            paymentConditions: row.condicoes_pagamento || [],
-            empreendimento: row.empreendimento || (row as any).edificios?.nome || (row as any).condominios?.nome || (row as any).empreendimentos?.nome || '',
-            edificioId: (row as any).edificio_id || '',
-            condominioId: (row as any).condominio_id || '',
-            empreendimentoId: (row as any).empreendimento_id || '',
-            unitNumber: row.unidade || '',
-            boxNumber: row.box || '',
-            quadra: row.quadra || '',
-            lote: row.lote || '',
-          }));
+          .map((row) => {
+            const prof = profilesById[(row as any).user_id];
+            const brokerName = (prof?.full_name?.trim()) || (row as any).corretor_nome?.trim() || "Corretor";
+            return {
+              id: row.id,
+              title: row.titulo,
+              address: row.endereco,
+              city: row.cidade,
+              type: row.tipo,
+              status: row.status,
+              price: Number(row.preco),
+              area: Number(row.area),
+              bedrooms: row.quartos,
+              bathrooms: row.banheiros,
+              parking: row.vagas,
+              broker: brokerName,
+              brokerPhoto: prof?.avatar_url || undefined,
+              brokerWhatsapp: normalizePhone(prof?.phone || ''),
+              image: row.imagens?.[0] || "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&h=400&fit=crop",
+              images: row.imagens || [],
+              createdAt: row.created_at,
+              decorated: row.decorado,
+              seaView: row.vista_mar,
+              acceptsExchange: row.aceita_permuta,
+              paymentConditions: row.condicoes_pagamento || [],
+              empreendimento: row.empreendimento || (row as any).edificios?.nome || (row as any).condominios?.nome || (row as any).empreendimentos?.nome || '',
+              edificioId: (row as any).edificio_id || '',
+              condominioId: (row as any).condominio_id || '',
+              empreendimentoId: (row as any).empreendimento_id || '',
+              unitNumber: row.unidade || '',
+              boxNumber: row.box || '',
+              quadra: row.quadra || '',
+              lote: row.lote || '',
+            };
+          });
         setAllProperties(mapped);
       }
       setLoading(false);
