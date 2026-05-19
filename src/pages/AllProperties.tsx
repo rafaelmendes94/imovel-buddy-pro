@@ -48,7 +48,8 @@ const normalizePhone = (p?: string) => (p || "").replace(/\D/g, "");
 
 function PropertyCard({ property, onSelect }: { property: SiteProperty; onSelect?: (p: SiteProperty) => void }) {
   const [imgIndex, setImgIndex] = useState(0);
-  const broker = { photo: property.brokerPhoto || FALLBACK_AVATAR, whatsapp: property.brokerWhatsapp || "" };
+  const broker = { photo: property.brokerPhoto || "", whatsapp: property.brokerWhatsapp || "" };
+  const brokerInitials = (property.broker || "C").split(/\s+/).filter(Boolean).slice(0, 2).map(s => s[0]?.toUpperCase()).join("") || "C";
   const whatsappMessage = encodeURIComponent(`Olá! Tenho interesse no imóvel: ${property.title} - ${formatCurrency(property.price)}`);
   const unitParts = [property.unitNumber, property.boxNumber, property.quadra, property.lote].filter(Boolean);
   const imgs = property.images && property.images.length > 0 ? property.images : [property.image];
