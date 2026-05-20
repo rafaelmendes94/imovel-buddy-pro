@@ -91,21 +91,35 @@ interface DBProperty {
   termo_exclusividade_url: string | null;
 }
 
-function PropertyCard({ p, brokerName, whatsapp }: { p: DBProperty; brokerName: string; whatsapp: string }) {
+function PropertyCard({ p, brokerName, whatsapp, onOpen }: { p: DBProperty; brokerName: string; whatsapp: string; onOpen: (p: DBProperty) => void }) {
   const img = p.imagens?.[0] || "/placeholder.svg";
   const msg = encodeURIComponent(`Olá ${brokerName}! Tenho interesse no imóvel: ${p.titulo} - ${formatCurrency(p.preco)}`);
-  const statusClass = p.status === "Vendido"
-    ? "bg-destructive text-destructive-foreground"
-    : p.status === "Reservado"
-      ? "bg-warning text-warning-foreground"
-      : "bg-success text-success-foreground";
+
+  const handleExclusividade = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (p.termo_exclusividade_url) {
+      window.open(p.termo_exclusividade_url, "_blank", "noopener,noreferrer");
+    } else {
+      toast.info("Termo de exclusividade não disponível");
+    }
+  };
 
   return (
-    <article className="group overflow-hidden rounded-3xl border border-border bg-card shadow-[var(--shadow-card)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)]">
+    <article
+      onClick={() => onOpen(p)}
+      className="group cursor-pointer overflow-hidden rounded-3xl border border-border bg-card shadow-[var(--shadow-card)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)]"
+    >
       <div className="relative h-60 overflow-hidden">
         <img src={img} alt={p.titulo} loading="lazy" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
         <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-foreground/20 to-transparent" />
-        <span className={cn("absolute left-4 top-4 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wide", statusClass)}>{p.status}</span>
+        <button
+          type="button"
+          onClick={handleExclusividade}
+          title={p.termo_exclusividade_url ? "Clique para baixar o termo de exclusividade" : "Termo de exclusividade não disponível"}
+          className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-accent-foreground shadow-md transition-transform hover:scale-105"
+        >
+          <FileDown className="h-3 w-3" /> Exclusividade
+        </button>
         <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3">
           <p className="text-2xl font-black text-white drop-shadow-lg">{formatCurrency(p.preco)}</p>
           <div className="flex flex-wrap justify-end gap-2">
@@ -141,7 +155,7 @@ function PropertyCard({ p, brokerName, whatsapp }: { p: DBProperty; brokerName: 
           </div>
         )}
         {whatsapp && (
-          <a href={`https://wa.me/${whatsapp}?text=${msg}`} target="_blank" rel="noopener noreferrer"
+          <a href={`https://wa.me/${whatsapp}?text=${msg}`} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
             className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-accent px-4 py-3 text-sm font-bold text-accent-foreground transition-opacity hover:opacity-90">
             <Phone className="h-4 w-4" /> Tenho interesse
           </a>
