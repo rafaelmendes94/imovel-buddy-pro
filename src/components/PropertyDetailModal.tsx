@@ -653,9 +653,15 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
           <button onClick={handleShare} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card border border-border text-sm font-semibold text-foreground hover:bg-muted/40 transition-colors shadow-sm">
             <Share2 className="w-4 h-4 text-primary" /> Compartilhar
           </button>
-          <button onClick={handleDownload} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card border border-border text-sm font-semibold text-foreground hover:bg-muted/40 transition-colors shadow-sm">
-            <Download className="w-4 h-4 text-blue-500" /> Baixar Fotos (PDF)
-          </button>
+          {fotosPdfUrl ? (
+            <a href={fotosPdfUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card border border-border text-sm font-semibold text-foreground hover:bg-muted/40 transition-colors shadow-sm">
+              <Download className="w-4 h-4 text-blue-500" /> Baixar Fotos (PDF)
+            </a>
+          ) : (
+            <button onClick={handleDownload} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card border border-border text-sm font-semibold text-foreground hover:bg-muted/40 transition-colors shadow-sm">
+              <Download className="w-4 h-4 text-blue-500" /> Baixar Fotos (PDF)
+            </button>
+          )}
           {materialUrl && (
             <a href={materialUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card border border-border text-sm font-semibold text-foreground hover:bg-muted/40 transition-colors shadow-sm">
               <HardDrive className="w-4 h-4 text-emerald-600" /> Baixar Drive
