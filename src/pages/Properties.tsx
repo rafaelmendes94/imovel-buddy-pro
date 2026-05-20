@@ -581,7 +581,8 @@ export default function Properties() {
         link360: (row as any).link_360 || "",
         plataformaVenda: (row as any).plataforma_venda || "",
         dataVenda: (row as any).data_venda || "",
-      }));
+        };
+      });
 
       setPropertyList(mapped);
     };
