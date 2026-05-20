@@ -104,6 +104,7 @@ export interface FormData {
   linkMaterial: string;
   link360: string;
   driveFotosUrl: string;
+  fotosPdfUrl: string;
 }
 
 export const initialForm: FormData = {
