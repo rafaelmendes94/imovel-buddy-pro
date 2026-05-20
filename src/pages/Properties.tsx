@@ -505,7 +505,23 @@ export default function Properties() {
         return;
       }
 
-      const mapped: Property[] = (data || []).map((row, index) => ({
+      // Carrega profiles dos cadastrantes (donos do user_id)
+      const ownerIds = Array.from(new Set((data || []).map((r: any) => r.user_id).filter(Boolean)));
+      const profilesById: Record<string, { full_name: string; phone: string | null; avatar_url: string | null }> = {};
+      if (ownerIds.length) {
+        const { data: profs } = await supabase
+          .from("profiles")
+          .select("user_id, full_name, phone, avatar_url")
+          .in("user_id", ownerIds);
+        (profs || []).forEach((p: any) => {
+          profilesById[p.user_id] = { full_name: p.full_name || "", phone: p.phone, avatar_url: p.avatar_url };
+        });
+      }
+      const normalizePhone = (v: string) => (v || "").replace(/\D/g, "");
+
+      const mapped: Property[] = (data || []).map((row, index) => {
+        const owner = profilesById[(row as any).user_id];
+        return {
         id: row.id,
         userId: row.user_id,
         code: `MV${String(index + 1).padStart(2, "0")}`,
@@ -521,7 +537,9 @@ export default function Properties() {
         bedrooms: row.quartos || 0,
         bathrooms: row.banheiros || 0,
         parking: row.vagas || 0,
-        broker: "Corretor",
+        broker: owner?.full_name?.trim() || (row as any).corretor_nome?.trim() || "Corretor",
+        brokerPhoto: owner?.avatar_url || undefined,
+        brokerWhatsapp: normalizePhone(owner?.phone || ""),
         owner: row.proprietario || "",
         ownerPhone: row.proprietario_telefone || "",
         image: row.imagens?.[0] || "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=300&fit=crop",
@@ -563,7 +581,8 @@ export default function Properties() {
         link360: (row as any).link_360 || "",
         plataformaVenda: (row as any).plataforma_venda || "",
         dataVenda: (row as any).data_venda || "",
-      }));
+        };
+      });
 
       setPropertyList(mapped);
     };
@@ -1942,7 +1961,11 @@ function PropertyCard({
 }) {
   const [showCelebration, setShowCelebration] = useState(false);
   const [animatePulse, setAnimatePulse] = useState(false);
-  const broker = brokerInfo[property.broker] || { photo: "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=100&h=100&fit=crop&crop=face", whatsapp: "5511999999999" };
+  const fallback = brokerInfo[property.broker] || { photo: "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=100&h=100&fit=crop&crop=face", whatsapp: "5511999999999" };
+  const broker = {
+    photo: property.brokerPhoto || fallback.photo,
+    whatsapp: property.brokerWhatsapp || fallback.whatsapp,
+  };
   const whatsappMessage = encodeURIComponent(`Olá! Tenho interesse no imóvel: ${property.title} - ${formatCurrency(property.price)}`);
   const unitParts = [property.unitNumber, property.boxNumber, property.quadra, property.lote].filter(Boolean);
 

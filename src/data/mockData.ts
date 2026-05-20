@@ -60,6 +60,8 @@ export interface Property {
   linkMaterial?: string;
   link360?: string;
   userId?: string;
+  brokerPhoto?: string;
+  brokerWhatsapp?: string;
 }
 
 export interface Broker {
