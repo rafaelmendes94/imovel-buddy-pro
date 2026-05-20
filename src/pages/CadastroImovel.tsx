@@ -1204,6 +1204,9 @@ export function ImovelForm({ editId }: { editId?: string }) {
             <Label className="text-xs flex items-center gap-1"><FolderDown className="w-3.5 h-3.5" /> Link Material Completo</Label>
             <Input placeholder="https://drive.google.com/..." value={form.linkMaterial} onChange={e => set('linkMaterial', e.target.value)} />
           </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs flex items-center gap-1"><Download className="w-3.5 h-3.5" /> Link Fotos PDF</Label>
+            <Input placeholder="https://.../fotos.pdf" value={form.fotosPdfUrl} onChange={e => set('fotosPdfUrl', e.target.value)} />
           <div className="space-y-1.5 sm:col-span-2">
             <Label className="text-xs flex items-center gap-1"><Eye className="w-3.5 h-3.5" /> Tour 360° (embed ou link)</Label>
             <Input placeholder="https://kuula.co/... ou código embed" value={form.link360} onChange={e => set('link360', e.target.value)} />
