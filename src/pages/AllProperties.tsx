@@ -188,6 +188,7 @@ export default function AllProperties() {
       if (!error && data) {
         const ownerIds = Array.from(new Set(data.map((r: any) => r.user_id).filter(Boolean)));
         const profilesById: Record<string, { full_name: string; phone: string | null; avatar_url: string | null }> = {};
+        const profilesByName: Record<string, { full_name: string; phone: string | null; avatar_url: string | null }> = {};
         if (ownerIds.length) {
           const { data: profs } = await (supabase as any)
             .from('public_broker_profiles')
@@ -195,14 +196,17 @@ export default function AllProperties() {
             .in('user_id', ownerIds);
           (profs || []).forEach((p: any) => {
             profilesById[p.user_id] = { full_name: p.full_name || '', phone: p.phone, avatar_url: p.avatar_url };
+            if (p.full_name) profilesByName[p.full_name.trim().toLowerCase()] = profilesById[p.user_id];
           });
         }
 
         const mapped: SiteProperty[] = data
           .filter((row) => row.status === "Disponível")
           .map((row) => {
-            const prof = profilesById[(row as any).user_id];
-            const brokerName = (prof?.full_name?.trim()) || (row as any).corretor_nome?.trim() || "Corretor";
+            const ownerProfile = profilesById[(row as any).user_id];
+            // Prioriza corretor_nome sobre o cadastrante
+            const brokerName = (row as any).corretor_nome?.trim() || ownerProfile?.full_name?.trim() || "Corretor";
+            const brokerProfile = profilesByName[brokerName.toLowerCase()] || (brokerName === ownerProfile?.full_name?.trim() ? ownerProfile : undefined);
             return {
               id: row.id,
               title: row.titulo,
@@ -216,8 +220,8 @@ export default function AllProperties() {
               bathrooms: row.banheiros,
               parking: row.vagas,
               broker: brokerName,
-              brokerPhoto: prof?.avatar_url || undefined,
-              brokerWhatsapp: normalizePhone(prof?.phone || ''),
+              brokerPhoto: brokerProfile?.avatar_url || undefined,
+              brokerWhatsapp: normalizePhone(brokerProfile?.phone || ''),
               image: row.imagens?.[0] || "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&h=400&fit=crop",
               images: row.imagens || [],
               createdAt: row.created_at,
