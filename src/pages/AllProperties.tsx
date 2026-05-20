@@ -50,6 +50,8 @@ function PropertyCard({ property, onSelect }: { property: SiteProperty; onSelect
   const [imgIndex, setImgIndex] = useState(0);
   const broker = { photo: property.brokerPhoto || "", whatsapp: property.brokerWhatsapp || "" };
   const brokerInitials = (property.broker || "C").split(/\s+/).filter(Boolean).slice(0, 2).map(s => s[0]?.toUpperCase()).join("") || "C";
+  const brokerSlug = (property.broker || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  const brokerHref = brokerSlug ? `/corretor/${brokerSlug}` : "#";
   const whatsappMessage = encodeURIComponent(`Olá! Tenho interesse no imóvel: ${property.title} - ${formatCurrency(property.price)}`);
   const unitParts = [property.unitNumber, property.boxNumber, property.quadra, property.lote].filter(Boolean);
   const imgs = property.images && property.images.length > 0 ? property.images : [property.image];
