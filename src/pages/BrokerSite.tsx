@@ -277,6 +277,7 @@ function PropertyCard({ p, brokerName, whatsapp, onOpen }: { p: DBProperty; brok
             <ExternalLink className="h-3.5 w-3.5" /> Drive
           </button>
         </div>
+        {whatsapp && (
           <a href={`https://wa.me/${whatsapp}?text=${msg}`} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
             className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-accent px-4 py-3 text-sm font-bold text-accent-foreground transition-opacity hover:opacity-90">
             <Phone className="h-4 w-4" /> Tenho interesse
