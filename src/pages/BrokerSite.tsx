@@ -88,6 +88,7 @@ interface DBProperty {
   corretor_nome: string | null;
   created_at: string;
   data_venda: string | null;
+  termo_exclusividade_url: string | null;
 }
 
 function PropertyCard({ p, brokerName, whatsapp }: { p: DBProperty; brokerName: string; whatsapp: string }) {
