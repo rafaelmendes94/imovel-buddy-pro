@@ -902,6 +902,7 @@ export type Database = {
           empreendimento_id: string | null
           endereco: string
           estado: string | null
+          fotos_pdf_url: string | null
           id: string
           imagens: string[] | null
           imobiliaria_nome: string | null
@@ -972,6 +973,7 @@ export type Database = {
           empreendimento_id?: string | null
           endereco?: string
           estado?: string | null
+          fotos_pdf_url?: string | null
           id?: string
           imagens?: string[] | null
           imobiliaria_nome?: string | null
@@ -1042,6 +1044,7 @@ export type Database = {
           empreendimento_id?: string | null
           endereco?: string
           estado?: string | null
+          fotos_pdf_url?: string | null
           id?: string
           imagens?: string[] | null
           imobiliaria_nome?: string | null

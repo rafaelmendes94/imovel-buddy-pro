@@ -21,7 +21,7 @@ import {
   Building2, MapPin, BedDouble, Bath, Car, Ruler, User, Phone, DollarSign,
   Percent, Gift, Home, Sparkles, Save, Image, Plus, X, Loader2,
   Hash, FileText, Eye, Key, Calendar, Building, Fence, Landmark, Search, Brain, Wand2,
-  Play, FolderDown, History, Clock
+  Play, FolderDown, History, Clock, Download
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -104,6 +104,7 @@ export interface FormData {
   linkMaterial: string;
   link360: string;
   driveFotosUrl: string;
+  fotosPdfUrl: string;
 }
 
 export const initialForm: FormData = {
@@ -120,7 +121,7 @@ export const initialForm: FormData = {
   condicoesPagemento: [], infraestrutura: [], outrasCaracteristicas: [],
   latitude: '', longitude: '',
   edificio_id: '', condominio_id: '', empreendimento_id: '',
-  linkVideo: '', linkMaterial: '', link360: '', driveFotosUrl: '',
+  linkVideo: '', linkMaterial: '', link360: '', driveFotosUrl: '', fotosPdfUrl: '',
 };
 
 function SectionHeader({ icon: Icon, title }: { icon: any; title: string }) {
@@ -387,7 +388,7 @@ const fieldLabels: Record<string, string> = {
   destaqueHome: 'Destaque Home', ativoSite: 'Ativo no Site', destaqueCategoria: 'Categoria Destaque',
   condicoesPagemento: 'Condições Pagamento', infraestrutura: 'Infraestrutura',
   outrasCaracteristicas: 'Outras Características', latitude: 'Latitude', longitude: 'Longitude',
-  linkVideo: 'Link Vídeo', linkMaterial: 'Link Material', link360: 'Link 360°', driveFotosUrl: 'Link Drive Fotos',
+  linkVideo: 'Link Vídeo', linkMaterial: 'Link Material', link360: 'Link 360°', driveFotosUrl: 'Link Drive Fotos', fotosPdfUrl: 'Link Fotos PDF',
 };
 
 function computeChanges(original: FormData, current: FormData): { field: string; from: string; to: string }[] {
@@ -535,6 +536,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         linkMaterial: (data as any).link_material || '',
         link360: (data as any).link_360 || '',
         driveFotosUrl: (data as any).drive_fotos_url || '',
+        fotosPdfUrl: (data as any).fotos_pdf_url || '',
       });
       originalFormRef.current = {
         titulo: data.titulo || '', tipo: data.tipo || '', status: data.status || 'Disponível',
@@ -559,7 +561,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         latitude: data.latitude ? String(data.latitude) : '', longitude: data.longitude ? String(data.longitude) : '',
         edificio_id: data.edificio_id || '', condominio_id: data.condominio_id || '',
         empreendimento_id: data.empreendimento_id || '', linkVideo: (data as any).link_video || '',
-        linkMaterial: (data as any).link_material || '', link360: (data as any).link_360 || '', driveFotosUrl: (data as any).drive_fotos_url || '',
+        linkMaterial: (data as any).link_material || '', link360: (data as any).link_360 || '', driveFotosUrl: (data as any).drive_fotos_url || '', fotosPdfUrl: (data as any).fotos_pdf_url || '',
       };
       setExistingImages(data.imagens || []);
       setLoadingData(false);
@@ -734,6 +736,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         link_material: form.linkMaterial || '',
         link_360: form.link360 || '',
         drive_fotos_url: form.driveFotosUrl || '',
+        fotos_pdf_url: form.fotosPdfUrl || '',
       } as any;
 
       if (isEdit) {
@@ -1200,6 +1203,10 @@ export function ImovelForm({ editId }: { editId?: string }) {
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><FolderDown className="w-3.5 h-3.5" /> Link Material Completo</Label>
             <Input placeholder="https://drive.google.com/..." value={form.linkMaterial} onChange={e => set('linkMaterial', e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs flex items-center gap-1"><Download className="w-3.5 h-3.5" /> Link Fotos PDF</Label>
+            <Input placeholder="https://.../fotos.pdf" value={form.fotosPdfUrl} onChange={e => set('fotosPdfUrl', e.target.value)} />
           </div>
           <div className="space-y-1.5 sm:col-span-2">
             <Label className="text-xs flex items-center gap-1"><Eye className="w-3.5 h-3.5" /> Tour 360° (embed ou link)</Label>

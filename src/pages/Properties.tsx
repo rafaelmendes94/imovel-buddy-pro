@@ -580,6 +580,7 @@ export default function Properties() {
         linkMaterial: (row as any).link_material || "",
         link360: (row as any).link_360 || "",
         driveFotosUrl: (row as any).drive_fotos_url || "",
+        fotosPdfUrl: (row as any).fotos_pdf_url || "",
         views: Number((row as any).views || 0),
         plataformaVenda: (row as any).plataforma_venda || "",
         dataVenda: (row as any).data_venda || "",
