@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { BackButton } from "@/components/BackButton";
-import { Plus, Mail, Phone, Award, Search, ExternalLink, Building2, Palette, UserPlus, X, Users } from "lucide-react";
+import { Plus, Mail, Phone, Award, Search, ExternalLink, Building2, Palette, UserPlus, X, Users, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +23,8 @@ interface BrokerData {
   subscriber_id: string;
   imoveis_count: number;
   vgv: number;
+  rating: number;
+  ratings_count: number;
 }
 
 const formatCurrency = (value: number) =>
@@ -102,9 +104,11 @@ export default function Brokers() {
 
       if (!brokersData) { setLoading(false); return; }
 
-      const { data: imoveis } = await supabase
-        .from("imoveis")
-        .select("corretor_nome, preco, status");
+      const [{ data: imoveis }, { data: profs }, { data: ratings }] = await Promise.all([
+        supabase.from("imoveis").select("corretor_nome, preco, status"),
+        (supabase as any).from("public_broker_profiles").select("user_id, full_name"),
+        (supabase as any).from("broker_ratings").select("broker_id, pontualidade, agilidade, conhecimento_mercado, atendimento, negociacao"),
+      ]);
 
       const brokerStats: Record<string, { count: number; vgv: number }> = {};
       (imoveis || []).forEach(i => {
@@ -114,11 +118,32 @@ export default function Brokers() {
         if (i.status === "Vendido") brokerStats[name].vgv += Number(i.preco || 0);
       });
 
-      setBrokers(brokersData.map((b: any) => ({
-        ...b,
-        imoveis_count: brokerStats[b.name]?.count || 0,
-        vgv: brokerStats[b.name]?.vgv || 0,
-      })));
+      // Map slug(full_name) -> user_id
+      const slugToUserId: Record<string, string> = {};
+      ((profs as any[]) || []).forEach((p) => {
+        if (p.full_name) slugToUserId[toSlug(p.full_name)] = p.user_id;
+      });
+
+      // Aggregate ratings by broker_id
+      const ratingAgg: Record<string, { sum: number; n: number }> = {};
+      ((ratings as any[]) || []).forEach((r) => {
+        const avg = (r.pontualidade + r.agilidade + r.conhecimento_mercado + r.atendimento + r.negociacao) / 5;
+        if (!ratingAgg[r.broker_id]) ratingAgg[r.broker_id] = { sum: 0, n: 0 };
+        ratingAgg[r.broker_id].sum += avg;
+        ratingAgg[r.broker_id].n += 1;
+      });
+
+      setBrokers(brokersData.map((b: any) => {
+        const uid = slugToUserId[toSlug(b.name)];
+        const agg = uid ? ratingAgg[uid] : undefined;
+        return {
+          ...b,
+          imoveis_count: brokerStats[b.name]?.count || 0,
+          vgv: brokerStats[b.name]?.vgv || 0,
+          rating: agg && agg.n > 0 ? agg.sum / agg.n : 0,
+          ratings_count: agg?.n || 0,
+        };
+      }));
       setLoading(false);
     };
     fetchBrokers();
@@ -325,16 +350,23 @@ export default function Brokers() {
                     <h3 className="font-semibold text-card-foreground text-sm truncate">
                       {broker.name}
                     </h3>
-                    <span
-                      className={cn(
-                        "text-[10px] font-semibold px-2 py-0.5 rounded",
-                        broker.status === "active"
-                          ? "bg-success/10 text-success"
-                          : "bg-muted text-muted-foreground"
-                      )}
-                    >
-                      {broker.status === "active" ? "Ativo" : "Inativo"}
-                    </span>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span
+                        className={cn(
+                          "text-[10px] font-semibold px-2 py-0.5 rounded",
+                          broker.status === "active"
+                            ? "bg-success/10 text-success"
+                            : "bg-muted text-muted-foreground"
+                        )}
+                      >
+                        {broker.status === "active" ? "Ativo" : "Inativo"}
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-accent">
+                        <Star className={cn("w-3 h-3", broker.ratings_count > 0 && "fill-accent")} />
+                        {broker.ratings_count > 0 ? broker.rating.toFixed(1) : "—"}
+                        <span className="text-muted-foreground font-normal">({broker.ratings_count})</span>
+                      </span>
+                    </div>
                   </div>
                 </div>
 
