@@ -104,9 +104,11 @@ export default function Brokers() {
 
       if (!brokersData) { setLoading(false); return; }
 
-      const { data: imoveis } = await supabase
-        .from("imoveis")
-        .select("corretor_nome, preco, status");
+      const [{ data: imoveis }, { data: profs }, { data: ratings }] = await Promise.all([
+        supabase.from("imoveis").select("corretor_nome, preco, status"),
+        (supabase as any).from("public_broker_profiles").select("user_id, full_name"),
+        (supabase as any).from("broker_ratings").select("broker_id, pontualidade, agilidade, conhecimento_mercado, atendimento, negociacao"),
+      ]);
 
       const brokerStats: Record<string, { count: number; vgv: number }> = {};
       (imoveis || []).forEach(i => {
@@ -116,11 +118,32 @@ export default function Brokers() {
         if (i.status === "Vendido") brokerStats[name].vgv += Number(i.preco || 0);
       });
 
-      setBrokers(brokersData.map((b: any) => ({
-        ...b,
-        imoveis_count: brokerStats[b.name]?.count || 0,
-        vgv: brokerStats[b.name]?.vgv || 0,
-      })));
+      // Map slug(full_name) -> user_id
+      const slugToUserId: Record<string, string> = {};
+      ((profs as any[]) || []).forEach((p) => {
+        if (p.full_name) slugToUserId[toSlug(p.full_name)] = p.user_id;
+      });
+
+      // Aggregate ratings by broker_id
+      const ratingAgg: Record<string, { sum: number; n: number }> = {};
+      ((ratings as any[]) || []).forEach((r) => {
+        const avg = (r.pontualidade + r.agilidade + r.conhecimento_mercado + r.atendimento + r.negociacao) / 5;
+        if (!ratingAgg[r.broker_id]) ratingAgg[r.broker_id] = { sum: 0, n: 0 };
+        ratingAgg[r.broker_id].sum += avg;
+        ratingAgg[r.broker_id].n += 1;
+      });
+
+      setBrokers(brokersData.map((b: any) => {
+        const uid = slugToUserId[toSlug(b.name)];
+        const agg = uid ? ratingAgg[uid] : undefined;
+        return {
+          ...b,
+          imoveis_count: brokerStats[b.name]?.count || 0,
+          vgv: brokerStats[b.name]?.vgv || 0,
+          rating: agg && agg.n > 0 ? agg.sum / agg.n : 0,
+          ratings_count: agg?.n || 0,
+        };
+      }));
       setLoading(false);
     };
     fetchBrokers();
