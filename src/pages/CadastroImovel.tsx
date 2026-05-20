@@ -103,6 +103,7 @@ export interface FormData {
   linkVideo: string;
   linkMaterial: string;
   link360: string;
+  driveFotosUrl: string;
 }
 
 export const initialForm: FormData = {
