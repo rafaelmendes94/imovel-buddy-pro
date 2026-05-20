@@ -154,13 +154,12 @@ export function BrokerRatings({ brokerId, brokerName }: { brokerId: string | nul
           <h3 className="mb-1 text-lg font-bold text-foreground">{myRating ? "Atualizar minha avaliação" : "Avalie este corretor"}</h3>
           <p className="mb-4 text-sm text-muted-foreground">
             {canRate
-              ? `Como colega, dê sua nota para ${brokerName}.`
+              ? `Deixe sua avaliação para ${brokerName}.`
               : !user
-                ? "Faça login como corretor para avaliar."
-                : !isBroker
-                  ? "Apenas corretores podem avaliar."
-                  : "Você não pode avaliar a si mesmo."}
+                ? "Faça login para avaliar."
+                : "Você não pode avaliar a si mesmo."}
           </p>
+
 
           <fieldset disabled={!canRate || submitting} className="space-y-3 disabled:opacity-60">
             {CRITERIA.map((c) => (
