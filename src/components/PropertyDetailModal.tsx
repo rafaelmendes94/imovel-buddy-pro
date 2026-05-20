@@ -660,6 +660,11 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
               <HardDrive className="w-4 h-4 text-emerald-600" /> Baixar Drive
             </a>
           )}
+          {driveFotosUrl && (
+            <a href={driveFotosUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card border border-border text-sm font-semibold text-foreground hover:bg-muted/40 transition-colors shadow-sm">
+              <HardDrive className="w-4 h-4 text-sky-600" /> Drive Fotos
+            </a>
+          )}
           {property.exclusivityTermUrl && (
             <button
               onClick={() => setViewingTerm(true)}
