@@ -528,7 +528,7 @@ export default function BrokerSite() {
   const whatsapp = normalizePhone(config?.whatsapp || brokerRecord?.phone || "");
   const email = config?.email_contact || brokerRecord?.email || "";
   const creci = brokerRecord?.creci || "";
-  const avatarUrl = config?.profile_photo_url || getAvatarFallback(brokerName);
+  const avatarUrl = profileAvatar || config?.profile_photo_url || getAvatarFallback(brokerName);
   const coverUrl = config?.cover_photo_url;
   const accentColor = config?.accent_color && config.accent_color.trim() !== "" ? config.accent_color : null;
   const eyebrow = config?.site_title || "Portfólio do corretor";
