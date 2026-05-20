@@ -93,6 +93,7 @@ interface DBProperty {
   data_venda: string | null;
   termo_exclusividade_url: string | null;
   link_material: string | null;
+  views: number | null;
 }
 
 function PropertyCard({ p, brokerName, whatsapp, onOpen }: { p: DBProperty; brokerName: string; whatsapp: string; onOpen: (p: DBProperty) => void }) {
