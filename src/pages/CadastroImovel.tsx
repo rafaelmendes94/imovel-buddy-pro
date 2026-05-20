@@ -388,7 +388,7 @@ const fieldLabels: Record<string, string> = {
   destaqueHome: 'Destaque Home', ativoSite: 'Ativo no Site', destaqueCategoria: 'Categoria Destaque',
   condicoesPagemento: 'Condições Pagamento', infraestrutura: 'Infraestrutura',
   outrasCaracteristicas: 'Outras Características', latitude: 'Latitude', longitude: 'Longitude',
-  linkVideo: 'Link Vídeo', linkMaterial: 'Link Material', link360: 'Link 360°', driveFotosUrl: 'Link Drive Fotos',
+  linkVideo: 'Link Vídeo', linkMaterial: 'Link Material', link360: 'Link 360°', driveFotosUrl: 'Link Drive Fotos', fotosPdfUrl: 'Link Fotos PDF',
 };
 
 function computeChanges(original: FormData, current: FormData): { field: string; from: string; to: string }[] {
