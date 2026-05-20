@@ -308,6 +308,7 @@ export default function BrokerSite() {
   const [avgRating, setAvgRating] = useState<number | null>(null);
   const [ratingsCount, setRatingsCount] = useState(0);
   const [selectedProperty, setSelectedProperty] = useState<any>(null);
+  const [profileAvatar, setProfileAvatar] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setCurrentUserId(data.user?.id || null));
@@ -361,6 +362,7 @@ export default function BrokerSite() {
       setBrokerName(resolvedName);
       setBrokerRecord(matchedBroker || (matchedProfile ? { name: matchedProfile.full_name, phone: matchedProfile.phone, creci: null, email: null } as any : null));
       setConfig((pageConfig as BrokerPageConfig | null) || null);
+      setProfileAvatar(matchedProfile?.avatar_url || null);
       setBrokerId(matchedProfile?.user_id || matchedProperties[0]?.user_id || null);
       setProperties(matchedProperties.filter((property) => property.status !== "Vendido"));
       setSoldProperties(matchedProperties.filter((property) => property.status === "Vendido"));
@@ -526,7 +528,7 @@ export default function BrokerSite() {
   const whatsapp = normalizePhone(config?.whatsapp || brokerRecord?.phone || "");
   const email = config?.email_contact || brokerRecord?.email || "";
   const creci = brokerRecord?.creci || "";
-  const avatarUrl = config?.profile_photo_url || getAvatarFallback(brokerName);
+  const avatarUrl = profileAvatar || config?.profile_photo_url || getAvatarFallback(brokerName);
   const coverUrl = config?.cover_photo_url;
   const accentColor = config?.accent_color && config.accent_color.trim() !== "" ? config.accent_color : null;
   const eyebrow = config?.site_title || "Portfólio do corretor";
