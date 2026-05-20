@@ -23,6 +23,8 @@ interface BrokerData {
   subscriber_id: string;
   imoveis_count: number;
   vgv: number;
+  rating: number;
+  ratings_count: number;
 }
 
 const formatCurrency = (value: number) =>
