@@ -308,6 +308,7 @@ export default function BrokerSite() {
   const [avgRating, setAvgRating] = useState<number | null>(null);
   const [ratingsCount, setRatingsCount] = useState(0);
   const [selectedProperty, setSelectedProperty] = useState<any>(null);
+  const [profileAvatar, setProfileAvatar] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setCurrentUserId(data.user?.id || null));
