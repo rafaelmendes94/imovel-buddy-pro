@@ -350,16 +350,23 @@ export default function Brokers() {
                     <h3 className="font-semibold text-card-foreground text-sm truncate">
                       {broker.name}
                     </h3>
-                    <span
-                      className={cn(
-                        "text-[10px] font-semibold px-2 py-0.5 rounded",
-                        broker.status === "active"
-                          ? "bg-success/10 text-success"
-                          : "bg-muted text-muted-foreground"
-                      )}
-                    >
-                      {broker.status === "active" ? "Ativo" : "Inativo"}
-                    </span>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span
+                        className={cn(
+                          "text-[10px] font-semibold px-2 py-0.5 rounded",
+                          broker.status === "active"
+                            ? "bg-success/10 text-success"
+                            : "bg-muted text-muted-foreground"
+                        )}
+                      >
+                        {broker.status === "active" ? "Ativo" : "Inativo"}
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-accent">
+                        <Star className={cn("w-3 h-3", broker.ratings_count > 0 && "fill-accent")} />
+                        {broker.ratings_count > 0 ? broker.rating.toFixed(1) : "—"}
+                        <span className="text-muted-foreground font-normal">({broker.ratings_count})</span>
+                      </span>
+                    </div>
                   </div>
                 </div>
 
