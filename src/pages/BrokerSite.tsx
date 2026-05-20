@@ -760,7 +760,43 @@ export default function BrokerSite() {
             </div>
           </DialogContent>
         </Dialog>
+
+        <PropertyDetailModal
+          property={selectedProperty}
+          onClose={() => setSelectedProperty(null)}
+          allProperties={properties.map((row) => ({
+            id: row.id,
+            title: row.titulo,
+            address: row.endereco,
+            city: row.cidade,
+            type: row.tipo,
+            status: row.status,
+            price: Number(row.preco),
+            area: Number(row.area),
+            bedrooms: row.quartos,
+            bathrooms: row.banheiros,
+            parking: row.vagas,
+            broker: brokerName,
+            image: row.imagens?.[0] || "/placeholder.svg",
+            images: row.imagens || [],
+            createdAt: row.created_at,
+            decorated: row.decorado,
+            seaView: row.vista_mar,
+            acceptsExchange: row.aceita_permuta,
+            paymentConditions: row.condicoes_pagamento || [],
+            empreendimento: row.empreendimento || "",
+            unitNumber: row.unidade || "",
+            boxNumber: row.box || "",
+            quadra: row.quadra || "",
+            lote: row.lote || "",
+            exclusivityTermUrl: row.termo_exclusividade_url || "",
+            neighborhood: row.bairro || "",
+          })) as any}
+          brokerInfo={{ [brokerName]: { photo: profilePhoto, whatsapp } }}
+          onSelectSimilar={(p: any) => setSelectedProperty(p)}
+        />
       </main>
+
 
       <footer className="border-t border-border bg-card">
         <div className="container flex flex-col gap-4 py-8 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
