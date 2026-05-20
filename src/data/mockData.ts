@@ -60,6 +60,7 @@ export interface Property {
   linkMaterial?: string;
   link360?: string;
   driveFotosUrl?: string;
+  fotosPdfUrl?: string;
   userId?: string;
   brokerPhoto?: string;
   brokerWhatsapp?: string;
