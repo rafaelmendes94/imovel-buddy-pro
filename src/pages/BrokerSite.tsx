@@ -93,6 +93,7 @@ interface DBProperty {
   data_venda: string | null;
   termo_exclusividade_url: string | null;
   link_material: string | null;
+  views: number | null;
 }
 
 function PropertyCard({ p, brokerName, whatsapp, onOpen }: { p: DBProperty; brokerName: string; whatsapp: string; onOpen: (p: DBProperty) => void }) {
@@ -674,7 +675,7 @@ export default function BrokerSite() {
               { label: "Vendas", value: soldProperties.length, icon: Home },
               { label: "VGV vendido", value: formatCurrency(soldValue), icon: DollarSign },
               { label: "Tempo médio venda", value: tempoMedioVenda > 0 ? `${tempoMedioVenda}d` : "—", icon: Clock },
-              { label: "Visualizações", value: pageViews.toLocaleString("pt-BR"), icon: Eye },
+              { label: "Visualizações", value: ([...properties, ...soldProperties].reduce((sum, p) => sum + (p.views || 0), 0)).toLocaleString("pt-BR"), icon: Eye },
             ].map((metric, idx) => (
               <div
                 key={metric.label}
