@@ -579,6 +579,7 @@ export default function Properties() {
         linkVideo: (row as any).link_video || "",
         linkMaterial: (row as any).link_material || "",
         link360: (row as any).link_360 || "",
+        driveFotosUrl: (row as any).drive_fotos_url || "",
         plataformaVenda: (row as any).plataforma_venda || "",
         dataVenda: (row as any).data_venda || "",
         };
