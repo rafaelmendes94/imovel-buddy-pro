@@ -113,14 +113,16 @@ function PropertyCard({ p, brokerName, whatsapp, onOpen }: { p: DBProperty; brok
       <div className="relative h-60 overflow-hidden">
         <img src={img} alt={p.titulo} loading="lazy" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
         <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-foreground/20 to-transparent" />
-        <button
-          type="button"
-          onClick={handleExclusividade}
-          title={p.termo_exclusividade_url ? "Clique para baixar o termo de exclusividade" : "Termo de exclusividade não disponível"}
-          className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-accent-foreground shadow-md transition-transform hover:scale-105"
-        >
-          <FileDown className="h-3 w-3" /> Exclusividade
-        </button>
+        {p.termo_exclusividade_url && (
+          <button
+            type="button"
+            onClick={handleExclusividade}
+            title="Clique para baixar o termo de exclusividade"
+            className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-accent-foreground shadow-md transition-transform hover:scale-105"
+          >
+            <FileDown className="h-3 w-3" /> Exclusividade
+          </button>
+        )}
         <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3">
           <p className="text-2xl font-black text-white drop-shadow-lg">{formatCurrency(p.preco)}</p>
           <div className="flex flex-wrap justify-end gap-2">
