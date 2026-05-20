@@ -662,7 +662,7 @@ export default function BrokerSite() {
               <p className="text-muted-foreground">Os imóveis mais estratégicos publicados por {brokerName}.</p>
             </div>
             <div className="grid gap-6 lg:grid-cols-3">
-              {featuredProperties.map((property) => <PropertyCard key={property.id} p={property} brokerName={brokerName} whatsapp={whatsapp} />)}
+              {featuredProperties.map((property) => <PropertyCard key={property.id} p={property} brokerName={brokerName} whatsapp={whatsapp} onOpen={setSelectedProperty} />)}
             </div>
           </section>
         )}
