@@ -30,7 +30,7 @@ const CRITERIA = [
 type CriteriaKey = (typeof CRITERIA)[number]["key"];
 
 export function BrokerRatings({ brokerId, brokerName }: { brokerId: string | null; brokerName: string }) {
-  const { user, isBroker } = useAuth();
+  const { user } = useAuth();
   const [ratings, setRatings] = useState<BrokerRating[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
