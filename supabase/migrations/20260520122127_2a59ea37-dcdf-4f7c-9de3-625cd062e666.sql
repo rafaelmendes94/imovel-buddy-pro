@@ -1,0 +1,1 @@
+ALTER TABLE public.imoveis ADD COLUMN IF NOT EXISTS drive_fotos_url TEXT DEFAULT '';
