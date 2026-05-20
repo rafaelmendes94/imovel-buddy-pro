@@ -50,6 +50,8 @@ function PropertyCard({ property, onSelect }: { property: SiteProperty; onSelect
   const [imgIndex, setImgIndex] = useState(0);
   const broker = { photo: property.brokerPhoto || "", whatsapp: property.brokerWhatsapp || "" };
   const brokerInitials = (property.broker || "C").split(/\s+/).filter(Boolean).slice(0, 2).map(s => s[0]?.toUpperCase()).join("") || "C";
+  const brokerSlug = (property.broker || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  const brokerHref = brokerSlug ? `/corretor/${brokerSlug}` : "#";
   const whatsappMessage = encodeURIComponent(`Olá! Tenho interesse no imóvel: ${property.title} - ${formatCurrency(property.price)}`);
   const unitParts = [property.unitNumber, property.boxNumber, property.quadra, property.lote].filter(Boolean);
   const imgs = property.images && property.images.length > 0 ? property.images : [property.image];
@@ -138,7 +140,7 @@ function PropertyCard({ property, onSelect }: { property: SiteProperty; onSelect
           </div>
         )}
         <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-          <div className="flex items-center gap-2">
+          <Link to={brokerHref} className="flex items-center gap-2 group/broker">
             {broker.photo ? (
               <img src={broker.photo} alt={property.broker} className="w-8 h-8 rounded-full object-cover border-2 border-amber-400" />
             ) : (
@@ -147,10 +149,10 @@ function PropertyCard({ property, onSelect }: { property: SiteProperty; onSelect
               </div>
             )}
             <div>
-              <p className="text-xs font-semibold text-amber-700 leading-tight">{property.broker}</p>
+              <p className="text-xs font-semibold text-amber-700 leading-tight group-hover/broker:underline">{property.broker}</p>
               <p className="text-[10px] text-gray-400">Corretor(a)</p>
             </div>
-          </div>
+          </Link>
           <a href={`https://wa.me/${broker.whatsapp}?text=${whatsappMessage}`} target="_blank" rel="noopener noreferrer"
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500 text-white text-xs font-bold hover:bg-emerald-600 transition-colors shadow-sm">
             <Phone className="w-3.5 h-3.5" /> WhatsApp
