@@ -26,6 +26,8 @@ import {
   Upload,
   Waves,
   X,
+  Images,
+  ExternalLink,
 } from "lucide-react";
 import { cn, toSlug } from "@/lib/utils";
 import { BrokerRatings } from "@/components/BrokerRatings";
