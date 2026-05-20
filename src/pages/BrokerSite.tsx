@@ -362,6 +362,7 @@ export default function BrokerSite() {
       setBrokerName(resolvedName);
       setBrokerRecord(matchedBroker || (matchedProfile ? { name: matchedProfile.full_name, phone: matchedProfile.phone, creci: null, email: null } as any : null));
       setConfig((pageConfig as BrokerPageConfig | null) || null);
+      setProfileAvatar(matchedProfile?.avatar_url || null);
       setBrokerId(matchedProfile?.user_id || matchedProperties[0]?.user_id || null);
       setProperties(matchedProperties.filter((property) => property.status !== "Vendido"));
       setSoldProperties(matchedProperties.filter((property) => property.status === "Vendido"));
