@@ -2010,12 +2010,11 @@ function PropertyCard({
         })()}
 
         {/* Exclusivity badge */}
-        {(property.exclusivityTerm || property.exclusivityTermUrl) && (
+        {property.exclusivityTermUrl && (
           <button
-            onClick={(e) => { e.stopPropagation(); if (property.exclusivityTermUrl) onViewTerm?.(property.exclusivityTermUrl); }}
-            disabled={!property.exclusivityTermUrl}
-            className="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-amber-500/90 text-white backdrop-blur-sm hover:bg-amber-600 transition-colors z-20 shadow-md disabled:cursor-default"
-            title={property.exclusivityTermUrl ? "Ver termo" : "Termo de exclusividade"}
+            onClick={(e) => { e.stopPropagation(); onViewTerm?.(property.exclusivityTermUrl!); }}
+            className="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-amber-500/90 text-white backdrop-blur-sm hover:bg-amber-600 transition-colors z-20 shadow-md"
+            title="Ver termo"
           >
             <FileCheck className="w-3 h-3" /> Ex.Assinada
           </button>
@@ -2024,7 +2023,7 @@ function PropertyCard({
         {/* Route selector */}
         <button onClick={(e) => { e.stopPropagation(); onToggleRoute?.(property.id); }}
           className={cn("absolute z-20 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all hover:scale-110",
-            property.exclusivityTerm ? "top-12 right-3" : "top-3 right-3",
+            property.exclusivityTermUrl ? "top-12 right-3" : "top-3 right-3",
             isInRoute ? "bg-blue-600 text-white" : "bg-foreground/30 text-white hover:bg-blue-600"
           )}
           title={isInRoute ? "Remover da rota" : "Adicionar à rota"}
@@ -2035,13 +2034,14 @@ function PropertyCard({
         {/* Favorite */}
         <button onClick={(e) => { e.stopPropagation(); onToggleFavorite?.(property.id); }}
           className={cn("absolute z-20 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all hover:scale-110",
-            property.exclusivityTerm ? "top-[5.5rem] right-3" : "top-12 right-3",
+            property.exclusivityTermUrl ? "top-[5.5rem] right-3" : "top-12 right-3",
             isFavorited ? "bg-red-500 text-white" : "bg-foreground/30 text-white hover:bg-red-500"
           )}
           title={isFavorited ? "Remover dos favoritos" : "Favoritar"}
         >
           <Heart className={cn("w-4 h-4", isFavorited && "fill-current")} />
         </button>
+
 
         {/* Price + badges */}
         <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
@@ -2557,7 +2557,7 @@ function PropertyRow({
 
           {/* Row 4: Tags */}
           <div className="flex items-center gap-1.5 flex-wrap">
-            {property.exclusivityTerm && <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 font-bold whitespace-nowrap">📄 Exclusivo</span>}
+            {property.exclusivityTermUrl && <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 font-bold whitespace-nowrap">📄 Exclusivo</span>}
           </div>
 
           {/* Row 5: Location */}
