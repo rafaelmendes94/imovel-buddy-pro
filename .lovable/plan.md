@@ -1,41 +1,28 @@
-## Objetivo
+# Link Drive Fotos no imóvel
 
-Reverter a prioridade nos cards de imóvel: **sempre mostrar o nome e contato do corretor que cadastrou o imóvel** (dono do `user_id` na tabela `imoveis`), em vez de `corretor_nome`.
+## Escopo
+Adicionar um link separado de "Drive Fotos" (além do já existente "Baixar Drive" / `link_material`) que abre em nova aba.
 
-Isso é o oposto da última alteração — agora o "cadastrante" volta a ser a fonte de verdade no card.
+## Banco de dados
+- Migration: adicionar coluna `drive_fotos_url TEXT` em `public.imoveis` (nullable, default null).
 
-## Regra única
+## Cadastro de imóvel (`src/pages/CadastroImovel.tsx`)
+- Adicionar `driveFotosUrl` ao estado `form`.
+- Carregar de `data.drive_fotos_url` no fetch/edit (próximo a `linkMaterial`).
+- Salvar `drive_fotos_url: form.driveFotosUrl || ''` no payload.
+- Adicionar input (tipo url) "Link Drive Fotos" no mesmo bloco do campo "Link Material/Drive" e "Link 360".
 
-```
-nome    = ownerProfile?.full_name?.trim() || imovel.corretor_nome?.trim() || "Corretor"
-avatar  = ownerProfile?.avatar_url
-whatsapp = ownerProfile?.phone
-link    = página do corretor cadastrante (slug do full_name do owner)
-```
+## Modal do imóvel (`src/components/PropertyDetailModal.tsx`)
+- Ler `drive_fotos_url` da property.
+- Na action bar, logo após "Baixar Fotos (PDF)" / "Baixar Drive", adicionar botão `<a target="_blank" rel="noopener noreferrer">` com ícone `Images` (lucide) e label **"Drive Fotos"**, visível somente quando a URL existir.
 
-`corretor_nome` (campo do imóvel) vira apenas fallback caso o profile do dono não exista.
+## Página interna do imóvel
+- Página atual de detalhe é o próprio `PropertyDetailModal` (reusado em `Properties`/`AllProperties`). Não há rota dedicada de detalhe; o botão no modal já cobre "página interna". 
+- Confirmar que `BrokerSite` continua usando `link_material` (Drive geral) — sem alteração.
 
-## Arquivos a ajustar
+## Tipos
+- Aguardar regeneração automática de `src/integrations/supabase/types.ts` após a migration; usar cast `(property as any).drive_fotos_url` se necessário no curto prazo.
 
-1. `src/pages/Site.tsx` — bloco `brokerInfo` (~785-820): inverter para `ownerProfile` primeiro.
-2. `src/pages/AllProperties.tsx` — bloco equivalente (~185-220).
-3. `src/pages/Home.tsx` — `MiniPropertyCard` hoje não exibe corretor; se for para mostrar, adicionar usando a mesma regra (confirmar com usuário se quer exibir aqui).
-4. `src/pages/BrokerSite.tsx` — manter, pois já é o contexto do próprio corretor.
-5. `src/pages/BuildingDetail.tsx`, `CondominiumDetail.tsx`, `EmpreendimentoDetail.tsx` — aplicar mesma regra nos cards internos.
-6. `src/pages/Imobiliarias.tsx`, `RankingPage.tsx`, `Brokers.tsx` — revisar e alinhar.
-
-## Detalhes técnicos
-
-- Já carregamos `profiles` por `user_id` em quase todas as telas (`profilesByUser`). Vamos só inverter a ordem na composição do `brokerName/brokerPhoto/brokerWhatsapp`.
-- O link do nome deve apontar para `/corretor/<slug-do-owner>` (slug do `full_name` do profile do dono).
-- Iniciais entram quando não houver `avatar_url`.
-
-## Fora de escopo
-
-- Sem mudanças de schema.
-- Sem mudanças na lógica de cadastro/edição/permissão.
-- Sem mudanças visuais além da fonte dos dados exibidos.
-
-## Pergunta pendente
-
-No `Home.tsx` (carrossel da home pública) os mini-cards hoje **não exibem** o corretor. Devo adicionar a exibição do cadastrante ali também, ou manter como está?
+## Comportamento
+- Botão sempre abre em nova aba (`target="_blank"`).
+- Campo opcional; quando vazio, botão não aparece.
