@@ -702,6 +702,20 @@ export default function BrokerSite() {
           </div>
         </section>
 
+        {brokerId && (
+          <section className="container py-10">
+            <div className="mb-6 space-y-2">
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">Reputação</p>
+              <h2 className="text-3xl font-black text-foreground">Avaliações do corretor</h2>
+              <p className="text-muted-foreground">Usuários logados podem avaliar. Visitantes visualizam as notas e comentários.</p>
+            </div>
+            <div className="rounded-3xl border border-border bg-card p-2 shadow-[var(--shadow-card)]">
+              <BrokerRatings brokerId={brokerId} brokerName={brokerName} />
+            </div>
+          </section>
+        )}
+
+
         <section className="container py-8">
           <div className="grid gap-4 lg:grid-cols-[1fr,auto] lg:items-center">
             <div className="flex items-center rounded-3xl border border-border bg-card p-3 shadow-[var(--shadow-card)]">
@@ -824,18 +838,6 @@ export default function BrokerSite() {
           )}
         </section>
 
-        {brokerId && (
-          <section className="container py-10">
-            <div className="mb-6 space-y-2">
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">Reputação</p>
-              <h2 className="text-3xl font-black text-foreground">Avaliações do corretor</h2>
-              <p className="text-muted-foreground">Apenas corretores logados podem avaliar. Visitantes visualizam as notas e comentários.</p>
-            </div>
-            <div className="rounded-3xl border border-border bg-card p-2 shadow-[var(--shadow-card)]">
-              <BrokerRatings brokerId={brokerId} brokerName={brokerName} />
-            </div>
-          </section>
-        )}
 
 
         {soldProperties.length > 0 && !searchTerm && (
