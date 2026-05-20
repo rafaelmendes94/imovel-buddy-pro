@@ -2557,7 +2557,7 @@ function PropertyRow({
 
           {/* Row 4: Tags */}
           <div className="flex items-center gap-1.5 flex-wrap">
-            {property.exclusivityTerm && <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 font-bold whitespace-nowrap">📄 Exclusivo</span>}
+            {property.exclusivityTermUrl && <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 font-bold whitespace-nowrap">📄 Exclusivo</span>}
           </div>
 
           {/* Row 5: Location */}
