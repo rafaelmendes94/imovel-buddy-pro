@@ -204,9 +204,9 @@ export default function AllProperties() {
           .filter((row) => row.status === "Disponível")
           .map((row) => {
             const ownerProfile = profilesById[(row as any).user_id];
-            // Prioriza corretor_nome sobre o cadastrante
-            const brokerName = (row as any).corretor_nome?.trim() || ownerProfile?.full_name?.trim() || "Corretor";
-            const brokerProfile = profilesByName[brokerName.toLowerCase()] || (brokerName === ownerProfile?.full_name?.trim() ? ownerProfile : undefined);
+            // Prioriza o corretor que CADASTROU o imóvel (dono do user_id); corretor_nome só como fallback
+            const brokerName = ownerProfile?.full_name?.trim() || (row as any).corretor_nome?.trim() || "Corretor";
+            const brokerProfile = ownerProfile || profilesByName[brokerName.toLowerCase()];
             return {
               id: row.id,
               title: row.titulo,

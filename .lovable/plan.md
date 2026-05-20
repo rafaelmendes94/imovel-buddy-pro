@@ -1,34 +1,41 @@
 ## Objetivo
 
-Hoje, nos cards de imóveis o nome exibido é o do **cadastrante** (dono do `user_id` — ex.: o super admin), com `corretor_nome` apenas como fallback. Vamos inverter: **sempre mostrar o nome do corretor responsável (`corretor_nome`)**, usando o cadastrante apenas quando o imóvel não tiver corretor atribuído.
+Reverter a prioridade nos cards de imóvel: **sempre mostrar o nome e contato do corretor que cadastrou o imóvel** (dono do `user_id` na tabela `imoveis`), em vez de `corretor_nome`.
 
-## Mudanças
+Isso é o oposto da última alteração — agora o "cadastrante" volta a ser a fonte de verdade no card.
 
-Aplicar a mesma regra de prioridade em todas as telas que renderizam cards de imóvel:
+## Regra única
 
 ```
-nome exibido = imovel.corretor_nome?.trim()
-             || ownerProfile?.full_name?.trim()
-             || "Corretor"
+nome    = ownerProfile?.full_name?.trim() || imovel.corretor_nome?.trim() || "Corretor"
+avatar  = ownerProfile?.avatar_url
+whatsapp = ownerProfile?.phone
+link    = página do corretor cadastrante (slug do full_name do owner)
 ```
 
-A foto/WhatsApp seguem a mesma lógica: tentar primeiro o profile do corretor (resolvido pelo `corretor_nome` via `public_broker_profiles`), depois cair no profile do dono. Iniciais entram quando não houver avatar.
+`corretor_nome` (campo do imóvel) vira apenas fallback caso o profile do dono não exista.
 
-### Arquivos a ajustar
+## Arquivos a ajustar
 
-1. `src/pages/Site.tsx` — bloco ~785-820 (mapeamento de `brokerInfo` e atribuição `brokerName`).
-2. `src/pages/AllProperties.tsx` — bloco ~185-210 (mesma lógica).
-3. `src/pages/Home.tsx` — render dos cards (usa `corretor_nome` direto, garantir que não está sendo sobrescrito por profile).
-4. `src/pages/BrokerSite.tsx` — manter `corretor_nome` como label do card.
-5. `src/pages/BuildingDetail.tsx`, `src/pages/CondominiumDetail.tsx`, `src/pages/EmpreendimentoDetail.tsx` — cards internos de imóveis vinculados.
-6. `src/pages/Imobiliarias.tsx`, `src/pages/RankingPage.tsx`, `src/pages/Brokers.tsx` — se exibem nome em card de imóvel, aplicar mesma regra.
+1. `src/pages/Site.tsx` — bloco `brokerInfo` (~785-820): inverter para `ownerProfile` primeiro.
+2. `src/pages/AllProperties.tsx` — bloco equivalente (~185-220).
+3. `src/pages/Home.tsx` — `MiniPropertyCard` hoje não exibe corretor; se for para mostrar, adicionar usando a mesma regra (confirmar com usuário se quer exibir aqui).
+4. `src/pages/BrokerSite.tsx` — manter, pois já é o contexto do próprio corretor.
+5. `src/pages/BuildingDetail.tsx`, `CondominiumDetail.tsx`, `EmpreendimentoDetail.tsx` — aplicar mesma regra nos cards internos.
+6. `src/pages/Imobiliarias.tsx`, `RankingPage.tsx`, `Brokers.tsx` — revisar e alinhar.
 
-### Resolução do avatar/WhatsApp por corretor
+## Detalhes técnicos
 
-Quando `corretor_nome` existir, buscar o profile correspondente em `public_broker_profiles` por `full_name` (slug match), e usar `avatar_url`/`phone` dele. Se não achar, manter fallback para iniciais + WhatsApp do dono.
+- Já carregamos `profiles` por `user_id` em quase todas as telas (`profilesByUser`). Vamos só inverter a ordem na composição do `brokerName/brokerPhoto/brokerWhatsapp`.
+- O link do nome deve apontar para `/corretor/<slug-do-owner>` (slug do `full_name` do profile do dono).
+- Iniciais entram quando não houver `avatar_url`.
 
 ## Fora de escopo
 
-- Não alterar schema do banco.
-- Não mudar o cadastro nem a lógica de quem pode editar.
-- Mantém o link do nome abrindo a página interna do corretor (já implementado).
+- Sem mudanças de schema.
+- Sem mudanças na lógica de cadastro/edição/permissão.
+- Sem mudanças visuais além da fonte dos dados exibidos.
+
+## Pergunta pendente
+
+No `Home.tsx` (carrossel da home pública) os mini-cards hoje **não exibem** o corretor. Devo adicionar a exibição do cadastrante ali também, ou manter como está?
