@@ -505,7 +505,23 @@ export default function Properties() {
         return;
       }
 
-      const mapped: Property[] = (data || []).map((row, index) => ({
+      // Carrega profiles dos cadastrantes (donos do user_id)
+      const ownerIds = Array.from(new Set((data || []).map((r: any) => r.user_id).filter(Boolean)));
+      const profilesById: Record<string, { full_name: string; phone: string | null; avatar_url: string | null }> = {};
+      if (ownerIds.length) {
+        const { data: profs } = await supabase
+          .from("profiles")
+          .select("user_id, full_name, phone, avatar_url")
+          .in("user_id", ownerIds);
+        (profs || []).forEach((p: any) => {
+          profilesById[p.user_id] = { full_name: p.full_name || "", phone: p.phone, avatar_url: p.avatar_url };
+        });
+      }
+      const normalizePhone = (v: string) => (v || "").replace(/\D/g, "");
+
+      const mapped: Property[] = (data || []).map((row, index) => {
+        const owner = profilesById[(row as any).user_id];
+        return {
         id: row.id,
         userId: row.user_id,
         code: `MV${String(index + 1).padStart(2, "0")}`,
