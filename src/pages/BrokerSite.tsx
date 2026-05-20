@@ -689,7 +689,7 @@ export default function BrokerSite() {
                   </div>
                 </div>
                 <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                  {items.map((property) => <PropertyCard key={property.id} p={property} brokerName={brokerName} whatsapp={whatsapp} />)}
+                  {items.map((property) => <PropertyCard key={property.id} p={property} brokerName={brokerName} whatsapp={whatsapp} onOpen={setSelectedProperty} />)}
                 </div>
               </section>
             ))
