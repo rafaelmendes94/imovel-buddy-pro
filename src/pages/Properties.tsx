@@ -2681,34 +2681,35 @@ function PropertyRow({
           </button>
         </div>
 
-        {/* ── COL 4: Proprietário + Chaves + Datas + Status ── */}
+        {/* ── COL 4: Corretor + Chaves + Datas + Status ── */}
         <div className="w-full md:flex-1 md:min-w-[220px] md:max-w-[240px] flex-shrink-0 md:border-r border-border px-4 py-3 flex flex-col justify-center gap-1.5" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center gap-1.5 mb-0.5">
             <User className="w-3.5 h-3.5 text-primary" />
-            <span className="text-[11px] font-black text-primary uppercase tracking-wider">Proprietário</span>
+            <span className="text-[11px] font-black text-primary uppercase tracking-wider">Corretor</span>
           </div>
-          {/* Owner */}
-          {property.owner ? (
-            <div className="border-b border-border pb-1.5 mb-0.5">
-              <button
-                className="text-[13px] font-bold text-foreground hover:text-primary transition-colors text-left leading-tight w-full"
-                onClick={() => onFilterByOwner?.(property.owner!)}
-                title={`Ver todos imóveis de ${property.owner}`}
-              >{property.owner}</button>
-              {property.ownerPhone && (
+          {/* Broker */}
+          <div className="border-b border-border pb-1.5 mb-0.5 flex items-center gap-2">
+            {property.brokerPhoto ? (
+              <img src={property.brokerPhoto} alt={property.broker} className="w-8 h-8 rounded-full object-cover border border-border flex-shrink-0" />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <User className="w-4 h-4 text-primary" />
+              </div>
+            )}
+            <div className="min-w-0 flex-1">
+              <div className="text-[13px] font-bold text-foreground leading-tight truncate" title={property.broker}>{property.broker || "Corretor"}</div>
+              {property.brokerWhatsapp && (
                 <a
-                  href={`https://wa.me/${property.ownerPhone}`}
+                  href={`https://wa.me/${property.brokerWhatsapp}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-1 text-[11px] text-emerald-500 hover:text-emerald-400 transition-colors mt-0.5"
                 >
-                  <Phone className="w-3 h-3" /> {property.ownerPhone.replace(/^55/, "").replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3")}
+                  <Phone className="w-3 h-3" /> {property.brokerWhatsapp.replace(/^55/, "").replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3")}
                 </a>
               )}
             </div>
-          ) : (
-            <span className="text-[11px] text-muted-foreground italic border-b border-border pb-1.5 mb-0.5">Sem proprietário</span>
-          )}
+          </div>
           {/* Keys */}
           <div className="flex items-center gap-1 text-[11px] text-muted-foreground border-b border-border pb-1.5 mb-0.5">
             <Key className="w-3.5 h-3.5 flex-shrink-0 text-amber-400" />
