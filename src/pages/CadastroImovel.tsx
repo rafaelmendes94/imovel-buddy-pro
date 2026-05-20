@@ -561,7 +561,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         latitude: data.latitude ? String(data.latitude) : '', longitude: data.longitude ? String(data.longitude) : '',
         edificio_id: data.edificio_id || '', condominio_id: data.condominio_id || '',
         empreendimento_id: data.empreendimento_id || '', linkVideo: (data as any).link_video || '',
-        linkMaterial: (data as any).link_material || '', link360: (data as any).link_360 || '', driveFotosUrl: (data as any).drive_fotos_url || '',
+        linkMaterial: (data as any).link_material || '', link360: (data as any).link_360 || '', driveFotosUrl: (data as any).drive_fotos_url || '', fotosPdfUrl: (data as any).fotos_pdf_url || '',
       };
       setExistingImages(data.imagens || []);
       setLoadingData(false);
