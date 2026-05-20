@@ -1961,7 +1961,11 @@ function PropertyCard({
 }) {
   const [showCelebration, setShowCelebration] = useState(false);
   const [animatePulse, setAnimatePulse] = useState(false);
-  const broker = brokerInfo[property.broker] || { photo: "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=100&h=100&fit=crop&crop=face", whatsapp: "5511999999999" };
+  const fallback = brokerInfo[property.broker] || { photo: "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=100&h=100&fit=crop&crop=face", whatsapp: "5511999999999" };
+  const broker = {
+    photo: property.brokerPhoto || fallback.photo,
+    whatsapp: property.brokerWhatsapp || fallback.whatsapp,
+  };
   const whatsappMessage = encodeURIComponent(`Olá! Tenho interesse no imóvel: ${property.title} - ${formatCurrency(property.price)}`);
   const unitParts = [property.unitNumber, property.boxNumber, property.quadra, property.lote].filter(Boolean);
 
