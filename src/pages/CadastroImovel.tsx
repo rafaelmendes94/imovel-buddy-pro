@@ -733,6 +733,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         link_video: form.linkVideo || '',
         link_material: form.linkMaterial || '',
         link_360: form.link360 || '',
+        drive_fotos_url: form.driveFotosUrl || '',
       } as any;
 
       if (isEdit) {
