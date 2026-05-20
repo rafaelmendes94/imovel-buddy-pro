@@ -118,7 +118,6 @@ function PropertyCard({ p, brokerName, whatsapp, onOpen }: { p: DBProperty; brok
     const tId = toast.loading("Preparando fotos...");
     try {
       const JSZip = (await import("jszip")).default;
-      const { saveAs } = await import("file-saver");
       const zip = new JSZip();
       await Promise.all(
         urls.map(async (url, idx) => {
@@ -131,7 +130,13 @@ function PropertyCard({ p, brokerName, whatsapp, onOpen }: { p: DBProperty; brok
         })
       );
       const content = await zip.generateAsync({ type: "blob" });
-      saveAs(content, `${p.titulo || "imovel"}-fotos.zip`);
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(content);
+      a.download = `${p.titulo || "imovel"}-fotos.zip`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(a.href);
       toast.success("Fotos baixadas", { id: tId });
     } catch (err) {
       console.error(err);
