@@ -792,7 +792,7 @@ export default function BrokerSite() {
             exclusivityTermUrl: row.termo_exclusividade_url || "",
             neighborhood: row.bairro || "",
           })) as any}
-          brokerInfo={{ [brokerName]: { photo: profilePhoto, whatsapp } }}
+          brokerInfo={{ [brokerName]: { photo: avatarUrl, whatsapp } }}
           onSelectSimilar={(p: any) => setSelectedProperty(p)}
         />
       </main>
