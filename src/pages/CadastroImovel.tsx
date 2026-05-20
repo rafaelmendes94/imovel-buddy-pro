@@ -534,6 +534,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         linkVideo: (data as any).link_video || '',
         linkMaterial: (data as any).link_material || '',
         link360: (data as any).link_360 || '',
+        driveFotosUrl: (data as any).drive_fotos_url || '',
       });
       originalFormRef.current = {
         titulo: data.titulo || '', tipo: data.tipo || '', status: data.status || 'Disponível',
