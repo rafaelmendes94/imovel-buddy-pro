@@ -895,6 +895,7 @@ export type Database = {
           descricao: string | null
           destaque_categoria: string | null
           destaque_home: boolean
+          drive_fotos_url: string | null
           edificio_id: string | null
           elevadores: number | null
           empreendimento: string | null
@@ -964,6 +965,7 @@ export type Database = {
           descricao?: string | null
           destaque_categoria?: string | null
           destaque_home?: boolean
+          drive_fotos_url?: string | null
           edificio_id?: string | null
           elevadores?: number | null
           empreendimento?: string | null
@@ -1033,6 +1035,7 @@ export type Database = {
           descricao?: string | null
           destaque_categoria?: string | null
           destaque_home?: boolean
+          drive_fotos_url?: string | null
           edificio_id?: string | null
           elevadores?: number | null
           empreendimento?: string | null

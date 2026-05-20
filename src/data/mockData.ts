@@ -59,6 +59,7 @@ export interface Property {
   linkVideo?: string;
   linkMaterial?: string;
   link360?: string;
+  driveFotosUrl?: string;
   userId?: string;
   brokerPhoto?: string;
   brokerWhatsapp?: string;
