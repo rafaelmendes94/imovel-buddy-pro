@@ -171,6 +171,7 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
   const materialUrl = property.linkMaterial || "";
   const link360 = property.link360 || "";
   const driveFotosUrl = property.driveFotosUrl || "";
+  const fotosPdfUrl = property.fotosPdfUrl || "";
 
   // Convert YouTube URL to embed URL
   const getYoutubeEmbedUrl = (url: string): string | null => {
