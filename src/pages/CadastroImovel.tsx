@@ -120,7 +120,7 @@ export const initialForm: FormData = {
   condicoesPagemento: [], infraestrutura: [], outrasCaracteristicas: [],
   latitude: '', longitude: '',
   edificio_id: '', condominio_id: '', empreendimento_id: '',
-  linkVideo: '', linkMaterial: '', link360: '',
+  linkVideo: '', linkMaterial: '', link360: '', driveFotosUrl: '',
 };
 
 function SectionHeader({ icon: Icon, title }: { icon: any; title: string }) {
