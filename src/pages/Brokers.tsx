@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { BackButton } from "@/components/BackButton";
-import { Plus, Mail, Phone, Award, Search, ExternalLink, Building2, Palette, UserPlus, X, Users } from "lucide-react";
+import { Plus, Mail, Phone, Award, Search, ExternalLink, Building2, Palette, UserPlus, X, Users, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
