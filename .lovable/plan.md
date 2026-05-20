@@ -1,23 +1,34 @@
-## Ajustes na página do corretor (`src/pages/BrokerSite.tsx`)
+## Objetivo
 
-### 1. Cards clicáveis → abrem o imóvel
-- Adicionar estado `selectedProperty` na página.
-- O `PropertyCard` recebe `onClick` que seta esse imóvel.
-- Reaproveitar o `PropertyDetailModal` já usado em `Site.tsx` / `AllProperties.tsx`, mapeando o `DBProperty` para o formato `Property` que o modal espera (mesmo mapeamento de `Site.tsx`, linhas ~820-870).
-- Botão "Tenho interesse" (WhatsApp) continua funcionando com `stopPropagation` para não abrir o modal ao clicar nele.
+Hoje, nos cards de imóveis o nome exibido é o do **cadastrante** (dono do `user_id` — ex.: o super admin), com `corretor_nome` apenas como fallback. Vamos inverter: **sempre mostrar o nome do corretor responsável (`corretor_nome`)**, usando o cadastrante apenas quando o imóvel não tiver corretor atribuído.
 
-### 2. Seção de Avaliações inline + restrição de quem avalia
-- Renderizar o componente `<BrokerRatings />` direto na página (nova seção logo antes do histórico de vendas), além de manter o modal atual disparado pelo selo de nota no header.
-- Mantém a regra atual do `BrokerRatings`: `canRate = !!user && isBroker && user.id !== brokerId` — só corretores logados conseguem enviar avaliação, demais visitantes apenas visualizam médias e comentários.
-- Se o visitante não estiver logado, mostrar uma mensagem "Faça login como corretor para avaliar" no lugar do formulário (já existe no componente, só garantir que apareça).
+## Mudanças
 
-### 3. Tag "Exclusividade" com download do termo
-- Substituir a tag de status atual (`Disponível` / `Vendido` / `Reservado`) por um badge fixo **"Exclusividade"** em todos os cards ativos.
-- O badge vira um link/botão: se `termo_exclusividade_url` existir, abre o PDF em nova aba (`target="_blank"`, `download`); se não existir, exibe um toast "Termo não disponível".
-- Cards de imóveis vendidos (`status === "Vendido"`) continuam com o badge vermelho "Vendido" no carrossel de histórico, para não confundir prova social.
-- Incluir `termo_exclusividade_url` na interface `DBProperty` e no `select` da query de imóveis do corretor.
+Aplicar a mesma regra de prioridade em todas as telas que renderizam cards de imóvel:
 
-### Arquivos afetados
-- `src/pages/BrokerSite.tsx` (cards, estado de modal, seção de avaliações, tag de exclusividade, query incluindo `termo_exclusividade_url`).
+```
+nome exibido = imovel.corretor_nome?.trim()
+             || ownerProfile?.full_name?.trim()
+             || "Corretor"
+```
 
-Sem migrations — o campo `termo_exclusividade_url` já existe na tabela `imoveis`.
+A foto/WhatsApp seguem a mesma lógica: tentar primeiro o profile do corretor (resolvido pelo `corretor_nome` via `public_broker_profiles`), depois cair no profile do dono. Iniciais entram quando não houver avatar.
+
+### Arquivos a ajustar
+
+1. `src/pages/Site.tsx` — bloco ~785-820 (mapeamento de `brokerInfo` e atribuição `brokerName`).
+2. `src/pages/AllProperties.tsx` — bloco ~185-210 (mesma lógica).
+3. `src/pages/Home.tsx` — render dos cards (usa `corretor_nome` direto, garantir que não está sendo sobrescrito por profile).
+4. `src/pages/BrokerSite.tsx` — manter `corretor_nome` como label do card.
+5. `src/pages/BuildingDetail.tsx`, `src/pages/CondominiumDetail.tsx`, `src/pages/EmpreendimentoDetail.tsx` — cards internos de imóveis vinculados.
+6. `src/pages/Imobiliarias.tsx`, `src/pages/RankingPage.tsx`, `src/pages/Brokers.tsx` — se exibem nome em card de imóvel, aplicar mesma regra.
+
+### Resolução do avatar/WhatsApp por corretor
+
+Quando `corretor_nome` existir, buscar o profile correspondente em `public_broker_profiles` por `full_name` (slug match), e usar `avatar_url`/`phone` dele. Se não achar, manter fallback para iniciais + WhatsApp do dono.
+
+## Fora de escopo
+
+- Não alterar schema do banco.
+- Não mudar o cadastro nem a lógica de quem pode editar.
+- Mantém o link do nome abrindo a página interna do corretor (já implementado).
