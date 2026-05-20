@@ -806,9 +806,9 @@ export default function Site() {
       if (!error && data) {
         const mapped: SiteProperty[] = data.map((row) => {
           const ownerProfile = profilesById[(row as any).user_id];
-          // Prioriza corretor_nome do imóvel sobre o cadastrante
-          const brokerName = row.corretor_nome?.trim() || ownerProfile?.full_name?.trim() || "Corretor";
-          const brokerProfile = profilesByName[brokerName.toLowerCase()] || (brokerName === ownerProfile?.full_name?.trim() ? ownerProfile : undefined);
+          // Prioriza o corretor que CADASTROU o imóvel (dono do user_id); corretor_nome só como fallback
+          const brokerName = ownerProfile?.full_name?.trim() || row.corretor_nome?.trim() || "Corretor";
+          const brokerProfile = ownerProfile || profilesByName[brokerName.toLowerCase()];
 
           if (!brokerInfo[brokerName] || (!brokerInfo[brokerName].photo && brokerProfile?.avatar_url)) {
             brokerInfo[brokerName] = {
