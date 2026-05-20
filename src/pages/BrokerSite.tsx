@@ -30,6 +30,7 @@ import {
 import { cn, toSlug } from "@/lib/utils";
 import { BrokerRatings } from "@/components/BrokerRatings";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { PropertyDetailModal } from "@/components/PropertyDetailModal";
 import { toast } from "sonner";
 import { generateBrokerCatalogPdf } from "@/utils/generateBrokerCatalogPdf";
 
