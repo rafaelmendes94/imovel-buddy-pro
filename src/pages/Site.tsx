@@ -788,9 +788,10 @@ export default function Site() {
         };
       });
 
-      // Carrega profiles dos donos dos imóveis (corretores que cadastraram)
+      // Carrega profiles dos donos dos imóveis (fallback quando não há corretor_nome)
       const ownerIds = Array.from(new Set((data || []).map((r: any) => r.user_id).filter(Boolean)));
       const profilesById: Record<string, { full_name: string; phone: string | null; avatar_url: string | null }> = {};
+      const profilesByName: Record<string, { full_name: string; phone: string | null; avatar_url: string | null }> = {};
       if (ownerIds.length) {
         const { data: profs } = await (supabase as any)
           .from("public_broker_profiles")
@@ -798,24 +799,21 @@ export default function Site() {
           .in("user_id", ownerIds);
         (profs || []).forEach((p: any) => {
           profilesById[p.user_id] = { full_name: p.full_name || "", phone: p.phone, avatar_url: p.avatar_url };
-          if (p.full_name) {
-            brokerInfo[p.full_name] = {
-              photo: p.avatar_url || brokerInfo[p.full_name]?.photo || getBrokerAvatar(p.full_name),
-              whatsapp: normalizePhone(p.phone || "") || brokerInfo[p.full_name]?.whatsapp || "",
-            };
-          }
+          if (p.full_name) profilesByName[p.full_name.trim().toLowerCase()] = profilesById[p.user_id];
         });
       }
 
       if (!error && data) {
         const mapped: SiteProperty[] = data.map((row) => {
           const ownerProfile = profilesById[(row as any).user_id];
-          const brokerName = (ownerProfile?.full_name?.trim()) || row.corretor_nome?.trim() || "Corretor";
+          // Prioriza corretor_nome do imóvel sobre o cadastrante
+          const brokerName = row.corretor_nome?.trim() || ownerProfile?.full_name?.trim() || "Corretor";
+          const brokerProfile = profilesByName[brokerName.toLowerCase()] || (brokerName === ownerProfile?.full_name?.trim() ? ownerProfile : undefined);
 
-          if (!brokerInfo[brokerName]) {
+          if (!brokerInfo[brokerName] || (!brokerInfo[brokerName].photo && brokerProfile?.avatar_url)) {
             brokerInfo[brokerName] = {
-              photo: ownerProfile?.avatar_url || getBrokerAvatar(brokerName),
-              whatsapp: normalizePhone(ownerProfile?.phone || "") || "",
+              photo: brokerProfile?.avatar_url || brokerInfo[brokerName]?.photo || getBrokerAvatar(brokerName),
+              whatsapp: normalizePhone(brokerProfile?.phone || "") || brokerInfo[brokerName]?.whatsapp || "",
             };
           }
 
