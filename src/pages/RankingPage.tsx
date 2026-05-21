@@ -135,7 +135,7 @@ export default function RankingPage() {
   const loadRanking = async () => {
     const { data: soldProperties } = await supabase
       .from("imoveis")
-      .select("id, titulo, tipo, cidade, bairro, preco, data_venda, created_at, imagens, corretor_nome, corretor_id, user_id")
+      .select("id, titulo, tipo, cidade, bairro, preco, data_venda, created_at, updated_at, imagens, corretor_nome, corretor_id, user_id")
       .eq("status", "Vendido");
 
     if (!soldProperties || soldProperties.length === 0) {
