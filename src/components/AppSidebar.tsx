@@ -40,7 +40,7 @@ const allNavItems: NavItem[] = [
   { icon: Map, label: "Mapas Condomínio", path: "/mapas-condominio", module: "condominios" },
   { icon: Camera, label: "Fotos da Cidade", path: "/fotos-cidade", module: "fotos" },
   { icon: ClipboardCheck, label: "Avaliações", path: "/avaliacoes", module: "avaliacoes" },
-  { icon: Wallet, label: "Financeiro", path: "/financeiro", module: "financeiro" },
+  
   { icon: Table2, label: "Tabelas", path: "/tabelas", module: "tabelas" },
   { icon: FileSignature, label: "Contratos", path: "/contratos", module: "contratos" },
   { icon: Clapperboard, label: "Material Extra", path: "/videomaker", module: "videomaker" },

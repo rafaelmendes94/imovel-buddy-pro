@@ -1,4 +1,6 @@
 import React from "react";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import { AppLayout } from "@/components/AppLayout";
 import { BackButton } from "@/components/BackButton";
 import { useState, useEffect, useMemo } from "react";
@@ -58,6 +60,11 @@ const formatCurrency = (v: number) =>
 const MONTHS_PT = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 
 export default function Financeiro() {
+  const { isSuperAdmin, hasModuleAccess, loading: authLoading } = useAuth();
+  const canAccess = isSuperAdmin || hasModuleAccess("financeiro");
+  if (!authLoading && !canAccess) {
+    return <Navigate to="/dashboard" replace />;
+  }
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [brokers, setBrokers] = useState<SubscriberBroker[]>([]);
