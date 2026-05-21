@@ -1,6 +1,6 @@
 import {
   FileText, ScrollText, Receipt, CreditCard, FileSignature, ShieldCheck,
-  Sparkles, ChevronRight,
+  Sparkles, ChevronRight, Handshake,
 } from "lucide-react";
 
 export interface ContractTemplate {
