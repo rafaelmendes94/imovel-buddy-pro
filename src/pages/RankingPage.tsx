@@ -2,11 +2,12 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   Trophy, Award, Medal, Star, ArrowLeft, Home, DollarSign,
-  TrendingUp, Users, ChevronRight, Crown, Flame, Zap, Loader2
+  TrendingUp, Users, ChevronRight, Crown, Flame, Zap, Loader2, X, MapPin, Calendar
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 function formatCurrency(value: number) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 0 });
