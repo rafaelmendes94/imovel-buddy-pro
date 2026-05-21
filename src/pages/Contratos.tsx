@@ -106,14 +106,22 @@ export default function Contratos() {
     toast.success("Dados do imóvel preenchidos automaticamente!");
   };
 
-  const handleGenerate = async () => {
+  const handleGenerate = async (blank = false) => {
     if (!selectedTemplate) return;
 
-    const filledFields = Object.entries(fieldValues).filter(([_, v]) => v.trim());
-    if (filledFields.length < 2) {
-      toast.error("Preencha pelo menos 2 campos para gerar o documento");
-      return;
+    if (!blank) {
+      const filledFields = Object.entries(fieldValues).filter(([_, v]) => v.trim());
+      if (filledFields.length < 2) {
+        toast.error("Preencha pelo menos 2 campos para gerar o documento");
+        return;
+      }
     }
+
+    const BLANK = "_______________________________";
+    const payloadFields = blank
+      ? Object.fromEntries(selectedTemplate.fields.map((f) => [f.key, BLANK]))
+      : fieldValues;
+
 
     setIsGenerating(true);
     setGeneratedText("");
