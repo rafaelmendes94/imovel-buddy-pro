@@ -21,8 +21,17 @@ import {
   Building2, MapPin, BedDouble, Bath, Car, Ruler, User, Phone, DollarSign,
   Percent, Gift, Home, Sparkles, Save, Image, Plus, X, Loader2,
   Hash, FileText, Eye, Key, Calendar, Building, Fence, Landmark, Search, Brain, Wand2,
-  Play, FolderDown, History, Clock, Download
+  Play, FolderDown, History, Clock, Download, CheckCircle2, Ban
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+const statusConfig: Record<string, { label: string; color: string; bg: string; border: string; icon: typeof Home }> = {
+  "Disponível": { label: "Ativo", color: "text-emerald-500", bg: "bg-emerald-500/10", border: "border-emerald-500/30", icon: Home },
+  "Reservado":  { label: "Reservado", color: "text-amber-500", bg: "bg-amber-500/10", border: "border-amber-500/30", icon: Clock },
+  "Vendido":    { label: "Vendido", color: "text-red-500", bg: "bg-red-500/10", border: "border-red-500/30", icon: CheckCircle2 },
+  "Alugado":    { label: "Alugado", color: "text-blue-500", bg: "bg-blue-500/10", border: "border-blue-500/30", icon: Key },
+  "Suspenso":   { label: "Suspenso", color: "text-gray-500", bg: "bg-gray-500/10", border: "border-gray-500/30", icon: Ban },
+};
 import { format } from 'date-fns';
 
 const tiposImovel = ["Apartamento", "Casa", "Comercial", "Terreno", "Lote", "Condomínio"];
