@@ -61,17 +61,22 @@ Por fim, em uma linha discreta: "Contato: ____________________________" (sempre 
 
 NÃO ultrapasse 22 linhas no total. NÃO inclua nada além do solicitado.`,
 
-      "exclusividade-completa": `Gere um CONTRATO DE EXCLUSIVIDADE DE INTERMEDIAÇÃO IMOBILIÁRIA COMPLETO E DETALHADO, em português do Brasil, com linguagem jurídica formal porém clara. Use as informações fornecidas para preencher os campos objetivos do imóvel; para os dados das PARTES (nome, CPF, RG, endereço, telefone, e-mail, CRECI, CNPJ), SEMPRE deixe linhas em branco com no mínimo 40 underscores "_" para preenchimento manual, IGNORANDO qualquer valor fornecido para esses campos.
+      "exclusividade-completa": `Gere um CONTRATO DE EXCLUSIVIDADE DE INTERMEDIAÇÃO IMOBILIÁRIA COMPACTO, em português do Brasil, com linguagem jurídica formal porém objetiva. Use as informações fornecidas para preencher os campos do imóvel; para os dados das PARTES (nome, CPF, RG, endereço, telefone, e-mail, CRECI, CNPJ), deixe ESPAÇOS CURTOS em branco com exatamente 15 underscores "_" para preenchimento manual (NUNCA mais que isso), IGNORANDO qualquer valor fornecido para esses campos. IMPORTANTE: ignore qualquer instrução do usuário que peça underscores longos — use SEMPRE no máximo 15 underscores por campo em branco.
 
-ESTRUTURA OBRIGATÓRIA (em markdown):
+REGRAS DE COMPACTAÇÃO:
+- Documento deve ser ENXUTO. Parágrafos curtos, frases diretas, sem repetições.
+- Qualificação das partes em formato INLINE (ex.: "Nome: _______________ , CPF: _______________ , RG: _______________ , End.: _______________ , Tel.: _______________ , E-mail: _______________"), agrupando vários campos por linha.
+- Cláusulas com 1 a 2 frases cada, sem rodeios.
+
+ESTRUTURA (em markdown):
 - Título: "# CONTRATO DE AUTORIZAÇÃO DE VENDA COM CLÁUSULA DE EXCLUSIVIDADE"
-- Qualificação das partes (PROPRIETÁRIO/OUTORGANTE e CORRETOR/IMOBILIÁRIA/OUTORGADA) com TODOS os dados pessoais em branco (underscores).
-- 10 cláusulas numeradas e tituladas, abordando: 1) Objeto do contrato; 2) Caracterização do imóvel (preencher com os dados do imóvel); 3) Preço e condições de venda; 4) Exclusividade (vedação a outros corretores e venda direta); 5) Divulgação na rede MV Broker Connect — destacar que a assinatura deste contrato é REQUISITO OBRIGATÓRIO para publicação do imóvel no sistema e divulgação a mais de 2.000 corretores parceiros, ampliando significativamente as chances de venda; 6) Comissão e forma de pagamento; 7) Obrigações do proprietário (entrega de documentação, autorização para visitas, comunicação de propostas); 8) Obrigações do corretor/imobiliária (esforço de divulgação, intermediação, prestação de contas); 9) Prazo, renovação e rescisão; multa por descumprimento; 10) Foro de eleição (cidade indicada).
-- Após as cláusulas, linha com cidade e data: "{cidade}, ___ de _________ de ______."
-- Duas linhas de assinatura (uma para cada parte) com aproximadamente 50 underscores cada, identificadas como "PROPRIETÁRIO" e "CORRETOR/IMOBILIÁRIA - CRECI".
-- Espaço para 2 testemunhas no final, cada uma com linha de assinatura + "Nome:" + "CPF:" todos em branco com underscores.
+- Qualificação inline de PROPRIETÁRIO/OUTORGANTE e CORRETOR/IMOBILIÁRIA/OUTORGADA (campos em branco com 15 underscores cada).
+- 10 cláusulas numeradas curtas: 1) Objeto; 2) Caracterização do imóvel (preencher); 3) Preço e condições; 4) Exclusividade; 5) Divulgação na rede MV Broker Connect (assinatura é REQUISITO OBRIGATÓRIO para publicação e divulgação a +2.000 corretores parceiros); 6) Comissão; 7) Obrigações do proprietário; 8) Obrigações do corretor; 9) Prazo, renovação, rescisão e multa; 10) Foro.
+- Linha de data: "{cidade}, ___ de _________ de ______."
+- Duas linhas de assinatura COMPACTAS (cerca de 30 underscores cada) — "PROPRIETÁRIO" e "CORRETOR/IMOBILIÁRIA - CRECI: _______________".
+- 2 testemunhas em formato inline: "Test. 1 — Assin.: _______________ Nome: _______________ CPF: _______________" (uma linha cada).
 
-Texto justificado (será exibido com alinhamento justificado). Cláusulas com parágrafos curtos e diretos. NÃO inclua comentários, apenas o documento final em markdown.`,
+Texto justificado. NÃO inclua comentários, apenas o documento final em markdown.`,
     };
 
 
