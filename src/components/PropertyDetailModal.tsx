@@ -16,6 +16,7 @@ import { formatCurrency, type Property } from "@/data/mockData";
 import { cn, toSlug } from "@/lib/utils";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { DraggableFieldGrid, type FieldConfig } from "./DraggableFieldGrid";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -93,6 +94,8 @@ function StatusSelectWithConfirm({ currentStatus, onConfirm }: { currentStatus: 
 }
 
 export function PropertyDetailModal({ property, onClose, allProperties, brokerInfo, onSelectSimilar, onUpdateProperty, onFilterByTitle, onFilterByCondition }: PropertyDetailModalProps) {
+  const { user, isSuperAdmin, isAdminStaff } = useAuth();
+  const canEdit = !!property && (isSuperAdmin || isAdminStaff || !property.userId || property.userId === user?.id);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [showVideo, setShowVideo] = useState(false);
@@ -460,14 +463,16 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
           {/* Action buttons in header */}
           <TooltipProvider delayDuration={200}>
             <div className="flex items-center gap-1.5 flex-shrink-0">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Link to={`/editar-imovel/${property.id}`} onClick={onClose} className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-primary">
-                    <Pencil className="w-4.5 h-4.5" />
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent><p>Editar imóvel</p></TooltipContent>
-              </Tooltip>
+              {canEdit && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link to={`/editar-imovel/${property.id}`} onClick={onClose} className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-primary">
+                      <Pencil className="w-4.5 h-4.5" />
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent><p>Editar imóvel</p></TooltipContent>
+                </Tooltip>
+              )}
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button onClick={handleShare} className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-primary">
@@ -675,9 +680,11 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
               <FileCheck className="w-4 h-4 text-amber-600" /> Exclusividade
             </button>
           )}
-          <Link to={`/editar-imovel/${property.id}`} onClick={onClose} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card border border-border text-sm font-semibold text-foreground hover:bg-muted/40 transition-colors shadow-sm">
-            <Pencil className="w-4 h-4 text-primary" /> Editar
-          </Link>
+          {canEdit && (
+            <Link to={`/editar-imovel/${property.id}`} onClick={onClose} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card border border-border text-sm font-semibold text-foreground hover:bg-muted/40 transition-colors shadow-sm">
+              <Pencil className="w-4 h-4 text-primary" /> Editar
+            </Link>
+          )}
         </div>
 
         {/* Content */}

@@ -487,6 +487,11 @@ export function ImovelForm({ editId }: { editId?: string }) {
         navigate('/imoveis');
         return;
       }
+      if (!isSuperAdmin && user && data.user_id !== user.id) {
+        toast({ title: "Acesso negado", description: "Você só pode editar imóveis cadastrados em seu nome.", variant: "destructive" });
+        navigate('/imoveis');
+        return;
+      }
       setForm({
         titulo: data.titulo || '',
         tipo: data.tipo || '',
