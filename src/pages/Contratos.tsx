@@ -310,6 +310,11 @@ export default function Contratos() {
               isEditing={isEditing}
               editText={editText}
               templateTitle={selectedTemplate.title}
+              textAlign={selectedTemplate.id === "exclusividade-simplificada" ? "center" : "justify"}
+              isGenerating={isGenerating}
+              isEditing={isEditing}
+              editText={editText}
+              templateTitle={selectedTemplate.title}
               onStartEdit={() => {
                 setEditText(generatedText);
                 setIsEditing(true);
