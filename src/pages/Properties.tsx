@@ -1525,7 +1525,7 @@ export default function Properties() {
                       }
                       try {
                         await navigator.clipboard.writeText(url);
-                        toast({ title: "Link copiado!", description: "Cole no WhatsApp ou onde quiser compartilhar." });
+                        toast.success("Link copiado!", { description: "Cole no WhatsApp ou onde quiser compartilhar." });
                       } catch {
                         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
                       }
