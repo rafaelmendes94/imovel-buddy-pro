@@ -38,23 +38,25 @@ serve(async (req) => {
       
       "autorizacao-venda": `Gere uma AUTORIZAÇÃO DE VENDA / TERMO DE EXCLUSIVIDADE completo e profissional, em português do Brasil. Use as informações fornecidas. Inclua: dados do proprietário, dados do imóvel, valor de venda autorizado, comissão do corretor/imobiliária, prazo de validade, condições, foro. Formate com numeração de cláusulas.`,
 
-      "exclusividade-simplificada": `Gere um TERMO DE EXCLUSIVIDADE SIMPLIFICADO, em português do Brasil, ULTRA COMPACTO, OBRIGATORIAMENTE cabendo em UMA ÚNICA FOLHA A4 (máximo absoluto de 22 linhas de texto somando título, cláusulas, assinaturas e tudo mais). REGRAS DE FORMATAÇÃO RÍGIDAS:
-- Use UMA ÚNICA linha de título centralizado: "TERMO DE EXCLUSIVIDADE DE INTERMEDIAÇÃO IMOBILIÁRIA"
-- NÃO use subtítulos, NÃO use linhas em branco entre cláusulas, NÃO use preâmbulo/considerandos
-- Cláusulas numeradas de 1 a 6, cada uma em UM ÚNICO parágrafo curto (máximo 2 linhas cada), formato: "1. TÍTULO CURTO EM CAIXA ALTA. Texto da cláusula em 1-2 linhas."
-- Use frases curtas, diretas, sem floreios jurídicos
+      "exclusividade-simplificada": `Gere um TERMO DE EXCLUSIVIDADE SIMPLIFICADO em português do Brasil, ULTRA COMPACTO, OBRIGATORIAMENTE cabendo em UMA ÚNICA FOLHA A4 (máximo 22 linhas no total). TODO o texto será exibido CENTRALIZADO horizontalmente na página, então escreva frases curtas e equilibradas, evitando linhas muito longas que destoem visualmente.
+
+REGRAS DE FORMATAÇÃO RÍGIDAS:
+- Linha 1: título em markdown "# TERMO DE EXCLUSIVIDADE DE INTERMEDIAÇÃO IMOBILIÁRIA"
+- Sem subtítulos, sem preâmbulo/considerandos, sem linhas em branco entre cláusulas
+- 6 cláusulas numeradas (1 a 6), cada uma em UM ÚNICO parágrafo curto (máximo 2 linhas), formato: "1. TÍTULO CURTO. Texto curto e direto."
+- Frases curtas, sem floreios jurídicos
 
 ESTRUTURA OBRIGATÓRIA (exatamente 6 cláusulas, nesta ordem):
 1. OBJETO. Proprietário {nome}, CPF {cpf}, outorga ao corretor/imobiliária {corretor}, CRECI {creci}, exclusividade para intermediar a venda do imóvel: {descrição} situado em {endereço}.
 2. PRAZO. Exclusividade pelo período de {prazo}, contados desta data, renovável por igual período se não houver manifestação em contrário.
-3. PREÇO E COMISSÃO. Valor autorizado de venda: R$ {valor}. Comissão devida ao corretor: {comissão} sobre o valor efetivo da venda, paga na assinatura do contrato definitivo.
-4. DIVULGAÇÃO NA REDE. A assinatura deste termo é REQUISITO OBRIGATÓRIO para que o imóvel seja publicado no sistema MV Broker Connect e divulgado a mais de 2.000 corretores parceiros, potencializando significativamente as chances de venda.
-5. OBRIGAÇÕES DO PROPRIETÁRIO. Durante a vigência, o proprietário não poderá negociar o imóvel diretamente nem por meio de terceiros; eventual venda nessas condições obriga ao pagamento integral da comissão.
+3. PREÇO E COMISSÃO. Valor autorizado de venda: R$ {valor}. Comissão de {comissão} sobre o valor efetivo da venda, paga na assinatura do contrato definitivo.
+4. DIVULGAÇÃO NA REDE. A assinatura deste termo é REQUISITO OBRIGATÓRIO para que o imóvel seja publicado no sistema MV Broker Connect e divulgado a mais de 2.000 corretores parceiros, potencializando as chances de venda.
+5. OBRIGAÇÕES DO PROPRIETÁRIO. Durante a vigência, o proprietário não poderá negociar o imóvel diretamente nem por terceiros; eventual venda nessas condições obriga ao pagamento integral da comissão.
 6. FORO. Fica eleito o foro da comarca de {cidade} para dirimir quaisquer questões oriundas deste termo.
 
 Após a cláusula 6, em UMA linha: "{cidade}, ___ de _________ de ______."
-Depois, em DUAS linhas de assinatura lado a lado (use uma linha de underscores de aproximadamente 40 caracteres em cada): "_______________________   _______________________" e abaixo, na mesma linha: "Proprietário                                    Corretor/Imobiliária - CRECI"
-Contato do proprietário: {telefone} em uma linha discreta no rodapé.
+Depois DUAS linhas de assinatura curtas (aproximadamente 35 underscores cada), uma abaixo da outra: primeiro "_______________________________" e na linha seguinte "Proprietário"; pule uma linha; depois "_______________________________" e na linha seguinte "Corretor/Imobiliária - CRECI".
+Por fim, em uma linha discreta: "Contato: {telefone}".
 
 NÃO ultrapasse 22 linhas no total. NÃO inclua nada além do solicitado.`,
     };
