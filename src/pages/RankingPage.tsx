@@ -114,6 +114,7 @@ interface SaleRow {
   bairro: string;
   preco: number;
   data_venda: string | null;
+  updated_at: string;
   created_at: string;
   imagens: string[] | null;
   brokerId: string;
@@ -134,7 +135,7 @@ export default function RankingPage() {
   const loadRanking = async () => {
     const { data: soldProperties } = await supabase
       .from("imoveis")
-      .select("id, titulo, tipo, cidade, bairro, preco, data_venda, created_at, imagens, corretor_nome, corretor_id, user_id")
+      .select("id, titulo, tipo, cidade, bairro, preco, data_venda, created_at, updated_at, imagens, corretor_nome, corretor_id, user_id")
       .eq("status", "Vendido");
 
     if (!soldProperties || soldProperties.length === 0) {
@@ -181,6 +182,7 @@ export default function RankingPage() {
         preco: Number(p.preco) || 0,
         data_venda: p.data_venda,
         created_at: p.created_at,
+        updated_at: p.updated_at,
         imagens: p.imagens,
         brokerId,
       });
@@ -198,7 +200,7 @@ export default function RankingPage() {
   const brokerSales = selectedBroker
     ? allSales
         .filter(s => s.brokerId === selectedBroker.userId)
-        .sort((a, b) => new Date(b.data_venda || b.created_at).getTime() - new Date(a.data_venda || a.created_at).getTime())
+        .sort((a, b) => new Date(b.updated_at || b.data_venda || b.created_at).getTime() - new Date(a.updated_at || a.data_venda || a.created_at).getTime())
     : [];
 
 
