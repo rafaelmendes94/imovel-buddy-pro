@@ -131,6 +131,26 @@ export const templates: ContractTemplate[] = [
       { key: "Cidade", label: "Cidade/Estado", placeholder: "Capão da Canoa/RS" },
     ],
   },
+  {
+    id: "exclusividade-simplificada",
+    title: "Exclusividade Simplificada",
+    description: "Modelo enxuto de exclusividade que libera a divulgação do imóvel para mais de 2.000 corretores da rede",
+    icon: Sparkles,
+    color: "text-indigo-500 bg-indigo-500/10",
+    fields: [
+      { key: "Nome do Proprietário", label: "Proprietário (Nome completo)", placeholder: "João da Silva" },
+      { key: "CPF do Proprietário", label: "CPF do Proprietário", placeholder: "000.000.000-00" },
+      { key: "Telefone do Proprietário", label: "Telefone do Proprietário", placeholder: "(51) 99999-0000" },
+      { key: "Descrição do Imóvel", label: "Descrição do Imóvel", placeholder: "Apartamento 302, 3 quartos..." },
+      { key: "Endereço do Imóvel", label: "Endereço do Imóvel", placeholder: "Av. Beira Mar, 1200" },
+      { key: "Valor de Venda Autorizado", label: "Valor de Venda (R$)", placeholder: "950.000,00" },
+      { key: "Comissão", label: "Comissão (%)", placeholder: "6%" },
+      { key: "Nome do Corretor/Imobiliária", label: "Corretor / Imobiliária Responsável", placeholder: "MV Broker Connect - Carlos Silva" },
+      { key: "CRECI", label: "CRECI", placeholder: "123456-RS" },
+      { key: "Prazo de Validade", label: "Prazo de Exclusividade", placeholder: "90 dias" },
+      { key: "Cidade", label: "Cidade/Estado", placeholder: "Capão da Canoa/RS" },
+    ],
+  },
 ];
 
 interface TemplateGridProps {
