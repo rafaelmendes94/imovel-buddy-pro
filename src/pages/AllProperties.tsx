@@ -210,7 +210,7 @@ export default function AllProperties() {
         }
 
         const mapped: SiteProperty[] = data
-          .filter((row) => row.status === "Disponível")
+          .filter((row) => sharedIds ? true : row.status === "Disponível")
           .map((row) => {
             const ownerProfile = profilesById[(row as any).user_id];
             // Prioriza o corretor que CADASTROU o imóvel (dono do user_id); corretor_nome só como fallback
