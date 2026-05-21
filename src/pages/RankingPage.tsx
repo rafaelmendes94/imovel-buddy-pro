@@ -200,7 +200,7 @@ export default function RankingPage() {
   const brokerSales = selectedBroker
     ? allSales
         .filter(s => s.brokerId === selectedBroker.userId)
-        .sort((a, b) => new Date(b.data_venda || b.created_at).getTime() - new Date(a.data_venda || a.created_at).getTime())
+        .sort((a, b) => new Date(b.updated_at || b.data_venda || b.created_at).getTime() - new Date(a.updated_at || a.data_venda || a.created_at).getTime())
     : [];
 
 
