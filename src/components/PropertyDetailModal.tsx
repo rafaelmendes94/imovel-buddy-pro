@@ -16,6 +16,7 @@ import { formatCurrency, type Property } from "@/data/mockData";
 import { cn, toSlug } from "@/lib/utils";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { DraggableFieldGrid, type FieldConfig } from "./DraggableFieldGrid";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
