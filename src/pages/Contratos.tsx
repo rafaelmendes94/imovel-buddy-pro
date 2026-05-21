@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { BackButton } from "@/components/BackButton";
 import { useSearchParams } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
-import { Sparkles, Loader2, ArrowLeft, Building2 } from "lucide-react";
+import { Sparkles, Loader2, ArrowLeft, Building2, FileDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -106,14 +106,22 @@ export default function Contratos() {
     toast.success("Dados do imóvel preenchidos automaticamente!");
   };
 
-  const handleGenerate = async () => {
+  const handleGenerate = async (blank = false) => {
     if (!selectedTemplate) return;
 
-    const filledFields = Object.entries(fieldValues).filter(([_, v]) => v.trim());
-    if (filledFields.length < 2) {
-      toast.error("Preencha pelo menos 2 campos para gerar o documento");
-      return;
+    if (!blank) {
+      const filledFields = Object.entries(fieldValues).filter(([_, v]) => v.trim());
+      if (filledFields.length < 2) {
+        toast.error("Preencha pelo menos 2 campos para gerar o documento");
+        return;
+      }
     }
+
+    const BLANK = "_______________________________";
+    const payloadFields = blank
+      ? Object.fromEntries(selectedTemplate.fields.map((f) => [f.key, BLANK]))
+      : fieldValues;
+
 
     setIsGenerating(true);
     setGeneratedText("");
@@ -128,8 +136,9 @@ export default function Contratos() {
         },
         body: JSON.stringify({
           templateType: selectedTemplate.id,
-          fields: fieldValues,
+          fields: payloadFields,
         }),
+
       });
 
       if (!resp.ok) {
@@ -265,19 +274,33 @@ export default function Contratos() {
                 ))}
               </div>
 
-              <Button onClick={handleGenerate} disabled={isGenerating} className="w-full mt-2" size="lg">
-                {isGenerating ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                    Gerando documento...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    Gerar com IA
-                  </>
-                )}
-              </Button>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+                <Button onClick={() => handleGenerate(false)} disabled={isGenerating} size="lg">
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      Gerando documento...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      Gerar com IA
+                    </>
+                  )}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => handleGenerate(true)}
+                  disabled={isGenerating}
+                  size="lg"
+                  title="Gera o modelo com campos em branco para preencher e assinar manualmente"
+                >
+                  <FileDown className="w-4 h-4 mr-2" />
+                  Gerar em branco (preenchimento manual)
+                </Button>
+              </div>
+
             </div>
 
             {/* Document Viewer - Word-style A4 */}

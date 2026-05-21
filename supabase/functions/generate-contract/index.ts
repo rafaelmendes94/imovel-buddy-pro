@@ -62,8 +62,9 @@ serve(async (req) => {
             { role: "system", content: systemPrompt },
             {
               role: "user",
-              content: `Dados para preencher o documento:\n\n${fieldsText}\n\nGere o documento completo, pronto para uso. Não inclua instruções ou comentários, apenas o texto do documento formatado.`,
+              content: `Dados para preencher o documento:\n\n${fieldsText}\n\nIMPORTANTE: Se o valor de algum campo for composto apenas por underscores (ex: "_______________"), trate esse campo como em branco e mantenha uma linha pontilhada/underscores no documento para preenchimento manual posterior. Gere o documento completo, pronto para uso. Não inclua instruções ou comentários, apenas o texto do documento formatado.`,
             },
+
           ],
           stream: true,
         }),
