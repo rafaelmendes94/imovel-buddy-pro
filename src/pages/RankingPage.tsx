@@ -182,6 +182,7 @@ export default function RankingPage() {
         preco: Number(p.preco) || 0,
         data_venda: p.data_venda,
         created_at: p.created_at,
+        updated_at: p.updated_at,
         imagens: p.imagens,
         brokerId,
       });
