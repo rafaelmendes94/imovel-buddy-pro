@@ -136,8 +136,9 @@ export default function Contratos() {
         },
         body: JSON.stringify({
           templateType: selectedTemplate.id,
-          fields: fieldValues,
+          fields: payloadFields,
         }),
+
       });
 
       if (!resp.ok) {
