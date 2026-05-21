@@ -106,21 +106,35 @@ function ConnectionLine({ delay }: { delay: number }) {
   );
 }
 
+interface SaleRow {
+  id: string;
+  titulo: string;
+  tipo: string;
+  cidade: string;
+  bairro: string;
+  preco: number;
+  data_venda: string | null;
+  created_at: string;
+  imagens: string[] | null;
+  brokerId: string;
+}
+
 export default function RankingPage() {
   const [ranking, setRanking] = useState<BrokerRank[]>([]);
   const [totalVGV, setTotalVGV] = useState(0);
   const [totalSold, setTotalSold] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [allSales, setAllSales] = useState<SaleRow[]>([]);
+  const [selectedBroker, setSelectedBroker] = useState<BrokerRank | null>(null);
 
   useEffect(() => {
     loadRanking();
   }, []);
 
   const loadRanking = async () => {
-    // Fetch all sold properties with broker info
     const { data: soldProperties } = await supabase
       .from("imoveis")
-      .select("preco, corretor_nome, corretor_id, user_id")
+      .select("id, titulo, tipo, cidade, bairro, preco, data_venda, created_at, imagens, corretor_nome, corretor_id, user_id")
       .eq("status", "Vendido");
 
     if (!soldProperties || soldProperties.length === 0) {
@@ -128,14 +142,12 @@ export default function RankingPage() {
       return;
     }
 
-    // Collect unique user IDs (owner or corretor)
     const userIds = new Set<string>();
     soldProperties.forEach(p => {
       const id = p.corretor_id || p.user_id;
       userIds.add(id);
     });
 
-    // Fetch profiles for avatars
     const { data: profiles } = await supabase
       .from("profiles")
       .select("user_id, full_name, avatar_url")
@@ -146,8 +158,8 @@ export default function RankingPage() {
       profileMap[p.user_id] = { name: p.full_name, avatar: p.avatar_url };
     });
 
-    // Aggregate sales by broker
     const salesMap: Record<string, { count: number; value: number; name: string; photo: string | null; userId: string }> = {};
+    const salesRows: SaleRow[] = [];
 
     soldProperties.forEach(p => {
       const brokerId = p.corretor_id || p.user_id;
@@ -159,15 +171,37 @@ export default function RankingPage() {
       }
       salesMap[brokerId].count++;
       salesMap[brokerId].value += Number(p.preco) || 0;
+
+      salesRows.push({
+        id: p.id,
+        titulo: p.titulo || "Imóvel",
+        tipo: p.tipo || "",
+        cidade: p.cidade || "",
+        bairro: p.bairro || "",
+        preco: Number(p.preco) || 0,
+        data_venda: p.data_venda,
+        created_at: p.created_at,
+        imagens: p.imagens,
+        brokerId,
+      });
     });
 
     const sorted = Object.values(salesMap).sort((a, b) => b.value - a.value);
 
     setRanking(sorted);
+    setAllSales(salesRows);
     setTotalVGV(soldProperties.reduce((s, p) => s + (Number(p.preco) || 0), 0));
     setTotalSold(soldProperties.length);
     setLoading(false);
   };
+
+  const brokerSales = selectedBroker
+    ? allSales
+        .filter(s => s.brokerId === selectedBroker.userId)
+        .sort((a, b) => new Date(b.data_venda || b.created_at).getTime() - new Date(a.data_venda || a.created_at).getTime())
+    : [];
+
+
 
   const medalColors = [
     "from-amber-400 via-yellow-300 to-amber-500",
