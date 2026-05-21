@@ -7,6 +7,7 @@ import { PropertyMap } from "@/components/PropertyMap";
 import { PropertyDetailModal } from "@/components/PropertyDetailModal";
 import { RoutePlanner } from "@/components/RoutePlanner";
 import { SharkAI } from "@/components/SharkAI";
+import { PartnersAdSlider } from "@/components/PartnersAdSlider";
 import { SoldConfirmDialog, SoldConfirmPayload } from "@/components/SoldConfirmDialog";
 import { properties as initialProperties, salesRecords, formatCurrency, Property } from "@/data/mockData";
 import {
@@ -921,6 +922,7 @@ export default function Properties() {
   return (
     <AppLayout>
       <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
+        <PartnersAdSlider />
         {/* Header */}
         <div className="flex flex-col gap-3">
           <BackButton />
