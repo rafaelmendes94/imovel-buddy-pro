@@ -911,13 +911,32 @@ export function ImovelForm({ editId }: { editId?: string }) {
         </div>
 
         <QuickPick label="Tipo do Imóvel" options={tiposImovel} value={form.tipo} onChange={(v) => set('tipo', v)} icon={<Home className="w-3.5 h-3.5" />} className="mb-4" />
-        <QuickPickWithConfirm
-          label="Status"
-          options={statusOptions}
-          value={form.status}
-          onChange={(v) => set('status', v)}
-          className="mb-4"
-        />
+        <div className="mb-4 space-y-1.5">
+          <Label className="text-xs flex items-center gap-1">Status do Imóvel</Label>
+          <div className="flex flex-wrap gap-1.5">
+            {statusOptions.map((s) => {
+              const cfg = statusConfig[s];
+              const Icon = cfg.icon;
+              const active = form.status === s;
+              return (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => set('status', s)}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold border transition-all duration-200",
+                    active
+                      ? `${cfg.bg} ${cfg.color} ${cfg.border} shadow-sm`
+                      : "bg-muted/50 text-muted-foreground border-transparent hover:bg-muted"
+                  )}
+                >
+                  <Icon className="w-3.5 h-3.5" /> {cfg.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
 
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4 mb-4">
           <QuickPick label="Dormitórios" options={[0, 1, 2, 3, 4, "5+"]} value={form.quartos} onChange={(v) => set('quartos', v === "5+" ? 5 : Number(v))} icon={<BedDouble className="w-3.5 h-3.5" />} />
