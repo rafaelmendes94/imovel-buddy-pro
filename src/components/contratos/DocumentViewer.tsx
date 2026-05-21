@@ -508,7 +508,7 @@ export function DocumentViewer({
           <EditablePages editorRef={editorRef as React.RefObject<HTMLDivElement>} onInput={handleEditorInput} />
         ) : generatedText ? (
           <>
-            <PaginatedPages html={markdownToHtml(generatedText)} containerRef={documentRef} />
+            <PaginatedPages html={markdownToHtml(generatedText, textAlign)} containerRef={documentRef} />
             {isGenerating && (
               <div className="flex justify-center py-4">
                 <span className="inline-block w-2 h-5 bg-primary animate-pulse rounded-sm" />
