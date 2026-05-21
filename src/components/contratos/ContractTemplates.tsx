@@ -1,6 +1,6 @@
 import {
   FileText, ScrollText, Receipt, CreditCard, FileSignature, ShieldCheck,
-  Sparkles, ChevronRight,
+  Sparkles, ChevronRight, Handshake,
 } from "lucide-react";
 
 export interface ContractTemplate {
@@ -174,6 +174,33 @@ export const templates: ContractTemplate[] = [
       { key: "CNPJ da Imobiliária", label: "CNPJ da Imobiliária", placeholder: "00.000.000/0001-00" },
       { key: "Prazo de Validade", label: "Prazo de Exclusividade", placeholder: "180 dias" },
       { key: "Multa por Descumprimento", label: "Multa por Descumprimento (%)", placeholder: "100% da comissão" },
+      { key: "Cidade", label: "Cidade/Estado", placeholder: "Capão da Canoa/RS" },
+    ],
+  },
+  {
+    id: "prestacao-servico",
+    title: "Prestação de Serviço (Corretagem)",
+    description: "Contrato em que o CLIENTE contrata o corretor e paga diretamente a comissão pelos serviços de intermediação",
+    icon: Handshake,
+    color: "text-orange-500 bg-orange-500/10",
+    fields: [
+      { key: "Nome do Cliente", label: "Cliente / Contratante (Nome completo)", placeholder: "João da Silva" },
+      { key: "CPF do Cliente", label: "CPF do Cliente", placeholder: "000.000.000-00" },
+      { key: "RG do Cliente", label: "RG do Cliente", placeholder: "1234567 SSP/RS" },
+      { key: "Endereço do Cliente", label: "Endereço do Cliente", placeholder: "Rua das Flores, 123" },
+      { key: "Telefone do Cliente", label: "Telefone do Cliente", placeholder: "(51) 99999-0000" },
+      { key: "E-mail do Cliente", label: "E-mail do Cliente", placeholder: "cliente@email.com" },
+      { key: "Nome do Corretor/Imobiliária", label: "Corretor / Imobiliária Contratada", placeholder: "MV Broker Connect - Carlos Silva" },
+      { key: "CPF/CNPJ do Corretor", label: "CPF/CNPJ do Corretor", placeholder: "000.000.000-00" },
+      { key: "CRECI", label: "CRECI", placeholder: "123456-RS" },
+      { key: "Endereço do Corretor", label: "Endereço Profissional do Corretor", placeholder: "Av. Central, 500" },
+      { key: "Objeto do Serviço", label: "Objeto do Serviço (Tipo de intermediação)", placeholder: "Intermediação na compra de imóvel residencial" },
+      { key: "Descrição do Imóvel", label: "Imóvel Pretendido / Negociado", placeholder: "Apartamento 302, 3 quartos..." },
+      { key: "Endereço do Imóvel", label: "Endereço do Imóvel", placeholder: "Av. Beira Mar, 1200" },
+      { key: "Valor da Negociação", label: "Valor da Negociação (R$)", placeholder: "950.000,00" },
+      { key: "Valor da Comissão", label: "Valor / Percentual da Comissão", placeholder: "6% sobre o valor do negócio" },
+      { key: "Forma de Pagamento da Comissão", label: "Forma de Pagamento da Comissão", placeholder: "À vista, no ato da assinatura do contrato final" },
+      { key: "Prazo de Validade", label: "Prazo de Validade do Contrato", placeholder: "180 dias" },
       { key: "Cidade", label: "Cidade/Estado", placeholder: "Capão da Canoa/RS" },
     ],
   },

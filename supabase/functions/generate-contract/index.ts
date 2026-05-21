@@ -38,6 +38,32 @@ serve(async (req) => {
       
       "autorizacao-venda": `Gere uma AUTORIZAÇÃO DE VENDA / TERMO DE EXCLUSIVIDADE completo e profissional, em português do Brasil. Use as informações fornecidas. Inclua: dados do proprietário, dados do imóvel, valor de venda autorizado, comissão do corretor/imobiliária, prazo de validade, condições, foro. Formate com numeração de cláusulas.`,
 
+      "prestacao-servico": `Gere um CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE CORRETAGEM IMOBILIÁRIA, em português do Brasil, com linguagem jurídica formal e objetiva. Neste contrato o CLIENTE (CONTRATANTE) contrata o CORRETOR/IMOBILIÁRIA (CONTRATADO) e paga DIRETAMENTE a comissão pelos serviços de intermediação prestados (assessoria, busca, visitas, negociação e intermediação do negócio).
+
+REGRAS DE PREENCHIMENTO:
+- Use os valores fornecidos para preencher os campos objetivos (descrição do imóvel, endereço, valor da negociação, valor/percentual da comissão, forma de pagamento, prazo, cidade, objeto do serviço).
+- Para os dados das PARTES (nome, CPF, RG, endereço, telefone, e-mail, CRECI, CNPJ), use os valores fornecidos quando existirem; quando vierem em branco, deixe linhas curtas com cerca de 15 underscores "_" para preenchimento manual.
+
+ESTRUTURA OBRIGATÓRIA (em markdown):
+- Título: "# CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE CORRETAGEM IMOBILIÁRIA"
+- Qualificação inline das partes: CONTRATANTE (cliente) e CONTRATADO (corretor/imobiliária com CRECI).
+- 10 cláusulas numeradas e curtas:
+  1) Objeto — prestação de serviços de corretagem/intermediação imobiliária conforme o objeto descrito.
+  2) Descrição do imóvel pretendido/negociado (preencher).
+  3) Obrigações do CONTRATADO (corretor): busca de oportunidades, visitas, negociação, assessoria documental e acompanhamento até a assinatura do instrumento definitivo.
+  4) Obrigações do CONTRATANTE (cliente): fornecer informações verdadeiras, comparecer às visitas, comunicar propostas recebidas diretamente e PAGAR a comissão nos termos pactuados.
+  5) Comissão / honorários — deixar claro que a COMISSÃO É DEVIDA E PAGA PELO CLIENTE/CONTRATANTE diretamente ao corretor, no valor/percentual indicado, conforme a Lei nº 6.530/78 e art. 722 e seguintes do Código Civil.
+  6) Forma e prazo de pagamento da comissão (preencher).
+  7) Exclusividade e devida diligência — a comissão será devida ainda que o negócio se concretize após o prazo, desde que decorrente da atuação do corretor (art. 727 do CC).
+  8) Prazo de vigência, renovação e rescisão.
+  9) Confidencialidade e LGPD.
+  10) Foro de eleição (cidade indicada).
+- Linha de data: "{cidade}, ___ de _________ de ______."
+- Duas linhas de assinatura compactas (~30 underscores cada): "CONTRATANTE (Cliente)" e "CONTRATADO (Corretor/Imobiliária — CRECI)".
+- Espaço inline para 2 testemunhas: "Test. 1 — Assin.: _______________ Nome: _______________ CPF: _______________".
+
+Texto justificado, parágrafos curtos. NÃO inclua comentários, apenas o documento final em markdown.`,
+
       "exclusividade-simplificada": `Gere um TERMO DE EXCLUSIVIDADE SIMPLIFICADO em português do Brasil, ULTRA COMPACTO, OBRIGATORIAMENTE cabendo em UMA ÚNICA FOLHA A4 (máximo 22 linhas no total). TODO o texto será exibido CENTRALIZADO horizontalmente na página, então escreva frases curtas e equilibradas, evitando linhas muito longas que destoem visualmente.
 
 REGRAS DE FORMATAÇÃO RÍGIDAS:
