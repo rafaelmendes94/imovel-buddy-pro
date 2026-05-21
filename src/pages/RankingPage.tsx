@@ -456,12 +456,13 @@ export default function RankingPage() {
                     transition={{ delay: 1.8 + i * 0.15 }}
                   >
                     <div
+                      onClick={() => setSelectedBroker(broker)}
                       className={cn(
-                        "flex items-center gap-4 p-5 rounded-2xl transition-all group",
+                        "flex items-center gap-4 p-5 rounded-2xl transition-all group cursor-pointer hover:scale-[1.02]",
                         i === 0 ? "bg-gradient-to-r from-amber-500/20 to-amber-500/5 border border-amber-500/30" :
                         i === 1 ? "bg-gradient-to-r from-gray-500/10 to-gray-500/5 border border-gray-500/20" :
                         i === 2 ? "bg-gradient-to-r from-orange-500/10 to-orange-500/5 border border-orange-500/20" :
-                        "bg-gray-900/50 border border-gray-800"
+                        "bg-gray-900/50 border border-gray-800 hover:border-amber-500/30"
                       )}
                     >
                       {/* Position */}
