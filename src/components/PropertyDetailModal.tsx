@@ -463,14 +463,16 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
           {/* Action buttons in header */}
           <TooltipProvider delayDuration={200}>
             <div className="flex items-center gap-1.5 flex-shrink-0">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Link to={`/editar-imovel/${property.id}`} onClick={onClose} className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-primary">
-                    <Pencil className="w-4.5 h-4.5" />
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent><p>Editar imóvel</p></TooltipContent>
-              </Tooltip>
+              {canEdit && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link to={`/editar-imovel/${property.id}`} onClick={onClose} className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-primary">
+                      <Pencil className="w-4.5 h-4.5" />
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent><p>Editar imóvel</p></TooltipContent>
+                </Tooltip>
+              )}
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button onClick={handleShare} className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-primary">
