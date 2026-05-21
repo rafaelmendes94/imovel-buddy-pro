@@ -2,11 +2,12 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   Trophy, Award, Medal, Star, ArrowLeft, Home, DollarSign,
-  TrendingUp, Users, ChevronRight, Crown, Flame, Zap, Loader2
+  TrendingUp, Users, ChevronRight, Crown, Flame, Zap, Loader2, X, MapPin, Calendar
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 function formatCurrency(value: number) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 0 });
@@ -105,21 +106,35 @@ function ConnectionLine({ delay }: { delay: number }) {
   );
 }
 
+interface SaleRow {
+  id: string;
+  titulo: string;
+  tipo: string;
+  cidade: string;
+  bairro: string;
+  preco: number;
+  data_venda: string | null;
+  created_at: string;
+  imagens: string[] | null;
+  brokerId: string;
+}
+
 export default function RankingPage() {
   const [ranking, setRanking] = useState<BrokerRank[]>([]);
   const [totalVGV, setTotalVGV] = useState(0);
   const [totalSold, setTotalSold] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [allSales, setAllSales] = useState<SaleRow[]>([]);
+  const [selectedBroker, setSelectedBroker] = useState<BrokerRank | null>(null);
 
   useEffect(() => {
     loadRanking();
   }, []);
 
   const loadRanking = async () => {
-    // Fetch all sold properties with broker info
     const { data: soldProperties } = await supabase
       .from("imoveis")
-      .select("preco, corretor_nome, corretor_id, user_id")
+      .select("id, titulo, tipo, cidade, bairro, preco, data_venda, created_at, imagens, corretor_nome, corretor_id, user_id")
       .eq("status", "Vendido");
 
     if (!soldProperties || soldProperties.length === 0) {
@@ -127,14 +142,12 @@ export default function RankingPage() {
       return;
     }
 
-    // Collect unique user IDs (owner or corretor)
     const userIds = new Set<string>();
     soldProperties.forEach(p => {
       const id = p.corretor_id || p.user_id;
       userIds.add(id);
     });
 
-    // Fetch profiles for avatars
     const { data: profiles } = await supabase
       .from("profiles")
       .select("user_id, full_name, avatar_url")
@@ -145,8 +158,8 @@ export default function RankingPage() {
       profileMap[p.user_id] = { name: p.full_name, avatar: p.avatar_url };
     });
 
-    // Aggregate sales by broker
     const salesMap: Record<string, { count: number; value: number; name: string; photo: string | null; userId: string }> = {};
+    const salesRows: SaleRow[] = [];
 
     soldProperties.forEach(p => {
       const brokerId = p.corretor_id || p.user_id;
@@ -158,15 +171,37 @@ export default function RankingPage() {
       }
       salesMap[brokerId].count++;
       salesMap[brokerId].value += Number(p.preco) || 0;
+
+      salesRows.push({
+        id: p.id,
+        titulo: p.titulo || "Imóvel",
+        tipo: p.tipo || "",
+        cidade: p.cidade || "",
+        bairro: p.bairro || "",
+        preco: Number(p.preco) || 0,
+        data_venda: p.data_venda,
+        created_at: p.created_at,
+        imagens: p.imagens,
+        brokerId,
+      });
     });
 
     const sorted = Object.values(salesMap).sort((a, b) => b.value - a.value);
 
     setRanking(sorted);
+    setAllSales(salesRows);
     setTotalVGV(soldProperties.reduce((s, p) => s + (Number(p.preco) || 0), 0));
     setTotalSold(soldProperties.length);
     setLoading(false);
   };
+
+  const brokerSales = selectedBroker
+    ? allSales
+        .filter(s => s.brokerId === selectedBroker.userId)
+        .sort((a, b) => new Date(b.data_venda || b.created_at).getTime() - new Date(a.data_venda || a.created_at).getTime())
+    : [];
+
+
 
   const medalColors = [
     "from-amber-400 via-yellow-300 to-amber-500",
@@ -306,7 +341,8 @@ export default function RankingPage() {
                 initial={{ y: 100, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 1.2, type: "spring", stiffness: 150 }}
-                className="flex flex-col items-center"
+                onClick={() => setSelectedBroker(ranking[1])}
+                className="flex flex-col items-center cursor-pointer hover:scale-105 transition-transform"
               >
                 <div className="group">
                   <div className="relative mb-3">
@@ -333,7 +369,8 @@ export default function RankingPage() {
                 initial={{ y: 100, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 1.0, type: "spring", stiffness: 150 }}
-                className="flex flex-col items-center -mt-8"
+                onClick={() => setSelectedBroker(ranking[0])}
+                className="flex flex-col items-center -mt-8 cursor-pointer hover:scale-105 transition-transform"
               >
                 <div className="group">
                   <div className="relative mb-3">
@@ -374,7 +411,8 @@ export default function RankingPage() {
                 initial={{ y: 100, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 1.4, type: "spring", stiffness: 150 }}
-                className="flex flex-col items-center"
+                onClick={() => setSelectedBroker(ranking[2])}
+                className="flex flex-col items-center cursor-pointer hover:scale-105 transition-transform"
               >
                 <div className="group">
                   <div className="relative mb-3">
@@ -418,12 +456,13 @@ export default function RankingPage() {
                     transition={{ delay: 1.8 + i * 0.15 }}
                   >
                     <div
+                      onClick={() => setSelectedBroker(broker)}
                       className={cn(
-                        "flex items-center gap-4 p-5 rounded-2xl transition-all group",
+                        "flex items-center gap-4 p-5 rounded-2xl transition-all group cursor-pointer hover:scale-[1.02]",
                         i === 0 ? "bg-gradient-to-r from-amber-500/20 to-amber-500/5 border border-amber-500/30" :
                         i === 1 ? "bg-gradient-to-r from-gray-500/10 to-gray-500/5 border border-gray-500/20" :
                         i === 2 ? "bg-gradient-to-r from-orange-500/10 to-orange-500/5 border border-orange-500/20" :
-                        "bg-gray-900/50 border border-gray-800"
+                        "bg-gray-900/50 border border-gray-800 hover:border-amber-500/30"
                       )}
                     >
                       {/* Position */}
@@ -501,6 +540,83 @@ export default function RankingPage() {
           </motion.div>
         </section>
       )}
+
+      {/* Broker sales dialog */}
+      <Dialog open={!!selectedBroker} onOpenChange={(o) => !o && setSelectedBroker(null)}>
+        <DialogContent className="max-w-3xl bg-gray-950 border-gray-800 text-white max-h-[85vh] overflow-y-auto">
+          {selectedBroker && (
+            <>
+              <DialogHeader>
+                <div className="flex items-center gap-4">
+                  <img
+                    src={selectedBroker.photo || defaultAvatar}
+                    alt={selectedBroker.name}
+                    className="w-16 h-16 rounded-full object-cover border-2 border-amber-400"
+                  />
+                  <div className="flex-1">
+                    <DialogTitle className="text-2xl font-extrabold text-white">{selectedBroker.name}</DialogTitle>
+                    <div className="flex items-center gap-4 mt-1">
+                      <span className="text-sm text-gray-400">
+                        <span className="font-bold text-white">{selectedBroker.count}</span> vendas
+                      </span>
+                      <span className="text-sm font-extrabold text-emerald-400">{formatCurrency(selectedBroker.value)}</span>
+                    </div>
+                  </div>
+                </div>
+              </DialogHeader>
+
+              <div className="mt-4 space-y-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <Trophy className="w-4 h-4 text-amber-400" />
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-amber-400">Vendas Contabilizadas</h3>
+                </div>
+                {brokerSales.map((s, idx) => {
+                  const cover = s.imagens && s.imagens.length > 0 ? s.imagens[0] : null;
+                  const dateStr = s.data_venda || s.created_at;
+                  const dateFmt = dateStr ? new Date(dateStr).toLocaleDateString("pt-BR") : "—";
+                  return (
+                    <div
+                      key={s.id}
+                      className="flex items-center gap-4 p-3 rounded-xl bg-gray-900/70 border border-gray-800 hover:border-amber-500/40 transition-colors"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-black text-sm flex-shrink-0">
+                        {idx + 1}
+                      </div>
+                      {cover ? (
+                        <img src={cover} alt={s.titulo} className="w-16 h-16 rounded-lg object-cover flex-shrink-0" />
+                      ) : (
+                        <div className="w-16 h-16 rounded-lg bg-gray-800 flex items-center justify-center flex-shrink-0">
+                          <Home className="w-6 h-6 text-gray-600" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-white truncate">{s.titulo}</p>
+                        <div className="flex items-center gap-3 mt-1 text-xs text-gray-400">
+                          {s.tipo && <span className="px-2 py-0.5 rounded-full bg-gray-800">{s.tipo}</span>}
+                          {(s.bairro || s.cidade) && (
+                            <span className="flex items-center gap-1">
+                              <MapPin className="w-3 h-3" />
+                              {[s.bairro, s.cidade].filter(Boolean).join(", ")}
+                            </span>
+                          )}
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            {dateFmt}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <p className="text-base font-extrabold text-emerald-400">{formatCurrency(s.preco)}</p>
+                        <p className="text-[10px] text-gray-500 uppercase font-bold">Vendido</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Footer */}
       <footer className="bg-gray-900/50 border-t border-gray-800 py-8 relative z-10">
