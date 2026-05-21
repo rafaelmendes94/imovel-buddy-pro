@@ -275,6 +275,7 @@ export function DocumentViewer({
   isEditing,
   editText,
   templateTitle,
+  textAlign = "justify",
   onStartEdit,
   onSaveEdit,
   onCancelEdit,
@@ -288,9 +289,9 @@ export function DocumentViewer({
 
   useEffect(() => {
     if (isEditing && editorRef.current) {
-      editorRef.current.innerHTML = markdownToHtml(editText);
+      editorRef.current.innerHTML = markdownToHtml(editText, textAlign);
     }
-  }, [isEditing]);
+  }, [isEditing, textAlign]);
 
   const execCmd = useCallback((command: string, value?: string) => {
     document.execCommand(command, false, value);
