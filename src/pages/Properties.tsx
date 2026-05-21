@@ -1514,9 +1514,31 @@ export default function Properties() {
               <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
                 <Heart className="w-5 h-5 text-accent fill-current" /> Minha Lista ({favoriteIds.length})
               </h3>
-              <button onClick={() => setShowFavoritesModal(false)} className="p-2 rounded-lg hover:bg-muted transition-colors">
-                <X className="w-5 h-5 text-muted-foreground" />
-              </button>
+              <div className="flex items-center gap-2">
+                {favoritedProperties.length > 0 && (
+                  <button
+                    onClick={async () => {
+                      const url = `${window.location.origin}/todos-imoveis?ids=${favoritedProperties.map(p => p.id).join(",")}`;
+                      const text = `Confira esta lista de imóveis selecionados:\n\n${favoritedProperties.map(p => `• ${p.title} - ${formatCurrency(p.price)}`).join("\n")}\n\n${url}`;
+                      if (navigator.share) {
+                        try { await navigator.share({ title: "Minha Lista de Imóveis", text, url }); return; } catch {}
+                      }
+                      try {
+                        await navigator.clipboard.writeText(url);
+                        toast.success("Link copiado!", { description: "Cole no WhatsApp ou onde quiser compartilhar." });
+                      } catch {
+                        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
+                      }
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity"
+                  >
+                    <Share2 className="w-4 h-4" /> Compartilhar
+                  </button>
+                )}
+                <button onClick={() => setShowFavoritesModal(false)} className="p-2 rounded-lg hover:bg-muted transition-colors">
+                  <X className="w-5 h-5 text-muted-foreground" />
+                </button>
+              </div>
             </div>
             <div className="overflow-y-auto p-4">
               {favoritedProperties.length === 0 ? (

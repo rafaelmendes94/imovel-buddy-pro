@@ -176,14 +176,23 @@ export default function AllProperties() {
   const [filterCondition, setFilterCondition] = useState("");
   const [priceSort, setPriceSort] = useState<"" | "asc" | "desc">("");
   const [selectedProperty, setSelectedProperty] = useState<SiteProperty | null>(null);
+  const sharedIds = (() => {
+    const v = new URLSearchParams(window.location.search).get("ids");
+    return v ? v.split(",").filter(Boolean) : null;
+  })();
 
   useEffect(() => {
     const fetchProperties = async () => {
       setLoading(true);
-      const { data, error } = await supabase
+      let query = supabase
         .from('imoveis')
-        .select('*, edificios(nome), condominios(nome), empreendimentos(nome)')
-        .eq('ativo_site', true);
+        .select('*, edificios(nome), condominios(nome), empreendimentos(nome)');
+      if (sharedIds && sharedIds.length) {
+        query = query.in('id', sharedIds);
+      } else {
+        query = query.eq('ativo_site', true);
+      }
+      const { data, error } = await query;
 
       if (!error && data) {
         const ownerIds = Array.from(new Set(data.map((r: any) => r.user_id).filter(Boolean)));
@@ -201,7 +210,7 @@ export default function AllProperties() {
         }
 
         const mapped: SiteProperty[] = data
-          .filter((row) => row.status === "Disponível")
+          .filter((row) => sharedIds ? true : row.status === "Disponível")
           .map((row) => {
             const ownerProfile = profilesById[(row as any).user_id];
             // Prioriza o corretor que CADASTROU o imóvel (dono do user_id); corretor_nome só como fallback
@@ -254,6 +263,7 @@ export default function AllProperties() {
   const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterType || filterCondition;
 
   let filtered = allProperties.filter((p) => {
+    if (sharedIds && !sharedIds.includes(p.id)) return false;
     const matchSearch = !searchTerm ||
       p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
