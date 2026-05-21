@@ -921,6 +921,7 @@ export default function Properties() {
   return (
     <AppLayout>
       <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
+        <PartnersAdSlider />
         {/* Header */}
         <div className="flex flex-col gap-3">
           <BackButton />
