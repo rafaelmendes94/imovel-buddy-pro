@@ -114,6 +114,7 @@ interface SaleRow {
   bairro: string;
   preco: number;
   data_venda: string | null;
+  updated_at: string;
   created_at: string;
   imagens: string[] | null;
   brokerId: string;
