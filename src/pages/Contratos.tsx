@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { BackButton } from "@/components/BackButton";
 import { useSearchParams } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
-import { Sparkles, Loader2, ArrowLeft, Building2 } from "lucide-react";
+import { Sparkles, Loader2, ArrowLeft, Building2, FileDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
