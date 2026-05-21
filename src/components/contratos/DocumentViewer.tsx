@@ -21,6 +21,7 @@ interface DocumentViewerProps {
   isEditing: boolean;
   editText: string;
   templateTitle?: string;
+  textAlign?: "justify" | "center" | "left";
   onStartEdit: () => void;
   onSaveEdit: () => void;
   onCancelEdit: () => void;
@@ -29,11 +30,11 @@ interface DocumentViewerProps {
 
 /* ─── helpers ─── */
 
-function markdownToHtml(md: string): string {
+function markdownToHtml(md: string, align: "justify" | "center" | "left" = "justify"): string {
   let html = md
-    .replace(/^### (.+)$/gm, '<h3 style="font-size:13pt;font-weight:bold;margin:18px 0 8px;">$1</h3>')
-    .replace(/^## (.+)$/gm, '<h2 style="font-size:14pt;font-weight:bold;margin:22px 0 8px;">$1</h2>')
-    .replace(/^# (.+)$/gm, '<h1 style="font-size:16pt;font-weight:bold;margin:24px 0 10px;">$1</h1>')
+    .replace(/^### (.+)$/gm, `<h3 style="font-size:13pt;font-weight:bold;margin:18px 0 8px;text-align:${align === "center" ? "center" : "left"};">$1</h3>`)
+    .replace(/^## (.+)$/gm, `<h2 style="font-size:14pt;font-weight:bold;margin:22px 0 8px;text-align:${align === "center" ? "center" : "left"};">$1</h2>`)
+    .replace(/^# (.+)$/gm, `<h1 style="font-size:16pt;font-weight:bold;margin:24px 0 10px;text-align:center;">$1</h1>`)
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
     .replace(/\*(.+?)\*/g, "<em>$1</em>")
     .replace(/^---$/gm, '<hr style="border:none;border-top:1px solid #ccc;margin:16px 0;" />')
@@ -45,7 +46,7 @@ function markdownToHtml(md: string): string {
       const t = block.trim();
       if (!t) return "";
       if (t.startsWith("<h") || t.startsWith("<ul") || t.startsWith("<hr") || t.startsWith("<li")) return t;
-      return `<p style="margin-bottom:10px;line-height:1.8;text-align:justify;">${t.replace(/\n/g, "<br/>")}</p>`;
+      return `<p style="margin-bottom:10px;line-height:1.8;text-align:${align};">${t.replace(/\n/g, "<br/>")}</p>`;
     })
     .join("\n");
   return html;
