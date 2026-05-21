@@ -274,19 +274,33 @@ export default function Contratos() {
                 ))}
               </div>
 
-              <Button onClick={handleGenerate} disabled={isGenerating} className="w-full mt-2" size="lg">
-                {isGenerating ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                    Gerando documento...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    Gerar com IA
-                  </>
-                )}
-              </Button>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+                <Button onClick={() => handleGenerate(false)} disabled={isGenerating} size="lg">
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      Gerando documento...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      Gerar com IA
+                    </>
+                  )}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => handleGenerate(true)}
+                  disabled={isGenerating}
+                  size="lg"
+                  title="Gera o modelo com campos em branco para preencher e assinar manualmente"
+                >
+                  <FileDown className="w-4 h-4 mr-2" />
+                  Gerar em branco (preenchimento manual)
+                </Button>
+              </div>
+
             </div>
 
             {/* Document Viewer - Word-style A4 */}
