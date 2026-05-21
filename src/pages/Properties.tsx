@@ -7,6 +7,7 @@ import { PropertyMap } from "@/components/PropertyMap";
 import { PropertyDetailModal } from "@/components/PropertyDetailModal";
 import { RoutePlanner } from "@/components/RoutePlanner";
 import { SharkAI } from "@/components/SharkAI";
+import { PartnersAdSlider } from "@/components/PartnersAdSlider";
 import { SoldConfirmDialog, SoldConfirmPayload } from "@/components/SoldConfirmDialog";
 import { properties as initialProperties, salesRecords, formatCurrency, Property } from "@/data/mockData";
 import {
