@@ -72,6 +72,9 @@ ESTRUTURA OBRIGATÓRIA (em markdown):
 - Espaço para 2 testemunhas no final, cada uma com linha de assinatura + "Nome:" + "CPF:" todos em branco com underscores.
 
 Texto justificado (será exibido com alinhamento justificado). Cláusulas com parágrafos curtos e diretos. NÃO inclua comentários, apenas o documento final em markdown.`,
+    };
+
+
 
 
     const systemPrompt = templatePrompts[templateType] || templatePrompts["compra-venda"];
