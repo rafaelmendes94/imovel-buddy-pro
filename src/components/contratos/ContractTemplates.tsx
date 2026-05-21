@@ -151,6 +151,32 @@ export const templates: ContractTemplate[] = [
       { key: "Cidade", label: "Cidade/Estado", placeholder: "Capão da Canoa/RS" },
     ],
   },
+  {
+    id: "exclusividade-completa",
+    title: "Exclusividade Completa (Detalhada)",
+    description: "Modelo detalhado de exclusividade com cláusulas estendidas e divulgação para +2.000 corretores da rede",
+    icon: ShieldCheck,
+    color: "text-fuchsia-500 bg-fuchsia-500/10",
+    fields: [
+      { key: "Nome do Proprietário", label: "Proprietário (Nome completo)", placeholder: "João da Silva" },
+      { key: "CPF do Proprietário", label: "CPF do Proprietário", placeholder: "000.000.000-00" },
+      { key: "RG do Proprietário", label: "RG do Proprietário", placeholder: "1234567 SSP/RS" },
+      { key: "Endereço do Proprietário", label: "Endereço do Proprietário", placeholder: "Rua das Flores, 123" },
+      { key: "Telefone do Proprietário", label: "Telefone do Proprietário", placeholder: "(51) 99999-0000" },
+      { key: "E-mail do Proprietário", label: "E-mail do Proprietário", placeholder: "proprietario@email.com" },
+      { key: "Descrição do Imóvel", label: "Descrição do Imóvel", placeholder: "Apartamento 302, 3 quartos..." },
+      { key: "Endereço do Imóvel", label: "Endereço do Imóvel", placeholder: "Av. Beira Mar, 1200" },
+      { key: "Matrícula do Imóvel", label: "Matrícula/Registro do Imóvel", placeholder: "Matrícula nº 12345" },
+      { key: "Valor de Venda Autorizado", label: "Valor de Venda (R$)", placeholder: "950.000,00" },
+      { key: "Comissão", label: "Comissão (%)", placeholder: "6%" },
+      { key: "Nome do Corretor/Imobiliária", label: "Corretor / Imobiliária Responsável", placeholder: "MV Broker Connect - Carlos Silva" },
+      { key: "CRECI", label: "CRECI", placeholder: "123456-RS" },
+      { key: "CNPJ da Imobiliária", label: "CNPJ da Imobiliária", placeholder: "00.000.000/0001-00" },
+      { key: "Prazo de Validade", label: "Prazo de Exclusividade", placeholder: "180 dias" },
+      { key: "Multa por Descumprimento", label: "Multa por Descumprimento (%)", placeholder: "100% da comissão" },
+      { key: "Cidade", label: "Cidade/Estado", placeholder: "Capão da Canoa/RS" },
+    ],
+  },
 ];
 
 interface TemplateGridProps {
