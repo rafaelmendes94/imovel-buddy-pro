@@ -184,10 +184,15 @@ export default function AllProperties() {
   useEffect(() => {
     const fetchProperties = async () => {
       setLoading(true);
-      const { data, error } = await supabase
+      let query = supabase
         .from('imoveis')
-        .select('*, edificios(nome), condominios(nome), empreendimentos(nome)')
-        .eq('ativo_site', true);
+        .select('*, edificios(nome), condominios(nome), empreendimentos(nome)');
+      if (sharedIds && sharedIds.length) {
+        query = query.in('id', sharedIds);
+      } else {
+        query = query.eq('ativo_site', true);
+      }
+      const { data, error } = await query;
 
       if (!error && data) {
         const ownerIds = Array.from(new Set(data.map((r: any) => r.user_id).filter(Boolean)));
