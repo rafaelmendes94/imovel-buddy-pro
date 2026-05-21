@@ -258,6 +258,7 @@ export default function AllProperties() {
   const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterType || filterCondition;
 
   let filtered = allProperties.filter((p) => {
+    if (sharedIds && !sharedIds.includes(p.id)) return false;
     const matchSearch = !searchTerm ||
       p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
