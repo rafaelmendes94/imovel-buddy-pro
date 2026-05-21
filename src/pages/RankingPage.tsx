@@ -369,7 +369,8 @@ export default function RankingPage() {
                 initial={{ y: 100, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 1.0, type: "spring", stiffness: 150 }}
-                className="flex flex-col items-center -mt-8"
+                onClick={() => setSelectedBroker(ranking[0])}
+                className="flex flex-col items-center -mt-8 cursor-pointer hover:scale-105 transition-transform"
               >
                 <div className="group">
                   <div className="relative mb-3">
