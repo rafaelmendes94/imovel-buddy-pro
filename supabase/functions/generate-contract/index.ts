@@ -38,7 +38,25 @@ serve(async (req) => {
       
       "autorizacao-venda": `Gere uma AUTORIZAÇÃO DE VENDA / TERMO DE EXCLUSIVIDADE completo e profissional, em português do Brasil. Use as informações fornecidas. Inclua: dados do proprietário, dados do imóvel, valor de venda autorizado, comissão do corretor/imobiliária, prazo de validade, condições, foro. Formate com numeração de cláusulas.`,
 
-      "exclusividade-simplificada": `Gere um TERMO DE EXCLUSIVIDADE SIMPLIFICADO, em português do Brasil, EXTREMAMENTE CURTO e direto, OBRIGATORIAMENTE cabendo em UMA ÚNICA PÁGINA A4 (máximo ~30 linhas de texto, sem espaçamentos excessivos, sem títulos grandes desnecessários). Use frases curtas e cláusulas enxutas. Estruture com cláusulas curtas e numeradas cobrindo de forma sucinta: (1) Objeto - identificação do imóvel e do proprietário; (2) Outorga de exclusividade ao corretor/imobiliária indicado, com prazo de validade; (3) Valor de venda autorizado e comissão; (4) DIVULGAÇÃO NA REDE - declare em UMA frase que a assinatura deste termo é REQUISITO OBRIGATÓRIO para que o imóvel seja exibido no sistema MV Broker Connect e divulgado a mais de 2.000 corretores parceiros, potencializando a venda; (5) Obrigações do proprietário (não negociar diretamente nem com terceiros durante a vigência); (6) Foro. Encerre com local, data e linhas de assinatura para proprietário e corretor/imobiliária (com CRECI). NÃO inclua preâmbulos, "considerandos" ou parágrafos longos.`,
+      "exclusividade-simplificada": `Gere um TERMO DE EXCLUSIVIDADE SIMPLIFICADO, em português do Brasil, ULTRA COMPACTO, OBRIGATORIAMENTE cabendo em UMA ÚNICA FOLHA A4 (máximo absoluto de 22 linhas de texto somando título, cláusulas, assinaturas e tudo mais). REGRAS DE FORMATAÇÃO RÍGIDAS:
+- Use UMA ÚNICA linha de título centralizado: "TERMO DE EXCLUSIVIDADE DE INTERMEDIAÇÃO IMOBILIÁRIA"
+- NÃO use subtítulos, NÃO use linhas em branco entre cláusulas, NÃO use preâmbulo/considerandos
+- Cláusulas numeradas de 1 a 6, cada uma em UM ÚNICO parágrafo curto (máximo 2 linhas cada), formato: "1. TÍTULO CURTO EM CAIXA ALTA. Texto da cláusula em 1-2 linhas."
+- Use frases curtas, diretas, sem floreios jurídicos
+
+ESTRUTURA OBRIGATÓRIA (exatamente 6 cláusulas, nesta ordem):
+1. OBJETO. Proprietário {nome}, CPF {cpf}, outorga ao corretor/imobiliária {corretor}, CRECI {creci}, exclusividade para intermediar a venda do imóvel: {descrição} situado em {endereço}.
+2. PRAZO. Exclusividade pelo período de {prazo}, contados desta data, renovável por igual período se não houver manifestação em contrário.
+3. PREÇO E COMISSÃO. Valor autorizado de venda: R$ {valor}. Comissão devida ao corretor: {comissão} sobre o valor efetivo da venda, paga na assinatura do contrato definitivo.
+4. DIVULGAÇÃO NA REDE. A assinatura deste termo é REQUISITO OBRIGATÓRIO para que o imóvel seja publicado no sistema MV Broker Connect e divulgado a mais de 2.000 corretores parceiros, potencializando significativamente as chances de venda.
+5. OBRIGAÇÕES DO PROPRIETÁRIO. Durante a vigência, o proprietário não poderá negociar o imóvel diretamente nem por meio de terceiros; eventual venda nessas condições obriga ao pagamento integral da comissão.
+6. FORO. Fica eleito o foro da comarca de {cidade} para dirimir quaisquer questões oriundas deste termo.
+
+Após a cláusula 6, em UMA linha: "{cidade}, ___ de _________ de ______."
+Depois, em DUAS linhas de assinatura lado a lado (use uma linha de underscores de aproximadamente 40 caracteres em cada): "_______________________   _______________________" e abaixo, na mesma linha: "Proprietário                                    Corretor/Imobiliária - CRECI"
+Contato do proprietário: {telefone} em uma linha discreta no rodapé.
+
+NÃO ultrapasse 22 linhas no total. NÃO inclua nada além do solicitado.`,
     };
 
     const systemPrompt = templatePrompts[templateType] || templatePrompts["compra-venda"];
