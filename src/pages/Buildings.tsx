@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import * as XLSX from "xlsx";
 import { AppLayout } from "@/components/AppLayout";
 import { BackButton } from "@/components/BackButton";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,8 +9,25 @@ import { useToast } from "@/hooks/use-toast";
 import { InfraMediaModal } from "@/components/InfraMediaModal";
 import { cn } from "@/lib/utils";
 import {
-  Building, Plus, Search, MapPin, Layers, Edit, Trash2, Camera, Home, Map, Loader2,
+  Building, Plus, Search, MapPin, Layers, Edit, Trash2, Camera, Home, Map, Loader2, Download, Upload,
 } from "lucide-react";
+
+// Extract lat/lng from a Google Maps URL (supports @lat,lng / q=lat,lng / !3dlat!4dlng)
+function parseLatLngFromUrl(url: string): { lat: number | null; lng: number | null } {
+  if (!url) return { lat: null, lng: null };
+  const patterns = [
+    /@(-?\d+\.\d+),(-?\d+\.\d+)/,
+    /[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/,
+    /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/,
+    /(-?\d+\.\d+),\s*(-?\d+\.\d+)/,
+  ];
+  for (const re of patterns) {
+    const m = url.match(re);
+    if (m) return { lat: parseFloat(m[1]), lng: parseFloat(m[2]) };
+  }
+  return { lat: null, lng: null };
+}
+
 
 const statusColors: Record<string, string> = {
   "Em construção": "bg-warning/10 text-warning border-warning/30",
