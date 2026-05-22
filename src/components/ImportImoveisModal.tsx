@@ -108,6 +108,25 @@ export function ImportImoveisModal({ open, onClose, onImported }: Props) {
   const [fileName, setFileName] = useState("");
   const [importing, setImporting] = useState(false);
   const [result, setResult] = useState<{ ok: number; fail: number } | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  const doImport = async () => {
+    setConfirmOpen(false);
+    if (!user || rows.length === 0) return;
+    setImporting(true);
+    let ok = 0, fail = 0;
+    const batch = rows.map(r => mapRow(r, user.id)).filter(r => r.titulo);
+    for (let i = 0; i < batch.length; i += 50) {
+      const chunk = batch.slice(i, i + 50);
+      const { error } = await supabase.from("imoveis").insert(chunk);
+      if (error) { console.error("Import error:", error); fail += chunk.length; }
+      else { ok += chunk.length; }
+    }
+    setResult({ ok, fail });
+    setImporting(false);
+    if (ok > 0) { toast.success(`${ok} imóveis importados`); onImported(); }
+    if (fail > 0) toast.error(`${fail} falhas na importação`);
+  };
 
   if (!open) return null;
 
