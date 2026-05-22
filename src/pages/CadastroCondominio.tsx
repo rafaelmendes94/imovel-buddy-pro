@@ -250,11 +250,14 @@ export default function CadastroCondominio() {
 
         <section>
           <SectionHeader icon={Image} title="Imagem de Capa" />
-          <div className="space-y-1.5">
-            <Label className="text-xs">URL da Imagem (capa)</Label>
-            <Input value={form.imagem_url} onChange={(e) => setForm({ ...form, imagem_url: e.target.value })} placeholder="https://..." />
-          </div>
-          {form.imagem_url && <img src={form.imagem_url} alt="Preview" className="mt-3 rounded-lg max-h-48 object-cover" />}
+          <MediaGalleryUpload
+            label="Envie a imagem de capa"
+            values={form.imagem_url ? [form.imagem_url] : []}
+            onChange={(v) => setForm(f => ({ ...f, imagem_url: v[v.length - 1] || '' }))}
+            folder="condominios/capa"
+            kind="image"
+            multiple={false}
+          />
         </section>
 
         <section>
