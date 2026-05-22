@@ -93,6 +93,8 @@ interface DBProperty {
   data_venda: string | null;
   termo_exclusividade_url: string | null;
   link_material: string | null;
+  drive_fotos_url: string | null;
+  fotos_pdf_url: string | null;
   views: number | null;
 }
 
