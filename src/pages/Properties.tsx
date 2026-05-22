@@ -1727,6 +1727,12 @@ export default function Properties() {
         onCancel={() => setPendingSold(null)}
       />
 
+      <ImportImoveisModal
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        onImported={() => window.location.reload()}
+      />
+
       {/* Property Detail Modal */}
       <PropertyDetailModal
         property={selectedProperty}
