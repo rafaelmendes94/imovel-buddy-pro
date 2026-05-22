@@ -1,16 +1,21 @@
 import { useState } from "react";
 import { AppSidebar } from "./AppSidebar";
+import { AdminSidebar } from "./AdminSidebar";
+import { useAuth } from "@/hooks/useAuth";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { isSuperAdmin, isAdminStaff } = useAuth();
+  const useAdmin = isSuperAdmin || isAdminStaff;
+  const Sidebar = useAdmin ? AdminSidebar : AppSidebar;
 
   return (
     <div className="flex min-h-screen bg-background">
       {/* Desktop sidebar */}
       <div className="hidden lg:block">
-        <AppSidebar />
+        <Sidebar />
       </div>
 
       {/* Mobile overlay */}
