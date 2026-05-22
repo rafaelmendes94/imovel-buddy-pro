@@ -49,14 +49,80 @@ export default function Buildings() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { isSuperAdmin, isAdminStaff } = useAuth();
+  const { user, isSuperAdmin, isAdminStaff } = useAuth();
   const canManage = isSuperAdmin || isAdminStaff;
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [importing, setImporting] = useState(false);
 
   useEffect(() => { loadData(); }, []);
 
   const loadData = async () => {
     setLoading(true);
     const { data } = await supabase.from("edificios").select("*").order("nome");
+    if (data) setBuildings(data as any);
+    setLoading(false);
+  };
+
+  const downloadTemplate = () => {
+    const ws = XLSX.utils.aoa_to_sheet([
+      ["Nome do Empreendimento", "Rua", "Numero", "Bairro", "Link da Localizacao"],
+      ["Edifício Exemplo", "Av. Brasil", "1000", "Centro", "https://www.google.com/maps?q=-23.5505,-46.6333"],
+    ]);
+    ws["!cols"] = [{ wch: 32 }, { wch: 28 }, { wch: 10 }, { wch: 20 }, { wch: 50 }];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Edifícios");
+    XLSX.writeFile(wb, "modelo-importar-edificios.xlsx");
+  };
+
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!user) { toast({ title: "Faça login para importar", variant: "destructive" }); return; }
+    setImporting(true);
+    try {
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf);
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows: any[] = XLSX.utils.sheet_to_json(ws, { defval: "" });
+      const norm = (s: string) => String(s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "");
+      const pick = (row: any, keys: string[]) => {
+        const entries = Object.entries(row);
+        for (const k of keys) {
+          const target = norm(k);
+          const found = entries.find(([key]) => norm(key) === target);
+          if (found) return String(found[1] ?? "").trim();
+        }
+        return "";
+      };
+      const payload = rows
+        .map((r) => {
+          const nome = pick(r, ["Nome do Empreendimento", "Nome", "Empreendimento"]);
+          const rua = pick(r, ["Rua", "Endereco", "Endereço"]);
+          const numero = pick(r, ["Numero", "Número", "Nº", "No"]);
+          const bairro = pick(r, ["Bairro"]);
+          const link = pick(r, ["Link da Localizacao", "Link da Localização", "Link", "Localizacao", "Localização", "Mapa"]);
+          const { lat, lng } = parseLatLngFromUrl(link);
+          return { nome, endereco: rua, numero, bairro, latitude: lat, longitude: lng, user_id: user.id, status: "Pronto" };
+        })
+        .filter((r) => r.nome);
+
+      if (!payload.length) {
+        toast({ title: "Nenhuma linha válida encontrada", description: "Verifique se há a coluna 'Nome do Empreendimento'.", variant: "destructive" });
+        return;
+      }
+
+      const { error } = await supabase.from("edificios").insert(payload as any);
+      if (error) throw error;
+      toast({ title: `${payload.length} edifício(s) importado(s)` });
+      await loadData();
+    } catch (err: any) {
+      console.error(err);
+      toast({ title: "Erro ao importar", description: err?.message || "", variant: "destructive" });
+    } finally {
+      setImporting(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
     if (data) setBuildings(data as any);
     setLoading(false);
   };
