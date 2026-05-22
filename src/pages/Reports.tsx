@@ -263,7 +263,8 @@ export default function Reports() {
   // Build monthly bar data from filtered sales
   const revenueBarData = useMemo(() => {
     const data = ALL_MONTHS.map((month, i) => {
-      const monthSales = filtered.filter(s => new Date(s.date).getMonth() === i && isThisYear(s.date));
+      const targetYear = filterYear ?? new Date().getFullYear();
+      const monthSales = filtered.filter(s => { const d = new Date(s.date); return d.getMonth() === i && d.getFullYear() === targetYear; });
       return { month, vendas: monthSales.length, receita: monthSales.reduce((sum, s) => sum + s.price, 0) };
     });
     return data.map((d, i) => {
