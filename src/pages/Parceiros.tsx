@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Search, Building2, Paintbrush, Wrench, DollarSign, Shield, Zap, Home, ChevronRight, X, Handshake, Scale, Truck, FileDown } from "lucide-react";
+import { Search, Building2, Paintbrush, Wrench, DollarSign, Shield, Zap, Home, ChevronRight, X, Handshake, Scale, Truck, FileDown, ChevronDown } from "lucide-react";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { Input } from "@/components/ui/input";
@@ -84,11 +85,13 @@ export default function Parceiros() {
     return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b));
   }, [filtered]);
 
-  const exportPdf = () => {
+  const exportPdf = (onlyCategory?: string) => {
     const doc = new jsPDF({ unit: "pt", format: "a4" });
     const pageW = doc.internal.pageSize.getWidth();
     const pageH = doc.internal.pageSize.getHeight();
-    const allGrouped = [...new Set(allPartners.map(p => p.category))].sort().map(c => [c, allPartners.filter(p => p.category === c)] as [string, Partner[]]);
+    const source = onlyCategory ? allPartners.filter(p => p.category === onlyCategory) : allPartners;
+    const allGrouped = [...new Set(source.map(p => p.category))].sort().map(c => [c, source.filter(p => p.category === c)] as [string, Partner[]]);
+    if (allGrouped.length === 0) return;
 
     // Color palette per category (primary, secondary, accent)
     const palette: Record<string, [number[], number[], number[]]> = {
@@ -459,7 +462,8 @@ export default function Parceiros() {
       doc.text(`${i} / ${total}`, pageW - 40, pageH - 20, { align: "right" });
     }
 
-    doc.save(`parceiros-${new Date().toISOString().slice(0, 10)}.pdf`);
+    const suffix = onlyCategory ? onlyCategory.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "-") : "completo";
+    doc.save(`parceiros-${suffix}-${new Date().toISOString().slice(0, 10)}.pdf`);
   };
 
 
@@ -488,14 +492,38 @@ export default function Parceiros() {
                 </button>
               )}
             </div>
-            <button
-              onClick={exportPdf}
-              disabled={allPartners.length === 0}
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-white text-blue-950 hover:bg-blue-50 font-bold text-sm shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <FileDown className="w-4 h-4" />
-              Exportar PDF
-            </button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  disabled={allPartners.length === 0}
+                  className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-white text-blue-950 hover:bg-blue-50 font-bold text-sm shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <FileDown className="w-4 h-4" />
+                  Exportar PDF
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-64 max-h-96 overflow-y-auto bg-popover">
+                <DropdownMenuLabel>Escolha o que exportar</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => exportPdf()} className="font-semibold cursor-pointer">
+                  <FileDown className="w-4 h-4 mr-2" />
+                  Catálogo completo
+                  <span className="ml-auto text-xs text-muted-foreground">{allPartners.length}</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel className="text-xs text-muted-foreground font-normal">Por segmento</DropdownMenuLabel>
+                {[...new Set(allPartners.map(p => p.category))].sort().map(cat => {
+                  const count = allPartners.filter(p => p.category === cat).length;
+                  return (
+                    <DropdownMenuItem key={cat} onClick={() => exportPdf(cat)} className="cursor-pointer">
+                      {cat}
+                      <span className="ml-auto text-xs text-muted-foreground">{count}</span>
+                    </DropdownMenuItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
         </div>
