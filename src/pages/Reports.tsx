@@ -594,7 +594,7 @@ export default function Reports() {
           </>
         ) : (
           /* ─── COMPARATIVO ANUAL TAB ─── */
-          <ComparativoAnual data={comparativoData} currentYear={currentYear} previousYear={previousYear} />
+          <ComparativoAnual sales={sales} allYears={allYears} allCities={allCities} allTypes={allTypes} defaultYearA={currentYear} defaultYearB={previousYear} />
         )}
 
         {/* Month Sales Dialog */}
@@ -640,38 +640,211 @@ export default function Reports() {
 }
 
 // ─── COMPARATIVO ANUAL COMPONENT ───
-function ComparativoAnual({ data, currentYear, previousYear }: {
-  data: { segmentComparison: any[]; monthlyComparison: any[]; curTotal: number; prevTotal: number; totalValorization: number; curCount: number; prevCount: number };
-  currentYear: number; previousYear: number;
+function ComparativoAnual({
+  sales, allYears, allCities, allTypes, defaultYearA, defaultYearB,
+}: {
+  sales: RealSaleRecord[];
+  allYears: number[];
+  allCities: string[];
+  allTypes: string[];
+  defaultYearA: number;
+  defaultYearB: number;
 }) {
+  const [yearA, setYearA] = useState<number>(defaultYearA);
+  const [yearB, setYearB] = useState<number>(defaultYearB);
+  const [fType, setFType] = useState<string>("Todos");
+  const [fCity, setFCity] = useState<string>("Todas");
+  const [fEmpr, setFEmpr] = useState<string>("Todos");
+
+  // Empreendimentos list derived from sales
+  const allEmpreendimentos = useMemo(
+    () => [...new Set(sales.map(s => s.empreendimento).filter(Boolean))].sort(),
+    [sales]
+  );
+
+  // Apply non-year filters
+  const baseFiltered = useMemo(() => sales.filter(s => {
+    if (fType !== "Todos" && s.type !== fType) return false;
+    if (fCity !== "Todas" && s.city !== fCity) return false;
+    if (fEmpr !== "Todos" && s.empreendimento !== fEmpr) return false;
+    return true;
+  }), [sales, fType, fCity, fEmpr]);
+
+  const activeFilters = [fType !== "Todos", fCity !== "Todas", fEmpr !== "Todos"].filter(Boolean).length;
+  const clearFilters = () => { setFType("Todos"); setFCity("Todas"); setFEmpr("Todos"); };
+
+  const data = useMemo(() => {
+    const yearASales = baseFiltered.filter(s => new Date(s.date).getFullYear() === yearA);
+    const yearBSales = baseFiltered.filter(s => new Date(s.date).getFullYear() === yearB);
+    const uniqueSegments = [...new Set(baseFiltered.map(s => s.segment).filter(Boolean))];
+    const segmentComparison = uniqueSegments.map(seg => {
+      const curVgv = yearASales.filter(s => s.segment === seg).reduce((sum, s) => sum + s.price, 0);
+      const prevVgv = yearBSales.filter(s => s.segment === seg).reduce((sum, s) => sum + s.price, 0);
+      const valorization = prevVgv > 0 ? ((curVgv - prevVgv) / prevVgv) * 100 : curVgv > 0 ? 100 : 0;
+      return { segment: seg, curVgv, prevVgv, valorization };
+    });
+    const monthlyComparison = ALL_MONTHS.map((m, i) => ({
+      month: m,
+      [`VGV ${yearA}`]: yearASales.filter(s => new Date(s.date).getMonth() === i).reduce((sum, s) => sum + s.price, 0),
+      [`VGV ${yearB}`]: yearBSales.filter(s => new Date(s.date).getMonth() === i).reduce((sum, s) => sum + s.price, 0),
+    }));
+    const curTotal = yearASales.reduce((sum, s) => sum + s.price, 0);
+    const prevTotal = yearBSales.reduce((sum, s) => sum + s.price, 0);
+    const totalValorization = prevTotal > 0 ? ((curTotal - prevTotal) / prevTotal) * 100 : 0;
+
+    // Valorização ao longo dos anos (ticket médio por ano, considerando o intervalo entre yearA/yearB)
+    const yMin = Math.min(yearA, yearB), yMax = Math.max(yearA, yearB);
+    const years: number[] = [];
+    for (let y = yMin; y <= yMax; y++) years.push(y);
+    const baseYearSales = baseFiltered.filter(s => new Date(s.date).getFullYear() === yMin);
+    const baseAvg = baseYearSales.length > 0 ? baseYearSales.reduce((s, x) => s + x.price, 0) / baseYearSales.length : 0;
+    const valorizationSeries = years.map(y => {
+      const ys = baseFiltered.filter(s => new Date(s.date).getFullYear() === y);
+      const avg = ys.length > 0 ? ys.reduce((s, x) => s + x.price, 0) / ys.length : 0;
+      const valorPct = baseAvg > 0 && avg > 0 ? ((avg - baseAvg) / baseAvg) * 100 : 0;
+      return { year: String(y), ticketMedio: avg, valorPct, vendas: ys.length };
+    });
+    const firstAvg = valorizationSeries.find(p => p.ticketMedio > 0)?.ticketMedio || 0;
+    const lastAvg = [...valorizationSeries].reverse().find(p => p.ticketMedio > 0)?.ticketMedio || 0;
+    const periodValorization = firstAvg > 0 && lastAvg > 0 ? ((lastAvg - firstAvg) / firstAvg) * 100 : 0;
+
+    return {
+      segmentComparison, monthlyComparison, curTotal, prevTotal, totalValorization,
+      curCount: yearASales.length, prevCount: yearBSales.length,
+      valorizationSeries, periodValorization, years,
+    };
+  }, [baseFiltered, yearA, yearB]);
+
+  const yearOptions = useMemo(() => {
+    const set = new Set<number>(allYears);
+    set.add(yearA); set.add(yearB);
+    return [...set].sort((a, b) => b - a);
+  }, [allYears, yearA, yearB]);
+
+  const selectCls = "h-9 px-2 rounded-lg border border-border bg-background text-foreground text-xs focus:outline-none focus:ring-2 focus:ring-ring";
+
   return (
     <div className="space-y-5">
+      {/* Filtros */}
+      <div className="elevated-card rounded-xl p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-semibold text-card-foreground flex items-center gap-2">
+            <SlidersHorizontal className="w-4 h-4 text-accent" /> Filtros do Comparativo
+          </h3>
+          {(activeFilters > 0 || yearA !== defaultYearA || yearB !== defaultYearB) && (
+            <button onClick={clearFilters} className="text-[10px] text-muted-foreground hover:text-foreground flex items-center gap-1">
+              <X className="w-3 h-3" /> Limpar filtros
+            </button>
+          )}
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+          <div>
+            <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Ano A</label>
+            <select value={yearA} onChange={e => setYearA(Number(e.target.value))} className={`${selectCls} w-full mt-1`}>
+              {yearOptions.map(y => <option key={y} value={y}>{y}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Ano B</label>
+            <select value={yearB} onChange={e => setYearB(Number(e.target.value))} className={`${selectCls} w-full mt-1`}>
+              {yearOptions.map(y => <option key={y} value={y}>{y}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Tipo</label>
+            <select value={fType} onChange={e => setFType(e.target.value)} className={`${selectCls} w-full mt-1`}>
+              <option value="Todos">Todos</option>
+              {allTypes.map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Cidade</label>
+            <select value={fCity} onChange={e => setFCity(e.target.value)} className={`${selectCls} w-full mt-1`}>
+              <option value="Todas">Todas</option>
+              {allCities.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Empreendimento</label>
+            <select value={fEmpr} onChange={e => setFEmpr(e.target.value)} className={`${selectCls} w-full mt-1`}>
+              <option value="Todos">Todos</option>
+              {allEmpreendimentos.map(e => <option key={e} value={e}>{e}</option>)}
+            </select>
+          </div>
+        </div>
+        {(activeFilters > 0) && (
+          <div className="flex flex-wrap gap-1.5 mt-3">
+            {fType !== "Todos" && <Badge variant="outline" className="text-[10px]">Tipo: {fType}</Badge>}
+            {fCity !== "Todas" && <Badge variant="outline" className="text-[10px]">Cidade: {fCity}</Badge>}
+            {fEmpr !== "Todos" && <Badge variant="outline" className="text-[10px]">Empreendimento: {fEmpr}</Badge>}
+          </div>
+        )}
+      </div>
+
       {/* Overview cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="elevated-card rounded-xl p-5">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">VGV {currentYear}</p>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">VGV {yearA}</p>
           <p className="text-2xl font-bold text-foreground mt-1">{formatCurrency(data.curTotal)}</p>
           <p className="text-xs text-muted-foreground mt-0.5">{data.curCount} vendas</p>
         </div>
         <div className="elevated-card rounded-xl p-5">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">VGV {previousYear}</p>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">VGV {yearB}</p>
           <p className="text-2xl font-bold text-foreground mt-1">{formatCurrency(data.prevTotal)}</p>
           <p className="text-xs text-muted-foreground mt-0.5">{data.prevCount} vendas</p>
         </div>
         <div className="elevated-card rounded-xl p-5">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Valorização Geral</p>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Valorização ({yearA} vs {yearB})</p>
           <p className={`text-2xl font-bold mt-1 flex items-center gap-2 ${data.totalValorization >= 0 ? "text-emerald-500" : "text-destructive"}`}>
             {data.totalValorization >= 0 ? <ArrowUp className="w-5 h-5" /> : <ArrowDown className="w-5 h-5" />}
             {data.totalValorization > 0 ? "+" : ""}{data.totalValorization.toFixed(1)}%
           </p>
-          <p className="text-xs text-muted-foreground mt-0.5">vs ano anterior</p>
+          <p className="text-xs text-muted-foreground mt-0.5">VGV total</p>
         </div>
+      </div>
+
+      {/* Valorização Line Chart */}
+      <div className="elevated-card rounded-xl p-5">
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+          <h3 className="text-sm font-semibold text-card-foreground flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-accent" /> Linha de Valorização — Ticket médio por ano
+          </h3>
+          <Badge variant="outline" className={`text-[10px] ${data.periodValorization >= 0 ? "border-emerald-500/40 text-emerald-500" : "border-destructive/40 text-destructive"}`}>
+            {data.periodValorization >= 0 ? "+" : ""}{data.periodValorization.toFixed(1)}% no período
+          </Badge>
+        </div>
+        {data.valorizationSeries.length === 0 || data.valorizationSeries.every(p => p.ticketMedio === 0) ? (
+          <p className="text-xs text-muted-foreground text-center py-8">Sem dados para os filtros selecionados</p>
+        ) : (
+          <ResponsiveContainer width="100%" height={280}>
+            <LineChart data={data.valorizationSeries}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+              <XAxis dataKey="year" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+              <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v) => v > 0 ? `${(v / 1000000).toFixed(1)}M` : "0"} />
+              <Tooltip
+                contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "11px" }}
+                formatter={(v: number, name: string, p: any) => {
+                  if (name === "Ticket médio") return [formatCurrency(v), name];
+                  return [v, name];
+                }}
+                labelFormatter={(label, payload: any) => {
+                  const item = payload?.[0]?.payload;
+                  return `${label} • ${item?.vendas || 0} venda(s) • ${item?.valorPct >= 0 ? "+" : ""}${item?.valorPct.toFixed(1)}%`;
+                }}
+              />
+              <Line type="monotone" dataKey="ticketMedio" name="Ticket médio" stroke="hsl(142, 71%, 45%)" strokeWidth={3} dot={{ r: 5, fill: "hsl(142, 71%, 45%)" }} activeDot={{ r: 7 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        )}
+        <p className="text-[10px] text-muted-foreground mt-2">
+          Valorização calculada com base no preço médio das vendas filtradas em cada ano do intervalo selecionado.
+        </p>
       </div>
 
       {/* Monthly comparison chart */}
       <div className="elevated-card rounded-xl p-5">
         <h3 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
-          <BarChart3 className="w-4 h-4 text-accent" /> VGV Mensal — {currentYear} vs {previousYear}
+          <BarChart3 className="w-4 h-4 text-accent" /> VGV Mensal — {yearA} vs {yearB}
         </h3>
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={data.monthlyComparison} barGap={4}>
@@ -680,8 +853,8 @@ function ComparativoAnual({ data, currentYear, previousYear }: {
             <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v) => v > 0 ? `${(v / 1000000).toFixed(1)}M` : "0"} />
             <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "11px" }} formatter={(v: number) => [formatCurrency(v)]} />
             <Legend wrapperStyle={{ fontSize: "11px" }} />
-            <Bar dataKey={`VGV ${currentYear}`} fill="hsl(142, 71%, 45%)" radius={[4, 4, 0, 0]} />
-            <Bar dataKey={`VGV ${previousYear}`} fill="hsl(var(--muted-foreground))" radius={[4, 4, 0, 0]} opacity={0.5} />
+            <Bar dataKey={`VGV ${yearA}`} fill="hsl(142, 71%, 45%)" radius={[4, 4, 0, 0]} />
+            <Bar dataKey={`VGV ${yearB}`} fill="hsl(var(--muted-foreground))" radius={[4, 4, 0, 0]} opacity={0.5} />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -705,14 +878,14 @@ function ComparativoAnual({ data, currentYear, previousYear }: {
                   </div>
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-[9px] text-muted-foreground w-8">{currentYear}</span>
+                      <span className="text-[9px] text-muted-foreground w-8">{yearA}</span>
                       <div className="flex-1 h-3 bg-muted rounded-full overflow-hidden">
                         <div className="h-full rounded-full transition-all duration-700" style={{ width: `${(seg.curVgv / maxVgv) * 100}%`, background: SEGMENT_COLORS[seg.segment] }} />
                       </div>
                       <span className="text-[9px] text-foreground font-medium w-20 text-right">{formatCurrency(seg.curVgv)}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-[9px] text-muted-foreground w-8">{previousYear}</span>
+                      <span className="text-[9px] text-muted-foreground w-8">{yearB}</span>
                       <div className="flex-1 h-3 bg-muted rounded-full overflow-hidden">
                         <div className="h-full rounded-full transition-all duration-700 opacity-40" style={{ width: `${(seg.prevVgv / maxVgv) * 100}%`, background: SEGMENT_COLORS[seg.segment] }} />
                       </div>
