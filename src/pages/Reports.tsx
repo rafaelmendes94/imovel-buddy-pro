@@ -180,12 +180,25 @@ function useRankings(filtered: RealSaleRecord[]) {
       return Object.entries(map).map(([name, data]) => ({ name, ...data })).sort((a, b) => b.vgv - a.vgv);
     };
     const filterEmpty = (arr: { name: string; count: number; vgv: number }[]) => arr.filter(r => r.name && r.name !== "Avulso");
+    const bedroomsLabel = (n: number) => {
+      if (!n || n <= 0) return "Sem informação";
+      if (n >= 5) return "5+ dormitórios";
+      return `${n} ${n === 1 ? "dormitório" : "dormitórios"}`;
+    };
+    const byBedrooms = rank(s => bedroomsLabel(s.bedrooms))
+      .filter(r => r.name !== "Sem informação")
+      .sort((a, b) => {
+        const na = parseInt(a.name) || 0;
+        const nb = parseInt(b.name) || 0;
+        return na - nb;
+      });
     return {
       byType: rank("type"), bySegment: rank("segment"), byCity: rank("city"),
       byBroker: rank("broker"), byOwner: rank("owner"), byNeighborhood: rank("neighborhood"),
       byEmpreendimento: rank(s => s.empreendimento || "Avulso"),
       byEdificio: filterEmpty(rank(s => s.edificio || "")),
       byCondominio: filterEmpty(rank(s => s.condominio || "")),
+      byBedrooms,
     };
   }, [filtered]);
 }
