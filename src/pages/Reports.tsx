@@ -555,9 +555,8 @@ export default function Reports() {
                   {
                     key: "rankings-2",
                     node: (
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 gap-4">
                         <RankingProgressCard title="Top Corretores" data={rankings.byBroker} />
-                        <RankingListCard title="VGV por Segmento" icon={Star} data={rankings.bySegment} colors={SEGMENT_COLORS} />
                       </div>
                     ),
                   },
