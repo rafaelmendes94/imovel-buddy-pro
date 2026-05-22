@@ -180,12 +180,25 @@ function useRankings(filtered: RealSaleRecord[]) {
       return Object.entries(map).map(([name, data]) => ({ name, ...data })).sort((a, b) => b.vgv - a.vgv);
     };
     const filterEmpty = (arr: { name: string; count: number; vgv: number }[]) => arr.filter(r => r.name && r.name !== "Avulso");
+    const bedroomsLabel = (n: number) => {
+      if (!n || n <= 0) return "Sem informação";
+      if (n >= 5) return "5+ dormitórios";
+      return `${n} ${n === 1 ? "dormitório" : "dormitórios"}`;
+    };
+    const byBedrooms = rank(s => bedroomsLabel(s.bedrooms))
+      .filter(r => r.name !== "Sem informação")
+      .sort((a, b) => {
+        const na = parseInt(a.name) || 0;
+        const nb = parseInt(b.name) || 0;
+        return na - nb;
+      });
     return {
       byType: rank("type"), bySegment: rank("segment"), byCity: rank("city"),
       byBroker: rank("broker"), byOwner: rank("owner"), byNeighborhood: rank("neighborhood"),
       byEmpreendimento: rank(s => s.empreendimento || "Avulso"),
       byEdificio: filterEmpty(rank(s => s.edificio || "")),
       byCondominio: filterEmpty(rank(s => s.condominio || "")),
+      byBedrooms,
     };
   }, [filtered]);
 }
@@ -199,14 +212,15 @@ export default function Reports() {
   const [filterType, setFilterType] = useState("Todos");
   const [filterSegment, setFilterSegment] = useState("Todos");
   const [filterSeaView, setFilterSeaView] = useState("Todos");
+  const [filterBedrooms, setFilterBedrooms] = useState("Todos");
   const [filterPeriod, setFilterPeriod] = useState<TimePeriod>("Todos");
   const [filterMonth, setFilterMonth] = useState<number | null>(null);
   const [filterYear, setFilterYear] = useState<number | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-  const activeFilterCount = [filterCity !== "Todas", filterType !== "Todos", filterSegment !== "Todos", filterSeaView !== "Todos", filterPeriod !== "Todos", filterMonth !== null, filterYear !== null].filter(Boolean).length;
-  const clearAll = () => { setFilterCity("Todas"); setFilterType("Todos"); setFilterSegment("Todos"); setFilterSeaView("Todos"); setFilterPeriod("Todos"); setFilterMonth(null); setFilterYear(null); };
+  const activeFilterCount = [filterCity !== "Todas", filterType !== "Todos", filterSegment !== "Todos", filterSeaView !== "Todos", filterBedrooms !== "Todos", filterPeriod !== "Todos", filterMonth !== null, filterYear !== null].filter(Boolean).length;
+  const clearAll = () => { setFilterCity("Todas"); setFilterType("Todos"); setFilterSegment("Todos"); setFilterSeaView("Todos"); setFilterBedrooms("Todos"); setFilterPeriod("Todos"); setFilterMonth(null); setFilterYear(null); };
 
   const filtered = useMemo(() => sales.filter(s => {
     if (filterCity !== "Todas" && s.city !== filterCity) return false;
@@ -214,6 +228,11 @@ export default function Reports() {
     if (filterSegment !== "Todos" && s.segment !== filterSegment) return false;
     if (filterSeaView === "Sim" && !s.seaView) return false;
     if (filterSeaView === "Não" && s.seaView) return false;
+    if (filterBedrooms !== "Todos") {
+      const n = Number(s.bedrooms) || 0;
+      if (filterBedrooms === "5+") { if (n < 5) return false; }
+      else if (String(n) !== filterBedrooms) return false;
+    }
     if (filterPeriod === "Dia" && !isToday(s.date)) return false;
     if (filterPeriod === "Semana" && !isThisWeek(s.date)) return false;
     if (filterPeriod === "Mês" && !isThisMonth(s.date)) return false;
@@ -222,7 +241,7 @@ export default function Reports() {
     if (filterMonth !== null && d.getMonth() !== filterMonth) return false;
     if (filterYear !== null && d.getFullYear() !== filterYear) return false;
     return true;
-  }), [sales, filterCity, filterType, filterSegment, filterSeaView, filterPeriod, filterMonth, filterYear]);
+  }), [sales, filterCity, filterType, filterSegment, filterSeaView, filterBedrooms, filterPeriod, filterMonth, filterYear]);
 
   const currentYear = new Date().getFullYear();
   const currentMonthName = ALL_MONTHS[new Date().getMonth()];
@@ -404,6 +423,7 @@ export default function Reports() {
               {showAdvanced && (
                 <div className="mt-3 pt-3 border-t border-border/40 flex items-center gap-2 flex-wrap">
                   <SelectFilter label="Vista Mar" icon={Home} value={filterSeaView} onChange={setFilterSeaView} options={[{ value: "Todos", label: "Todos" }, { value: "Sim", label: "Com vista" }, { value: "Não", label: "Sem vista" }]} />
+                  <SelectFilter label="Dormitórios" icon={Home} value={filterBedrooms} onChange={setFilterBedrooms} options={[{ value: "Todos", label: "Todos" }, { value: "1", label: "1 dormitório" }, { value: "2", label: "2 dormitórios" }, { value: "3", label: "3 dormitórios" }, { value: "4", label: "4 dormitórios" }, { value: "5+", label: "5+ dormitórios" }]} />
                 </div>
               )}
             </div>
@@ -515,8 +535,9 @@ export default function Reports() {
                   {
                     key: "rankings-1",
                     node: (
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                         <RankingBarCard title="Tipo de Imóvel" data={rankings.byType} colors={TYPE_COLORS} />
+                        <RankingBarCard title="Dormitórios" data={rankings.byBedrooms} />
                         <RankingBarCard title="Cidade" data={rankings.byCity} />
                       </div>
                     ),
