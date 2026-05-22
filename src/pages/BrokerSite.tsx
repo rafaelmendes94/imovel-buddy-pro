@@ -193,17 +193,19 @@ function PropertyCard({ p, brokerName, whatsapp, onOpen }: { p: DBProperty; brok
         <div className="grid grid-cols-3 gap-2">
           <button
             type="button"
-            onClick={handleDownloadPhotos}
-            className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-muted px-2 py-2 text-[11px] font-bold text-foreground transition-colors hover:bg-muted/70"
-            title="Baixar todas as fotos em .zip"
+            onClick={handleOpenPhotos}
+            disabled={!p.drive_fotos_url}
+            className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-muted px-2 py-2 text-[11px] font-bold text-foreground transition-colors hover:bg-muted/70 disabled:cursor-not-allowed disabled:opacity-50"
+            title={p.drive_fotos_url ? "Abrir fotos" : "Sem link de fotos"}
           >
             <Images className="h-3.5 w-3.5" /> Fotos
           </button>
           <button
             type="button"
-            onClick={handleDownloadPdf}
-            className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-muted px-2 py-2 text-[11px] font-bold text-foreground transition-colors hover:bg-muted/70"
-            title="Baixar PDF do imóvel"
+            onClick={handleOpenPdf}
+            disabled={!p.fotos_pdf_url}
+            className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-muted px-2 py-2 text-[11px] font-bold text-foreground transition-colors hover:bg-muted/70 disabled:cursor-not-allowed disabled:opacity-50"
+            title={p.fotos_pdf_url ? "Abrir PDF" : "Sem link de PDF"}
           >
             <FileDown className="h-3.5 w-3.5" /> PDF
           </button>
@@ -220,7 +222,7 @@ function PropertyCard({ p, brokerName, whatsapp, onOpen }: { p: DBProperty; brok
         {whatsapp && (
           <a href={`https://wa.me/${whatsapp}?text=${msg}`} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
             className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-accent px-4 py-3 text-sm font-bold text-accent-foreground transition-opacity hover:opacity-90">
-            <Phone className="h-4 w-4" /> Tenho interesse
+            <Phone className="h-4 w-4" /> Entrar em contato
           </a>
         )}
       </div>
