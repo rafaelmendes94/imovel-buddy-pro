@@ -84,6 +84,84 @@ export default function Parceiros() {
     return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b));
   }, [filtered]);
 
+  const exportPdf = () => {
+    const doc = new jsPDF({ unit: "pt", format: "a4" });
+    const pageW = doc.internal.pageSize.getWidth();
+    const allGrouped = [...new Set(allPartners.map(p => p.category))].sort().map(c => [c, allPartners.filter(p => p.category === c)] as [string, Partner[]]);
+
+    // Cover
+    doc.setFillColor(15, 27, 61);
+    doc.rect(0, 0, pageW, 160, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(26);
+    doc.text("Catálogo de Parceiros", 40, 70);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(12);
+    doc.text("MV BROKER CONNECT — Rede de confiança", 40, 95);
+    doc.setFontSize(10);
+    doc.text(new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" }), 40, 115);
+
+    doc.setTextColor(30, 30, 30);
+    doc.setFontSize(13);
+    doc.setFont("helvetica", "bold");
+    doc.text("Sumário", 40, 200);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    let y = 225;
+    allGrouped.forEach(([cat, list], i) => {
+      doc.text(`${i + 1}. ${cat}`, 50, y);
+      doc.text(`${list.length} ${list.length === 1 ? "parceiro" : "parceiros"}`, pageW - 40, y, { align: "right" });
+      y += 20;
+    });
+
+    // One category per page
+    allGrouped.forEach(([cat, list]) => {
+      doc.addPage();
+      doc.setFillColor(30, 58, 95);
+      doc.rect(0, 0, pageW, 70, "F");
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(18);
+      doc.text(cat, 40, 35);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.text(`${list.length} ${list.length === 1 ? "profissional" : "profissionais"}`, 40, 55);
+
+      autoTable(doc, {
+        startY: 95,
+        head: [["#", "Profissional", "Cidade", "Contato", "Nota"]],
+        body: list.map((p, i) => [
+          String(i + 1),
+          p.name,
+          p.city || "—",
+          p.phone || "—",
+          p.rating && p.rating > 0 ? `★ ${Number(p.rating).toFixed(1)} (${p.total_ratings || 0})` : "Sem avaliação",
+        ]),
+        styles: { font: "helvetica", fontSize: 10, cellPadding: 8, valign: "middle" },
+        headStyles: { fillColor: [15, 27, 61], textColor: 255, fontStyle: "bold" },
+        alternateRowStyles: { fillColor: [245, 248, 252] },
+        columnStyles: {
+          0: { cellWidth: 30, halign: "center" },
+          4: { cellWidth: 110, halign: "center", fontStyle: "bold", textColor: [180, 120, 0] },
+        },
+        margin: { left: 40, right: 40 },
+      });
+    });
+
+    // Footer page numbers
+    const total = doc.getNumberOfPages();
+    for (let i = 1; i <= total; i++) {
+      doc.setPage(i);
+      doc.setFontSize(9);
+      doc.setTextColor(120, 120, 120);
+      doc.text(`Página ${i} de ${total}`, pageW - 40, doc.internal.pageSize.getHeight() - 20, { align: "right" });
+      doc.text("MV BROKER CONNECT", 40, doc.internal.pageSize.getHeight() - 20);
+    }
+
+    doc.save(`parceiros-${new Date().toISOString().slice(0, 10)}.pdf`);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="bg-gradient-to-r from-blue-950 via-blue-900 to-blue-950 text-white">
