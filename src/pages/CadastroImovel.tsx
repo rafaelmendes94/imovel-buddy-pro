@@ -751,6 +751,9 @@ export function ImovelForm({ editId }: { editId?: string }) {
         link_360: form.link360 || '',
         drive_fotos_url: form.driveFotosUrl || '',
         fotos_pdf_url: form.fotosPdfUrl || '',
+        ...(form.status === 'Vendido'
+          ? { data_venda: new Date().toISOString().slice(0, 10) }
+          : { data_venda: null, plataforma_venda: '' }),
       } as any;
 
       if (isEdit) {
