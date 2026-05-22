@@ -40,7 +40,7 @@ const operationalItems = [
   { icon: ShoppingBag, label: "Brick", path: "/admin/brick", moduleKey: "brick" },
 ];
 
-export function AdminSidebar() {
+export function AdminSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
   const location = useLocation();
   const { signOut, profile, isSuperAdmin, hasModuleAccess } = useAuth();
 
@@ -53,6 +53,7 @@ export function AdminSidebar() {
       <Link
         key={item.path}
         to={item.path}
+        onClick={onNavigate}
         className={cn(
           "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200",
           isActive
