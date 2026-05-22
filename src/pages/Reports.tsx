@@ -423,6 +423,7 @@ export default function Reports() {
               {showAdvanced && (
                 <div className="mt-3 pt-3 border-t border-border/40 flex items-center gap-2 flex-wrap">
                   <SelectFilter label="Vista Mar" icon={Home} value={filterSeaView} onChange={setFilterSeaView} options={[{ value: "Todos", label: "Todos" }, { value: "Sim", label: "Com vista" }, { value: "Não", label: "Sem vista" }]} />
+                  <SelectFilter label="Dormitórios" icon={Home} value={filterBedrooms} onChange={setFilterBedrooms} options={[{ value: "Todos", label: "Todos" }, { value: "1", label: "1 dormitório" }, { value: "2", label: "2 dormitórios" }, { value: "3", label: "3 dormitórios" }, { value: "4", label: "4 dormitórios" }, { value: "5+", label: "5+ dormitórios" }]} />
                 </div>
               )}
             </div>
