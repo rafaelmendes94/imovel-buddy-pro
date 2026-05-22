@@ -111,84 +111,21 @@ function PropertyCard({ p, brokerName, whatsapp, onOpen }: { p: DBProperty; brok
     }
   };
 
-  const handleDownloadPhotos = async (e: React.MouseEvent) => {
+  const handleOpenPhotos = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const urls = (p.imagens || []).filter(Boolean);
-    if (urls.length === 0) {
-      toast.info("Sem fotos para baixar");
-      return;
-    }
-    const tId = toast.loading("Preparando fotos...");
-    try {
-      const JSZip = (await import("jszip")).default;
-      const zip = new JSZip();
-      await Promise.all(
-        urls.map(async (url, idx) => {
-          try {
-            const res = await fetch(url);
-            const blob = await res.blob();
-            const ext = (blob.type.split("/")[1] || "jpg").split("+")[0];
-            zip.file(`foto-${String(idx + 1).padStart(2, "0")}.${ext}`, blob);
-          } catch {}
-        })
-      );
-      const content = await zip.generateAsync({ type: "blob" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(content);
-      a.download = `${p.titulo || "imovel"}-fotos.zip`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(a.href);
-      toast.success("Fotos baixadas", { id: tId });
-    } catch (err) {
-      console.error(err);
-      toast.error("Erro ao baixar fotos", { id: tId });
+    if (p.drive_fotos_url) {
+      window.open(p.drive_fotos_url, "_blank", "noopener,noreferrer");
+    } else {
+      toast.info("Link de fotos não cadastrado");
     }
   };
 
-  const handleDownloadPdf = async (e: React.MouseEvent) => {
+  const handleOpenPdf = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const tId = toast.loading("Gerando PDF...");
-    try {
-      const html2pdf = (await import("html2pdf.js")).default;
-      const urls = (p.imagens || []).filter(Boolean);
-      const toB64 = (u: string) =>
-        fetch(u)
-          .then((r) => r.blob())
-          .then(
-            (b) =>
-              new Promise<string | null>((resolve) => {
-                const fr = new FileReader();
-                fr.onloadend = () => resolve(fr.result as string);
-                fr.onerror = () => resolve(null);
-                fr.readAsDataURL(b);
-              })
-          )
-          .catch(() => null);
-      const imgs = (await Promise.all(urls.map(toB64))).filter(Boolean) as string[];
-      const html = `
-        <div style="font-family:Arial,sans-serif;color:#1f2937;padding:8px;">
-          <h1 style="font-size:22px;font-weight:800;margin:0 0 4px;color:#1e3a5f;text-align:center;">${p.titulo}</h1>
-          <p style="text-align:center;font-size:11px;color:#6b7280;margin:0 0 8px;">${p.endereco}, ${p.cidade}</p>
-          <p style="text-align:center;font-size:16px;font-weight:700;color:#0f4c81;margin:0 0 16px;">${formatCurrency(p.preco)}</p>
-          ${imgs.length === 0
-            ? `<p style="text-align:center;color:#9ca3af;font-size:12px;">Sem fotos cadastradas.</p>`
-            : imgs.map((b) => `<div style="page-break-inside:avoid;margin-bottom:12px;text-align:center;"><img src="${b}" style="max-width:100%;max-height:240mm;object-fit:contain;border-radius:6px;" /></div>`).join("")}
-        </div>`;
-      const container = document.createElement("div");
-      container.style.width = "210mm";
-      container.innerHTML = html;
-      document.body.appendChild(container);
-      await html2pdf()
-        .from(container)
-        .set({ margin: 10, filename: `${p.titulo || "imovel"}.pdf`, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: "mm", format: "a4", orientation: "portrait" } })
-        .save();
-      document.body.removeChild(container);
-      toast.success("PDF gerado", { id: tId });
-    } catch (err) {
-      console.error(err);
-      toast.error("Erro ao gerar PDF", { id: tId });
+    if (p.fotos_pdf_url) {
+      window.open(p.fotos_pdf_url, "_blank", "noopener,noreferrer");
+    } else {
+      toast.info("Link do PDF não cadastrado");
     }
   };
 
