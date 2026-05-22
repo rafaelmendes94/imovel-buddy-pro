@@ -525,9 +525,9 @@ export default function Reports() {
                     key: "rankings-entidades",
                     node: (
                       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                       <RankingListCard title="Edifícios Mais Vendidos" icon={Building2} data={rankings.byEdificio.slice(0, 6)} />
-                       <RankingListCard title="Condomínios Mais Vendidos" icon={Building2} data={rankings.byCondominio.slice(0, 6)} />
-                       <RankingListCard title="Loteamentos Mais Vendidos" icon={Building2} data={rankings.byEmpreendimento.slice(0, 6)} />
+                       <RankingListCard title="Edifícios Mais Vendidos" icon={Building2} data={rankings.byEdificio.slice(0, 6)} sales={filtered} field="edificio" />
+                       <RankingListCard title="Condomínios Mais Vendidos" icon={Building2} data={rankings.byCondominio.slice(0, 6)} sales={filtered} field="condominio" />
+                       <RankingListCard title="Loteamentos Mais Vendidos" icon={Building2} data={rankings.byEmpreendimento.slice(0, 6)} sales={filtered} field="empreendimento" />
                       </div>
                     ),
                   },
@@ -977,26 +977,81 @@ function RankingBarCard({ title, data, colors }: { title: string; data: { name: 
   );
 }
 
-function RankingListCard({ title, icon: Icon, data, colors }: { title: string; icon: React.ElementType; data: { name: string; count: number; vgv: number }[]; colors?: Record<string, string> }) {
+function RankingListCard({ title, icon: Icon, data, colors, sales, field }: { title: string; icon: React.ElementType; data: { name: string; count: number; vgv: number }[]; colors?: Record<string, string>; sales?: RealSaleRecord[]; field?: "edificio" | "condominio" | "empreendimento" }) {
+  const [openName, setOpenName] = useState<string | null>(null);
   if (data.length === 0) return null;
+  const matched = openName && sales && field ? sales.filter(s => (s[field] || "") === openName) : [];
+  const totalVgv = matched.reduce((sum, s) => sum + s.price, 0);
   return (
     <div className="elevated-card rounded-xl p-5">
       <h3 className="text-sm font-semibold text-card-foreground mb-3 flex items-center gap-2"><Icon className="w-4 h-4 text-accent" /> {title}</h3>
       <div className="space-y-1.5">
         {data.map((item, idx) => (
           <div key={item.name} className="flex items-center justify-between py-1.5 border-b border-border/30 last:border-0">
-            <div className="flex items-center gap-1.5">
-              <span className={`w-4 h-4 rounded text-[9px] flex items-center justify-center font-bold ${idx === 0 ? "bg-accent/15 text-accent" : "bg-muted text-muted-foreground"}`}>{idx + 1}</span>
-              <span className="text-xs font-medium text-card-foreground">{item.name}</span>
-              {colors && <div className="w-1.5 h-1.5 rounded-full ml-1" style={{ background: colors[item.name] }} />}
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className={`w-4 h-4 rounded text-[9px] flex items-center justify-center font-bold shrink-0 ${idx === 0 ? "bg-accent/15 text-accent" : "bg-muted text-muted-foreground"}`}>{idx + 1}</span>
+              {sales && field ? (
+                <button
+                  type="button"
+                  onClick={() => setOpenName(item.name)}
+                  className="text-xs font-medium text-card-foreground hover:text-accent hover:underline text-left truncate"
+                  title={`Ver vendas de ${item.name}`}
+                >
+                  {item.name}
+                </button>
+              ) : (
+                <span className="text-xs font-medium text-card-foreground truncate">{item.name}</span>
+              )}
+              {colors && <div className="w-1.5 h-1.5 rounded-full ml-1 shrink-0" style={{ background: colors[item.name] }} />}
             </div>
-            <div className="text-right flex items-center gap-2">
+            <div className="text-right flex items-center gap-2 shrink-0">
               <span className="text-[10px] text-muted-foreground">{item.count}×</span>
               <span className="text-xs font-bold text-accent">{formatCurrency(item.vgv)}</span>
             </div>
           </div>
         ))}
       </div>
+      <Dialog open={!!openName} onOpenChange={(o) => !o && setOpenName(null)}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Icon className="w-5 h-5 text-accent" />
+              Vendas de {openName}
+            </DialogTitle>
+            <div className="text-xs text-muted-foreground flex gap-4 mt-1">
+              <span>{matched.length} venda{matched.length !== 1 ? "s" : ""}</span>
+              <span>VGV total: <span className="font-bold text-accent">{formatCurrency(totalVgv)}</span></span>
+            </div>
+          </DialogHeader>
+          <div className="overflow-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Imóvel</TableHead>
+                  <TableHead>Cidade</TableHead>
+                  <TableHead>Corretor</TableHead>
+                  <TableHead>Data</TableHead>
+                  <TableHead className="text-right">Valor</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {matched.map((s) => (
+                  <TableRow key={s.id}>
+                    <TableCell className="font-medium">{s.propertyTitle}</TableCell>
+                    <TableCell>{s.city}{s.neighborhood ? ` - ${s.neighborhood}` : ""}</TableCell>
+                    <TableCell>{s.broker}</TableCell>
+                    <TableCell>{new Date(s.date).toLocaleDateString("pt-BR")}</TableCell>
+                    <TableCell className="text-right font-bold text-accent">{formatCurrency(s.price)}</TableCell>
+                  </TableRow>
+                ))}
+                {matched.length === 0 && (
+                  <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-6">Nenhuma venda encontrada</TableCell></TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
