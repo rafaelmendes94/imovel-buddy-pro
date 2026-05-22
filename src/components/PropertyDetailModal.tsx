@@ -95,7 +95,11 @@ function StatusSelectWithConfirm({ currentStatus, onConfirm }: { currentStatus: 
 
 export function PropertyDetailModal({ property, onClose, allProperties, brokerInfo, onSelectSimilar, onUpdateProperty, onFilterByTitle, onFilterByCondition }: PropertyDetailModalProps) {
   const { user, isSuperAdmin, isAdminStaff } = useAuth();
-  const canEdit = !!property && (isSuperAdmin || isAdminStaff || !property.userId || property.userId === user?.id);
+  // Edição só liberada no painel do corretor (/imoveis) e somente para dono ou admin.
+  // No site público (/site, /corretor/:slug, /construtora/:slug, /, etc.) edição fica bloqueada.
+  const isEditableRoute = typeof window !== "undefined" && window.location.pathname.startsWith("/imoveis");
+  const isOwner = !!property && !!user?.id && property.userId === user.id;
+  const canEdit = isEditableRoute && !!property && (isSuperAdmin || isAdminStaff || isOwner);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [showVideo, setShowVideo] = useState(false);
