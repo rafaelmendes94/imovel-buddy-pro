@@ -462,7 +462,8 @@ export default function Parceiros() {
       doc.text(`${i} / ${total}`, pageW - 40, pageH - 20, { align: "right" });
     }
 
-    doc.save(`parceiros-${new Date().toISOString().slice(0, 10)}.pdf`);
+    const suffix = onlyCategory ? onlyCategory.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "-") : "completo";
+    doc.save(`parceiros-${suffix}-${new Date().toISOString().slice(0, 10)}.pdf`);
   };
 
 
