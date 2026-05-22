@@ -29,7 +29,7 @@ function SectionHeader({ icon: Icon, title }: { icon: any; title: string }) {
 const initialForm = {
   nome: '', construtora: '', ano_construcao: '', status: 'Lançamento',
   cep: '', endereco: '', numero: '', complemento: '', bairro: '', cidade: '', estado: '',
-  andares: 0, total_unidades: 0, descricao: '', infraestrutura: [] as string[],
+  andares: 0, total_unidades: 0, unidades_por_andar: 0, descricao: '', infraestrutura: [] as string[],
   imagem_url: '', latitude: '', longitude: '',
   fotos_infra: [] as string[], fotos_empreendimento: [] as string[],
   videos: [] as string[], material_digital: [] as string[],
