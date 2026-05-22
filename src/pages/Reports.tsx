@@ -441,19 +441,19 @@ export default function Reports() {
                 {
                   key: "charts-row",
                   node: (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                      {/* Revenue Bar Chart */}
+                    <div className="space-y-4">
+                      {/* Revenue Bar Chart — full width, taller */}
                       <div className="elevated-card rounded-xl p-5">
-                        <h3 className="text-sm font-semibold text-card-foreground mb-1 flex items-center gap-2">
-                          <BarChart3 className="w-4 h-4 text-accent" /> VGV Mensal
+                        <h3 className="text-base font-semibold text-card-foreground mb-1 flex items-center gap-2">
+                          <BarChart3 className="w-5 h-5 text-accent" /> VGV Mensal
                         </h3>
-                        <p className="text-[10px] text-muted-foreground mb-3">Clique em uma barra para detalhes</p>
-                        <ResponsiveContainer width="100%" height={260}>
+                        <p className="text-[11px] text-muted-foreground mb-3">Clique em uma barra para detalhes</p>
+                        <ResponsiveContainer width="100%" height={420}>
                           <BarChart data={revenueBarData} barCategoryGap="20%" onClick={(data) => { if (data?.activeLabel) setSelectedMonth(data.activeLabel); }} style={{ cursor: "pointer" }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                            <XAxis dataKey="month" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
-                            <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v) => `${(v / 1000000).toFixed(1)}M`} />
-                            <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "11px" }} formatter={(value: number) => [formatCurrency(value), "Receita"]} />
+                            <XAxis dataKey="month" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
+                            <YAxis tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v) => `${(v / 1000000).toFixed(1)}M`} />
+                            <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "12px" }} formatter={(value: number) => [formatCurrency(value), "Receita"]} />
                             <ReferenceLine y={avgRevenue} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" />
                             <Bar dataKey="receita" radius={[4, 4, 0, 0]} animationDuration={800}>
                               {revenueBarData.map((entry, i) => (
@@ -465,8 +465,8 @@ export default function Reports() {
                         <div className="flex justify-around mt-2">
                           {revenueBarData.map((d, i) => (
                             <div key={i} className="flex flex-col items-center gap-0.5">
-                              <span className="text-[10px] font-medium text-muted-foreground">{d.vendas} un.</span>
-                              <span className={`text-[10px] font-bold ${d.trend === "alta" ? "text-emerald-500" : d.trend === "baixa" ? "text-destructive" : "text-muted-foreground"}`}>
+                              <span className="text-[11px] font-medium text-muted-foreground">{d.vendas} un.</span>
+                              <span className={`text-[11px] font-bold ${d.trend === "alta" ? "text-emerald-500" : d.trend === "baixa" ? "text-destructive" : "text-muted-foreground"}`}>
                                 {i === 0 ? "—" : `${d.change > 0 ? "+" : ""}${d.change.toFixed(0)}%`}
                               </span>
                             </div>
@@ -474,7 +474,7 @@ export default function Reports() {
                         </div>
                       </div>
 
-                      {/* Pie Charts */}
+                      {/* Distribuição — below, full width */}
                       <div className="elevated-card rounded-xl p-5">
                         <h3 className="text-sm font-semibold text-card-foreground mb-3 flex items-center gap-2">
                           <Star className="w-4 h-4 text-accent" /> Distribuição
@@ -482,27 +482,27 @@ export default function Reports() {
                         {segmentPie.length === 0 && typePie.length === 0 ? (
                           <p className="text-sm text-muted-foreground text-center py-16">Nenhuma venda registrada</p>
                         ) : (
-                          <div className="grid grid-cols-2 gap-2">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                              <p className="text-[10px] text-muted-foreground text-center mb-1 font-medium">Segmento (VGV)</p>
-                              <ResponsiveContainer width="100%" height={180}>
-                                <PieChart><Pie data={segmentPie} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={35} outerRadius={65} paddingAngle={2}>{segmentPie.map((e, i) => <Cell key={i} fill={e.fill} />)}</Pie>
-                                  <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "10px" }} />
+                              <p className="text-[11px] text-muted-foreground text-center mb-1 font-medium">Segmento (VGV)</p>
+                              <ResponsiveContainer width="100%" height={220}>
+                                <PieChart><Pie data={segmentPie} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={45} outerRadius={85} paddingAngle={2}>{segmentPie.map((e, i) => <Cell key={i} fill={e.fill} />)}</Pie>
+                                  <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "11px" }} />
                                 </PieChart>
                               </ResponsiveContainer>
                               <div className="flex flex-wrap justify-center gap-x-3 gap-y-1">
-                                {segmentPie.map(s => <div key={s.name} className="flex items-center gap-1 text-[9px] text-muted-foreground"><div className="w-1.5 h-1.5 rounded-full" style={{ background: s.fill }} />{s.name}</div>)}
+                                {segmentPie.map(s => <div key={s.name} className="flex items-center gap-1 text-[10px] text-muted-foreground"><div className="w-2 h-2 rounded-full" style={{ background: s.fill }} />{s.name}</div>)}
                               </div>
                             </div>
                             <div>
-                              <p className="text-[10px] text-muted-foreground text-center mb-1 font-medium">Tipo (Qtd)</p>
-                              <ResponsiveContainer width="100%" height={180}>
-                                <PieChart><Pie data={typePie} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={35} outerRadius={65} paddingAngle={2}>{typePie.map((e, i) => <Cell key={i} fill={e.fill} />)}</Pie>
-                                  <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "10px" }} />
+                              <p className="text-[11px] text-muted-foreground text-center mb-1 font-medium">Tipo (Qtd)</p>
+                              <ResponsiveContainer width="100%" height={220}>
+                                <PieChart><Pie data={typePie} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={45} outerRadius={85} paddingAngle={2}>{typePie.map((e, i) => <Cell key={i} fill={e.fill} />)}</Pie>
+                                  <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "11px" }} />
                                 </PieChart>
                               </ResponsiveContainer>
                               <div className="flex flex-wrap justify-center gap-x-3 gap-y-1">
-                                {typePie.map(s => <div key={s.name} className="flex items-center gap-1 text-[9px] text-muted-foreground"><div className="w-1.5 h-1.5 rounded-full" style={{ background: s.fill }} />{s.name}</div>)}
+                                {typePie.map(s => <div key={s.name} className="flex items-center gap-1 text-[10px] text-muted-foreground"><div className="w-2 h-2 rounded-full" style={{ background: s.fill }} />{s.name}</div>)}
                               </div>
                             </div>
                           </div>
