@@ -555,16 +555,16 @@ export default function Reports() {
                   {
                     key: "rankings-2",
                     node: (
-                      <div className="grid grid-cols-1 gap-4">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         <RankingProgressCard title="Top Corretores" data={rankings.byBroker} />
+                        <RankingProgressCard title="Proprietários" data={rankings.byOwner} />
                       </div>
                     ),
                   },
                   {
                     key: "rankings-3",
                     node: (
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        <RankingProgressCard title="Proprietários" data={rankings.byOwner} />
+                      <div className="grid grid-cols-1 gap-4">
                         <RankingBarCard title="Bairros" data={rankings.byNeighborhood} />
                       </div>
                     ),
