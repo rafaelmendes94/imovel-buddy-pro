@@ -87,80 +87,381 @@ export default function Parceiros() {
   const exportPdf = () => {
     const doc = new jsPDF({ unit: "pt", format: "a4" });
     const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
     const allGrouped = [...new Set(allPartners.map(p => p.category))].sort().map(c => [c, allPartners.filter(p => p.category === c)] as [string, Partner[]]);
 
-    // Cover
-    doc.setFillColor(15, 27, 61);
-    doc.rect(0, 0, pageW, 160, "F");
+    // Color palette per category (primary, secondary, accent)
+    const palette: Record<string, [number[], number[], number[]]> = {
+      "Construtoras":  [[15, 27, 61],    [37, 99, 235],   [251, 191, 36]],
+      "Imobiliárias":  [[30, 64, 175],   [59, 130, 246],  [253, 224, 71]],
+      "Engenharia":    [[30, 41, 59],    [71, 85, 105],   [234, 179, 8]],
+      "Financeiro":    [[6, 78, 59],     [16, 185, 129],  [253, 224, 71]],
+      "Seguros":       [[30, 58, 138],   [79, 70, 229],   [251, 191, 36]],
+      "Arquitetura":   [[22, 78, 99],    [14, 165, 233],  [254, 215, 170]],
+      "Energia":       [[120, 53, 15],   [245, 158, 11],  [253, 230, 138]],
+      "Reformas":      [[88, 28, 135],   [139, 92, 246],  [253, 224, 71]],
+      "Jurídico":      [[12, 10, 62],    [55, 48, 163],   [212, 175, 55]],
+      "Serviços":      [[51, 65, 85],    [100, 116, 139], [251, 191, 36]],
+    };
+    const colorsFor = (c: string) => palette[c] || [[15, 27, 61], [37, 99, 235], [251, 191, 36]];
+
+    // Draw decorative iconography per category (vector art, no images)
+    const drawArt = (cat: string, cx: number, cy: number, size: number, accent: number[]) => {
+      doc.setDrawColor(255, 255, 255);
+      doc.setFillColor(accent[0], accent[1], accent[2]);
+      const s = size;
+      switch (cat) {
+        case "Construtoras": {
+          // Skyline of buildings
+          doc.setLineWidth(2);
+          const base = cy + s / 2;
+          const w = s * 0.16;
+          const hs = [0.9, 0.6, 1.0, 0.45, 0.8];
+          hs.forEach((h, i) => {
+            const x = cx - s / 2 + i * w * 1.15;
+            doc.setFillColor(255, 255, 255);
+            doc.rect(x, base - s * h, w, s * h, "F");
+            doc.setFillColor(accent[0], accent[1], accent[2]);
+            for (let r = 0; r < Math.floor(h * 6); r++) {
+              for (let c2 = 0; c2 < 2; c2++) {
+                doc.rect(x + 4 + c2 * (w / 2), base - s * h + 6 + r * 9, w / 2 - 6, 4, "F");
+              }
+            }
+          });
+          break;
+        }
+        case "Imobiliárias": {
+          // House silhouette
+          doc.setFillColor(255, 255, 255);
+          doc.triangle(cx - s / 2, cy, cx, cy - s / 2, cx + s / 2, cy, "F");
+          doc.rect(cx - s / 2.4, cy, s / 1.2, s / 1.8, "F");
+          doc.setFillColor(accent[0], accent[1], accent[2]);
+          doc.rect(cx - s / 8, cy + s / 8, s / 4, s / 3, "F");
+          break;
+        }
+        case "Engenharia": {
+          // Gear
+          doc.setFillColor(255, 255, 255);
+          for (let i = 0; i < 8; i++) {
+            const a = (i * Math.PI) / 4;
+            const x = cx + Math.cos(a) * s / 2;
+            const y = cy + Math.sin(a) * s / 2;
+            doc.rect(x - 8, y - 8, 16, 16, "F");
+          }
+          doc.circle(cx, cy, s / 2.4, "F");
+          doc.setFillColor(accent[0], accent[1], accent[2]);
+          doc.circle(cx, cy, s / 6, "F");
+          break;
+        }
+        case "Financeiro": {
+          // Bar chart + arrow
+          doc.setFillColor(255, 255, 255);
+          [0.4, 0.65, 0.85, 1].forEach((h, i) => {
+            doc.rect(cx - s / 2 + i * (s / 4) + 4, cy + s / 2 - s * h * 0.7, s / 4 - 8, s * h * 0.7, "F");
+          });
+          doc.setFillColor(accent[0], accent[1], accent[2]);
+          doc.triangle(cx + s / 2 - 12, cy - s / 3, cx + s / 2 + 8, cy - s / 2.2, cx + s / 2 - 4, cy - s / 4, "F");
+          break;
+        }
+        case "Seguros": {
+          // Shield
+          doc.setFillColor(255, 255, 255);
+          doc.triangle(cx - s / 2.2, cy - s / 2.2, cx + s / 2.2, cy - s / 2.2, cx, cy + s / 2, "F");
+          doc.rect(cx - s / 2.2, cy - s / 2.2, s / 1.1, s / 4, "F");
+          doc.setFillColor(accent[0], accent[1], accent[2]);
+          doc.setLineWidth(4);
+          doc.setDrawColor(accent[0], accent[1], accent[2]);
+          doc.line(cx - s / 6, cy, cx - s / 20, cy + s / 6);
+          doc.line(cx - s / 20, cy + s / 6, cx + s / 5, cy - s / 8);
+          break;
+        }
+        case "Arquitetura": {
+          // Ruler + triangle
+          doc.setFillColor(255, 255, 255);
+          doc.triangle(cx - s / 2, cy + s / 2, cx + s / 2, cy + s / 2, cx - s / 2, cy - s / 2, "F");
+          doc.setFillColor(accent[0], accent[1], accent[2]);
+          for (let i = 1; i < 6; i++) {
+            doc.rect(cx - s / 2 + i * (s / 6), cy + s / 2 - 6, 2, 8, "F");
+          }
+          break;
+        }
+        case "Energia": {
+          // Lightning bolt
+          doc.setFillColor(255, 255, 255);
+          const pts: [number, number][] = [
+            [cx + s / 8, cy - s / 2], [cx - s / 4, cy + s / 12], [cx - s / 30, cy + s / 12],
+            [cx - s / 6, cy + s / 2], [cx + s / 3, cy - s / 10], [cx, cy - s / 10],
+          ];
+          // approximate via two triangles
+          doc.triangle(pts[0][0], pts[0][1], pts[1][0], pts[1][1], pts[5][0], pts[5][1], "F");
+          doc.triangle(pts[5][0], pts[5][1], pts[2][0], pts[2][1], pts[3][0], pts[3][1], "F");
+          doc.triangle(pts[5][0], pts[5][1], pts[3][0], pts[3][1], pts[4][0], pts[4][1], "F");
+          break;
+        }
+        case "Reformas": {
+          // Hammer + wrench cross
+          doc.setFillColor(255, 255, 255);
+          doc.rect(cx - s / 2, cy - 8, s, 16, "F");
+          doc.rect(cx - 8, cy - s / 2, 16, s, "F");
+          doc.setFillColor(accent[0], accent[1], accent[2]);
+          doc.circle(cx - s / 2, cy, 12, "F");
+          doc.circle(cx + s / 2, cy, 12, "F");
+          break;
+        }
+        case "Jurídico": {
+          // Scales of justice
+          doc.setFillColor(255, 255, 255);
+          doc.rect(cx - 4, cy - s / 2, 8, s, "F");
+          doc.rect(cx - s / 3, cy + s / 2 - 6, s / 1.5, 8, "F");
+          doc.setLineWidth(3);
+          doc.setDrawColor(255, 255, 255);
+          doc.line(cx - s / 2.5, cy - s / 3, cx + s / 2.5, cy - s / 3);
+          doc.line(cx - s / 2.5, cy - s / 3, cx - s / 2.5, cy - s / 8);
+          doc.line(cx + s / 2.5, cy - s / 3, cx + s / 2.5, cy - s / 8);
+          doc.setFillColor(accent[0], accent[1], accent[2]);
+          doc.circle(cx - s / 2.5, cy - s / 10, 14, "F");
+          doc.circle(cx + s / 2.5, cy - s / 10, 14, "F");
+          break;
+        }
+        case "Serviços": {
+          // Truck
+          doc.setFillColor(255, 255, 255);
+          doc.rect(cx - s / 2, cy - s / 6, s * 0.6, s / 3, "F");
+          doc.rect(cx + s / 10, cy, s / 2.5, s / 5, "F");
+          doc.setFillColor(accent[0], accent[1], accent[2]);
+          doc.circle(cx - s / 3.5, cy + s / 5, 12, "F");
+          doc.circle(cx + s / 3.5, cy + s / 5, 12, "F");
+          break;
+        }
+        default: {
+          // Handshake-ish abstract: two interlocking circles
+          doc.setFillColor(255, 255, 255);
+          doc.circle(cx - s / 5, cy, s / 3, "F");
+          doc.setFillColor(accent[0], accent[1], accent[2]);
+          doc.circle(cx + s / 5, cy, s / 3, "F");
+        }
+      }
+    };
+
+    // Draw a star rating (5 stars)
+    const drawStars = (x: number, y: number, rating: number, color: number[]) => {
+      doc.setFillColor(color[0], color[1], color[2]);
+      const r = 4.5;
+      for (let i = 0; i < 5; i++) {
+        const cx = x + i * 12;
+        if (i < Math.round(rating)) {
+          // filled diamond as star approximation
+          doc.triangle(cx, y - r, cx - r, y + r / 2, cx + r, y + r / 2, "F");
+          doc.triangle(cx, y + r, cx - r, y - r / 2, cx + r, y - r / 2, "F");
+        } else {
+          doc.setDrawColor(color[0], color[1], color[2]);
+          doc.setLineWidth(0.6);
+          doc.circle(cx, y, 2.5);
+        }
+      }
+    };
+
+    // ============ COVER ============
+    doc.setFillColor(8, 15, 40);
+    doc.rect(0, 0, pageW, pageH, "F");
+    // decorative diagonal stripes
+    doc.setFillColor(37, 99, 235);
+    for (let i = -2; i < 10; i++) {
+      doc.triangle(i * 80, 0, i * 80 + 60, 0, i * 80, 60, "F");
+    }
+    doc.setFillColor(251, 191, 36);
+    doc.rect(40, pageH / 2 - 90, 6, 60, "F");
     doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(26);
-    doc.text("Catálogo de Parceiros", 40, 70);
+    doc.setFontSize(42);
+    doc.text("Catálogo de", 60, pageH / 2 - 40);
+    doc.text("Parceiros", 60, pageH / 2 + 10);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(12);
-    doc.text("MV BROKER CONNECT — Rede de confiança", 40, 95);
+    doc.setTextColor(191, 219, 254);
+    doc.text("MV BROKER CONNECT", 60, pageH / 2 + 40);
+    doc.text("Rede de profissionais de confiança", 60, pageH / 2 + 58);
     doc.setFontSize(10);
-    doc.text(new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" }), 40, 115);
+    doc.setTextColor(148, 163, 184);
+    doc.text(new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" }).toUpperCase(), 60, pageH - 60);
 
-    doc.setTextColor(30, 30, 30);
-    doc.setFontSize(13);
+    // ============ SUMMARY ============
+    doc.addPage();
+    doc.setFillColor(255, 255, 255);
+    doc.rect(0, 0, pageW, pageH, "F");
+    doc.setFillColor(15, 27, 61);
+    doc.rect(0, 0, pageW, 90, "F");
+    doc.setFillColor(251, 191, 36);
+    doc.rect(40, 30, 4, 40, "F");
+    doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
-    doc.text("Sumário", 40, 200);
-    doc.setFont("helvetica", "normal");
+    doc.setFontSize(22);
+    doc.text("Sumário", 56, 60);
+    doc.setTextColor(30, 30, 30);
     doc.setFontSize(11);
-    let y = 225;
+    doc.setFont("helvetica", "normal");
+    let sy = 130;
     allGrouped.forEach(([cat, list], i) => {
-      doc.text(`${i + 1}. ${cat}`, 50, y);
-      doc.text(`${list.length} ${list.length === 1 ? "parceiro" : "parceiros"}`, pageW - 40, y, { align: "right" });
-      y += 20;
-    });
-
-    // One category per page
-    allGrouped.forEach(([cat, list]) => {
-      doc.addPage();
-      doc.setFillColor(30, 58, 95);
-      doc.rect(0, 0, pageW, 70, "F");
+      const [p1, , acc] = colorsFor(cat);
+      doc.setFillColor(p1[0], p1[1], p1[2]);
+      doc.circle(56, sy - 4, 10, "F");
       doc.setTextColor(255, 255, 255);
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(18);
-      doc.text(cat, 40, 35);
+      doc.setFontSize(9);
+      doc.text(String(i + 1).padStart(2, "0"), 56, sy - 1, { align: "center" });
+      doc.setTextColor(30, 30, 30);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(12);
+      doc.text(cat, 78, sy);
+      // dots
+      doc.setDrawColor(200, 200, 200);
+      doc.setLineDashPattern([1, 3], 0);
+      doc.line(78 + doc.getTextWidth(cat) + 10, sy - 3, pageW - 110, sy - 3);
+      doc.setLineDashPattern([], 0);
       doc.setFont("helvetica", "normal");
       doc.setFontSize(10);
-      doc.text(`${list.length} ${list.length === 1 ? "profissional" : "profissionais"}`, 40, 55);
+      doc.setTextColor(100, 100, 100);
+      doc.text(`${list.length} ${list.length === 1 ? "profissional" : "profissionais"}`, pageW - 50, sy, { align: "right" });
+      doc.setFillColor(acc[0], acc[1], acc[2]);
+      doc.rect(pageW - 50, sy + 2, 10, 2, "F");
+      sy += 26;
+    });
+
+    // ============ CATEGORY COVER + LIST ============
+    allGrouped.forEach(([cat, list], idx) => {
+      const [p1, p2, acc] = colorsFor(cat);
+
+      // ---- COVER PAGE ----
+      doc.addPage();
+      doc.setFillColor(p1[0], p1[1], p1[2]);
+      doc.rect(0, 0, pageW, pageH, "F");
+      // gradient feel via stacked rects
+      for (let i = 0; i < 20; i++) {
+        const t = i / 20;
+        const r = p1[0] + (p2[0] - p1[0]) * t;
+        const g = p1[1] + (p2[1] - p1[1]) * t;
+        const b = p1[2] + (p2[2] - p1[2]) * t;
+        doc.setFillColor(r, g, b);
+        doc.rect(0, (pageH / 20) * i, pageW, pageH / 20 + 1, "F");
+      }
+      // dotted pattern overlay
+      doc.setFillColor(255, 255, 255);
+      for (let x = 30; x < pageW; x += 22) {
+        for (let y = 30; y < pageH; y += 22) {
+          doc.circle(x, y, 0.6, "F");
+        }
+      }
+      // accent corner
+      doc.setFillColor(acc[0], acc[1], acc[2]);
+      doc.triangle(0, 0, 140, 0, 0, 140, "F");
+      doc.setFillColor(p1[0], p1[1], p1[2]);
+      doc.setTextColor(p1[0], p1[1], p1[2]);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(38);
+      doc.text(String(idx + 1).padStart(2, "0"), 30, 80);
+
+      // central art panel
+      doc.setFillColor(255, 255, 255, );
+      const panelW = 280, panelH = 280;
+      const panelX = (pageW - panelW) / 2;
+      const panelY = pageH / 2 - panelH / 2 - 30;
+      // soft border
+      doc.setDrawColor(255, 255, 255);
+      doc.setLineWidth(1.5);
+      doc.roundedRect(panelX, panelY, panelW, panelH, 16, 16, "S");
+      drawArt(cat, pageW / 2, panelY + panelH / 2, 180, acc);
+
+      // title
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(36);
+      doc.text(cat.toUpperCase(), pageW / 2, panelY + panelH + 60, { align: "center" });
+      doc.setFillColor(acc[0], acc[1], acc[2]);
+      doc.rect(pageW / 2 - 30, panelY + panelH + 72, 60, 3, "F");
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(12);
+      doc.setTextColor(219, 234, 254);
+      doc.text(`${list.length} ${list.length === 1 ? "profissional cadastrado" : "profissionais cadastrados"}`, pageW / 2, panelY + panelH + 100, { align: "center" });
+
+      // ---- LIST PAGE ----
+      doc.addPage();
+      doc.setFillColor(255, 255, 255);
+      doc.rect(0, 0, pageW, pageH, "F");
+      // header band
+      doc.setFillColor(p1[0], p1[1], p1[2]);
+      doc.rect(0, 0, pageW, 80, "F");
+      doc.setFillColor(acc[0], acc[1], acc[2]);
+      doc.rect(0, 80, pageW, 4, "F");
+      // small icon in header
+      drawArt(cat, 50, 40, 38, acc);
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(20);
+      doc.text(cat, 90, 40);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(191, 219, 254);
+      doc.text(`Seção ${String(idx + 1).padStart(2, "0")}  •  ${list.length} ${list.length === 1 ? "profissional" : "profissionais"}`, 90, 58);
 
       autoTable(doc, {
-        startY: 95,
-        head: [["#", "Profissional", "Cidade", "Contato", "Nota"]],
+        startY: 110,
+        head: [["#", "Profissional", "Cidade", "Contato", "Avaliação"]],
         body: list.map((p, i) => [
-          String(i + 1),
+          String(i + 1).padStart(2, "0"),
           p.name,
           p.city || "—",
           p.phone || "—",
-          p.rating && p.rating > 0 ? `★ ${Number(p.rating).toFixed(1)} (${p.total_ratings || 0})` : "Sem avaliação",
+          "", // rendered via didDrawCell
         ]),
-        styles: { font: "helvetica", fontSize: 10, cellPadding: 8, valign: "middle" },
-        headStyles: { fillColor: [15, 27, 61], textColor: 255, fontStyle: "bold" },
-        alternateRowStyles: { fillColor: [245, 248, 252] },
+        styles: { font: "helvetica", fontSize: 10, cellPadding: 10, valign: "middle", lineColor: [230, 235, 245], lineWidth: 0.5 },
+        headStyles: { fillColor: p1 as any, textColor: 255, fontStyle: "bold", fontSize: 10, halign: "left" },
+        alternateRowStyles: { fillColor: [248, 250, 252] },
         columnStyles: {
-          0: { cellWidth: 30, halign: "center" },
-          4: { cellWidth: 110, halign: "center", fontStyle: "bold", textColor: [180, 120, 0] },
+          0: { cellWidth: 36, halign: "center", fontStyle: "bold", textColor: p2 as any },
+          1: { cellWidth: 170, fontStyle: "bold" },
+          2: { cellWidth: 100 },
+          3: { cellWidth: 110 },
+          4: { cellWidth: 100, halign: "left" },
         },
         margin: { left: 40, right: 40 },
+        didDrawCell: (data) => {
+          if (data.section === "body" && data.column.index === 4) {
+            const p = list[data.row.index];
+            const rating = Number(p.rating || 0);
+            const cellX = data.cell.x + 6;
+            const cellY = data.cell.y + data.cell.height / 2;
+            if (rating > 0) {
+              drawStars(cellX, cellY - 2, rating, acc);
+              doc.setFont("helvetica", "bold");
+              doc.setFontSize(9);
+              doc.setTextColor(60, 60, 60);
+              doc.text(`${rating.toFixed(1)}  (${p.total_ratings || 0})`, cellX, cellY + 10);
+            } else {
+              doc.setFont("helvetica", "italic");
+              doc.setFontSize(9);
+              doc.setTextColor(150, 150, 150);
+              doc.text("Sem avaliação", cellX, cellY + 2);
+            }
+          }
+        },
       });
     });
 
-    // Footer page numbers
+    // Footer
     const total = doc.getNumberOfPages();
     for (let i = 1; i <= total; i++) {
       doc.setPage(i);
-      doc.setFontSize(9);
-      doc.setTextColor(120, 120, 120);
-      doc.text(`Página ${i} de ${total}`, pageW - 40, doc.internal.pageSize.getHeight() - 20, { align: "right" });
-      doc.text("MV BROKER CONNECT", 40, doc.internal.pageSize.getHeight() - 20);
+      if (i === 1) continue; // skip cover footer
+      doc.setFontSize(8);
+      doc.setTextColor(150, 150, 150);
+      doc.setFont("helvetica", "normal");
+      doc.text("MV BROKER CONNECT  •  Catálogo de Parceiros", 40, pageH - 20);
+      doc.text(`${i} / ${total}`, pageW - 40, pageH - 20, { align: "right" });
     }
 
     doc.save(`parceiros-${new Date().toISOString().slice(0, 10)}.pdf`);
   };
+
 
   return (
     <div className="min-h-screen bg-background">
