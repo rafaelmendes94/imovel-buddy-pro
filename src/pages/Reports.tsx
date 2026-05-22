@@ -212,14 +212,15 @@ export default function Reports() {
   const [filterType, setFilterType] = useState("Todos");
   const [filterSegment, setFilterSegment] = useState("Todos");
   const [filterSeaView, setFilterSeaView] = useState("Todos");
+  const [filterBedrooms, setFilterBedrooms] = useState("Todos");
   const [filterPeriod, setFilterPeriod] = useState<TimePeriod>("Todos");
   const [filterMonth, setFilterMonth] = useState<number | null>(null);
   const [filterYear, setFilterYear] = useState<number | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-  const activeFilterCount = [filterCity !== "Todas", filterType !== "Todos", filterSegment !== "Todos", filterSeaView !== "Todos", filterPeriod !== "Todos", filterMonth !== null, filterYear !== null].filter(Boolean).length;
-  const clearAll = () => { setFilterCity("Todas"); setFilterType("Todos"); setFilterSegment("Todos"); setFilterSeaView("Todos"); setFilterPeriod("Todos"); setFilterMonth(null); setFilterYear(null); };
+  const activeFilterCount = [filterCity !== "Todas", filterType !== "Todos", filterSegment !== "Todos", filterSeaView !== "Todos", filterBedrooms !== "Todos", filterPeriod !== "Todos", filterMonth !== null, filterYear !== null].filter(Boolean).length;
+  const clearAll = () => { setFilterCity("Todas"); setFilterType("Todos"); setFilterSegment("Todos"); setFilterSeaView("Todos"); setFilterBedrooms("Todos"); setFilterPeriod("Todos"); setFilterMonth(null); setFilterYear(null); };
 
   const filtered = useMemo(() => sales.filter(s => {
     if (filterCity !== "Todas" && s.city !== filterCity) return false;
@@ -227,6 +228,11 @@ export default function Reports() {
     if (filterSegment !== "Todos" && s.segment !== filterSegment) return false;
     if (filterSeaView === "Sim" && !s.seaView) return false;
     if (filterSeaView === "Não" && s.seaView) return false;
+    if (filterBedrooms !== "Todos") {
+      const n = Number(s.bedrooms) || 0;
+      if (filterBedrooms === "5+") { if (n < 5) return false; }
+      else if (String(n) !== filterBedrooms) return false;
+    }
     if (filterPeriod === "Dia" && !isToday(s.date)) return false;
     if (filterPeriod === "Semana" && !isThisWeek(s.date)) return false;
     if (filterPeriod === "Mês" && !isThisMonth(s.date)) return false;
@@ -235,7 +241,7 @@ export default function Reports() {
     if (filterMonth !== null && d.getMonth() !== filterMonth) return false;
     if (filterYear !== null && d.getFullYear() !== filterYear) return false;
     return true;
-  }), [sales, filterCity, filterType, filterSegment, filterSeaView, filterPeriod, filterMonth, filterYear]);
+  }), [sales, filterCity, filterType, filterSegment, filterSeaView, filterBedrooms, filterPeriod, filterMonth, filterYear]);
 
   const currentYear = new Date().getFullYear();
   const currentMonthName = ALL_MONTHS[new Date().getMonth()];
