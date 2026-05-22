@@ -1,0 +1,1 @@
+UPDATE public.plans SET is_active = false WHERE name IN ('Free Imobiliária','Free Corretor','Corretor Pro','Imobiliária Premium','Completo');
