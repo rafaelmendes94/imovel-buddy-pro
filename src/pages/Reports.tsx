@@ -655,6 +655,8 @@ function ComparativoAnual({
   const [fType, setFType] = useState<string>("Todos");
   const [fCity, setFCity] = useState<string>("Todas");
   const [fEmpr, setFEmpr] = useState<string>("Todos");
+  const [compareEmpr, setCompareEmpr] = useState<boolean>(false);
+  const [fEmprB, setFEmprB] = useState<string>("Todos");
 
   // Empreendimentos list derived from sales
   const allEmpreendimentos = useMemo(
@@ -662,20 +664,29 @@ function ComparativoAnual({
     [sales]
   );
 
-  // Apply non-year filters
+  // Apply non-year filters (empreendimento is handled per-side when comparing two empreendimentos)
   const baseFiltered = useMemo(() => sales.filter(s => {
     if (fType !== "Todos" && s.type !== fType) return false;
     if (fCity !== "Todas" && s.city !== fCity) return false;
-    if (fEmpr !== "Todos" && s.empreendimento !== fEmpr) return false;
+    if (!compareEmpr && fEmpr !== "Todos" && s.empreendimento !== fEmpr) return false;
     return true;
-  }), [sales, fType, fCity, fEmpr]);
+  }), [sales, fType, fCity, fEmpr, compareEmpr]);
 
-  const activeFilters = [fType !== "Todos", fCity !== "Todas", fEmpr !== "Todos"].filter(Boolean).length;
-  const clearFilters = () => { setFType("Todos"); setFCity("Todas"); setFEmpr("Todos"); };
+  const activeFilters = [
+    fType !== "Todos",
+    fCity !== "Todas",
+    !compareEmpr && fEmpr !== "Todos",
+    compareEmpr && (fEmpr !== "Todos" || fEmprB !== "Todos"),
+  ].filter(Boolean).length;
+  const clearFilters = () => {
+    setFType("Todos"); setFCity("Todas"); setFEmpr("Todos"); setFEmprB("Todos"); setCompareEmpr(false);
+  };
 
   const data = useMemo(() => {
-    const yearASales = baseFiltered.filter(s => new Date(s.date).getFullYear() === yearA);
-    const yearBSales = baseFiltered.filter(s => new Date(s.date).getFullYear() === yearB);
+    const matchA = (s: RealSaleRecord) => !compareEmpr || fEmpr === "Todos" || s.empreendimento === fEmpr;
+    const matchB = (s: RealSaleRecord) => !compareEmpr || fEmprB === "Todos" || s.empreendimento === fEmprB;
+    const yearASales = baseFiltered.filter(s => new Date(s.date).getFullYear() === yearA && matchA(s));
+    const yearBSales = baseFiltered.filter(s => new Date(s.date).getFullYear() === yearB && matchB(s));
     const uniqueSegments = [...new Set(baseFiltered.map(s => s.segment).filter(Boolean))];
     const segmentComparison = uniqueSegments.map(seg => {
       const curVgv = yearASales.filter(s => s.segment === seg).reduce((sum, s) => sum + s.price, 0);
