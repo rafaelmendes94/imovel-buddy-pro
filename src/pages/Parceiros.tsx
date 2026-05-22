@@ -492,14 +492,38 @@ export default function Parceiros() {
                 </button>
               )}
             </div>
-            <button
-              onClick={exportPdf}
-              disabled={allPartners.length === 0}
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-white text-blue-950 hover:bg-blue-50 font-bold text-sm shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <FileDown className="w-4 h-4" />
-              Exportar PDF
-            </button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  disabled={allPartners.length === 0}
+                  className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-white text-blue-950 hover:bg-blue-50 font-bold text-sm shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <FileDown className="w-4 h-4" />
+                  Exportar PDF
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-64 max-h-96 overflow-y-auto bg-popover">
+                <DropdownMenuLabel>Escolha o que exportar</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => exportPdf()} className="font-semibold cursor-pointer">
+                  <FileDown className="w-4 h-4 mr-2" />
+                  Catálogo completo
+                  <span className="ml-auto text-xs text-muted-foreground">{allPartners.length}</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel className="text-xs text-muted-foreground font-normal">Por segmento</DropdownMenuLabel>
+                {[...new Set(allPartners.map(p => p.category))].sort().map(cat => {
+                  const count = allPartners.filter(p => p.category === cat).length;
+                  return (
+                    <DropdownMenuItem key={cat} onClick={() => exportPdf(cat)} className="cursor-pointer">
+                      {cat}
+                      <span className="ml-auto text-xs text-muted-foreground">{count}</span>
+                    </DropdownMenuItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
         </div>
