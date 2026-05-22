@@ -123,9 +123,6 @@ export default function Buildings() {
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
-    if (data) setBuildings(data as any);
-    setLoading(false);
-  };
 
   const filtered = buildings.filter(b =>
     b.nome.toLowerCase().includes(search.toLowerCase()) ||
