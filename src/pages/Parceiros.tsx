@@ -177,15 +177,26 @@ export default function Parceiros() {
               <p className="text-blue-300 text-sm mt-1">Empresas e profissionais que fazem parte da nossa rede de confiança</p>
             </div>
           </div>
-          <div className="mt-6 relative max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-300" />
-            <Input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Buscar parceiro..." className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-blue-300 focus:bg-white/20" />
-            {searchTerm && (
-              <button onClick={() => setSearchTerm("")} className="absolute right-3 top-1/2 -translate-y-1/2">
-                <X className="w-4 h-4 text-blue-300 hover:text-white" />
-              </button>
-            )}
+          <div className="mt-6 flex flex-col sm:flex-row gap-3 sm:items-center">
+            <div className="relative max-w-md flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-300" />
+              <Input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Buscar parceiro..." className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-blue-300 focus:bg-white/20" />
+              {searchTerm && (
+                <button onClick={() => setSearchTerm("")} className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <X className="w-4 h-4 text-blue-300 hover:text-white" />
+                </button>
+              )}
+            </div>
+            <button
+              onClick={exportPdf}
+              disabled={allPartners.length === 0}
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-white text-blue-950 hover:bg-blue-50 font-bold text-sm shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <FileDown className="w-4 h-4" />
+              Exportar PDF
+            </button>
           </div>
+
         </div>
       </div>
 
