@@ -960,6 +960,15 @@ export default function Properties() {
                 )}
               </div>
               <div className="flex flex-col items-end gap-0.5">
+                {(isSuperAdmin || isAdminStaff) && (
+                  <button
+                    onClick={() => setImportOpen(true)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-secondary text-secondary-foreground hover:bg-muted transition-colors mb-1"
+                    title="Importar planilha Excel"
+                  >
+                    <FolderDown className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Importar</span> Excel
+                  </button>
+                )}
                 <button
                   onClick={() => {
                     if (limitReached) {
