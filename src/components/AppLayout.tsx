@@ -33,7 +33,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        <AppSidebar onNavigate={() => setMobileOpen(false)} />
+        <Sidebar onNavigate={() => setMobileOpen(false)} />
       </div>
 
       {/* Main content */}
