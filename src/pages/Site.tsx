@@ -320,6 +320,7 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
   const searchMarkerRef = useRef<any>(null);
   const geocoderRef = useRef<any>(null);
   const [mapStyle, setMapStyle] = useState<"satellite" | "streets" | "dark">("satellite");
+  const [mapReady, setMapReady] = useState(false);
   const [mapFilterType, setMapFilterType] = useState("");
   const [mapFilterEmpreendimento, setMapFilterEmpreendimento] = useState("");
   const [mapFilterAddress, setMapFilterAddress] = useState("");
