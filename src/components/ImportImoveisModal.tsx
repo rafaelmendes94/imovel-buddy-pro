@@ -108,6 +108,25 @@ export function ImportImoveisModal({ open, onClose, onImported }: Props) {
   const [fileName, setFileName] = useState("");
   const [importing, setImporting] = useState(false);
   const [result, setResult] = useState<{ ok: number; fail: number } | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  const doImport = async () => {
+    setConfirmOpen(false);
+    if (!user || rows.length === 0) return;
+    setImporting(true);
+    let ok = 0, fail = 0;
+    const batch = rows.map(r => mapRow(r, user.id)).filter(r => r.titulo);
+    for (let i = 0; i < batch.length; i += 50) {
+      const chunk = batch.slice(i, i + 50);
+      const { error } = await supabase.from("imoveis").insert(chunk);
+      if (error) { console.error("Import error:", error); fail += chunk.length; }
+      else { ok += chunk.length; }
+    }
+    setResult({ ok, fail });
+    setImporting(false);
+    if (ok > 0) { toast.success(`${ok} imóveis importados`); onImported(); }
+    if (fail > 0) toast.error(`${fail} falhas na importação`);
+  };
 
   if (!open) return null;
 
@@ -122,29 +141,9 @@ export function ImportImoveisModal({ open, onClose, onImported }: Props) {
     toast.success(`${json.length} linhas detectadas`);
   };
 
-  const handleImport = async () => {
+  const handleImport = () => {
     if (!user || rows.length === 0) return;
-    setImporting(true);
-    let ok = 0, fail = 0;
-    const batch = rows.map(r => mapRow(r, user.id)).filter(r => r.titulo);
-    // Insere em blocos de 50
-    for (let i = 0; i < batch.length; i += 50) {
-      const chunk = batch.slice(i, i + 50);
-      const { error } = await supabase.from("imoveis").insert(chunk);
-      if (error) {
-        console.error("Import error:", error);
-        fail += chunk.length;
-      } else {
-        ok += chunk.length;
-      }
-    }
-    setResult({ ok, fail });
-    setImporting(false);
-    if (ok > 0) {
-      toast.success(`${ok} imóveis importados`);
-      onImported();
-    }
-    if (fail > 0) toast.error(`${fail} falhas na importação`);
+    setConfirmOpen(true);
   };
 
   const headers = rows.length ? Object.keys(rows[0]) : [];
@@ -239,6 +238,61 @@ export function ImportImoveisModal({ open, onClose, onImported }: Props) {
           </button>
         </div>
       </div>
+
+      {confirmOpen && (
+        <div className="fixed inset-0 bg-foreground/60 z-[60] flex items-center justify-center p-4" onClick={() => setConfirmOpen(false)}>
+          <div className="bg-card rounded-xl border border-border shadow-xl w-full max-w-2xl max-h-[85vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="p-5 border-b border-border">
+              <h3 className="text-base font-bold text-card-foreground">Confirmar importação</h3>
+              <p className="text-xs text-muted-foreground mt-1">
+                Serão importadas <strong className="text-foreground">{rows.length}</strong> linhas. Confira o mapeamento de colunas antes de continuar.
+              </p>
+            </div>
+            <div className="p-5 overflow-y-auto">
+              <div className="border border-border rounded-lg overflow-hidden">
+                <table className="text-xs w-full">
+                  <thead className="bg-muted/50">
+                    <tr>
+                      <th className="px-3 py-2 text-left font-semibold text-muted-foreground border-r border-border">Coluna da planilha</th>
+                      <th className="px-3 py-2 text-left font-semibold text-muted-foreground border-r border-border">Campo no sistema</th>
+                      <th className="px-3 py-2 text-left font-semibold text-muted-foreground">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {headers.map(h => {
+                      const mapped = COLUMN_MAP[h];
+                      return (
+                        <tr key={h} className="border-t border-border">
+                          <td className="px-3 py-1.5 text-foreground border-r border-border">{h}</td>
+                          <td className="px-3 py-1.5 border-r border-border">
+                            {mapped ? <span className="text-primary font-medium">{mapped}</span> : <span className="text-muted-foreground italic">—</span>}
+                          </td>
+                          <td className="px-3 py-1.5">
+                            {mapped
+                              ? <span className="text-emerald-600">✓ Importado</span>
+                              : <span className="text-amber-600">⚠ Ignorado</span>}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-3">
+                Colunas não mapeadas serão ignoradas. Valores menores que 10.000 em VALOR serão multiplicados por 1.000.
+              </p>
+            </div>
+            <div className="flex justify-end gap-3 p-5 border-t border-border">
+              <button onClick={() => setConfirmOpen(false)} className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium hover:bg-muted transition-colors">
+                Cancelar
+              </button>
+              <button onClick={doImport} className="flex items-center gap-2 px-4 py-2 rounded-lg gradient-gold text-primary text-sm font-semibold hover:opacity-90 transition-opacity">
+                <CheckCircle2 className="w-4 h-4" /> Confirmar e importar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
