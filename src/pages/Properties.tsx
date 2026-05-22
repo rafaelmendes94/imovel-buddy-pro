@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { generatePropertyPdf } from "@/utils/generatePropertyPdf";
 import { useAuth } from "@/hooks/useAuth";
+import { ImportImoveisModal } from "@/components/ImportImoveisModal";
 
 // Broker info
 const brokerInfo: Record<string, { photo: string; whatsapp: string }> = {
@@ -416,6 +417,7 @@ export default function Properties() {
   const navigate = useNavigate();
   const { user, subscription, isSuperAdmin, isAdminStaff } = useAuth();
   const [currentImoveis, setCurrentImoveis] = useState(0);
+  const [importOpen, setImportOpen] = useState(false);
   const maxImoveis = subscription?.plan?.max_properties ?? 0;
   const limitReached = !isSuperAdmin && !isAdminStaff && maxImoveis > 0 && currentImoveis >= maxImoveis;
 
@@ -958,6 +960,15 @@ export default function Properties() {
                 )}
               </div>
               <div className="flex flex-col items-end gap-0.5">
+                {(isSuperAdmin || isAdminStaff) && (
+                  <button
+                    onClick={() => setImportOpen(true)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-secondary text-secondary-foreground hover:bg-muted transition-colors mb-1"
+                    title="Importar planilha Excel"
+                  >
+                    <FolderDown className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Importar</span> Excel
+                  </button>
+                )}
                 <button
                   onClick={() => {
                     if (limitReached) {
@@ -1714,6 +1725,12 @@ export default function Properties() {
         defaultDate={pendingSold?.dataVenda}
         onConfirm={handleConfirmSold}
         onCancel={() => setPendingSold(null)}
+      />
+
+      <ImportImoveisModal
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        onImported={() => window.location.reload()}
       />
 
       {/* Property Detail Modal */}
