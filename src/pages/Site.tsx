@@ -1634,7 +1634,7 @@ export default function Site() {
         {!searchTerm && !hasActiveFilters && (activeCategory === "todos") && (
           <section>
             <SectionHeader title="Localização dos Imóveis" subtitle="Veja todos os imóveis no mapa" icon={MapPin} />
-            <SiteMap properties={siteProperties} />
+            <SiteMap properties={available} />
           </section>
         )}
       </main>
