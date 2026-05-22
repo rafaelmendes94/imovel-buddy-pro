@@ -116,6 +116,7 @@ export default function BuildingDetail() {
           )}
           <div className="flex items-center gap-2 text-sm text-muted-foreground"><Layers className="w-4 h-4 text-accent" />{building.andares} andares</div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground"><Building className="w-4 h-4 text-accent" />{building.total_unidades} unidades</div>
+          {(building as any).unidades_por_andar > 0 && <div className="flex items-center gap-2 text-sm text-muted-foreground"><Layers className="w-4 h-4 text-accent" />{(building as any).unidades_por_andar} unidades/andar</div>}
           {building.construtora && <div className="flex items-center gap-2 text-sm text-muted-foreground"><Wrench className="w-4 h-4 text-accent" />{building.construtora}</div>}
           {building.ano_construcao && <div className="flex items-center gap-2 text-sm text-muted-foreground"><Calendar className="w-4 h-4 text-accent" />Ano {building.ano_construcao}</div>}
           {building.cep && <div className="flex items-center gap-2 text-sm text-muted-foreground"><MapPin className="w-4 h-4 text-accent" />CEP {building.cep}</div>}

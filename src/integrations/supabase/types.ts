@@ -690,6 +690,7 @@ export type Database = {
           numero: string | null
           status: string | null
           total_unidades: number | null
+          unidades_por_andar: number | null
           user_id: string
           videos: string[] | null
         }
@@ -716,6 +717,7 @@ export type Database = {
           numero?: string | null
           status?: string | null
           total_unidades?: number | null
+          unidades_por_andar?: number | null
           user_id: string
           videos?: string[] | null
         }
@@ -742,6 +744,7 @@ export type Database = {
           numero?: string | null
           status?: string | null
           total_unidades?: number | null
+          unidades_por_andar?: number | null
           user_id?: string
           videos?: string[] | null
         }

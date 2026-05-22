@@ -29,7 +29,7 @@ function SectionHeader({ icon: Icon, title }: { icon: any; title: string }) {
 const initialForm = {
   nome: '', construtora: '', ano_construcao: '', status: 'Lançamento',
   cep: '', endereco: '', numero: '', complemento: '', bairro: '', cidade: '', estado: '',
-  andares: 0, total_unidades: 0, descricao: '', infraestrutura: [] as string[],
+  andares: 0, total_unidades: 0, unidades_por_andar: 0, descricao: '', infraestrutura: [] as string[],
   imagem_url: '', latitude: '', longitude: '',
   fotos_infra: [] as string[], fotos_empreendimento: [] as string[],
   videos: [] as string[], material_digital: [] as string[],
@@ -54,7 +54,7 @@ export default function CadastroEdificio() {
             status: data.status || 'Lançamento', cep: data.cep || '', endereco: data.endereco || '',
             numero: data.numero || '', complemento: data.complemento || '', bairro: data.bairro || '',
             cidade: data.cidade || '', estado: data.estado || '', andares: data.andares || 0,
-            total_unidades: data.total_unidades || 0, descricao: '', infraestrutura: data.infraestrutura || [],
+            total_unidades: data.total_unidades || 0, unidades_por_andar: (data as any).unidades_por_andar || 0, descricao: '', infraestrutura: data.infraestrutura || [],
             imagem_url: data.imagem_url || '', latitude: data.latitude ? String(data.latitude) : '',
             longitude: data.longitude ? String(data.longitude) : '',
             fotos_infra: (data as any).fotos_infra || [],
@@ -75,7 +75,7 @@ export default function CadastroEdificio() {
       nome: form.nome, construtora: form.construtora, ano_construcao: form.ano_construcao,
       status: form.status, cep: form.cep, endereco: form.endereco, numero: form.numero,
       complemento: form.complemento, bairro: form.bairro, cidade: form.cidade, estado: form.estado,
-      andares: form.andares, total_unidades: form.total_unidades, infraestrutura: form.infraestrutura,
+      andares: form.andares, total_unidades: form.total_unidades, unidades_por_andar: form.unidades_por_andar, infraestrutura: form.infraestrutura,
       imagem_url: form.imagem_url,
       latitude: parseFloat(form.latitude) || 0, longitude: parseFloat(form.longitude) || 0,
       fotos_infra: form.fotos_infra, fotos_empreendimento: form.fotos_empreendimento,
@@ -133,7 +133,7 @@ export default function CadastroEdificio() {
 
         <section>
           <SectionHeader icon={Layers} title="Características" />
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             <div className="space-y-1.5">
               <Label className="text-xs">Andares</Label>
               <Input type="number" value={form.andares || ''} onChange={(e) => setForm({ ...form, andares: +e.target.value })} />
@@ -141,6 +141,10 @@ export default function CadastroEdificio() {
             <div className="space-y-1.5">
               <Label className="text-xs">Total de Unidades</Label>
               <Input type="number" value={form.total_unidades || ''} onChange={(e) => setForm({ ...form, total_unidades: +e.target.value })} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Unidades por Andar</Label>
+              <Input type="number" value={form.unidades_por_andar || ''} onChange={(e) => setForm({ ...form, unidades_por_andar: +e.target.value })} />
             </div>
           </div>
         </section>

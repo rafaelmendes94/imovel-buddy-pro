@@ -1,0 +1,1 @@
+ALTER TABLE public.edificios ADD COLUMN IF NOT EXISTS unidades_por_andar integer DEFAULT 0;
