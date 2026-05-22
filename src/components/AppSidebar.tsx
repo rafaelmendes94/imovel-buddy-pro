@@ -29,14 +29,6 @@ const allNavItems: NavItem[] = [
   { icon: FileText, label: "Relatórios", path: "/relatorios" }, // admin
   { icon: Globe, label: "Site", path: "/site-editor", module: "site" },
   { icon: Building2, label: "Imóveis", path: "/imoveis", module: "imoveis" },
-  {
-    icon: Landmark, label: "Empreendimentos", path: "/empreendimentos", module: "edificios",
-    children: [
-      { icon: Building, label: "Edifícios", path: "/edificios", module: "edificios" },
-      { icon: Fence, label: "Condomínios", path: "/condominios", module: "condominios" },
-      { icon: Landmark, label: "Loteamentos", path: "/empreendimentos", module: "edificios" },
-    ],
-  },
   { icon: Map, label: "Mapas Condomínio", path: "/mapas-condominio", module: "condominios" },
   { icon: Camera, label: "Fotos da Cidade", path: "/fotos-cidade", module: "fotos" },
   { icon: ClipboardCheck, label: "Avaliações", path: "/avaliacoes", module: "avaliacoes" },
@@ -47,7 +39,7 @@ const allNavItems: NavItem[] = [
   
   { icon: Landmark2, label: "Imobiliárias", path: "/imobiliarias" }, // admin
   { icon: HardHat, label: "Construtoras", path: "/construtoras" }, // admin
-  { icon: ShoppingBag, label: "Brick", path: "/brick" }, // admin
+  { icon: ShoppingBag, label: "Brick", path: "/brick", always: true },
   { icon: CreditCard, label: "Assinatura", path: "/painel/assinatura", always: true },
   { icon: Settings, label: "Configurações", path: "/configuracoes", always: true },
 ];
