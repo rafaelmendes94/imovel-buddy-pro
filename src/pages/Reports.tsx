@@ -818,17 +818,23 @@ function ComparativoAnual({
       {/* Overview cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="elevated-card rounded-xl p-5">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">VGV {yearA}</p>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">
+            VGV {yearA}{compareEmpr && fEmpr !== "Todos" ? ` • ${fEmpr}` : ""}
+          </p>
           <p className="text-2xl font-bold text-foreground mt-1">{formatCurrency(data.curTotal)}</p>
           <p className="text-xs text-muted-foreground mt-0.5">{data.curCount} vendas</p>
         </div>
         <div className="elevated-card rounded-xl p-5">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">VGV {yearB}</p>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">
+            VGV {yearB}{compareEmpr && fEmprB !== "Todos" ? ` • ${fEmprB}` : ""}
+          </p>
           <p className="text-2xl font-bold text-foreground mt-1">{formatCurrency(data.prevTotal)}</p>
           <p className="text-xs text-muted-foreground mt-0.5">{data.prevCount} vendas</p>
         </div>
         <div className="elevated-card rounded-xl p-5">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Valorização ({yearA} vs {yearB})</p>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">
+            {compareEmpr ? "Valorização A vs B" : `Valorização (${yearA} vs ${yearB})`}
+          </p>
           <p className={`text-2xl font-bold mt-1 flex items-center gap-2 ${data.totalValorization >= 0 ? "text-emerald-500" : "text-destructive"}`}>
             {data.totalValorization >= 0 ? <ArrowUp className="w-5 h-5" /> : <ArrowDown className="w-5 h-5" />}
             {data.totalValorization > 0 ? "+" : ""}{data.totalValorization.toFixed(1)}%
