@@ -544,7 +544,7 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
       map.setCenter({ lat: validProps[0].lat, lng: validProps[0].lng });
       map.setZoom(15);
     }
-  }, [filteredMapProperties, gmapsReady, clearMarker, createMapMarker]);
+  }, [filteredMapProperties, gmapsReady, mapReady, clearMarker, createMapMarker]);
 
   // Geocode address search and pan map
   useEffect(() => {
