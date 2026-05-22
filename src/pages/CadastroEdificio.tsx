@@ -54,7 +54,7 @@ export default function CadastroEdificio() {
             status: data.status || 'Lançamento', cep: data.cep || '', endereco: data.endereco || '',
             numero: data.numero || '', complemento: data.complemento || '', bairro: data.bairro || '',
             cidade: data.cidade || '', estado: data.estado || '', andares: data.andares || 0,
-            total_unidades: data.total_unidades || 0, descricao: '', infraestrutura: data.infraestrutura || [],
+            total_unidades: data.total_unidades || 0, unidades_por_andar: (data as any).unidades_por_andar || 0, descricao: '', infraestrutura: data.infraestrutura || [],
             imagem_url: data.imagem_url || '', latitude: data.latitude ? String(data.latitude) : '',
             longitude: data.longitude ? String(data.longitude) : '',
             fotos_infra: (data as any).fotos_infra || [],
