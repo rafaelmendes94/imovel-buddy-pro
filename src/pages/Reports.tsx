@@ -655,6 +655,8 @@ function ComparativoAnual({
   const [fType, setFType] = useState<string>("Todos");
   const [fCity, setFCity] = useState<string>("Todas");
   const [fEmpr, setFEmpr] = useState<string>("Todos");
+  const [compareEmpr, setCompareEmpr] = useState<boolean>(false);
+  const [fEmprB, setFEmprB] = useState<string>("Todos");
 
   // Empreendimentos list derived from sales
   const allEmpreendimentos = useMemo(
@@ -662,20 +664,29 @@ function ComparativoAnual({
     [sales]
   );
 
-  // Apply non-year filters
+  // Apply non-year filters (empreendimento is handled per-side when comparing two empreendimentos)
   const baseFiltered = useMemo(() => sales.filter(s => {
     if (fType !== "Todos" && s.type !== fType) return false;
     if (fCity !== "Todas" && s.city !== fCity) return false;
-    if (fEmpr !== "Todos" && s.empreendimento !== fEmpr) return false;
+    if (!compareEmpr && fEmpr !== "Todos" && s.empreendimento !== fEmpr) return false;
     return true;
-  }), [sales, fType, fCity, fEmpr]);
+  }), [sales, fType, fCity, fEmpr, compareEmpr]);
 
-  const activeFilters = [fType !== "Todos", fCity !== "Todas", fEmpr !== "Todos"].filter(Boolean).length;
-  const clearFilters = () => { setFType("Todos"); setFCity("Todas"); setFEmpr("Todos"); };
+  const activeFilters = [
+    fType !== "Todos",
+    fCity !== "Todas",
+    !compareEmpr && fEmpr !== "Todos",
+    compareEmpr && (fEmpr !== "Todos" || fEmprB !== "Todos"),
+  ].filter(Boolean).length;
+  const clearFilters = () => {
+    setFType("Todos"); setFCity("Todas"); setFEmpr("Todos"); setFEmprB("Todos"); setCompareEmpr(false);
+  };
 
   const data = useMemo(() => {
-    const yearASales = baseFiltered.filter(s => new Date(s.date).getFullYear() === yearA);
-    const yearBSales = baseFiltered.filter(s => new Date(s.date).getFullYear() === yearB);
+    const matchA = (s: RealSaleRecord) => !compareEmpr || fEmpr === "Todos" || s.empreendimento === fEmpr;
+    const matchB = (s: RealSaleRecord) => !compareEmpr || fEmprB === "Todos" || s.empreendimento === fEmprB;
+    const yearASales = baseFiltered.filter(s => new Date(s.date).getFullYear() === yearA && matchA(s));
+    const yearBSales = baseFiltered.filter(s => new Date(s.date).getFullYear() === yearB && matchB(s));
     const uniqueSegments = [...new Set(baseFiltered.map(s => s.segment).filter(Boolean))];
     const segmentComparison = uniqueSegments.map(seg => {
       const curVgv = yearASales.filter(s => s.segment === seg).reduce((sum, s) => sum + s.price, 0);
@@ -699,7 +710,7 @@ function ComparativoAnual({
     const baseYearSales = baseFiltered.filter(s => new Date(s.date).getFullYear() === yMin);
     const baseAvg = baseYearSales.length > 0 ? baseYearSales.reduce((s, x) => s + x.price, 0) / baseYearSales.length : 0;
     const valorizationSeries = years.map(y => {
-      const ys = baseFiltered.filter(s => new Date(s.date).getFullYear() === y);
+      const ys = baseFiltered.filter(s => new Date(s.date).getFullYear() === y && (matchA(s) || matchB(s)));
       const avg = ys.length > 0 ? ys.reduce((s, x) => s + x.price, 0) / ys.length : 0;
       const valorPct = baseAvg > 0 && avg > 0 ? ((avg - baseAvg) / baseAvg) * 100 : 0;
       return { year: String(y), ticketMedio: avg, valorPct, vendas: ys.length };
@@ -713,7 +724,7 @@ function ComparativoAnual({
       curCount: yearASales.length, prevCount: yearBSales.length,
       valorizationSeries, periodValorization, years,
     };
-  }, [baseFiltered, yearA, yearB]);
+  }, [baseFiltered, yearA, yearB, compareEmpr, fEmpr, fEmprB]);
 
   const yearOptions = useMemo(() => {
     const set = new Set<number>(allYears);
@@ -727,15 +738,26 @@ function ComparativoAnual({
     <div className="space-y-5">
       {/* Filtros */}
       <div className="elevated-card rounded-xl p-4">
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
           <h3 className="text-sm font-semibold text-card-foreground flex items-center gap-2">
             <SlidersHorizontal className="w-4 h-4 text-accent" /> Filtros do Comparativo
           </h3>
-          {(activeFilters > 0 || yearA !== defaultYearA || yearB !== defaultYearB) && (
-            <button onClick={clearFilters} className="text-[10px] text-muted-foreground hover:text-foreground flex items-center gap-1">
-              <X className="w-3 h-3" /> Limpar filtros
-            </button>
-          )}
+          <div className="flex items-center gap-3">
+            <label className="flex items-center gap-1.5 text-[11px] text-foreground cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={compareEmpr}
+                onChange={(e) => setCompareEmpr(e.target.checked)}
+                className="accent-accent"
+              />
+              Comparar 2 empreendimentos
+            </label>
+            {(activeFilters > 0 || yearA !== defaultYearA || yearB !== defaultYearB || compareEmpr) && (
+              <button onClick={clearFilters} className="text-[10px] text-muted-foreground hover:text-foreground flex items-center gap-1">
+                <X className="w-3 h-3" /> Limpar filtros
+              </button>
+            )}
+          </div>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
           <div>
@@ -765,18 +787,30 @@ function ComparativoAnual({
             </select>
           </div>
           <div>
-            <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Empreendimento</label>
+            <label className="text-[10px] text-muted-foreground uppercase tracking-wider">
+              {compareEmpr ? "Empreendimento A" : "Empreendimento"}
+            </label>
             <select value={fEmpr} onChange={e => setFEmpr(e.target.value)} className={`${selectCls} w-full mt-1`}>
               <option value="Todos">Todos</option>
               {allEmpreendimentos.map(e => <option key={e} value={e}>{e}</option>)}
             </select>
           </div>
+          {compareEmpr && (
+            <div>
+              <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Empreendimento B</label>
+              <select value={fEmprB} onChange={e => setFEmprB(e.target.value)} className={`${selectCls} w-full mt-1`}>
+                <option value="Todos">Todos</option>
+                {allEmpreendimentos.map(e => <option key={e} value={e}>{e}</option>)}
+              </select>
+            </div>
+          )}
         </div>
         {(activeFilters > 0) && (
           <div className="flex flex-wrap gap-1.5 mt-3">
             {fType !== "Todos" && <Badge variant="outline" className="text-[10px]">Tipo: {fType}</Badge>}
             {fCity !== "Todas" && <Badge variant="outline" className="text-[10px]">Cidade: {fCity}</Badge>}
-            {fEmpr !== "Todos" && <Badge variant="outline" className="text-[10px]">Empreendimento: {fEmpr}</Badge>}
+            {!compareEmpr && fEmpr !== "Todos" && <Badge variant="outline" className="text-[10px]">Empreendimento: {fEmpr}</Badge>}
+            {compareEmpr && <Badge variant="outline" className="text-[10px]">A: {fEmpr} ({yearA}) vs B: {fEmprB} ({yearB})</Badge>}
           </div>
         )}
       </div>
@@ -784,17 +818,23 @@ function ComparativoAnual({
       {/* Overview cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="elevated-card rounded-xl p-5">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">VGV {yearA}</p>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">
+            VGV {yearA}{compareEmpr && fEmpr !== "Todos" ? ` • ${fEmpr}` : ""}
+          </p>
           <p className="text-2xl font-bold text-foreground mt-1">{formatCurrency(data.curTotal)}</p>
           <p className="text-xs text-muted-foreground mt-0.5">{data.curCount} vendas</p>
         </div>
         <div className="elevated-card rounded-xl p-5">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">VGV {yearB}</p>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">
+            VGV {yearB}{compareEmpr && fEmprB !== "Todos" ? ` • ${fEmprB}` : ""}
+          </p>
           <p className="text-2xl font-bold text-foreground mt-1">{formatCurrency(data.prevTotal)}</p>
           <p className="text-xs text-muted-foreground mt-0.5">{data.prevCount} vendas</p>
         </div>
         <div className="elevated-card rounded-xl p-5">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Valorização ({yearA} vs {yearB})</p>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">
+            {compareEmpr ? "Valorização A vs B" : `Valorização (${yearA} vs ${yearB})`}
+          </p>
           <p className={`text-2xl font-bold mt-1 flex items-center gap-2 ${data.totalValorization >= 0 ? "text-emerald-500" : "text-destructive"}`}>
             {data.totalValorization >= 0 ? <ArrowUp className="w-5 h-5" /> : <ArrowDown className="w-5 h-5" />}
             {data.totalValorization > 0 ? "+" : ""}{data.totalValorization.toFixed(1)}%
