@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { generatePropertyPdf } from "@/utils/generatePropertyPdf";
 import { useAuth } from "@/hooks/useAuth";
+import { ImportImoveisModal } from "@/components/ImportImoveisModal";
 
 // Broker info
 const brokerInfo: Record<string, { photo: string; whatsapp: string }> = {
