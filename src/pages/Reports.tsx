@@ -738,15 +738,26 @@ function ComparativoAnual({
     <div className="space-y-5">
       {/* Filtros */}
       <div className="elevated-card rounded-xl p-4">
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
           <h3 className="text-sm font-semibold text-card-foreground flex items-center gap-2">
             <SlidersHorizontal className="w-4 h-4 text-accent" /> Filtros do Comparativo
           </h3>
-          {(activeFilters > 0 || yearA !== defaultYearA || yearB !== defaultYearB) && (
-            <button onClick={clearFilters} className="text-[10px] text-muted-foreground hover:text-foreground flex items-center gap-1">
-              <X className="w-3 h-3" /> Limpar filtros
-            </button>
-          )}
+          <div className="flex items-center gap-3">
+            <label className="flex items-center gap-1.5 text-[11px] text-foreground cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={compareEmpr}
+                onChange={(e) => setCompareEmpr(e.target.checked)}
+                className="accent-accent"
+              />
+              Comparar 2 empreendimentos
+            </label>
+            {(activeFilters > 0 || yearA !== defaultYearA || yearB !== defaultYearB || compareEmpr) && (
+              <button onClick={clearFilters} className="text-[10px] text-muted-foreground hover:text-foreground flex items-center gap-1">
+                <X className="w-3 h-3" /> Limpar filtros
+              </button>
+            )}
+          </div>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
           <div>
@@ -776,18 +787,30 @@ function ComparativoAnual({
             </select>
           </div>
           <div>
-            <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Empreendimento</label>
+            <label className="text-[10px] text-muted-foreground uppercase tracking-wider">
+              {compareEmpr ? "Empreendimento A" : "Empreendimento"}
+            </label>
             <select value={fEmpr} onChange={e => setFEmpr(e.target.value)} className={`${selectCls} w-full mt-1`}>
               <option value="Todos">Todos</option>
               {allEmpreendimentos.map(e => <option key={e} value={e}>{e}</option>)}
             </select>
           </div>
+          {compareEmpr && (
+            <div>
+              <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Empreendimento B</label>
+              <select value={fEmprB} onChange={e => setFEmprB(e.target.value)} className={`${selectCls} w-full mt-1`}>
+                <option value="Todos">Todos</option>
+                {allEmpreendimentos.map(e => <option key={e} value={e}>{e}</option>)}
+              </select>
+            </div>
+          )}
         </div>
         {(activeFilters > 0) && (
           <div className="flex flex-wrap gap-1.5 mt-3">
             {fType !== "Todos" && <Badge variant="outline" className="text-[10px]">Tipo: {fType}</Badge>}
             {fCity !== "Todas" && <Badge variant="outline" className="text-[10px]">Cidade: {fCity}</Badge>}
-            {fEmpr !== "Todos" && <Badge variant="outline" className="text-[10px]">Empreendimento: {fEmpr}</Badge>}
+            {!compareEmpr && fEmpr !== "Todos" && <Badge variant="outline" className="text-[10px]">Empreendimento: {fEmpr}</Badge>}
+            {compareEmpr && <Badge variant="outline" className="text-[10px]">A: {fEmpr} ({yearA}) vs B: {fEmprB} ({yearB})</Badge>}
           </div>
         )}
       </div>
