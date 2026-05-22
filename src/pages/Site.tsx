@@ -320,6 +320,7 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
   const searchMarkerRef = useRef<any>(null);
   const geocoderRef = useRef<any>(null);
   const [mapStyle, setMapStyle] = useState<"satellite" | "streets" | "dark">("satellite");
+  const [mapReady, setMapReady] = useState(false);
   const [mapFilterType, setMapFilterType] = useState("");
   const [mapFilterEmpreendimento, setMapFilterEmpreendimento] = useState("");
   const [mapFilterAddress, setMapFilterAddress] = useState("");
@@ -444,6 +445,7 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
       mapInstanceRef.current = map;
       geocoderRef.current = new google.maps.Geocoder();
       infoWindowRef.current = new google.maps.InfoWindow();
+      setMapReady(true);
     })();
 
     return () => { cancelled = true; };
@@ -542,7 +544,7 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
       map.setCenter({ lat: validProps[0].lat, lng: validProps[0].lng });
       map.setZoom(15);
     }
-  }, [filteredMapProperties, gmapsReady, clearMarker, createMapMarker]);
+  }, [filteredMapProperties, gmapsReady, mapReady, clearMarker, createMapMarker]);
 
   // Geocode address search and pan map
   useEffect(() => {
