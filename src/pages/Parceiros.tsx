@@ -16,6 +16,10 @@ interface Partner {
   logo_url: string;
   description: string;
   category: string;
+  city?: string | null;
+  phone?: string | null;
+  rating?: number | null;
+  total_ratings?: number | null;
 }
 
 const categoryIcons: Record<string, typeof Building2> = {
