@@ -594,7 +594,7 @@ export default function Reports() {
           </>
         ) : (
           /* ─── COMPARATIVO ANUAL TAB ─── */
-          <ComparativoAnual data={comparativoData} currentYear={currentYear} previousYear={previousYear} />
+          <ComparativoAnual sales={sales} allYears={allYears} allCities={allCities} allTypes={allTypes} defaultYearA={currentYear} defaultYearB={previousYear} />
         )}
 
         {/* Month Sales Dialog */}
