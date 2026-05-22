@@ -133,7 +133,7 @@ export default function CadastroEdificio() {
 
         <section>
           <SectionHeader icon={Layers} title="Características" />
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             <div className="space-y-1.5">
               <Label className="text-xs">Andares</Label>
               <Input type="number" value={form.andares || ''} onChange={(e) => setForm({ ...form, andares: +e.target.value })} />
@@ -141,6 +141,10 @@ export default function CadastroEdificio() {
             <div className="space-y-1.5">
               <Label className="text-xs">Total de Unidades</Label>
               <Input type="number" value={form.total_unidades || ''} onChange={(e) => setForm({ ...form, total_unidades: +e.target.value })} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Unidades por Andar</Label>
+              <Input type="number" value={form.unidades_por_andar || ''} onChange={(e) => setForm({ ...form, unidades_por_andar: +e.target.value })} />
             </div>
           </div>
         </section>
