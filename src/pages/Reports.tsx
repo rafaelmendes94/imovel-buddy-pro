@@ -525,9 +525,9 @@ export default function Reports() {
                     key: "rankings-entidades",
                     node: (
                       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                        <RankingListCard title="Top Edifícios" icon={Building2} data={rankings.byEdificio.slice(0, 6)} />
-                        <RankingListCard title="Top Condomínios" icon={Building2} data={rankings.byCondominio.slice(0, 6)} />
-                        <RankingListCard title="Top Loteamentos" icon={Building2} data={rankings.byEmpreendimento.slice(0, 6)} />
+                       <RankingListCard title="Edifícios Mais Vendidos" icon={Building2} data={rankings.byEdificio.slice(0, 6)} />
+                       <RankingListCard title="Condomínios Mais Vendidos" icon={Building2} data={rankings.byCondominio.slice(0, 6)} />
+                       <RankingListCard title="Loteamentos Mais Vendidos" icon={Building2} data={rankings.byEmpreendimento.slice(0, 6)} />
                       </div>
                     ),
                   },
