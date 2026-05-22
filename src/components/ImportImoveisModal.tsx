@@ -141,29 +141,9 @@ export function ImportImoveisModal({ open, onClose, onImported }: Props) {
     toast.success(`${json.length} linhas detectadas`);
   };
 
-  const handleImport = async () => {
+  const handleImport = () => {
     if (!user || rows.length === 0) return;
-    setImporting(true);
-    let ok = 0, fail = 0;
-    const batch = rows.map(r => mapRow(r, user.id)).filter(r => r.titulo);
-    // Insere em blocos de 50
-    for (let i = 0; i < batch.length; i += 50) {
-      const chunk = batch.slice(i, i + 50);
-      const { error } = await supabase.from("imoveis").insert(chunk);
-      if (error) {
-        console.error("Import error:", error);
-        fail += chunk.length;
-      } else {
-        ok += chunk.length;
-      }
-    }
-    setResult({ ok, fail });
-    setImporting(false);
-    if (ok > 0) {
-      toast.success(`${ok} imóveis importados`);
-      onImported();
-    }
-    if (fail > 0) toast.error(`${fail} falhas na importação`);
+    setConfirmOpen(true);
   };
 
   const headers = rows.length ? Object.keys(rows[0]) : [];
