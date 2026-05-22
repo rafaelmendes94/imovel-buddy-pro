@@ -56,7 +56,7 @@ export default function Parceiros() {
   useEffect(() => {
     supabase
       .from("partners")
-      .select("id, name, slug, logo_url, description, category")
+      .select("id, name, slug, logo_url, description, category, city, phone, rating, total_ratings")
       .eq("status", "active")
       .order("sort_order", { ascending: true })
       .then(({ data }) => setAllPartners((data as any) || []));
