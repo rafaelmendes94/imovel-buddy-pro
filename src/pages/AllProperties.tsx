@@ -7,9 +7,10 @@ import {
   Search, MapPin, BedDouble, Bath, Car, Ruler, Phone,
   ChevronLeft, ChevronRight, Star, Building2, Home, X,
   Waves, Paintbrush, SlidersHorizontal, ChevronDown,
-  ArrowUpDown,
+  ArrowUpDown, Heart, Route,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toSlug } from "@/lib/utils";
 
 interface SiteProperty {
   id: string;
