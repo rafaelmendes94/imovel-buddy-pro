@@ -75,7 +75,7 @@ export default function CadastroEdificio() {
       nome: form.nome, construtora: form.construtora, ano_construcao: form.ano_construcao,
       status: form.status, cep: form.cep, endereco: form.endereco, numero: form.numero,
       complemento: form.complemento, bairro: form.bairro, cidade: form.cidade, estado: form.estado,
-      andares: form.andares, total_unidades: form.total_unidades, infraestrutura: form.infraestrutura,
+      andares: form.andares, total_unidades: form.total_unidades, unidades_por_andar: form.unidades_por_andar, infraestrutura: form.infraestrutura,
       imagem_url: form.imagem_url,
       latitude: parseFloat(form.latitude) || 0, longitude: parseFloat(form.longitude) || 0,
       fotos_infra: form.fotos_infra, fotos_empreendimento: form.fotos_empreendimento,
