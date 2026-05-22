@@ -445,6 +445,7 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
       mapInstanceRef.current = map;
       geocoderRef.current = new google.maps.Geocoder();
       infoWindowRef.current = new google.maps.InfoWindow();
+      setMapReady(true);
     })();
 
     return () => { cancelled = true; };
