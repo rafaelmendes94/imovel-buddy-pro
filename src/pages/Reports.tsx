@@ -710,7 +710,7 @@ function ComparativoAnual({
     const baseYearSales = baseFiltered.filter(s => new Date(s.date).getFullYear() === yMin);
     const baseAvg = baseYearSales.length > 0 ? baseYearSales.reduce((s, x) => s + x.price, 0) / baseYearSales.length : 0;
     const valorizationSeries = years.map(y => {
-      const ys = baseFiltered.filter(s => new Date(s.date).getFullYear() === y);
+      const ys = baseFiltered.filter(s => new Date(s.date).getFullYear() === y && (matchA(s) || matchB(s)));
       const avg = ys.length > 0 ? ys.reduce((s, x) => s + x.price, 0) / ys.length : 0;
       const valorPct = baseAvg > 0 && avg > 0 ? ((avg - baseAvg) / baseAvg) * 100 : 0;
       return { year: String(y), ticketMedio: avg, valorPct, vendas: ys.length };
@@ -724,7 +724,7 @@ function ComparativoAnual({
       curCount: yearASales.length, prevCount: yearBSales.length,
       valorizationSeries, periodValorization, years,
     };
-  }, [baseFiltered, yearA, yearB]);
+  }, [baseFiltered, yearA, yearB, compareEmpr, fEmpr, fEmprB]);
 
   const yearOptions = useMemo(() => {
     const set = new Set<number>(allYears);
