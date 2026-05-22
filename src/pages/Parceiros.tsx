@@ -85,11 +85,13 @@ export default function Parceiros() {
     return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b));
   }, [filtered]);
 
-  const exportPdf = () => {
+  const exportPdf = (onlyCategory?: string) => {
     const doc = new jsPDF({ unit: "pt", format: "a4" });
     const pageW = doc.internal.pageSize.getWidth();
     const pageH = doc.internal.pageSize.getHeight();
-    const allGrouped = [...new Set(allPartners.map(p => p.category))].sort().map(c => [c, allPartners.filter(p => p.category === c)] as [string, Partner[]]);
+    const source = onlyCategory ? allPartners.filter(p => p.category === onlyCategory) : allPartners;
+    const allGrouped = [...new Set(source.map(p => p.category))].sort().map(c => [c, source.filter(p => p.category === c)] as [string, Partner[]]);
+    if (allGrouped.length === 0) return;
 
     // Color palette per category (primary, secondary, accent)
     const palette: Record<string, [number[], number[], number[]]> = {
