@@ -417,6 +417,7 @@ export default function Properties() {
   const navigate = useNavigate();
   const { user, subscription, isSuperAdmin, isAdminStaff } = useAuth();
   const [currentImoveis, setCurrentImoveis] = useState(0);
+  const [importOpen, setImportOpen] = useState(0);
   const maxImoveis = subscription?.plan?.max_properties ?? 0;
   const limitReached = !isSuperAdmin && !isAdminStaff && maxImoveis > 0 && currentImoveis >= maxImoveis;
 
