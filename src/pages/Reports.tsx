@@ -535,8 +535,9 @@ export default function Reports() {
                   {
                     key: "rankings-1",
                     node: (
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                         <RankingBarCard title="Tipo de Imóvel" data={rankings.byType} colors={TYPE_COLORS} />
+                        <RankingBarCard title="Dormitórios" data={rankings.byBedrooms} />
                         <RankingBarCard title="Cidade" data={rankings.byCity} />
                       </div>
                     ),
