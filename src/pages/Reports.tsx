@@ -445,7 +445,7 @@ export default function Reports() {
                       {/* Revenue Bar Chart */}
                       <div className="elevated-card rounded-xl p-5">
                         <h3 className="text-sm font-semibold text-card-foreground mb-1 flex items-center gap-2">
-                          <BarChart3 className="w-4 h-4 text-accent" /> Receita Mensal
+                          <BarChart3 className="w-4 h-4 text-accent" /> VGV Mensal
                         </h3>
                         <p className="text-[10px] text-muted-foreground mb-3">Clique em uma barra para detalhes</p>
                         <ResponsiveContainer width="100%" height={260}>
