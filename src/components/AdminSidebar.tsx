@@ -40,7 +40,7 @@ const operationalItems = [
   { icon: ShoppingBag, label: "Brick", path: "/admin/brick", moduleKey: "brick" },
 ];
 
-export function AdminSidebar() {
+export function AdminSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
   const location = useLocation();
   const { signOut, profile, isSuperAdmin, hasModuleAccess } = useAuth();
 
