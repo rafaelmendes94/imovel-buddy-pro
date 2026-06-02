@@ -32,6 +32,7 @@ interface Partner {
   projects: number;
   status: string;
   sort_order: number;
+  featured: boolean;
 }
 
 const CATEGORIES = [
