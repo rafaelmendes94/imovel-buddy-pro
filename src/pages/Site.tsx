@@ -446,9 +446,40 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
       geocoderRef.current = new google.maps.Geocoder();
       infoWindowRef.current = new google.maps.InfoWindow();
       setMapReady(true);
+
+      // Força render dos tiles assim que o mapa é criado
+      const triggerResize = () => {
+        if (!mapInstanceRef.current) return;
+        const center = mapInstanceRef.current.getCenter();
+        google.maps.event.trigger(mapInstanceRef.current, "resize");
+        if (center) mapInstanceRef.current.setCenter(center);
+      };
+      setTimeout(triggerResize, 50);
+      setTimeout(triggerResize, 300);
+
+      // Dispara resize quando o container muda de tamanho
+      if (mapRef.current && "ResizeObserver" in window) {
+        const ro = new ResizeObserver(() => triggerResize());
+        ro.observe(mapRef.current);
+        (mapInstanceRef.current as any).__ro = ro;
+      }
+
+      // Dispara resize quando o mapa entra no viewport
+      if (mapRef.current && "IntersectionObserver" in window) {
+        const io = new IntersectionObserver((entries) => {
+          entries.forEach((e) => { if (e.isIntersecting) triggerResize(); });
+        }, { threshold: 0.05 });
+        io.observe(mapRef.current);
+        (mapInstanceRef.current as any).__io = io;
+      }
     })();
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+      const inst: any = mapInstanceRef.current;
+      if (inst?.__ro) { try { inst.__ro.disconnect(); } catch {} }
+      if (inst?.__io) { try { inst.__io.disconnect(); } catch {} }
+    };
   }, [gmapsReady]);
 
   // Switch map style
@@ -778,7 +809,7 @@ export default function Site() {
     const fetchProperties = async () => {
       setLoading(true);
       const [{ data, error }, { data: brokersData }] = await Promise.all([
-        supabase.from("imoveis").select("*, edificios(nome), condominios(nome), empreendimentos(nome)").eq("ativo_site", true),
+        supabase.from("imoveis").select("*, edificios(nome), condominios(nome), empreendimentos(nome)").eq("ativo_site", true).neq("status", "Vendido"),
         supabase.from("subscriber_brokers").select("name, phone").eq("status", "active"),
       ]);
 
