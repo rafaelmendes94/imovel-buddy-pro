@@ -133,6 +133,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const isSuperAdmin = roles.includes("super_admin");
   const isAdminStaff = roles.includes("admin_staff");
   const isBroker = roles.includes("broker");
+  const isPartner = roles.includes("partner");
   const isBlocked = subscription?.status === "blocked";
 
   const hasModuleAccess = (moduleKey: string, action: keyof ActionPerms = "view"): boolean => {
