@@ -158,7 +158,12 @@ export default function AdminParceiros() {
                         </div>
                       )}
                     </TableCell>
-                    <TableCell className="font-medium">{p.name}</TableCell>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        {p.name}
+                        {p.featured && <Badge className="bg-blue-500 hover:bg-blue-500 text-white text-[10px]">Destaque</Badge>}
+                      </div>
+                    </TableCell>
                     <TableCell><Badge variant="outline">{p.category}</Badge></TableCell>
                     <TableCell className="text-muted-foreground text-sm">{p.city || "—"}</TableCell>
                     <TableCell>
