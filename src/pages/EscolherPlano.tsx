@@ -154,16 +154,24 @@ export default function EscolherPlano() {
             {plans.map(plan => {
               const isFree = plan.is_free;
               const isSelecting = selectingId === plan.id;
+              const isPartner = accountType === "parceiro";
+              const isFeatured = isPartner && Array.isArray(plan.modules) && plan.modules.includes("destaque");
+              const isHighlighted = isFree || isFeatured;
               return (
                 <div
                   key={plan.id}
                   className={`relative bg-card border rounded-2xl p-6 flex flex-col ${
-                    isFree ? "border-accent shadow-lg ring-2 ring-accent/20" : "border-border"
+                    isHighlighted ? "border-accent shadow-lg ring-2 ring-accent/20" : "border-border"
                   }`}
                 >
                   {isFree && (
                     <Badge className="absolute -top-2 left-1/2 -translate-x-1/2 bg-accent text-accent-foreground">
                       <Sparkles className="w-3 h-3 mr-1" /> Comece grátis
+                    </Badge>
+                  )}
+                  {isFeatured && (
+                    <Badge className="absolute -top-2 left-1/2 -translate-x-1/2 bg-accent text-accent-foreground">
+                      <Sparkles className="w-3 h-3 mr-1" /> Mais popular
                     </Badge>
                   )}
                   <h3 className="text-lg font-bold text-foreground">{plan.name}</h3>
@@ -178,15 +186,35 @@ export default function EscolherPlano() {
                     )}
                   </div>
                   <ul className="space-y-2 text-sm text-foreground flex-1 mb-5">
-                    <li className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-accent" />
-                      Até <strong>{plan.max_properties}</strong> imóveis
-                    </li>
-                    {accountType === "imobiliaria" && (
-                      <li className="flex items-center gap-2">
-                        <Check className="w-4 h-4 text-accent" />
-                        Até <strong>{plan.max_brokers}</strong> corretores
-                      </li>
+                    {isPartner ? (
+                      <>
+                        <li className="flex items-center gap-2"><Check className="w-4 h-4 text-accent" />Página pública do parceiro</li>
+                        <li className="flex items-center gap-2"><Check className="w-4 h-4 text-accent" />Avaliações e comentários</li>
+                        <li className="flex items-center gap-2"><Check className="w-4 h-4 text-accent" />Listagem no site</li>
+                        {isFeatured ? (
+                          <li className="flex items-center gap-2 font-semibold"><Check className="w-4 h-4 text-accent" />Destaque no carrossel da home</li>
+                        ) : (
+                          <li className="flex items-center gap-2 text-muted-foreground"><Check className="w-4 h-4 text-muted-foreground" />Sem destaque na home</li>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <li className="flex items-center gap-2">
+                          <Check className="w-4 h-4 text-accent" />
+                          Até <strong>{plan.max_properties}</strong> imóveis
+                        </li>
+                        {accountType === "imobiliaria" && (
+                          <li className="flex items-center gap-2">
+                            <Check className="w-4 h-4 text-accent" />
+                            Até <strong>{plan.max_brokers}</strong> corretores
+                          </li>
+                        )}
+                        {Array.isArray(plan.modules) && plan.modules.slice(0, 4).map((m: string) => (
+                          <li key={m} className="flex items-center gap-2 capitalize">
+                            <Check className="w-4 h-4 text-accent" /> {m}
+                          </li>
+                        ))}
+                      </>
                     )}
                     {!isFree && plan.trial_days > 0 && (
                       <li className="flex items-center gap-2">
@@ -194,15 +222,10 @@ export default function EscolherPlano() {
                         {plan.trial_days} dias de trial grátis
                       </li>
                     )}
-                    {Array.isArray(plan.modules) && plan.modules.slice(0, 4).map((m: string) => (
-                      <li key={m} className="flex items-center gap-2 capitalize">
-                        <Check className="w-4 h-4 text-accent" /> {m}
-                      </li>
-                    ))}
                   </ul>
                   <Button
                     className="w-full"
-                    variant={isFree ? "default" : "outline"}
+                    variant={isHighlighted ? "default" : "outline"}
                     disabled={isSelecting}
                     onClick={() => isFree ? handleSelectFree(plan) : handleSelectPaid(plan)}
                   >
