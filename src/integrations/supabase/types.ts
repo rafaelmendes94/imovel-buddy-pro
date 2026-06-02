@@ -1214,6 +1214,7 @@ export type Database = {
           created_at: string
           description: string | null
           email: string | null
+          featured: boolean
           id: string
           logo_url: string | null
           name: string
@@ -1236,6 +1237,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           email?: string | null
+          featured?: boolean
           id?: string
           logo_url?: string | null
           name: string
@@ -1258,6 +1260,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           email?: string | null
+          featured?: boolean
           id?: string
           logo_url?: string | null
           name?: string

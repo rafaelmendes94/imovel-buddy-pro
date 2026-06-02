@@ -32,6 +32,7 @@ interface Partner {
   projects: number;
   status: string;
   sort_order: number;
+  featured: boolean;
 }
 
 const CATEGORIES = [
@@ -43,7 +44,7 @@ const emptyPartner: Omit<Partner, "id"> = {
   name: "", slug: "", logo_url: "", cover_url: "", description: "",
   address: "", city: "", phone: "", email: "", website: "",
   category: "Outros", since_year: "", rating: 0, total_ratings: 0,
-  projects: 0, status: "active", sort_order: 0,
+  projects: 0, status: "active", sort_order: 0, featured: false,
 };
 
 export default function AdminParceiros() {
@@ -157,7 +158,12 @@ export default function AdminParceiros() {
                         </div>
                       )}
                     </TableCell>
-                    <TableCell className="font-medium">{p.name}</TableCell>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        {p.name}
+                        {p.featured && <Badge className="bg-blue-500 hover:bg-blue-500 text-white text-[10px]">Destaque</Badge>}
+                      </div>
+                    </TableCell>
                     <TableCell><Badge variant="outline">{p.category}</Badge></TableCell>
                     <TableCell className="text-muted-foreground text-sm">{p.city || "—"}</TableCell>
                     <TableCell>
@@ -214,6 +220,21 @@ export default function AdminParceiros() {
                     <SelectItem value="inactive">Inativo</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="md:col-span-2 flex items-center justify-between rounded-lg border border-border p-3 bg-muted/30">
+                <div>
+                  <Label className="text-sm font-semibold">Destaque na home</Label>
+                  <p className="text-xs text-muted-foreground">Quando ativo, aparece no carrossel da home pública (ordem aleatória).</p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="sr-only peer"
+                    checked={!!form.featured}
+                    onChange={e => setForm(f => ({ ...f, featured: e.target.checked }))}
+                  />
+                  <div className="w-11 h-6 bg-muted peer-checked:bg-primary rounded-full peer transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-transform peer-checked:after:translate-x-5" />
+                </label>
               </div>
               <div className="md:col-span-2">
                 <Label>Descrição</Label>

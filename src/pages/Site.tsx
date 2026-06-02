@@ -54,6 +54,7 @@ import { RoutePlanner } from "@/components/RoutePlanner";
 import { SharkAI } from "@/components/SharkAI";
 import { useAuth } from "@/hooks/useAuth";
 import { useGoogleMapsLoader } from "@/hooks/useGoogleMapsLoader";
+import { PartnersCarouselHome } from "@/components/PartnersCarouselHome";
 
 // Site property type mapped from DB
 interface SiteProperty {
@@ -1660,6 +1661,10 @@ export default function Site() {
               <Search className="w-5 h-5" /> Ver Todos os Imóveis ({available.length})
             </Link>
           </div>
+        )}
+        {/* Parceiros em Destaque */}
+        {!searchTerm && !hasActiveFilters && activeCategory === "todos" && (
+          <PartnersCarouselHome />
         )}
         {/* Mapa Interativo */}
         {!searchTerm && !hasActiveFilters && (activeCategory === "todos") && (
