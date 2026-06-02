@@ -3,7 +3,7 @@ import { Navigate, useLocation } from "react-router-dom";
 
 interface AuthGuardProps {
   children: React.ReactNode;
-  requiredRoles?: ("super_admin" | "admin_staff" | "broker")[];
+  requiredRoles?: ("super_admin" | "admin_staff" | "broker" | "partner")[];
   allowBlocked?: boolean;
   allowNoSubscription?: boolean;
 }
