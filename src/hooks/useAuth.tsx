@@ -2,7 +2,7 @@ import { useState, useEffect, createContext, useContext } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 
-type AppRole = "super_admin" | "admin_staff" | "broker";
+type AppRole = "super_admin" | "admin_staff" | "broker" | "partner";
 
 type ActionPerms = { view: boolean; create: boolean; edit: boolean; delete: boolean };
 type StaffPermissions = Record<string, ActionPerms>;
@@ -28,6 +28,7 @@ interface AuthContextType {
   isSuperAdmin: boolean;
   isAdminStaff: boolean;
   isBroker: boolean;
+  isPartner: boolean;
   isBlocked: boolean;
   hasModuleAccess: (moduleKey: string, action?: keyof ActionPerms) => boolean;
 }
@@ -132,6 +133,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const isSuperAdmin = roles.includes("super_admin");
   const isAdminStaff = roles.includes("admin_staff");
   const isBroker = roles.includes("broker");
+  const isPartner = roles.includes("partner");
   const isBlocked = subscription?.status === "blocked";
 
   const hasModuleAccess = (moduleKey: string, action: keyof ActionPerms = "view"): boolean => {
@@ -142,7 +144,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, roles, profile, subscription, staffPermissions, refreshUserData, signOut, isSuperAdmin, isAdminStaff, isBroker, isBlocked, hasModuleAccess }}>
+    <AuthContext.Provider value={{ user, session, loading, roles, profile, subscription, staffPermissions, refreshUserData, signOut, isSuperAdmin, isAdminStaff, isBroker, isPartner, isBlocked, hasModuleAccess }}>
       {children}
     </AuthContext.Provider>
   );

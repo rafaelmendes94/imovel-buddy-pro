@@ -3,13 +3,13 @@ import { Navigate, useLocation } from "react-router-dom";
 
 interface AuthGuardProps {
   children: React.ReactNode;
-  requiredRoles?: ("super_admin" | "admin_staff" | "broker")[];
+  requiredRoles?: ("super_admin" | "admin_staff" | "broker" | "partner")[];
   allowBlocked?: boolean;
   allowNoSubscription?: boolean;
 }
 
 export function AuthGuard({ children, requiredRoles, allowBlocked = false, allowNoSubscription = false }: AuthGuardProps) {
-  const { user, loading, roles, isBlocked, subscription, isSuperAdmin, isAdminStaff } = useAuth();
+  const { user, loading, roles, isBlocked, subscription, isSuperAdmin, isAdminStaff, isPartner } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -29,6 +29,9 @@ export function AuthGuard({ children, requiredRoles, allowBlocked = false, allow
     if (!hasRole) {
       if (isSuperAdmin || isAdminStaff) {
         return <Navigate to="/dashboard" replace />;
+      }
+      if (isPartner) {
+        return <Navigate to="/painel-parceiro" replace />;
       }
       return <Navigate to="/painel" replace />;
     }

@@ -1205,6 +1205,36 @@ export type Database = {
         }
         Relationships: []
       }
+      partner_ratings: {
+        Row: {
+          comment: string
+          created_at: string
+          id: string
+          partner_id: string
+          rater_id: string
+          rater_name: string
+          rating: number
+        }
+        Insert: {
+          comment?: string
+          created_at?: string
+          id?: string
+          partner_id: string
+          rater_id: string
+          rater_name?: string
+          rating: number
+        }
+        Update: {
+          comment?: string
+          created_at?: string
+          id?: string
+          partner_id?: string
+          rater_id?: string
+          rater_name?: string
+          rating?: number
+        }
+        Relationships: []
+      }
       partners: {
         Row: {
           address: string | null
@@ -1227,6 +1257,7 @@ export type Database = {
           status: string
           total_ratings: number | null
           updated_at: string
+          user_id: string | null
           website: string | null
         }
         Insert: {
@@ -1250,6 +1281,7 @@ export type Database = {
           status?: string
           total_ratings?: number | null
           updated_at?: string
+          user_id?: string | null
           website?: string | null
         }
         Update: {
@@ -1273,6 +1305,7 @@ export type Database = {
           status?: string
           total_ratings?: number | null
           updated_at?: string
+          user_id?: string | null
           website?: string | null
         }
         Relationships: []
@@ -1847,7 +1880,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "super_admin" | "admin_staff" | "broker"
+      app_role: "super_admin" | "admin_staff" | "broker" | "partner"
       billing_cycle: "monthly" | "quarterly" | "annual"
       subscription_status:
         | "trial"
@@ -1983,7 +2016,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["super_admin", "admin_staff", "broker"],
+      app_role: ["super_admin", "admin_staff", "broker", "partner"],
       billing_cycle: ["monthly", "quarterly", "annual"],
       subscription_status: [
         "trial",

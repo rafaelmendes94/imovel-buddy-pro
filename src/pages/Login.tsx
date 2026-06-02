@@ -41,6 +41,8 @@ export default function Login() {
       navigate(requestedPath, { replace: true });
     } else if (roles.includes("super_admin") || roles.includes("admin_staff")) {
       navigate("/dashboard", { replace: true });
+    } else if (roles.includes("partner")) {
+      navigate(subscription ? "/painel-parceiro" : "/escolher-plano", { replace: true });
     } else if (subscription) {
       navigate("/painel", { replace: true });
     } else {

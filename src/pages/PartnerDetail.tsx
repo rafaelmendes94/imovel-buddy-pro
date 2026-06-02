@@ -38,22 +38,42 @@ export default function PartnerDetail() {
   const [hoverRating, setHoverRating] = useState(0);
   const [commentText, setCommentText] = useState("");
   const [authorName, setAuthorName] = useState("");
-  const [localComments, setLocalComments] = useState<{ author: string; avatar: string; rating: number; text: string; date: string }[]>([]);
+  const [dbComments, setDbComments] = useState<{ id: string; author: string; avatar: string; rating: number; text: string; date: string }[]>([]);
   const [submitted, setSubmitted] = useState(false);
   const [showConfig, setShowConfig] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  const loadRatings = async (partnerId: string) => {
+    const { data } = await supabase
+      .from("partner_ratings")
+      .select("id, rater_name, rating, comment, created_at")
+      .eq("partner_id", partnerId)
+      .order("created_at", { ascending: false });
+    setDbComments(((data as any[]) || []).map(r => ({
+      id: r.id,
+      author: r.rater_name || "Anônimo",
+      avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(r.rater_name || "A")}&background=f59e0b&color=fff`,
+      rating: r.rating,
+      text: r.comment || "",
+      date: new Date(r.created_at).toLocaleDateString("pt-BR"),
+    })));
+  };
 
   useEffect(() => {
     if (!slug) return;
-    supabase
-      .from("partners")
-      .select("*")
-      .eq("slug", slug)
-      .eq("status", "active")
-      .maybeSingle()
-      .then(({ data }) => {
-        setPartner(data as any);
-        setLoading(false);
-      });
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUserId(user?.id || null);
+      const { data } = await supabase
+        .from("partners")
+        .select("*")
+        .eq("slug", slug)
+        .eq("status", "active")
+        .maybeSingle();
+      setPartner(data as any);
+      if (data) await loadRatings((data as any).id);
+      setLoading(false);
+    })();
   }, [slug]);
 
   if (loading) {
@@ -71,22 +91,29 @@ export default function PartnerDetail() {
     );
   }
 
-  const allComments = [...localComments];
+  const allComments = dbComments;
   const avgRating = allComments.length > 0
     ? (allComments.reduce((s, c) => s + c.rating, 0) / allComments.length).toFixed(1)
-    : partner.rating.toFixed(1);
+    : (partner.rating || 0).toFixed(1);
 
   const yearsInMarket = partner.since_year ? new Date().getFullYear() - parseInt(partner.since_year) : 0;
 
-  const handleSubmitReview = () => {
-    if (userRating === 0 || !commentText.trim() || !authorName.trim()) return;
-    setLocalComments(prev => [...prev, {
-      author: authorName,
-      avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(authorName)}&background=f59e0b&color=fff`,
+  const handleSubmitReview = async () => {
+    if (userRating === 0 || !commentText.trim()) return;
+    if (!currentUserId) {
+      alert("Você precisa estar logado para avaliar.");
+      return;
+    }
+    const name = authorName.trim() || "Anônimo";
+    const { error } = await supabase.from("partner_ratings").insert({
+      partner_id: partner.id,
+      rater_id: currentUserId,
+      rater_name: name,
       rating: userRating,
-      text: commentText,
-      date: new Date().toISOString().split("T")[0],
-    }]);
+      comment: commentText.trim(),
+    });
+    if (error) { alert("Erro ao enviar avaliação: " + error.message); return; }
+    await loadRatings(partner.id);
     setSubmitted(true);
     setShowRatingModal(false);
     setCommentText("");
@@ -141,7 +168,7 @@ export default function PartnerDetail() {
           <div className="bg-white rounded-2xl p-5 text-center border border-gray-100 shadow-sm">
             <Star className="w-6 h-6 mx-auto text-amber-500 mb-2" />
             <p className="text-2xl font-extrabold text-gray-900">{avgRating}</p>
-            <p className="text-xs text-gray-500 font-medium">{partner.total_ratings + localComments.length} avaliações</p>
+            <p className="text-xs text-gray-500 font-medium">{partner.total_ratings + allComments.length} avaliações</p>
           </div>
           <div className="bg-white rounded-2xl p-5 text-center border border-gray-100 shadow-sm">
             <Building2 className="w-6 h-6 mx-auto text-amber-500 mb-2" />
@@ -201,7 +228,7 @@ export default function PartnerDetail() {
                   <Star key={s} className={cn("w-4 h-4", s <= Math.round(Number(avgRating)) ? "text-amber-400 fill-amber-400" : "text-gray-300")} />
                 ))}
               </div>
-              <p className="text-xs text-gray-500 mt-1">{partner.total_ratings + localComments.length} avaliações</p>
+              <p className="text-xs text-gray-500 mt-1">{partner.total_ratings + allComments.length} avaliações</p>
             </div>
             <div className="flex-1 space-y-1.5">
               {[5, 4, 3, 2, 1].map((star) => {
@@ -278,12 +305,12 @@ export default function PartnerDetail() {
               {userRating > 0 && <p className="text-sm font-semibold text-amber-600">Você deu {userRating} estrela{userRating > 1 ? "s" : ""}!</p>}
             </div>
             <div className="space-y-3">
-              <input type="text" placeholder="Seu nome" value={authorName} onChange={(e) => setAuthorName(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-gray-50" />
+              <input type="text" placeholder="Seu nome (opcional)" value={authorName} onChange={(e) => setAuthorName(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-gray-50" />
               <textarea placeholder="Deixe seu comentário sobre este parceiro..." value={commentText} onChange={(e) => setCommentText(e.target.value)} rows={3} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-gray-50 resize-none" />
             </div>
-            <button disabled={userRating === 0 || !commentText.trim() || !authorName.trim()} onClick={handleSubmitReview}
+            <button disabled={userRating === 0 || !commentText.trim()} onClick={handleSubmitReview}
               className={cn("w-full py-3 rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2",
-                userRating > 0 && commentText.trim() && authorName.trim() ? "bg-amber-500 text-white hover:bg-amber-600" : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                userRating > 0 && commentText.trim() ? "bg-amber-500 text-white hover:bg-amber-600" : "bg-gray-100 text-gray-400 cursor-not-allowed"
               )}>
               <Send className="w-4 h-4" /> Enviar Avaliação
             </button>
