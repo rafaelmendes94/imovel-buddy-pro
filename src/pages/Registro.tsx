@@ -50,7 +50,7 @@ export default function Registro() {
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
           <img src={logoImg} alt="MV BROKER CONNECT" className="mx-auto w-32 h-32 object-contain mb-4" />
-          <p className="text-muted-foreground text-sm mt-1">Crie sua conta de corretor</p>
+          <p className="text-muted-foreground text-sm mt-1">Crie sua conta</p>
         </div>
 
         <form onSubmit={handleRegister} className="space-y-4 bg-card p-6 rounded-xl border border-border shadow-sm">
