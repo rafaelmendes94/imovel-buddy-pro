@@ -58,6 +58,8 @@ export default function EscolherPlano() {
     load();
   }, [user]);
 
+  const homePath = accountType === "parceiro" ? "/painel-parceiro" : "/painel";
+
   const handleSelectFree = async (plan: Plan) => {
     if (!user) return;
     setSelectingId(plan.id);
@@ -73,7 +75,7 @@ export default function EscolherPlano() {
     await refreshUserData();
     toast({ title: "Plano ativado!", description: "Aproveite o MV BROKER CONNECT." });
     setSelectingId(null);
-    navigate("/painel", { replace: true });
+    navigate(homePath, { replace: true });
   };
 
   const handleSelectPaid = async (plan: Plan) => {
