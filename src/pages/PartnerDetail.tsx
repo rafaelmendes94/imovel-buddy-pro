@@ -38,22 +38,42 @@ export default function PartnerDetail() {
   const [hoverRating, setHoverRating] = useState(0);
   const [commentText, setCommentText] = useState("");
   const [authorName, setAuthorName] = useState("");
-  const [localComments, setLocalComments] = useState<{ author: string; avatar: string; rating: number; text: string; date: string }[]>([]);
+  const [dbComments, setDbComments] = useState<{ id: string; author: string; avatar: string; rating: number; text: string; date: string }[]>([]);
   const [submitted, setSubmitted] = useState(false);
   const [showConfig, setShowConfig] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  const loadRatings = async (partnerId: string) => {
+    const { data } = await supabase
+      .from("partner_ratings")
+      .select("id, rater_name, rating, comment, created_at")
+      .eq("partner_id", partnerId)
+      .order("created_at", { ascending: false });
+    setDbComments(((data as any[]) || []).map(r => ({
+      id: r.id,
+      author: r.rater_name || "Anônimo",
+      avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(r.rater_name || "A")}&background=f59e0b&color=fff`,
+      rating: r.rating,
+      text: r.comment || "",
+      date: new Date(r.created_at).toLocaleDateString("pt-BR"),
+    })));
+  };
 
   useEffect(() => {
     if (!slug) return;
-    supabase
-      .from("partners")
-      .select("*")
-      .eq("slug", slug)
-      .eq("status", "active")
-      .maybeSingle()
-      .then(({ data }) => {
-        setPartner(data as any);
-        setLoading(false);
-      });
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUserId(user?.id || null);
+      const { data } = await supabase
+        .from("partners")
+        .select("*")
+        .eq("slug", slug)
+        .eq("status", "active")
+        .maybeSingle();
+      setPartner(data as any);
+      if (data) await loadRatings((data as any).id);
+      setLoading(false);
+    })();
   }, [slug]);
 
   if (loading) {
@@ -71,22 +91,29 @@ export default function PartnerDetail() {
     );
   }
 
-  const allComments = [...localComments];
+  const allComments = dbComments;
   const avgRating = allComments.length > 0
     ? (allComments.reduce((s, c) => s + c.rating, 0) / allComments.length).toFixed(1)
-    : partner.rating.toFixed(1);
+    : (partner.rating || 0).toFixed(1);
 
   const yearsInMarket = partner.since_year ? new Date().getFullYear() - parseInt(partner.since_year) : 0;
 
-  const handleSubmitReview = () => {
-    if (userRating === 0 || !commentText.trim() || !authorName.trim()) return;
-    setLocalComments(prev => [...prev, {
-      author: authorName,
-      avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(authorName)}&background=f59e0b&color=fff`,
+  const handleSubmitReview = async () => {
+    if (userRating === 0 || !commentText.trim()) return;
+    if (!currentUserId) {
+      alert("Você precisa estar logado para avaliar.");
+      return;
+    }
+    const name = authorName.trim() || "Anônimo";
+    const { error } = await supabase.from("partner_ratings").insert({
+      partner_id: partner.id,
+      rater_id: currentUserId,
+      rater_name: name,
       rating: userRating,
-      text: commentText,
-      date: new Date().toISOString().split("T")[0],
-    }]);
+      comment: commentText.trim(),
+    });
+    if (error) { alert("Erro ao enviar avaliação: " + error.message); return; }
+    await loadRatings(partner.id);
     setSubmitted(true);
     setShowRatingModal(false);
     setCommentText("");
