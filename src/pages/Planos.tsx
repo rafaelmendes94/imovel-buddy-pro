@@ -47,6 +47,7 @@ const CYCLE_LABELS: Record<string, string> = {
 export default function Planos() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState<"corretor" | "parceiro">("corretor");
   const { user, profile, signOut } = useAuth();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const navigate = useNavigate();
