@@ -255,6 +255,9 @@ export default function AdminPlanos() {
                   <Button size="sm" variant="ghost" onClick={() => toggleActive(plan.id, plan.is_active)}>
                     {plan.is_active ? "Desativar" : "Ativar"}
                   </Button>
+                  <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => handleDelete(plan)}>
+                    <Trash2 className="w-3 h-3 mr-1" />Excluir
+                  </Button>
                 </div>
               </div>
             ))}
