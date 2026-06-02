@@ -256,7 +256,7 @@ export default function AllProperties() {
       if (sharedIds && sharedIds.length) {
         query = query.in('id', sharedIds);
       } else {
-        query = query.eq('ativo_site', true);
+        query = query.eq('ativo_site', true).neq('status', 'Vendido');
       }
       const { data, error } = await query;
 
