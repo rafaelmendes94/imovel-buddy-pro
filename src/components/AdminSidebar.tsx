@@ -37,7 +37,7 @@ const operationalItems = [
   { icon: Users, label: "Corretores", path: "/corretores", moduleKey: "corretores" },
   { icon: Landmark, label: "Imobiliárias", path: "/imobiliarias", moduleKey: "imobiliarias" },
   { icon: Settings, label: "Configurações", path: "/configuracoes", moduleKey: "configuracoes" },
-  { icon: ShoppingBag, label: "Brick", path: "/admin/brick", moduleKey: "brick" },
+  // { icon: ShoppingBag, label: "Brick", path: "/admin/brick", moduleKey: "brick" }, // oculto
 ];
 
 export function AdminSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
