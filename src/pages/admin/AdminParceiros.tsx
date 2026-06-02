@@ -44,7 +44,7 @@ const emptyPartner: Omit<Partner, "id"> = {
   name: "", slug: "", logo_url: "", cover_url: "", description: "",
   address: "", city: "", phone: "", email: "", website: "",
   category: "Outros", since_year: "", rating: 0, total_ratings: 0,
-  projects: 0, status: "active", sort_order: 0,
+  projects: 0, status: "active", sort_order: 0, featured: false,
 };
 
 export default function AdminParceiros() {
