@@ -127,11 +127,15 @@ export default function EscolherPlano() {
       <div className="max-w-5xl mx-auto">
         <div className="flex flex-col items-center text-center mb-10">
           <img src={logoImg} alt="Logo" className="w-20 h-20 object-contain mb-3" />
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Escolha seu plano</h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            {accountType === "imobiliaria"
-              ? "Planos para imobiliárias com múltiplos corretores"
-              : "Planos para corretores autônomos"}
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+            {accountType === "parceiro" ? "Apareça para mais de 2.000 corretores" : "Escolha seu plano"}
+          </h1>
+          <p className="text-muted-foreground text-sm mt-1 max-w-xl">
+            {accountType === "parceiro"
+              ? "Sua marca exposta no site e dentro do CRM para milhares de corretores ativos. Impulsione seu negócio."
+              : accountType === "imobiliaria"
+                ? "Planos para imobiliárias com múltiplos corretores"
+                : "Planos para corretores autônomos"}
           </p>
         </div>
 
