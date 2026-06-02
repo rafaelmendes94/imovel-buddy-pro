@@ -1023,7 +1023,7 @@ export default function Site() {
               )}
             </div>
 
-            <Link to="/brick" className="hover:text-primary transition-colors">Brick</Link>
+            {/* <Link to="/brick" className="hover:text-primary transition-colors">Brick</Link> */}
 
             <Link to="/mapas-condominio" className="hover:text-primary transition-colors">Mapa Condomínio</Link>
             <Link to="/galeria-cidade" className="hover:text-primary transition-colors">Fotos da Cidade</Link>
