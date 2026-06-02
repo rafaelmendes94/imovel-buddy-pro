@@ -28,6 +28,7 @@ interface AuthContextType {
   isSuperAdmin: boolean;
   isAdminStaff: boolean;
   isBroker: boolean;
+  isPartner: boolean;
   isBlocked: boolean;
   hasModuleAccess: (moduleKey: string, action?: keyof ActionPerms) => boolean;
 }
