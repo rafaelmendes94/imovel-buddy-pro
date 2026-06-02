@@ -98,7 +98,7 @@ export default function EscolherPlano() {
     if (plan.trial_days > 0) {
       toast({ title: "Trial ativado!", description: "Você já pode acessar o painel." });
       setSelectingId(null);
-      navigate("/painel", { replace: true });
+      navigate(homePath, { replace: true });
       return;
     }
 
