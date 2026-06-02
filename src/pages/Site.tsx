@@ -1662,6 +1662,10 @@ export default function Site() {
             </Link>
           </div>
         )}
+        {/* Parceiros em Destaque */}
+        {!searchTerm && !hasActiveFilters && activeCategory === "todos" && (
+          <PartnersCarouselHome />
+        )}
         {/* Mapa Interativo */}
         {!searchTerm && !hasActiveFilters && (activeCategory === "todos") && (
           <section>
