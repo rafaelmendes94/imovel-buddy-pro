@@ -1,28 +1,43 @@
-# Link Drive Fotos no imóvel
+## Objetivo
+Ao clicar em "Compartilhar" no modal de detalhes do imóvel, enviar apenas as informações do imóvel (fotos, vídeo, tour 360°, características, descrição, localização aproximada) — sem nome/telefone/email/foto do corretor. Para isso, criar uma página pública dedicada.
 
-## Escopo
-Adicionar um link separado de "Drive Fotos" (além do já existente "Baixar Drive" / `link_material`) que abre em nova aba.
+## Mudanças
 
-## Banco de dados
-- Migration: adicionar coluna `drive_fotos_url TEXT` em `public.imoveis` (nullable, default null).
+### 1. Nova página pública `src/pages/ImovelPublico.tsx`
+- Rota: `/imovel/:id` (acesso anônimo, sem AuthGuard).
+- Busca o imóvel no Supabase pelo `id` (somente registros ativos/disponíveis — bloqueia vendidos com mensagem "Imóvel indisponível").
+- Layout limpo com header simples (logo MV Broker Connect, sem corretor).
+- Conteúdo exibido:
+  - Galeria de fotos (com lightbox/navegação)
+  - Vídeo do imóvel (YouTube embed)
+  - Tour Virtual 360°
+  - Título, preço, código
+  - Endereço/cidade/bairro (sem CEP/número exato — só rua + bairro + cidade para preservar privacidade)
+  - Quartos, banheiros, vagas, área, suítes
+  - Características (vista mar, decorado, aceita permuta, etc.)
+  - Descrição
+  - Infraestrutura/comodidades do condomínio
+  - Mini-mapa da localização (opcional, aproximada)
+- **NÃO** exibe: nome do corretor, telefone, email, foto, WhatsApp, CRECI, botão "falar com corretor", links para painel.
+- Botões: "Baixar fotos (PDF)" e "Compartilhar" (re-share do mesmo link público).
+- SEO: title/description com dados do imóvel, og:image com a foto principal.
 
-## Cadastro de imóvel (`src/pages/CadastroImovel.tsx`)
-- Adicionar `driveFotosUrl` ao estado `form`.
-- Carregar de `data.drive_fotos_url` no fetch/edit (próximo a `linkMaterial`).
-- Salvar `drive_fotos_url: form.driveFotosUrl || ''` no payload.
-- Adicionar input (tipo url) "Link Drive Fotos" no mesmo bloco do campo "Link Material/Drive" e "Link 360".
+### 2. Registrar rota em `src/App.tsx`
+Adicionar antes das rotas autenticadas:
+```tsx
+<Route path="/imovel/:id" element={<ImovelPublico />} />
+```
 
-## Modal do imóvel (`src/components/PropertyDetailModal.tsx`)
-- Ler `drive_fotos_url` da property.
-- Na action bar, logo após "Baixar Fotos (PDF)" / "Baixar Drive", adicionar botão `<a target="_blank" rel="noopener noreferrer">` com ícone `Images` (lucide) e label **"Drive Fotos"**, visível somente quando a URL existir.
+### 3. Atualizar `handleShare` em `src/components/PropertyDetailModal.tsx`
+Trocar `window.location.href` por URL pública:
+```ts
+const publicUrl = `${window.location.origin}/imovel/${property.id}`;
+const text = `🏠 *${property.title}*\n💰 ${formatCurrency(property.price)}\n📍 ${property.address}, ${property.city}\n🛏 ${property.bedrooms} quartos • 🚿 ${property.bathrooms} banheiros • 📐 ${property.area}m²\n\n🔗 ${publicUrl}`;
+window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
+```
+Também usar `navigator.share` quando disponível como fallback amigável.
 
-## Página interna do imóvel
-- Página atual de detalhe é o próprio `PropertyDetailModal` (reusado em `Properties`/`AllProperties`). Não há rota dedicada de detalhe; o botão no modal já cobre "página interna". 
-- Confirmar que `BrokerSite` continua usando `link_material` (Drive geral) — sem alteração.
-
-## Tipos
-- Aguardar regeneração automática de `src/integrations/supabase/types.ts` após a migration; usar cast `(property as any).drive_fotos_url` se necessário no curto prazo.
-
-## Comportamento
-- Botão sempre abre em nova aba (`target="_blank"`).
-- Campo opcional; quando vazio, botão não aparece.
+## Detalhes técnicos
+- A página pública usa o cliente Supabase com a anon key (já presente) e respeita as RLS atuais da tabela `properties`. Se hoje a leitura pública não estiver permitida, será necessário um policy `SELECT` para `anon` filtrando `status = 'available'` (criada via migration apenas se a query falhar para visitantes não logados — confirmo durante a build).
+- A página é renderizada client-side; meta tags são definidas via `document.title` e `<meta>` injetado para preview em redes sociais (limitação: não há SSR, então og:image só funciona em crawlers que executam JS — aceitável no escopo atual).
+- Nenhum dado do corretor é buscado ou exibido, eliminando qualquer vazamento.

@@ -329,8 +329,12 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
   };
 
   // -- Share via WhatsApp --
-  const handleShare = () => {
-    const text = `🏠 *${property.title}*\n💰 ${formatCurrency(property.price)}\n📍 ${property.address}, ${property.city}\n🛏 ${property.bedrooms} quartos • 🚿 ${property.bathrooms} banheiros • 📐 ${property.area}m²\n\n🔗 ${window.location.href}`;
+  const handleShare = async () => {
+    const publicUrl = `${window.location.origin}/imovel/${property.id}`;
+    const text = `🏠 *${property.title}*\n💰 ${formatCurrency(property.price)}\n📍 ${property.address}, ${property.city}\n🛏 ${property.bedrooms} quartos • 🚿 ${property.bathrooms} banheiros • 📐 ${property.area}m²\n\n🔗 ${publicUrl}`;
+    if (navigator.share) {
+      try { await navigator.share({ title: property.title, text, url: publicUrl }); return; } catch {}
+    }
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
   };
 

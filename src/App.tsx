@@ -18,6 +18,7 @@ import PartnerDetail from "./pages/PartnerDetail";
 import ConstrutoraSite from "./pages/ConstrutoraSite";
 import Planos from "./pages/Planos";
 import PublicCityPhotos from "./pages/PublicCityPhotos";
+import ImovelPublico from "./pages/ImovelPublico";
 
 // Admin pages
 // AdminDashboard removed - using unified Dashboard
@@ -94,6 +95,7 @@ const App = () => (
             <Route path="/brick-store" element={<BrickStore />} />
             <Route path="/planos" element={<Planos />} />
             <Route path="/galeria-cidade" element={<PublicCityPhotos />} />
+            <Route path="/imovel/:id" element={<ImovelPublico />} />
 
             {/* Admin routes */}
             
