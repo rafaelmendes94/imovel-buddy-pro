@@ -127,6 +127,29 @@ export default function AdminPlanos() {
     fetchPlans();
   };
 
+  const handleDelete = async (plan: any) => {
+    if (!confirm(`Excluir o plano "${plan.name}"? Esta ação não pode ser desfeita.`)) return;
+    const { count } = await supabase
+      .from("subscriptions")
+      .select("id", { count: "exact", head: true })
+      .eq("plan_id", plan.id);
+    if ((count || 0) > 0) {
+      toast({
+        title: "Não é possível excluir",
+        description: `Existem ${count} assinatura(s) vinculadas a este plano. Desative-o em vez de excluir.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    const { error } = await supabase.from("plans").delete().eq("id", plan.id);
+    if (error) {
+      toast({ title: "Erro ao excluir", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Plano excluído!" });
+    fetchPlans();
+  };
+
   return (
     <AdminLayout>
       <div className="p-6 space-y-6">
