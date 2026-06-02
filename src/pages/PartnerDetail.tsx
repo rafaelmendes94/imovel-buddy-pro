@@ -168,7 +168,7 @@ export default function PartnerDetail() {
           <div className="bg-white rounded-2xl p-5 text-center border border-gray-100 shadow-sm">
             <Star className="w-6 h-6 mx-auto text-amber-500 mb-2" />
             <p className="text-2xl font-extrabold text-gray-900">{avgRating}</p>
-            <p className="text-xs text-gray-500 font-medium">{partner.total_ratings + localComments.length} avaliações</p>
+            <p className="text-xs text-gray-500 font-medium">{partner.total_ratings + allComments.length} avaliações</p>
           </div>
           <div className="bg-white rounded-2xl p-5 text-center border border-gray-100 shadow-sm">
             <Building2 className="w-6 h-6 mx-auto text-amber-500 mb-2" />
@@ -228,7 +228,7 @@ export default function PartnerDetail() {
                   <Star key={s} className={cn("w-4 h-4", s <= Math.round(Number(avgRating)) ? "text-amber-400 fill-amber-400" : "text-gray-300")} />
                 ))}
               </div>
-              <p className="text-xs text-gray-500 mt-1">{partner.total_ratings + localComments.length} avaliações</p>
+              <p className="text-xs text-gray-500 mt-1">{partner.total_ratings + allComments.length} avaliações</p>
             </div>
             <div className="flex-1 space-y-1.5">
               {[5, 4, 3, 2, 1].map((star) => {
@@ -305,12 +305,12 @@ export default function PartnerDetail() {
               {userRating > 0 && <p className="text-sm font-semibold text-amber-600">Você deu {userRating} estrela{userRating > 1 ? "s" : ""}!</p>}
             </div>
             <div className="space-y-3">
-              <input type="text" placeholder="Seu nome" value={authorName} onChange={(e) => setAuthorName(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-gray-50" />
+              <input type="text" placeholder="Seu nome (opcional)" value={authorName} onChange={(e) => setAuthorName(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-gray-50" />
               <textarea placeholder="Deixe seu comentário sobre este parceiro..." value={commentText} onChange={(e) => setCommentText(e.target.value)} rows={3} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-gray-50 resize-none" />
             </div>
-            <button disabled={userRating === 0 || !commentText.trim() || !authorName.trim()} onClick={handleSubmitReview}
+            <button disabled={userRating === 0 || !commentText.trim()} onClick={handleSubmitReview}
               className={cn("w-full py-3 rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2",
-                userRating > 0 && commentText.trim() && authorName.trim() ? "bg-amber-500 text-white hover:bg-amber-600" : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                userRating > 0 && commentText.trim() ? "bg-amber-500 text-white hover:bg-amber-600" : "bg-gray-100 text-gray-400 cursor-not-allowed"
               )}>
               <Send className="w-4 h-4" /> Enviar Avaliação
             </button>
