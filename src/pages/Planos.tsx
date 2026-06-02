@@ -130,35 +130,8 @@ export default function Planos() {
         </p>
       </section>
 
-      {/* Tabs */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-4">
-        <div className="flex items-center justify-center gap-2">
-          <button
-            onClick={() => setActiveTab("corretor")}
-            className={cn(
-              "px-6 py-2.5 rounded-full text-sm font-semibold transition-all",
-              activeTab === "corretor" ? "bg-primary text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-            )}
-          >
-            Para Corretores
-          </button>
-          <button
-            onClick={() => setActiveTab("imobiliaria")}
-            className={cn(
-              "px-6 py-2.5 rounded-full text-sm font-semibold transition-all",
-              activeTab === "imobiliaria" ? "bg-primary text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-            )}
-          >
-            Para Imobiliárias
-          </button>
-        </div>
-        {activeTab === "imobiliaria" && (
-          <p className="text-center text-sm text-gray-500 mt-3">Inclui gestão de equipe de corretores</p>
-        )}
-      </section>
-
       {/* Plans Grid */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 pt-8">
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3].map(i => (
@@ -166,8 +139,8 @@ export default function Planos() {
             ))}
           </div>
         ) : (() => {
-          const filtered = plans.filter(p => (p.plan_type || "corretor") === activeTab);
-          if (filtered.length === 0) return <p className="text-center text-gray-500 py-16">Nenhum plano disponível nesta categoria.</p>;
+          const filtered = plans;
+          if (filtered.length === 0) return <p className="text-center text-gray-500 py-16">Nenhum plano disponível no momento.</p>;
           return (
           <div className={cn(
             "grid gap-6",
