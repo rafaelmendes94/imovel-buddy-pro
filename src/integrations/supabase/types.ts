@@ -1205,6 +1205,36 @@ export type Database = {
         }
         Relationships: []
       }
+      partner_ratings: {
+        Row: {
+          comment: string
+          created_at: string
+          id: string
+          partner_id: string
+          rater_id: string
+          rater_name: string
+          rating: number
+        }
+        Insert: {
+          comment?: string
+          created_at?: string
+          id?: string
+          partner_id: string
+          rater_id: string
+          rater_name?: string
+          rating: number
+        }
+        Update: {
+          comment?: string
+          created_at?: string
+          id?: string
+          partner_id?: string
+          rater_id?: string
+          rater_name?: string
+          rating?: number
+        }
+        Relationships: []
+      }
       partners: {
         Row: {
           address: string | null
@@ -1227,6 +1257,7 @@ export type Database = {
           status: string
           total_ratings: number | null
           updated_at: string
+          user_id: string | null
           website: string | null
         }
         Insert: {
@@ -1250,6 +1281,7 @@ export type Database = {
           status?: string
           total_ratings?: number | null
           updated_at?: string
+          user_id?: string | null
           website?: string | null
         }
         Update: {
@@ -1273,6 +1305,7 @@ export type Database = {
           status?: string
           total_ratings?: number | null
           updated_at?: string
+          user_id?: string | null
           website?: string | null
         }
         Relationships: []
