@@ -2,7 +2,7 @@ import { useState, useEffect, createContext, useContext } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 
-type AppRole = "super_admin" | "admin_staff" | "broker";
+type AppRole = "super_admin" | "admin_staff" | "broker" | "partner";
 
 type ActionPerms = { view: boolean; create: boolean; edit: boolean; delete: boolean };
 type StaffPermissions = Record<string, ActionPerms>;
