@@ -56,21 +56,17 @@ export default function Registro() {
         <form onSubmit={handleRegister} className="space-y-4 bg-card p-6 rounded-xl border border-border shadow-sm">
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Tipo de conta</label>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setAccountType("corretor")}
-                className={`py-2.5 rounded-lg border text-sm font-medium transition-all ${accountType === "corretor" ? "bg-primary text-primary-foreground border-primary" : "bg-card text-muted-foreground border-border hover:border-primary/50"}`}
-              >
-                Corretor
-              </button>
-              <button
-                type="button"
-                onClick={() => setAccountType("imobiliaria")}
-                className={`py-2.5 rounded-lg border text-sm font-medium transition-all ${accountType === "imobiliaria" ? "bg-primary text-primary-foreground border-primary" : "bg-card text-muted-foreground border-border hover:border-primary/50"}`}
-              >
-                Imobiliária
-              </button>
+            <div className="grid grid-cols-3 gap-2">
+              {(["corretor","imobiliaria","parceiro"] as const).map(t => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setAccountType(t)}
+                  className={`py-2.5 rounded-lg border text-xs font-medium transition-all capitalize ${accountType === t ? "bg-primary text-primary-foreground border-primary" : "bg-card text-muted-foreground border-border hover:border-primary/50"}`}
+                >
+                  {t === "imobiliaria" ? "Imobiliária" : t}
+                </button>
+              ))}
             </div>
           </div>
           <div className="space-y-2">
