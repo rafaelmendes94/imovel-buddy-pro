@@ -12,7 +12,7 @@ export default function Registro() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
-  const [accountType, setAccountType] = useState<"corretor" | "imobiliaria">("corretor");
+  const [accountType, setAccountType] = useState<"corretor" | "imobiliaria" | "parceiro">("corretor");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
