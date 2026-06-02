@@ -216,6 +216,21 @@ export default function AdminParceiros() {
                   </SelectContent>
                 </Select>
               </div>
+              <div className="md:col-span-2 flex items-center justify-between rounded-lg border border-border p-3 bg-muted/30">
+                <div>
+                  <Label className="text-sm font-semibold">Destaque na home</Label>
+                  <p className="text-xs text-muted-foreground">Quando ativo, aparece no carrossel da home pública (ordem aleatória).</p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="sr-only peer"
+                    checked={!!form.featured}
+                    onChange={e => setForm(f => ({ ...f, featured: e.target.checked }))}
+                  />
+                  <div className="w-11 h-6 bg-muted peer-checked:bg-primary rounded-full peer transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-transform peer-checked:after:translate-x-5" />
+                </label>
+              </div>
               <div className="md:col-span-2">
                 <Label>Descrição</Label>
                 <Textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3} />
