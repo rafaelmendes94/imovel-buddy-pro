@@ -140,7 +140,9 @@ export default function Planos() {
             ))}
           </div>
         ) : (() => {
-          const filtered = plans;
+          const filtered = plans.filter(p =>
+            tab === "parceiro" ? p.plan_type === "parceiro" : p.plan_type !== "parceiro"
+          );
           if (filtered.length === 0) return <p className="text-center text-gray-500 py-16">Nenhum plano disponível no momento.</p>;
           return (
           <div className={cn(
