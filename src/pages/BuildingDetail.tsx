@@ -85,9 +85,9 @@ export default function BuildingDetail() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <Link to="/edificios" className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors">
+            <button onClick={handleBack} className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors">
               <ArrowLeft className="w-4 h-4 text-foreground" />
-            </Link>
+            </button>
             <div>
               <h1 className="text-2xl font-bold text-foreground">{building.nome}</h1>
               <div className="flex items-center gap-1 mt-0.5">
