@@ -275,36 +275,6 @@ export default function BrokerDashboard() {
           </div>
         </div>
 
-        {/* Receita mensal */}
-        <div className="elevated-card rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-card-foreground mb-4">Receita Mensal</h3>
-          <ResponsiveContainer width="100%" height={250}>
-            <LineChart data={monthlyData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="month" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
-              <YAxis
-                tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
-                tickFormatter={(v) => `${(v / 1000000).toFixed(1)}M`}
-              />
-              <Tooltip
-                contentStyle={{
-                  background: "hsl(var(--card))",
-                  border: "1px solid hsl(var(--border))",
-                  borderRadius: "8px",
-                  fontSize: "12px",
-                }}
-                formatter={(value: number) => [formatCurrency(value), "Receita"]}
-              />
-              <Line
-                type="monotone"
-                dataKey="receita"
-                stroke="hsl(var(--accent))"
-                strokeWidth={2.5}
-                dot={{ fill: "hsl(var(--accent))", r: 4 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
 
         {/* Relatório de Vendas */}
         <div className="elevated-card rounded-xl p-5">
