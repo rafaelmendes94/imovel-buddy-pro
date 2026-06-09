@@ -72,7 +72,7 @@ export default function EmpreendimentoDetail() {
         <div className="p-8 text-center text-muted-foreground">
           <Building2 className="w-16 h-16 mx-auto mb-4 opacity-40" />
           <p className="text-lg">Loteamento não encontrado</p>
-          <Link to="/empreendimentos" className="text-accent hover:underline mt-2 inline-block">Voltar</Link>
+          <button onClick={handleBack} className="text-accent hover:underline mt-2 inline-block">Voltar</button>
         </div>
       </AppLayout>
     );
