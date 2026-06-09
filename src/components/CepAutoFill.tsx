@@ -79,7 +79,11 @@ export function CepAutoFill({ data, onChange }: CepAutoFillProps) {
           <Input
             placeholder="00000-000"
             value={data.cep}
-            onChange={(e) => onChange({ cep: formatCep(e.target.value) })}
+            onChange={(e) => {
+              const formatted = formatCep(e.target.value);
+              onChange({ cep: formatted });
+              if (formatted.replace(/\D/g, "").length === 8) fetchCep(formatted);
+            }}
             onBlur={() => fetchCep(data.cep)}
             maxLength={9}
           />
