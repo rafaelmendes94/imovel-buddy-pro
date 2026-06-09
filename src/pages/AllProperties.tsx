@@ -217,7 +217,7 @@ function PropertyCard({ property, onSelect, isFavorited, onToggleFavorite, isInR
               href={`https://wa.me/${property.brokerWhatsapp}?text=${whatsappMessage}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-600 text-white text-[11px] font-bold hover:bg-emerald-700 transition-colors shadow-sm"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-600 text-white text-[11px] font-bold hover:bg-emerald-700 transition-colors shadow-sm flex-shrink-0 whitespace-nowrap"
               onClick={(e) => e.stopPropagation()}
             >
               <Phone className="w-3 h-3" /> WhatsApp
