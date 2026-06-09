@@ -1,3 +1,4 @@
+import { PLACEHOLDER_IMAGE } from "@/lib/placeholderImage";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
@@ -855,7 +856,7 @@ export default function Site() {
             bathrooms: row.banheiros,
             parking: row.vagas,
             broker: brokerName,
-            image: row.imagens?.[0] || "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&h=400&fit=crop",
+            image: row.imagens?.[0] || PLACEHOLDER_IMAGE,
             images: row.imagens || [],
             createdAt: row.created_at,
             lat: Number((row as any).latitude) || 0,

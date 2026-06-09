@@ -1,3 +1,4 @@
+import { PLACEHOLDER_IMAGE } from "@/lib/placeholderImage";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
@@ -128,7 +129,7 @@ export default function Maps() {
       markersRef.current.push(marker);
 
       const imgs = im.imagens && im.imagens.length > 0 ? im.imagens : [];
-      const mainImg = imgs[0] || "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=250&fit=crop";
+      const mainImg = imgs[0] || PLACEHOLDER_IMAGE;
       const address = [im.endereco, im.numero, im.bairro].filter(Boolean).join(", ");
 
       marker.addListener("click", () => {
@@ -289,7 +290,7 @@ export default function Maps() {
             <div className="bg-card rounded-xl border border-border shadow-2xl w-full max-w-lg animate-scale-in max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
               <div className="relative h-56">
                 <img
-                  src={(selectedProperty.imagens && selectedProperty.imagens.length > 0 ? selectedProperty.imagens[0] : null) || "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&h=400&fit=crop"}
+                  src={(selectedProperty.imagens && selectedProperty.imagens.length > 0 ? selectedProperty.imagens[0] : null) || PLACEHOLDER_IMAGE}
                   alt={selectedProperty.titulo}
                   className="w-full h-full object-cover"
                 />

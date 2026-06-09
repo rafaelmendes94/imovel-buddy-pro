@@ -1,3 +1,4 @@
+import { PLACEHOLDER_IMAGE } from "@/lib/placeholderImage";
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -70,7 +71,7 @@ function PropertyCarousel({ title, icon: Icon, properties, color, linkTo }: {
 }
 
 function MiniPropertyCard({ property: p }: { property: SiteProperty }) {
-  const img = p.imagens?.[0] || "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=300&fit=crop";
+  const img = p.imagens?.[0] || PLACEHOLDER_IMAGE;
   return (
     <Link to={`/site?tipo=${encodeURIComponent(p.tipo)}`} className="min-w-[260px] sm:min-w-[280px] max-w-[300px] snap-start rounded-xl overflow-hidden bg-card border border-border shadow-sm hover:shadow-lg transition-all flex-shrink-0">
       <div className="relative h-40 overflow-hidden">

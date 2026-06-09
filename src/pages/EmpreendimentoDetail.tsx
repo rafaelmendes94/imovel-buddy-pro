@@ -1,3 +1,4 @@
+import { PLACEHOLDER_IMAGE } from "@/lib/placeholderImage";
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { MiniMap } from "@/components/MiniMap";
@@ -231,7 +232,7 @@ export default function EmpreendimentoDetail() {
                 <p className="text-sm text-muted-foreground mb-3">{imoveis.length} imóvel(is)</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
                   {imoveis.map((im) => {
-                    const imgs = im.imagens && im.imagens.length > 0 ? im.imagens : ["https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=300&fit=crop"];
+                    const imgs = im.imagens && im.imagens.length > 0 ? im.imagens : [PLACEHOLDER_IMAGE];
                     const conditions = im.condicoes_pagamento || [];
                     return (
                       <div key={im.id} onClick={() => navigate(`/editar-imovel/${im.id}`)} className="elevated-card rounded-xl overflow-hidden cursor-pointer group flex flex-col">
