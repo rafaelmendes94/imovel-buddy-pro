@@ -30,6 +30,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { cn, toSlug } from "@/lib/utils";
+import { trackPropertyView } from "@/lib/trackPropertyView";
 import { BrokerRatings } from "@/components/BrokerRatings";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PropertyDetailModal } from "@/components/PropertyDetailModal";
