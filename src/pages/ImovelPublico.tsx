@@ -6,6 +6,7 @@ import {
   ChevronLeft, ChevronRight, X, Play, Eye, Share2, Download, Building2, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { trackPropertyView } from "@/lib/trackPropertyView";
 import { toast } from "sonner";
 
 interface ImovelRow {
