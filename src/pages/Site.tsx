@@ -748,6 +748,7 @@ export default function Site() {
   const [filterNeighborhood, setFilterNeighborhood] = useState("");
   const [filterCaracteristica, setFilterCaracteristica] = useState("");
   const [selectedProperty, setSelectedProperty] = useState<SiteProperty | null>(null);
+  useEffect(() => { trackPropertyView(selectedProperty?.id); }, [selectedProperty?.id]);
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [priceSort, setPriceSort] = useState<"" | "asc" | "desc">("");
   const [showFullRanking, setShowFullRanking] = useState(false);
