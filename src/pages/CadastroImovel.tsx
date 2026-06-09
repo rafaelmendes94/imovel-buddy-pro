@@ -741,6 +741,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         destaque_categoria: form.destaqueCategoria === 'none' ? '' : form.destaqueCategoria,
         destaque_home: form.destaqueHome || form.destaqueCategoria !== 'none',
         ativo_site: form.ativoSite,
+        publicar_xml: form.publicarXml,
         infraestrutura: form.infraestrutura,
         outras_caracteristicas: form.outrasCaracteristicas,
         imagens: allImages.length > 0 ? allImages : null,
