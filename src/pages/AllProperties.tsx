@@ -4,7 +4,7 @@ import { formatCurrency } from "@/data/mockData";
 import { supabase } from "@/integrations/supabase/client";
 import { PropertyDetailModal } from "@/components/PropertyDetailModal";
 import {
-  Search, MapPin, BedDouble, Bath, Car, Ruler, Phone,
+  Search, MapPin, BedDouble, Bath, Car, Ruler, Phone, Mail,
   ChevronLeft, ChevronRight, Star, Building2, Home, X,
   Waves, Paintbrush, SlidersHorizontal, ChevronDown,
   ArrowUpDown, Heart, Route,
@@ -546,6 +546,50 @@ export default function AllProperties() {
           </div>
         )}
       </main>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-gray-400 py-12 mt-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-400 flex items-center justify-center">
+                  <Home className="w-4 h-4 text-white" />
+                </div>
+                <span className="text-lg font-extrabold text-white">MV <span className="text-blue-400">CONNECT</span></span>
+              </div>
+              <p className="text-sm leading-relaxed">
+                Conectando corretores a corretores e imóveis a clientes. Sua plataforma de confiança no litoral.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-bold text-white mb-4">Navegação</h4>
+              <ul className="space-y-2 text-sm">
+                <li><Link to="/" className="hover:text-blue-400 transition-colors">Início</Link></li>
+                <li><Link to="/imoveis" className="hover:text-blue-400 transition-colors">Todos os Imóveis</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-bold text-white mb-4">Contato</h4>
+              <div className="space-y-3 text-sm">
+                <a href="tel:+5511999999999" className="flex items-center gap-2 hover:text-blue-400 transition-colors">
+                  <Phone className="w-4 h-4" /> (11) 99999-9999
+                </a>
+                <a href="mailto:contato@imobcrm.com" className="flex items-center gap-2 hover:text-blue-400 transition-colors">
+                  <Mail className="w-4 h-4" /> contato@imobcrm.com
+                </a>
+                <a href="https://wa.me/5511999999999" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-colors text-sm mt-2">
+                  Fale pelo WhatsApp
+                </a>
+              </div>
+            </div>
+          </div>
+          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-xs text-gray-500">
+            © 2024 MV BROKER CONNECT. Todos os direitos reservados.
+          </div>
+        </div>
+      </footer>
+
 
       <PropertyDetailModal
         property={selectedProperty as any}
