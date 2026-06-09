@@ -56,7 +56,7 @@ function PropertyCard({ property, onSelect, isFavorited, onToggleFavorite, isInR
   const brokerPhoto = property.brokerPhoto || FALLBACK_AVATAR;
 
   return (
-    <div className="group rounded-xl overflow-hidden bg-card shadow-md hover:shadow-xl transition-all duration-300 border border-border flex flex-col h-full min-h-[420px]">
+    <div className="group rounded-xl overflow-hidden bg-card shadow-md hover:shadow-xl transition-all duration-300 border border-border flex flex-col h-full min-h-[300px]">
       {/* Image area */}
       <div className="relative cursor-pointer" onClick={() => onSelect?.(property)}>
         <div className="relative h-52 overflow-hidden">
