@@ -54,16 +54,6 @@ function removeMarker(marker: any) {
 }
 
 function createDraggableMarker(maps: any, map: any, position: any) {
-  const AdvancedMarkerElement = maps.marker?.AdvancedMarkerElement;
-
-  if (AdvancedMarkerElement) {
-    return new AdvancedMarkerElement({
-      map,
-      position,
-      gmpDraggable: true,
-    });
-  }
-
   return new maps.Marker({
     map,
     position,
