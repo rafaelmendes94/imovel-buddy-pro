@@ -315,6 +315,9 @@ export default function AllProperties() {
               boxNumber: row.box || '',
               quadra: row.quadra || '',
               lote: row.lote || '',
+              exclusivityTermUrl: (row as any).termo_exclusividade_url || '',
+              fotosPdfUrl: (row as any).fotos_pdf_url || '',
+              materialUrl: (row as any).link_material || (row as any).drive_fotos_url || '',
             };
           });
         setAllProperties(mapped);
