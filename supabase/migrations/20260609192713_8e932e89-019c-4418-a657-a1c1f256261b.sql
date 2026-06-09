@@ -1,0 +1,1 @@
+ALTER TABLE public.imoveis ADD COLUMN IF NOT EXISTS publicar_xml boolean NOT NULL DEFAULT true;
