@@ -232,7 +232,7 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, 
       </div>
 
       {/* Content area */}
-      <div className="p-4 space-y-3 flex-1 flex flex-col">
+      <div className="p-4 flex-1 flex flex-col gap-3">
         <div>
           <h3 className="font-semibold text-card-foreground text-sm cursor-pointer hover:text-primary transition-colors uppercase"
             onClick={() => onSelect?.(property)}
