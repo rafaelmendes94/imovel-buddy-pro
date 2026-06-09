@@ -4,7 +4,7 @@ import { formatCurrency } from "@/data/mockData";
 import { supabase } from "@/integrations/supabase/client";
 import { PropertyDetailModal } from "@/components/PropertyDetailModal";
 import {
-  Search, MapPin, BedDouble, Bath, Car, Ruler, Phone,
+  Search, MapPin, BedDouble, Bath, Car, Ruler, Phone, Mail,
   ChevronLeft, ChevronRight, Star, Building2, Home, X,
   Waves, Paintbrush, SlidersHorizontal, ChevronDown,
   ArrowUpDown, Heart, Route,
