@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toSlug } from "@/lib/utils";
+import { trackPropertyView } from "@/lib/trackPropertyView";
 
 interface SiteProperty {
   id: string;
