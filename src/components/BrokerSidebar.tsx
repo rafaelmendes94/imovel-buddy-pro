@@ -32,6 +32,7 @@ export function BrokerSidebar() {
     ...enabledModules
       .map(m => allModules[m as string])
       .filter(Boolean),
+    { icon: Rss, label: "Feeds XML", path: "/painel/feeds-xml" },
     { icon: CreditCard, label: "Assinatura", path: "/painel/assinatura" },
   ];
 
