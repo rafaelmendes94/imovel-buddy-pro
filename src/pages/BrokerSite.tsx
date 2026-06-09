@@ -251,6 +251,7 @@ export default function BrokerSite() {
   const [avgRating, setAvgRating] = useState<number | null>(null);
   const [ratingsCount, setRatingsCount] = useState(0);
   const [selectedProperty, setSelectedProperty] = useState<any>(null);
+  useEffect(() => { trackPropertyView(selectedProperty?.id); }, [selectedProperty?.id]);
   const [profileAvatar, setProfileAvatar] = useState<string | null>(null);
 
   useEffect(() => {
