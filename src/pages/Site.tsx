@@ -126,7 +126,7 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, 
   const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${property.address}, ${property.city}`)}`;
 
   return (
-    <div className="group rounded-xl overflow-hidden bg-card shadow-md hover:shadow-xl transition-all duration-300 border border-border flex flex-col h-full">
+    <div className="group rounded-xl overflow-hidden bg-card shadow-md hover:shadow-xl transition-all duration-300 border border-border flex flex-col h-full min-h-[560px]">
       {/* Image area */}
       <div className="relative cursor-pointer" onClick={() => onSelect?.(property)}>
         <div className="relative h-52 overflow-hidden">
