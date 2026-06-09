@@ -572,7 +572,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         posicaoSolar: data.posicao_solar || '', vista: data.vista || '', localChaves: data.local_chaves || '',
         termoExclusividade: data.termo_exclusividade || '', termoExclusividadeUrl: (data as any).termo_exclusividade_url || '', vistaMar: data.vista_mar || false,
         decorado: data.decorado || false, aceitaPermuta: data.aceita_permuta || false,
-        destaqueHome: data.destaque_home || false, ativoSite: data.ativo_site || false,
+        destaqueHome: data.destaque_home || false, ativoSite: data.ativo_site || false, publicarXml: (data as any).publicar_xml ?? true,
         destaqueCategoria: data.destaque_categoria || 'none', condicoesPagemento: data.condicoes_pagamento || [],
         infraestrutura: data.infraestrutura || [], outrasCaracteristicas: data.outras_caracteristicas || [],
         latitude: data.latitude ? String(data.latitude) : '', longitude: data.longitude ? String(data.longitude) : '',
