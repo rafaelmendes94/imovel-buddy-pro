@@ -631,7 +631,12 @@ export function ImovelForm({ editId }: { editId?: string }) {
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
+    const baseIdx = images.length;
     setImages(prev => [...prev, ...files]);
+    setPhotoOrder(prev => [
+      ...prev,
+      ...files.map((_, i) => ({ kind: 'new' as const, idx: baseIdx + i })),
+    ]);
     files.forEach(file => {
       const reader = new FileReader();
       reader.onload = (ev) => {
@@ -639,15 +644,37 @@ export function ImovelForm({ editId }: { editId?: string }) {
       };
       reader.readAsDataURL(file);
     });
+    // reset input so re-selecting same file works
+    e.target.value = '';
   };
 
   const removeImage = (idx: number) => {
     setImages(prev => prev.filter((_, i) => i !== idx));
     setImagePreviews(prev => prev.filter((_, i) => i !== idx));
+    setPhotoOrder(prev =>
+      prev
+        .filter(p => !(p.kind === 'new' && p.idx === idx))
+        .map(p => (p.kind === 'new' && p.idx > idx ? { ...p, idx: p.idx - 1 } : p)),
+    );
   };
 
   const removeExistingImage = (idx: number) => {
     setExistingImages(prev => prev.filter((_, i) => i !== idx));
+    setPhotoOrder(prev =>
+      prev
+        .filter(p => !(p.kind === 'existing' && p.idx === idx))
+        .map(p => (p.kind === 'existing' && p.idx > idx ? { ...p, idx: p.idx - 1 } : p)),
+    );
+  };
+
+  const movePhoto = (from: number, to: number) => {
+    if (from === to || to < 0 || to >= photoOrder.length) return;
+    setPhotoOrder(prev => {
+      const next = [...prev];
+      const [it] = next.splice(from, 1);
+      next.splice(to, 0, it);
+      return next;
+    });
   };
 
   const handleEntitySelect = (entity: EntityOption) => {
