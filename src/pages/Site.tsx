@@ -126,7 +126,7 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, 
   const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${property.address}, ${property.city}`)}`;
 
   return (
-    <div className="group rounded-xl overflow-hidden bg-card shadow-md hover:shadow-xl transition-all duration-300 border border-border">
+    <div className="group rounded-xl overflow-hidden bg-card shadow-md hover:shadow-xl transition-all duration-300 border border-border flex flex-col h-full">
       {/* Image area */}
       <div className="relative cursor-pointer" onClick={() => onSelect?.(property)}>
         <div className="relative h-52 overflow-hidden">
@@ -232,7 +232,7 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, 
       </div>
 
       {/* Content area */}
-      <div className="p-4 space-y-3">
+      <div className="p-4 space-y-3 flex-1 flex flex-col">
         <div>
           <h3 className="font-semibold text-card-foreground text-sm cursor-pointer hover:text-primary transition-colors uppercase"
             onClick={() => onSelect?.(property)}
@@ -285,15 +285,15 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, 
         )}
 
         {/* Broker + WhatsApp */}
-        <div className="flex items-center justify-between pt-2 border-t border-border">
-          <Link to={`/corretor/${toSlug(property.broker)}`} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+        <div className="flex items-center justify-between gap-2 pt-2 border-t border-border mt-auto">
+          <Link to={`/corretor/${toSlug(property.broker)}`} className="flex items-center gap-2 hover:opacity-80 transition-opacity min-w-0 flex-1">
             <img
               src={broker.photo}
               alt={property.broker}
-              className="w-7 h-7 rounded-full object-cover border-2 border-accent"
+              className="w-7 h-7 rounded-full object-cover border-2 border-accent flex-shrink-0"
             />
-            <div>
-              <p className="text-[11px] font-semibold text-foreground">{property.broker}</p>
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold text-foreground truncate">{property.broker}</p>
               <p className="text-[9px] text-muted-foreground">Corretor(a)</p>
             </div>
           </Link>
@@ -302,13 +302,14 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, 
               href={`https://wa.me/${broker.whatsapp}?text=${whatsappMessage}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-600 text-white text-[11px] font-bold hover:bg-emerald-700 transition-colors shadow-sm"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-600 text-white text-[11px] font-bold hover:bg-emerald-700 transition-colors shadow-sm flex-shrink-0 whitespace-nowrap"
               onClick={(e) => e.stopPropagation()}
             >
               <Phone className="w-3 h-3" /> WhatsApp
             </a>
           )}
         </div>
+
       </div>
     </div>
   );
