@@ -127,7 +127,7 @@ export const initialForm: FormData = {
   descricao: '', proprietario: '', proprietarioTelefone: '', proprietarioTipo: '',
   condicao: '', padrao: '', posicaoPredio: '', posicaoSolar: '', vista: '',
   localChaves: '', termoExclusividade: '', termoExclusividadeUrl: '',
-  vistaMar: false, decorado: false, aceitaPermuta: false, destaqueHome: false, ativoSite: false,
+  vistaMar: false, decorado: false, aceitaPermuta: false, destaqueHome: false, ativoSite: false, publicarXml: true,
   destaqueCategoria: 'none',
   condicoesPagemento: [], infraestrutura: [], outrasCaracteristicas: [],
   latitude: '', longitude: '',
