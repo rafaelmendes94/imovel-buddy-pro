@@ -60,7 +60,7 @@ export default function CondominiumDetail() {
         <div className="p-8 text-center text-muted-foreground">
           <Fence className="w-16 h-16 mx-auto mb-4 opacity-40" />
           <p className="text-lg">Condomínio não encontrado</p>
-          <Link to="/condominios" className="text-accent hover:underline mt-2 inline-block">Voltar</Link>
+          <button onClick={handleBack} className="text-accent hover:underline mt-2 inline-block">Voltar</button>
         </div>
       </AppLayout>
     );
