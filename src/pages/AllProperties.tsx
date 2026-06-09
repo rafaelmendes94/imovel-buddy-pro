@@ -566,7 +566,7 @@ export default function AllProperties() {
               <h4 className="font-bold text-white mb-4">Navegação</h4>
               <ul className="space-y-2 text-sm">
                 <li><Link to="/" className="hover:text-blue-400 transition-colors">Início</Link></li>
-                <li><Link to="/imoveis" className="hover:text-blue-400 transition-colors">Todos os Imóveis</Link></li>
+                <li><Link to="/todos-imoveis" className="hover:text-blue-400 transition-colors">Todos os Imóveis</Link></li>
               </ul>
             </div>
             <div>

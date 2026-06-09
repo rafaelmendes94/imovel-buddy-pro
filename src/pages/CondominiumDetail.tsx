@@ -12,6 +12,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MediaGalleryView } from "@/components/MediaGalleryView";
+import { useSmartBack } from "@/lib/useSmartBack";
 
 const imovelStatusColors: Record<string, string> = {
   Disponível: "bg-success/10 text-success border-success/30",
@@ -23,6 +24,7 @@ const imovelStatusColors: Record<string, string> = {
 export default function CondominiumDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const handleBack = useSmartBack("/condominios");
   const [condo, setCondo] = useState<any>(null);
   const [imoveis, setImoveis] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -58,7 +60,7 @@ export default function CondominiumDetail() {
         <div className="p-8 text-center text-muted-foreground">
           <Fence className="w-16 h-16 mx-auto mb-4 opacity-40" />
           <p className="text-lg">Condomínio não encontrado</p>
-          <Link to="/condominios" className="text-accent hover:underline mt-2 inline-block">Voltar</Link>
+          <button onClick={handleBack} className="text-accent hover:underline mt-2 inline-block">Voltar</button>
         </div>
       </AppLayout>
     );
@@ -79,9 +81,9 @@ export default function CondominiumDetail() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <Link to="/condominios" className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors">
+            <button onClick={handleBack} className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors">
               <ArrowLeft className="w-4 h-4 text-foreground" />
-            </Link>
+            </button>
             <div>
               <h1 className="text-2xl font-bold text-foreground">{condo.nome}</h1>
               <div className="flex items-center gap-1 mt-0.5">
