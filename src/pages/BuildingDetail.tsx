@@ -30,6 +30,7 @@ const imovelStatusColors: Record<string, string> = {
 export default function BuildingDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const handleBack = useSmartBack("/edificios");
   const [building, setBuilding] = useState<any>(null);
   const [imoveis, setImoveis] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
