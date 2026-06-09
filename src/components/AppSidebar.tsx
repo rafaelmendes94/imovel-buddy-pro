@@ -38,7 +38,7 @@ const allNavItems: NavItem[] = [
   { icon: Clapperboard, label: "Material Extra", path: "/videomaker", module: "videomaker" },
   
   { icon: Landmark2, label: "Imobiliárias", path: "/imobiliarias" }, // admin
-  { icon: HardHat, label: "Construtoras", path: "/construtoras" }, // admin
+  { icon: HardHat, label: "Construtoras", path: "/construtoras", always: true },
   // { icon: ShoppingBag, label: "Brick", path: "/brick", always: true }, // oculto
   { icon: CreditCard, label: "Assinatura", path: "/painel/assinatura", always: true },
   { icon: Settings, label: "Configurações", path: "/configuracoes", always: true },
