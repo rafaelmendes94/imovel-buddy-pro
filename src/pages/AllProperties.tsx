@@ -199,18 +199,19 @@ function PropertyCard({ property, onSelect, isFavorited, onToggleFavorite, isInR
         )}
 
         {/* Broker + WhatsApp */}
-        <div className="flex items-center justify-between pt-2 border-t border-border">
-          <Link to={`/corretor/${toSlug(property.broker)}`} className="flex items-center gap-2 hover:opacity-80 transition-opacity" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between gap-2 pt-2 border-t border-border mt-auto">
+          <Link to={`/corretor/${toSlug(property.broker)}`} className="flex items-center gap-2 hover:opacity-80 transition-opacity min-w-0 flex-1" onClick={(e) => e.stopPropagation()}>
             <img
               src={brokerPhoto}
               alt={property.broker}
-              className="w-7 h-7 rounded-full object-cover border-2 border-accent"
+              className="w-7 h-7 rounded-full object-cover border-2 border-accent flex-shrink-0"
             />
-            <div>
-              <p className="text-[11px] font-semibold text-foreground">{property.broker}</p>
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold text-foreground truncate">{property.broker}</p>
               <p className="text-[9px] text-muted-foreground">Corretor(a)</p>
             </div>
           </Link>
+
           {property.brokerWhatsapp && (
             <a
               href={`https://wa.me/${property.brokerWhatsapp}?text=${whatsappMessage}`}
