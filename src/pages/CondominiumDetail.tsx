@@ -12,6 +12,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MediaGalleryView } from "@/components/MediaGalleryView";
+import { useSmartBack } from "@/lib/useSmartBack";
 
 const imovelStatusColors: Record<string, string> = {
   Disponível: "bg-success/10 text-success border-success/30",
