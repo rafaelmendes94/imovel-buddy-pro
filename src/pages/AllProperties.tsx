@@ -1,3 +1,4 @@
+import { PLACEHOLDER_IMAGE } from "@/lib/placeholderImage";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { formatCurrency } from "@/data/mockData";
@@ -300,7 +301,7 @@ export default function AllProperties() {
               broker: brokerName,
               brokerPhoto: brokerProfile?.avatar_url || undefined,
               brokerWhatsapp: normalizePhone(brokerProfile?.phone || ''),
-              image: row.imagens?.[0] || "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&h=400&fit=crop",
+              image: row.imagens?.[0] || PLACEHOLDER_IMAGE,
               images: row.imagens || [],
               createdAt: row.created_at,
               decorated: row.decorado,

@@ -1,3 +1,4 @@
+import { PLACEHOLDER_IMAGE } from "@/lib/placeholderImage";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
@@ -545,7 +546,7 @@ export default function Properties() {
         brokerWhatsapp: normalizePhone(owner?.phone || ""),
         owner: row.proprietario || "",
         ownerPhone: row.proprietario_telefone || "",
-        image: row.imagens?.[0] || "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=300&fit=crop",
+        image: row.imagens?.[0] || PLACEHOLDER_IMAGE,
         images: row.imagens || [],
         createdAt: row.created_at,
         updatedAt: row.updated_at,
@@ -1878,7 +1879,7 @@ export default function Properties() {
 
 // ---- Image Carousel ----
 function ImageCarousel({ images: rawImages, alt }: { images?: string[]; alt: string }) {
-  const images = rawImages && rawImages.length > 0 ? rawImages : ["https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=300&fit=crop"];
+  const images = rawImages && rawImages.length > 0 ? rawImages : [PLACEHOLDER_IMAGE];
   const [current, setCurrent] = useState(0);
 
   return (
