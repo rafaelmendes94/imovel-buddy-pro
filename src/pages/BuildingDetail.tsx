@@ -66,7 +66,7 @@ export default function BuildingDetail() {
         <div className="p-8 text-center text-muted-foreground">
           <Building className="w-16 h-16 mx-auto mb-4 opacity-40" />
           <p className="text-lg">Edifício não encontrado</p>
-          <Link to="/edificios" className="text-accent hover:underline mt-2 inline-block">Voltar</Link>
+          <button onClick={handleBack} className="text-accent hover:underline mt-2 inline-block">Voltar</button>
         </div>
       </AppLayout>
     );
