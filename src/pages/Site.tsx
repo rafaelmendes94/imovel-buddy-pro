@@ -49,6 +49,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn, toSlug } from "@/lib/utils";
+import { trackPropertyView } from "@/lib/trackPropertyView";
 import logoImg from "@/assets/logo.png";
 import { RoutePlanner } from "@/components/RoutePlanner";
 import { SharkAI } from "@/components/SharkAI";
