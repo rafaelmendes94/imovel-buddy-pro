@@ -1,12 +1,12 @@
 import { ArrowLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useSmartBack } from "@/lib/useSmartBack";
 
-export function BackButton() {
-  const navigate = useNavigate();
+export function BackButton({ fallback = "/" }: { fallback?: string }) {
+  const handleBack = useSmartBack(fallback);
 
   return (
     <button
-      onClick={() => navigate(-1)}
+      onClick={handleBack}
       className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
     >
       <ArrowLeft className="w-4 h-4" />
