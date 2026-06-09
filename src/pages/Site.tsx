@@ -871,6 +871,8 @@ export default function Site() {
             lote: row.lote || "",
             exclusivityTerm: row.termo_exclusividade || "",
             exclusivityTermUrl: (row as any).termo_exclusividade_url || "",
+            fotosPdfUrl: (row as any).fotos_pdf_url || "",
+            materialUrl: (row as any).link_material || (row as any).drive_fotos_url || "",
             destaqueCategoria: (row as any).destaque_categoria || "",
             destaqueHome: row.destaque_home,
             neighborhood: row.bairro || "",
