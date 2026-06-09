@@ -244,6 +244,7 @@ export default function AllProperties() {
   const [filterCondition, setFilterCondition] = useState("");
   const [priceSort, setPriceSort] = useState<"" | "asc" | "desc">("");
   const [selectedProperty, setSelectedProperty] = useState<SiteProperty | null>(null);
+  useEffect(() => { trackPropertyView(selectedProperty?.id); }, [selectedProperty?.id]);
   const sharedIds = (() => {
     const v = new URLSearchParams(window.location.search).get("ids");
     return v ? v.split(",").filter(Boolean) : null;
