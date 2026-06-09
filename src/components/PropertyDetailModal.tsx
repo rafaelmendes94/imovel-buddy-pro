@@ -112,13 +112,8 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
   const [editingBlock, setEditingBlock] = useState<string | null>(null);
   const [viewingTerm, setViewingTerm] = useState(false);
 
-  // Increment views when modal opens with a property
-  useEffect(() => {
-    if (!property?.id) return;
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(property.id);
-    if (!isUuid) return;
-    supabase.rpc("increment_imovel_views", { imovel_id: property.id });
-  }, [property?.id]);
+  // View tracking happens on public pages via trackPropertyView() —
+  // not here, otherwise admin/broker management opens would inflate the counter.
 
   const defaultBlockOrder = ["identificacao", "valor", "proprietario", "caracteristicas"];
   const [blockOrder, setBlockOrder] = useState<string[]>(() => {
