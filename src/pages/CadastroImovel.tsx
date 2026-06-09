@@ -22,7 +22,7 @@ import {
   Building2, MapPin, BedDouble, Bath, Car, Ruler, User, Phone, DollarSign,
   Percent, Gift, Home, Sparkles, Save, Image, Plus, X, Loader2,
   Hash, FileText, Eye, Key, Calendar, Building, Fence, Landmark, Search, Brain, Wand2,
-  Play, FolderDown, History, Clock, Download, CheckCircle2, Ban
+  Play, FolderDown, History, Clock, Download, CheckCircle2, Ban, ChevronLeft, ChevronRight, Star, GripVertical
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -435,6 +435,9 @@ export function ImovelForm({ editId }: { editId?: string }) {
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
+  type PhotoRef = { kind: 'existing' | 'new'; idx: number };
+  const [photoOrder, setPhotoOrder] = useState<PhotoRef[]>([]);
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
   const { values: infraOptions } = useSystemOptions("infraestrutura");
   const { values: posicaoPredioOptions } = useSystemOptions("posicao_predio");
   const { values: posicaoSolarOptions } = useSystemOptions("posicao_solar");
@@ -581,6 +584,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         linkMaterial: (data as any).link_material || '', link360: (data as any).link_360 || '', driveFotosUrl: (data as any).drive_fotos_url || '', fotosPdfUrl: (data as any).fotos_pdf_url || '',
       };
       setExistingImages(data.imagens || []);
+      setPhotoOrder((data.imagens || []).map((_: string, i: number) => ({ kind: 'existing' as const, idx: i })));
       setLoadingData(false);
     };
     load();
@@ -628,7 +632,12 @@ export function ImovelForm({ editId }: { editId?: string }) {
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
+    const baseIdx = images.length;
     setImages(prev => [...prev, ...files]);
+    setPhotoOrder(prev => [
+      ...prev,
+      ...files.map((_, i) => ({ kind: 'new' as const, idx: baseIdx + i })),
+    ]);
     files.forEach(file => {
       const reader = new FileReader();
       reader.onload = (ev) => {
@@ -636,15 +645,37 @@ export function ImovelForm({ editId }: { editId?: string }) {
       };
       reader.readAsDataURL(file);
     });
+    // reset input so re-selecting same file works
+    e.target.value = '';
   };
 
   const removeImage = (idx: number) => {
     setImages(prev => prev.filter((_, i) => i !== idx));
     setImagePreviews(prev => prev.filter((_, i) => i !== idx));
+    setPhotoOrder(prev =>
+      prev
+        .filter(p => !(p.kind === 'new' && p.idx === idx))
+        .map(p => (p.kind === 'new' && p.idx > idx ? { ...p, idx: p.idx - 1 } : p)),
+    );
   };
 
   const removeExistingImage = (idx: number) => {
     setExistingImages(prev => prev.filter((_, i) => i !== idx));
+    setPhotoOrder(prev =>
+      prev
+        .filter(p => !(p.kind === 'existing' && p.idx === idx))
+        .map(p => (p.kind === 'existing' && p.idx > idx ? { ...p, idx: p.idx - 1 } : p)),
+    );
+  };
+
+  const movePhoto = (from: number, to: number) => {
+    if (from === to || to < 0 || to >= photoOrder.length) return;
+    setPhotoOrder(prev => {
+      const next = [...prev];
+      const [it] = next.splice(from, 1);
+      next.splice(to, 0, it);
+      return next;
+    });
   };
 
   const handleEntitySelect = (entity: EntityOption) => {
@@ -693,7 +724,12 @@ export function ImovelForm({ editId }: { editId?: string }) {
         uploadedUrls.push(urlData.publicUrl);
       }
 
-      const allImages = [...existingImages, ...uploadedUrls];
+      const orderedFromState = photoOrder
+        .map(p => (p.kind === 'existing' ? existingImages[p.idx] : uploadedUrls[p.idx]))
+        .filter((u): u is string => !!u);
+      // include any image not present in the order (safety net)
+      const fallback = [...existingImages, ...uploadedUrls].filter(u => !orderedFromState.includes(u));
+      const allImages = [...orderedFromState, ...fallback];
 
       const payload = {
         titulo: form.titulo,
@@ -1302,21 +1338,73 @@ export function ImovelForm({ editId }: { editId?: string }) {
       {/* ===== BLOCO 6: FOTOS ===== */}
       <div key="fotos" className="bg-card border border-border rounded-xl p-4 sm:p-5">
         <SectionHeader icon={Image} title="Fotos do Imóvel" />
+        <p className="text-xs text-muted-foreground mb-3">
+          Arraste para reordenar. A primeira foto é sempre a <b>capa</b> exibida no site e nos portais.
+        </p>
         <div className="grid grid-cols-3 sm:flex sm:flex-wrap gap-2 sm:gap-3 mb-4">
-          {existingImages.map((src, i) => (
-            <div key={`existing-${i}`} className="relative aspect-square sm:w-24 sm:h-24 rounded-lg overflow-hidden border border-border group">
-              <img src={src} alt="" className="w-full h-full object-cover" />
-              <button type="button" onClick={() => removeExistingImage(i)} className="absolute top-1 right-1 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"><X className="w-3 h-3" /></button>
-            </div>
-          ))}
-          {imagePreviews.map((src, i) => (
-            <div key={`new-${i}`} className="relative aspect-square sm:w-24 sm:h-24 rounded-lg overflow-hidden border border-primary/30 group">
-              <img src={src} alt="" className="w-full h-full object-cover" />
-              <button type="button" onClick={() => removeImage(i)} className="absolute top-1 right-1 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"><X className="w-3 h-3" /></button>
-              <span className="absolute bottom-1 left-1 text-[8px] bg-primary text-primary-foreground px-1 rounded">Nova</span>
-            </div>
-          ))}
-          <label className="aspect-square sm:w-24 sm:h-24 rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors">
+          {photoOrder.map((p, pos) => {
+            const src = p.kind === 'existing' ? existingImages[p.idx] : imagePreviews[p.idx];
+            if (!src) return null;
+            const isCover = pos === 0;
+            const isDragging = dragIndex === pos;
+            return (
+              <div
+                key={`${p.kind}-${p.idx}`}
+                draggable
+                onDragStart={() => setDragIndex(pos)}
+                onDragOver={(e) => { e.preventDefault(); }}
+                onDrop={(e) => { e.preventDefault(); if (dragIndex !== null) movePhoto(dragIndex, pos); setDragIndex(null); }}
+                onDragEnd={() => setDragIndex(null)}
+                className={cn(
+                  "relative aspect-square sm:w-28 sm:h-28 rounded-lg overflow-hidden border group cursor-move transition-all",
+                  isCover ? "border-primary ring-2 ring-primary/40" : "border-border",
+                  isDragging && "opacity-50 scale-95",
+                )}
+                title="Arraste para reordenar"
+              >
+                <img src={src} alt="" className="w-full h-full object-cover pointer-events-none" />
+                {isCover && (
+                  <span className="absolute top-1 left-1 text-[9px] font-semibold bg-primary text-primary-foreground px-1.5 py-0.5 rounded flex items-center gap-1">
+                    <Star className="w-2.5 h-2.5 fill-current" /> Capa
+                  </span>
+                )}
+                {!isCover && p.kind === 'new' && (
+                  <span className="absolute bottom-1 left-1 text-[8px] bg-primary/80 text-primary-foreground px-1 rounded">Nova</span>
+                )}
+                <span className="absolute top-1 right-7 w-5 h-5 bg-background/70 text-foreground rounded flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <GripVertical className="w-3 h-3" />
+                </span>
+                <button
+                  type="button"
+                  onClick={() => p.kind === 'existing' ? removeExistingImage(p.idx) : removeImage(p.idx)}
+                  className="absolute top-1 right-1 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+                <div className="absolute inset-x-0 bottom-0 flex justify-between bg-gradient-to-t from-black/60 to-transparent px-1 py-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
+                    type="button"
+                    onClick={() => movePhoto(pos, pos - 1)}
+                    disabled={pos === 0}
+                    className="w-5 h-5 bg-background/80 text-foreground rounded flex items-center justify-center disabled:opacity-30"
+                    title="Mover para esquerda"
+                  >
+                    <ChevronLeft className="w-3 h-3" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => movePhoto(pos, pos + 1)}
+                    disabled={pos === photoOrder.length - 1}
+                    className="w-5 h-5 bg-background/80 text-foreground rounded flex items-center justify-center disabled:opacity-30"
+                    title="Mover para direita"
+                  >
+                    <ChevronRight className="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+          <label className="aspect-square sm:w-28 sm:h-28 rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors">
             <Plus className="w-6 h-6 text-muted-foreground" />
             <span className="text-[10px] text-muted-foreground mt-1">Adicionar</span>
             <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageChange} />
