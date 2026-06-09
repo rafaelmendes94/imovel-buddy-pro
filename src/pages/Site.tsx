@@ -342,17 +342,6 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
   }, []);
 
   const createMapMarker = useCallback((google: any, map: any, options: { position: any; title?: string; content?: HTMLElement }) => {
-    const AdvancedMarkerElement = google?.maps?.marker?.AdvancedMarkerElement;
-
-    if (AdvancedMarkerElement) {
-      return new AdvancedMarkerElement({
-        map,
-        position: options.position,
-        title: options.title,
-        ...(options.content ? { content: options.content } : {}),
-      });
-    }
-
     return new google.maps.Marker({
       map,
       position: options.position,

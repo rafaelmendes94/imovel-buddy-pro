@@ -96,7 +96,6 @@ export default function Maps() {
     const map = new (window as any).google.maps.Map(mapRef.current, {
       center,
       zoom: mappable.length > 1 ? 12 : 15,
-      mapId: "DASHBOARD_MAP",
       zoomControl: true,
       zoomControlOptions: { position: ((window as any).google.maps.ControlPosition).RIGHT_BOTTOM },
       streetViewControl: false,
@@ -110,19 +109,21 @@ export default function Maps() {
       const cfg = typeConfig[im.tipo] || defaultCfg;
       const shortPrice = formatShortPrice(im.preco);
 
-      const pinEl = document.createElement("div");
-      pinEl.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;cursor:pointer;">
-        <div style="background:${cfg.color};border-radius:6px 6px 6px 0;padding:2px 6px;box-shadow:0 2px 8px rgba(0,0,0,0.25);display:flex;align-items:center;gap:3px;white-space:nowrap;">
-          <span style="font-size:10px;line-height:1;">${cfg.emoji}</span>
-          <span style="font-size:9px;font-weight:800;color:#fff;letter-spacing:0.2px;">${shortPrice}</span>
-        </div>
-        <div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid ${cfg.color};"></div>
-      </div>`;
+      const pinSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="72" height="34" viewBox="0 0 72 34">
+        <rect x="2" y="2" width="68" height="22" rx="11" fill="${cfg.color}" />
+        <path d="M31 24H41L36 32L31 24Z" fill="${cfg.color}" />
+        <text x="36" y="17" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" font-weight="700" fill="white">${shortPrice}</text>
+      </svg>`;
 
-      const marker = new (window as any).google.maps.marker.AdvancedMarkerElement({
+      const marker = new (window as any).google.maps.Marker({
         position: { lat: Number(im.latitude), lng: Number(im.longitude) },
         map,
-        content: pinEl,
+        title: im.titulo,
+        icon: {
+          url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(pinSvg)}`,
+          scaledSize: new (window as any).google.maps.Size(72, 34),
+          anchor: new (window as any).google.maps.Point(36, 32),
+        },
       });
       markersRef.current.push(marker);
 

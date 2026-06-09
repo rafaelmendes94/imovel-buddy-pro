@@ -1,28 +1,7 @@
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-
-let cachedKey: string | null = null;
-
+// Browser-safe Google Maps key fornecida pelo conector oficial da Lovable.
+// É uma chave restrita por referrer (*.lovable.app / *.lovableproject.com),
+// portanto pode ser usada diretamente no client sem passar por edge function.
 export function useGoogleMapsKey() {
-  const [apiKey, setApiKey] = useState<string | null>(cachedKey);
-  const [loading, setLoading] = useState(!cachedKey);
-
-  useEffect(() => {
-    if (cachedKey) return;
-    (async () => {
-      try {
-        const { data, error } = await supabase.functions.invoke("google-maps-key");
-        if (!error && data?.key) {
-          cachedKey = data.key;
-          setApiKey(data.key);
-        }
-      } catch (e) {
-        console.error("Failed to load Google Maps key", e);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
-
-  return { apiKey, loading };
+  const apiKey = import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY as string | undefined;
+  return { apiKey: apiKey || null, loading: false };
 }
