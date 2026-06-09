@@ -40,7 +40,6 @@ export function MiniMap({ lat, lng, name, height = "250px", zoom = 15 }: MiniMap
       const map = new MapCtor(mapRef.current, {
         center: { lat, lng },
         zoom,
-        mapId: "MINI_MAP",
         mapTypeId: "hybrid",
         zoomControl: true,
         streetViewControl: false,

@@ -168,7 +168,6 @@ export function AddressMapPicker({ latitude, longitude, onChange }: AddressMapPi
       const map = new MapCtor(mapRef.current, {
         center,
         zoom,
-        mapId: "address-picker",
         mapTypeControl: false,
         streetViewControl: false,
         fullscreenControl: false,

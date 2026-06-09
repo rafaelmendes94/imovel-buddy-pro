@@ -96,7 +96,6 @@ export default function Maps() {
     const map = new (window as any).google.maps.Map(mapRef.current, {
       center,
       zoom: mappable.length > 1 ? 12 : 15,
-      mapId: "DASHBOARD_MAP",
       zoomControl: true,
       zoomControlOptions: { position: ((window as any).google.maps.ControlPosition).RIGHT_BOTTOM },
       streetViewControl: false,

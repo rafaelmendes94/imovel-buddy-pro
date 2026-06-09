@@ -118,7 +118,6 @@ export function PropertyMap({ properties, onSelectProperty }: PropertyMapProps) 
       const map = new MapCtor(mapRef.current, {
         center,
         zoom: 11,
-        mapId: "PROPERTY_MAP",
         zoomControl: true,
         streetViewControl: false,
         mapTypeControl: false,
