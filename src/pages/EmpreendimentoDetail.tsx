@@ -31,6 +31,7 @@ const imovelStatusColors: Record<string, string> = {
 export default function EmpreendimentoDetail() {
   const { id, slug } = useParams<{ id?: string; slug?: string }>();
   const navigate = useNavigate();
+  const handleBack = useSmartBack("/empreendimentos");
   const [emp, setEmp] = useState<any>(null);
   const [imoveis, setImoveis] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
