@@ -929,6 +929,7 @@ export type Database = {
           proprietario: string | null
           proprietario_telefone: string | null
           proprietario_tipo: string | null
+          publicar_xml: boolean
           quadra: string | null
           quartos: number
           status: string
@@ -1000,6 +1001,7 @@ export type Database = {
           proprietario?: string | null
           proprietario_telefone?: string | null
           proprietario_tipo?: string | null
+          publicar_xml?: boolean
           quadra?: string | null
           quartos?: number
           status?: string
@@ -1071,6 +1073,7 @@ export type Database = {
           proprietario?: string | null
           proprietario_telefone?: string | null
           proprietario_tipo?: string | null
+          publicar_xml?: boolean
           quadra?: string | null
           quartos?: number
           status?: string

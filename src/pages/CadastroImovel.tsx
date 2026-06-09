@@ -101,6 +101,7 @@ export interface FormData {
   aceitaPermuta: boolean;
   destaqueHome: boolean;
   ativoSite: boolean;
+  publicarXml: boolean;
   destaqueCategoria: string;
   condicoesPagemento: string[];
   infraestrutura: string[];
@@ -126,7 +127,7 @@ export const initialForm: FormData = {
   descricao: '', proprietario: '', proprietarioTelefone: '', proprietarioTipo: '',
   condicao: '', padrao: '', posicaoPredio: '', posicaoSolar: '', vista: '',
   localChaves: '', termoExclusividade: '', termoExclusividadeUrl: '',
-  vistaMar: false, decorado: false, aceitaPermuta: false, destaqueHome: false, ativoSite: false,
+  vistaMar: false, decorado: false, aceitaPermuta: false, destaqueHome: false, ativoSite: false, publicarXml: true,
   destaqueCategoria: 'none',
   condicoesPagemento: [], infraestrutura: [], outrasCaracteristicas: [],
   latitude: '', longitude: '',
@@ -538,6 +539,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         aceitaPermuta: data.aceita_permuta || false,
         destaqueHome: data.destaque_home || false,
         ativoSite: data.ativo_site || false,
+        publicarXml: (data as any).publicar_xml ?? true,
         destaqueCategoria: data.destaque_categoria || 'none',
         condicoesPagemento: data.condicoes_pagamento || [],
         infraestrutura: data.infraestrutura || [],
@@ -570,7 +572,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         posicaoSolar: data.posicao_solar || '', vista: data.vista || '', localChaves: data.local_chaves || '',
         termoExclusividade: data.termo_exclusividade || '', termoExclusividadeUrl: (data as any).termo_exclusividade_url || '', vistaMar: data.vista_mar || false,
         decorado: data.decorado || false, aceitaPermuta: data.aceita_permuta || false,
-        destaqueHome: data.destaque_home || false, ativoSite: data.ativo_site || false,
+        destaqueHome: data.destaque_home || false, ativoSite: data.ativo_site || false, publicarXml: (data as any).publicar_xml ?? true,
         destaqueCategoria: data.destaque_categoria || 'none', condicoesPagemento: data.condicoes_pagamento || [],
         infraestrutura: data.infraestrutura || [], outrasCaracteristicas: data.outras_caracteristicas || [],
         latitude: data.latitude ? String(data.latitude) : '', longitude: data.longitude ? String(data.longitude) : '',
@@ -739,6 +741,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         destaque_categoria: form.destaqueCategoria === 'none' ? '' : form.destaqueCategoria,
         destaque_home: form.destaqueHome || form.destaqueCategoria !== 'none',
         ativo_site: form.ativoSite,
+        publicar_xml: form.publicarXml,
         infraestrutura: form.infraestrutura,
         outras_caracteristicas: form.outrasCaracteristicas,
         imagens: allImages.length > 0 ? allImages : null,
@@ -1173,6 +1176,10 @@ export function ImovelForm({ editId }: { editId?: string }) {
               <div className="flex items-center gap-2">
                 <Switch checked={form.ativoSite} onCheckedChange={(v) => set('ativoSite', v)} />
                 <Label className="text-xs font-semibold">🌐 Site</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <Switch checked={form.publicarXml} onCheckedChange={(v) => set('publicarXml', v)} />
+                <Label className="text-xs font-semibold">📡 Portais (XML)</Label>
               </div>
               <div className="flex items-center gap-2">
                 <Switch
