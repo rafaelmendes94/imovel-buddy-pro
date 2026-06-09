@@ -74,8 +74,8 @@ export default function ImovelPublico() {
         setNotFound(true);
       } else {
         setImovel(data as any);
-        // bump views
-        supabase.rpc("increment_imovel_views", { imovel_id: id });
+        // bump views (deduped per session)
+        trackPropertyView(id);
       }
       setLoading(false);
     })();
