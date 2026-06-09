@@ -1009,7 +1009,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4">
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><Gift className="w-3.5 h-3.5" /> Bônus (R$)</Label>
-            <Input type="number" placeholder="0" value={form.bonus} onChange={e => set('bonus', e.target.value)} />
+            <CurrencyInput value={form.bonus} onValueChange={v => set('bonus', v)} />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> Validade do Bônus</Label>
