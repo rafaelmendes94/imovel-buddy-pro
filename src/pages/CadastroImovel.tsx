@@ -22,7 +22,7 @@ import {
   Building2, MapPin, BedDouble, Bath, Car, Ruler, User, Phone, DollarSign,
   Percent, Gift, Home, Sparkles, Save, Image, Plus, X, Loader2,
   Hash, FileText, Eye, Key, Calendar, Building, Fence, Landmark, Search, Brain, Wand2,
-  Play, FolderDown, History, Clock, Download, CheckCircle2, Ban
+  Play, FolderDown, History, Clock, Download, CheckCircle2, Ban, ChevronLeft, ChevronRight, Star, GripVertical
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
