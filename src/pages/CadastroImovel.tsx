@@ -1242,8 +1242,48 @@ export function ImovelForm({ editId }: { editId?: string }) {
             <Input placeholder="https://drive.google.com/..." value={form.linkMaterial} onChange={e => set('linkMaterial', e.target.value)} />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs flex items-center gap-1"><Download className="w-3.5 h-3.5" /> Link Fotos PDF</Label>
-            <Input placeholder="https://.../fotos.pdf" value={form.fotosPdfUrl} onChange={e => set('fotosPdfUrl', e.target.value)} />
+            <Label className="text-xs flex items-center gap-1"><Download className="w-3.5 h-3.5" /> Fotos PDF (upload ou link)</Label>
+            <div className="flex gap-2 flex-wrap">
+              <Input
+                type="file"
+                accept="application/pdf"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file || !user) return;
+                  if (file.size > 20 * 1024 * 1024) {
+                    toast({ title: "Arquivo muito grande", description: "Limite de 20MB.", variant: "destructive" });
+                    return;
+                  }
+                  try {
+                    const ext = file.name.split('.').pop() || 'pdf';
+                    const path = `${user.id}/fotos-pdf/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+                    const { error: upErr } = await supabase.storage.from('site-assets').upload(path, file);
+                    if (upErr) throw upErr;
+                    const { data: urlData } = supabase.storage.from('site-assets').getPublicUrl(path);
+                    set('fotosPdfUrl', urlData.publicUrl);
+                    toast({ title: "PDF enviado", description: "Arquivo carregado com sucesso." });
+                  } catch (err: any) {
+                    toast({ title: "Erro no upload", description: err.message, variant: "destructive" });
+                  }
+                }}
+                className="flex-1 min-w-[200px]"
+              />
+              {form.fotosPdfUrl && (
+                <>
+                  <Button type="button" variant="outline" size="sm" onClick={() => window.open(form.fotosPdfUrl, '_blank')}>
+                    <Eye className="w-3.5 h-3.5 mr-1" /> Ver
+                  </Button>
+                  <Button type="button" variant="outline" size="sm" onClick={() => set('fotosPdfUrl', '')}>
+                    <X className="w-3.5 h-3.5 mr-1" /> Remover
+                  </Button>
+                </>
+              )}
+            </div>
+            <Input
+              placeholder="Ou cole um link: https://.../fotos.pdf"
+              value={form.fotosPdfUrl}
+              onChange={e => set('fotosPdfUrl', e.target.value)}
+            />
           </div>
           <div className="space-y-1.5 sm:col-span-2">
             <Label className="text-xs flex items-center gap-1"><Eye className="w-3.5 h-3.5" /> Tour 360° (embed ou link)</Label>
