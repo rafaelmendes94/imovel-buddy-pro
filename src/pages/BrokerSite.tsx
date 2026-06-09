@@ -30,6 +30,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { cn, toSlug } from "@/lib/utils";
+import { trackPropertyView } from "@/lib/trackPropertyView";
 import { BrokerRatings } from "@/components/BrokerRatings";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PropertyDetailModal } from "@/components/PropertyDetailModal";
@@ -250,6 +251,7 @@ export default function BrokerSite() {
   const [avgRating, setAvgRating] = useState<number | null>(null);
   const [ratingsCount, setRatingsCount] = useState(0);
   const [selectedProperty, setSelectedProperty] = useState<any>(null);
+  useEffect(() => { trackPropertyView(selectedProperty?.id); }, [selectedProperty?.id]);
   const [profileAvatar, setProfileAvatar] = useState<string | null>(null);
 
   useEffect(() => {

@@ -49,6 +49,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn, toSlug } from "@/lib/utils";
+import { trackPropertyView } from "@/lib/trackPropertyView";
 import logoImg from "@/assets/logo.png";
 import { RoutePlanner } from "@/components/RoutePlanner";
 import { SharkAI } from "@/components/SharkAI";
@@ -747,6 +748,7 @@ export default function Site() {
   const [filterNeighborhood, setFilterNeighborhood] = useState("");
   const [filterCaracteristica, setFilterCaracteristica] = useState("");
   const [selectedProperty, setSelectedProperty] = useState<SiteProperty | null>(null);
+  useEffect(() => { trackPropertyView(selectedProperty?.id); }, [selectedProperty?.id]);
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [priceSort, setPriceSort] = useState<"" | "asc" | "desc">("");
   const [showFullRanking, setShowFullRanking] = useState(false);

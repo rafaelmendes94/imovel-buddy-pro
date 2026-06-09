@@ -6,6 +6,7 @@ import {
   ChevronLeft, ChevronRight, X, Play, Eye, Share2, Download, Building2, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { trackPropertyView } from "@/lib/trackPropertyView";
 import { toast } from "sonner";
 
 interface ImovelRow {
@@ -74,8 +75,8 @@ export default function ImovelPublico() {
         setNotFound(true);
       } else {
         setImovel(data as any);
-        // bump views
-        supabase.rpc("increment_imovel_views", { imovel_id: id });
+        // bump views (deduped per session)
+        trackPropertyView(id);
       }
       setLoading(false);
     })();
