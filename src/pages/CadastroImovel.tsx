@@ -584,6 +584,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         linkMaterial: (data as any).link_material || '', link360: (data as any).link_360 || '', driveFotosUrl: (data as any).drive_fotos_url || '', fotosPdfUrl: (data as any).fotos_pdf_url || '',
       };
       setExistingImages(data.imagens || []);
+      setPhotoOrder((data.imagens || []).map((_: string, i: number) => ({ kind: 'existing' as const, idx: i })));
       setLoadingData(false);
     };
     load();
