@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { CurrencyInput } from '@/components/CurrencyInput';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -987,11 +988,11 @@ export function ImovelForm({ editId }: { editId?: string }) {
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 sm:gap-4 mb-4">
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><DollarSign className="w-3.5 h-3.5" /> Preço (R$)</Label>
-            <Input type="number" placeholder="0" value={form.preco} onChange={e => set('preco', e.target.value)} />
+            <CurrencyInput value={form.preco} onValueChange={v => set('preco', v)} />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs">Preço Parcelado (R$)</Label>
-            <Input type="number" placeholder="0" value={form.precoParcelado} onChange={e => set('precoParcelado', e.target.value)} />
+            <CurrencyInput value={form.precoParcelado} onValueChange={v => set('precoParcelado', v)} />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><Percent className="w-3.5 h-3.5" /> Comissão (%)</Label>
@@ -1008,7 +1009,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4">
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><Gift className="w-3.5 h-3.5" /> Bônus (R$)</Label>
-            <Input type="number" placeholder="0" value={form.bonus} onChange={e => set('bonus', e.target.value)} />
+            <CurrencyInput value={form.bonus} onValueChange={v => set('bonus', v)} />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> Validade do Bônus</Label>
