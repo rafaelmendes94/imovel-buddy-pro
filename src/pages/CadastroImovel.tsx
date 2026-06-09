@@ -1178,6 +1178,10 @@ export function ImovelForm({ editId }: { editId?: string }) {
                 <Label className="text-xs font-semibold">🌐 Site</Label>
               </div>
               <div className="flex items-center gap-2">
+                <Switch checked={form.publicarXml} onCheckedChange={(v) => set('publicarXml', v)} />
+                <Label className="text-xs font-semibold">📡 Portais (XML)</Label>
+              </div>
+              <div className="flex items-center gap-2">
                 <Switch
                   checked={form.destaqueHome}
                   onCheckedChange={(v) => { set('destaqueHome', v); if (!v) set('destaqueCategoria', 'none'); }}
