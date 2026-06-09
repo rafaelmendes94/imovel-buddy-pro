@@ -724,7 +724,12 @@ export function ImovelForm({ editId }: { editId?: string }) {
         uploadedUrls.push(urlData.publicUrl);
       }
 
-      const allImages = [...existingImages, ...uploadedUrls];
+      const orderedFromState = photoOrder
+        .map(p => (p.kind === 'existing' ? existingImages[p.idx] : uploadedUrls[p.idx]))
+        .filter((u): u is string => !!u);
+      // include any image not present in the order (safety net)
+      const fallback = [...existingImages, ...uploadedUrls].filter(u => !orderedFromState.includes(u));
+      const allImages = [...orderedFromState, ...fallback];
 
       const payload = {
         titulo: form.titulo,
