@@ -539,6 +539,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         aceitaPermuta: data.aceita_permuta || false,
         destaqueHome: data.destaque_home || false,
         ativoSite: data.ativo_site || false,
+        publicarXml: (data as any).publicar_xml ?? true,
         destaqueCategoria: data.destaque_categoria || 'none',
         condicoesPagemento: data.condicoes_pagamento || [],
         infraestrutura: data.infraestrutura || [],
