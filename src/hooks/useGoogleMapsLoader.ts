@@ -57,7 +57,9 @@ export function useGoogleMapsLoader() {
           return;
         }
         const script = document.createElement("script");
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&loading=async&v=weekly`;
+        const trackingId = import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_TRACKING_ID as string | undefined;
+        const channelParam = trackingId ? `&channel=${trackingId}` : "";
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&loading=async&v=weekly${channelParam}`;
         script.async = true;
         script.defer = true;
         script.dataset.googleMapsLoader = "true";
