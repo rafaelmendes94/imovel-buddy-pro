@@ -988,7 +988,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 sm:gap-4 mb-4">
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><DollarSign className="w-3.5 h-3.5" /> Preço (R$)</Label>
-            <Input type="number" placeholder="0" value={form.preco} onChange={e => set('preco', e.target.value)} />
+            <CurrencyInput value={form.preco} onValueChange={v => set('preco', v)} />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs">Preço Parcelado (R$)</Label>
