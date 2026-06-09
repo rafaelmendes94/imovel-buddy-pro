@@ -1215,7 +1215,7 @@ export default function Properties() {
             <div className="hidden sm:block bg-card border border-border rounded-xl p-2 sm:p-3">
               <div className="flex flex-wrap gap-1.5">
                 <div className="flex-1 min-w-[100px]">
-                  <label className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5 block whitespace-nowrap">Loteamento</label>
+                  <label className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5 block whitespace-nowrap">Empreendimento</label>
                   <select value={filterEmpreendimento} onChange={(e) => setFilterEmpreendimento(e.target.value)} className="w-full px-2 py-1.5 rounded border border-input text-[11px] bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring">
                     <option value="">Todos</option>
                     {empreendimentos.map(e => <option key={e} value={e}>{e}</option>)}
