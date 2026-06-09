@@ -12,6 +12,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MediaGalleryView } from "@/components/MediaGalleryView";
+import { useSmartBack } from "@/lib/useSmartBack";
 
 const statusColors: Record<string, string> = {
   "Em construção": "bg-warning/10 text-warning border-warning/30",
