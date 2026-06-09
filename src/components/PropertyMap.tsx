@@ -64,25 +64,6 @@ function createFallbackMarker(maps: any, map: any, property: Property, shortPric
 }
 
 function createMarker(maps: any, map: any, property: Property, cfg: { emoji: string; color: string }, shortPrice: string) {
-  const AdvancedMarkerElement = maps.marker?.AdvancedMarkerElement;
-
-  if (AdvancedMarkerElement) {
-    const pinEl = document.createElement("div");
-    pinEl.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;cursor:pointer;">
-      <div style="background:${cfg.color};border-radius:6px 6px 6px 0;padding:2px 5px;box-shadow:0 1px 6px rgba(0,0,0,0.2);display:flex;align-items:center;gap:2px;white-space:nowrap;">
-        <span style="font-size:9px;line-height:1;">${cfg.emoji}</span>
-        <span style="font-size:8px;font-weight:800;color:#fff;letter-spacing:0.2px;">${shortPrice}</span>
-      </div>
-      <div style="width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid ${cfg.color};"></div>
-    </div>`;
-
-    return new AdvancedMarkerElement({
-      position: { lat: property.lat, lng: property.lng },
-      map,
-      content: pinEl,
-    });
-  }
-
   return createFallbackMarker(maps, map, property, shortPrice, cfg.color);
 }
 

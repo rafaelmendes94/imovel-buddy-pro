@@ -48,12 +48,7 @@ export function MiniMap({ lat, lng, name, height = "250px", zoom = 15 }: MiniMap
       });
       mapInstanceRef.current = map;
 
-      const AdvancedMarker = markerLib?.AdvancedMarkerElement;
-      if (AdvancedMarker) {
-        markerInstance = new AdvancedMarker({ position: { lat, lng }, map, title: name });
-      } else {
-        markerInstance = new maps.Marker({ position: { lat, lng }, map, title: name });
-      }
+      markerInstance = new maps.Marker({ position: { lat, lng }, map, title: name });
 
       const infoWindow = new maps.InfoWindow({ content: `<b>${name}</b>` });
       infoWindow.open(map, markerInstance);
