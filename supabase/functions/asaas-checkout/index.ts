@@ -93,7 +93,13 @@ serve(async (req) => {
       "access_token": apiKey,
     };
 
-    let customerId = profile.asaas_customer_id;
+    // Lookup billing customer in separate table (sensitive payment IDs are not in profiles)
+    const { data: billing } = await supabase
+      .from("billing_customers")
+      .select("asaas_customer_id")
+      .eq("user_id", user_id)
+      .maybeSingle();
+    let customerId = billing?.asaas_customer_id as string | null;
 
     // Create customer if not exists
     if (!customerId) {
@@ -120,11 +126,10 @@ serve(async (req) => {
 
       customerId = customerData.id;
 
-      // Save asaas_customer_id to profile
+      // Save asaas_customer_id in dedicated billing table
       await supabase
-        .from("profiles")
-        .update({ asaas_customer_id: customerId })
-        .eq("user_id", user_id);
+        .from("billing_customers")
+        .upsert({ user_id, asaas_customer_id: customerId }, { onConflict: "user_id" });
     }
 
     // Map billing cycle to Asaas cycle
