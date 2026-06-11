@@ -12,6 +12,16 @@ serve(async (req) => {
   }
 
   try {
+    // Optional webhook signature: if ASAAS_WEBHOOK_TOKEN is configured, require matching header
+    const expectedToken = Deno.env.get("ASAAS_WEBHOOK_TOKEN");
+    if (expectedToken) {
+      const provided = req.headers.get("asaas-access-token") || req.headers.get("Asaas-Access-Token");
+      if (!provided || provided !== expectedToken) {
+        console.warn("Asaas webhook unauthorized: missing or invalid token");
+        return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+    }
+
     const body = await req.json();
     console.log("Asaas webhook received:", JSON.stringify(body));
 
