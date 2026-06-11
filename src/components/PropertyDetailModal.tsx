@@ -640,17 +640,27 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
                     Tour Virtual 360°
                   </span>
                 </div>
-                {link360.startsWith("<") ? (
-                  <div className="aspect-video" dangerouslySetInnerHTML={{ __html: link360 }} />
-                ) : link360.includes("http") ? (
-                  <div className="aspect-video">
-                    <iframe src={link360} title="Tour 360°" className="w-full h-full border-0" allowFullScreen />
-                  </div>
-                ) : (
-                  <div className="p-4">
-                    <p className="text-sm text-muted-foreground">{link360}</p>
-                  </div>
-                )}
+                {(() => {
+                  // Sanitize: only allow http(s) iframe URLs from embed codes; otherwise show as URL/text
+                  const extractIframeSrc = (html: string): string | null => {
+                    const m = html.match(/<iframe[^>]*\ssrc=["']([^"']+)["']/i);
+                    if (!m) return null;
+                    const url = m[1];
+                    return /^https?:\/\//i.test(url) ? url : null;
+                  };
+                  const safeSrc = link360.startsWith("<")
+                    ? extractIframeSrc(link360)
+                    : /^https?:\/\//i.test(link360) ? link360 : null;
+                  return safeSrc ? (
+                    <div className="aspect-video">
+                      <iframe src={safeSrc} title="Tour 360°" className="w-full h-full border-0" allowFullScreen />
+                    </div>
+                  ) : (
+                    <div className="p-4">
+                      <p className="text-sm text-muted-foreground break-all">{link360}</p>
+                    </div>
+                  );
+                })()}
               </div>
             )}
           </div>
