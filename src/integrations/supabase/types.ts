@@ -145,6 +145,30 @@ export type Database = {
           },
         ]
       }
+      billing_customers: {
+        Row: {
+          asaas_customer_id: string | null
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          asaas_customer_id?: string | null
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          asaas_customer_id?: string | null
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       brick_items: {
         Row: {
           categoria: string
@@ -1403,7 +1427,6 @@ export type Database = {
         Row: {
           account_type: string
           agency_id: string | null
-          asaas_customer_id: string | null
           avatar_url: string | null
           created_at: string
           email: string | null
@@ -1416,7 +1439,6 @@ export type Database = {
         Insert: {
           account_type?: string
           agency_id?: string | null
-          asaas_customer_id?: string | null
           avatar_url?: string | null
           created_at?: string
           email?: string | null
@@ -1429,7 +1451,6 @@ export type Database = {
         Update: {
           account_type?: string
           agency_id?: string | null
-          asaas_customer_id?: string | null
           avatar_url?: string | null
           created_at?: string
           email?: string | null
