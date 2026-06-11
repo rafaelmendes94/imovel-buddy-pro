@@ -12,16 +12,28 @@ serve(async (req) => {
   }
 
   try {
-    const { plan_id, user_id } = await req.json();
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const authClient = createClient(supabaseUrl, anonKey, { global: { headers: { Authorization: authHeader } } });
+    const { data: claimsData, error: authErr } = await authClient.auth.getClaims(authHeader.replace("Bearer ", ""));
+    if (authErr || !claimsData?.claims?.sub) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const user_id = claimsData.claims.sub as string;
 
-    if (!plan_id || !user_id) {
-      return new Response(JSON.stringify({ error: "plan_id and user_id required" }), {
+    const { plan_id } = await req.json();
+
+    if (!plan_id) {
+      return new Response(JSON.stringify({ error: "plan_id required" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -81,7 +93,13 @@ serve(async (req) => {
       "access_token": apiKey,
     };
 
-    let customerId = profile.asaas_customer_id;
+    // Lookup billing customer in separate table (sensitive payment IDs are not in profiles)
+    const { data: billing } = await supabase
+      .from("billing_customers")
+      .select("asaas_customer_id")
+      .eq("user_id", user_id)
+      .maybeSingle();
+    let customerId = billing?.asaas_customer_id as string | null;
 
     // Create customer if not exists
     if (!customerId) {
@@ -108,11 +126,10 @@ serve(async (req) => {
 
       customerId = customerData.id;
 
-      // Save asaas_customer_id to profile
+      // Save asaas_customer_id in dedicated billing table
       await supabase
-        .from("profiles")
-        .update({ asaas_customer_id: customerId })
-        .eq("user_id", user_id);
+        .from("billing_customers")
+        .upsert({ user_id, asaas_customer_id: customerId }, { onConflict: "user_id" });
     }
 
     // Map billing cycle to Asaas cycle

@@ -532,23 +532,26 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
       });
 
       marker.addListener("click", () => {
+        const esc = (s: any) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+        const safeUrl = (u: any) => { const s = String(u ?? ""); return /^https?:\/\//i.test(s) || /^data:image\//i.test(s) ? esc(s) : ""; };
+        const safeWa = String(broker.whatsapp ?? "").replace(/[^0-9+]/g, "");
         infoWindowRef.current.setContent(`
           <div style="font-family:system-ui,-apple-system,sans-serif;max-width:260px;">
-            <img src="${p.image}" alt="${p.title}" style="width:100%;height:120px;object-fit:cover;border-radius:8px;margin-bottom:8px;" />
-            <h3 style="font-size:14px;font-weight:700;color:#1a1a1a;margin:0 0 4px;">${p.title}</h3>
-            <p style="font-size:11px;color:#666;margin:0 0 6px;">📍 ${p.address}, ${p.city}</p>
-            <p style="font-size:18px;font-weight:800;color:${color};margin:0 0 8px;">${formatCurrency(p.price)}</p>
+            <img src="${safeUrl(p.image)}" alt="${esc(p.title)}" style="width:100%;height:120px;object-fit:cover;border-radius:8px;margin-bottom:8px;" />
+            <h3 style="font-size:14px;font-weight:700;color:#1a1a1a;margin:0 0 4px;">${esc(p.title)}</h3>
+            <p style="font-size:11px;color:#666;margin:0 0 6px;">📍 ${esc(p.address)}, ${esc(p.city)}</p>
+            <p style="font-size:18px;font-weight:800;color:${color};margin:0 0 8px;">${esc(formatCurrency(p.price))}</p>
             <div style="display:flex;gap:12px;font-size:11px;color:#888;margin-bottom:10px;">
-              ${p.area > 0 ? `<span>📐 ${p.area}m²</span>` : ""}
-              ${p.bedrooms > 0 ? `<span>🛏 ${p.bedrooms} qts</span>` : ""}
-              ${p.parking > 0 ? `<span>🚗 ${p.parking} vg</span>` : ""}
+              ${p.area > 0 ? `<span>📐 ${esc(p.area)}m²</span>` : ""}
+              ${p.bedrooms > 0 ? `<span>🛏 ${esc(p.bedrooms)} qts</span>` : ""}
+              ${p.parking > 0 ? `<span>🚗 ${esc(p.parking)} vg</span>` : ""}
             </div>
             <div style="display:flex;align-items:center;justify-content:space-between;padding-top:8px;border-top:1px solid #eee;">
               <div style="display:flex;align-items:center;gap:6px;">
-                ${broker.photo ? `<img src="${broker.photo}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;border:2px solid #f59e0b;" />` : ""}
-                <span style="font-size:11px;font-weight:600;color:#333;">${p.broker}</span>
+                ${broker.photo ? `<img src="${safeUrl(broker.photo)}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;border:2px solid #f59e0b;" />` : ""}
+                <span style="font-size:11px;font-weight:600;color:#333;">${esc(p.broker)}</span>
               </div>
-              <a href="https://wa.me/${broker.whatsapp}?text=${whatsMsg}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:4px;padding:5px 10px;background:#22c55e;color:white;border-radius:8px;font-size:11px;font-weight:700;text-decoration:none;">📱 WhatsApp</a>
+              <a href="https://wa.me/${encodeURIComponent(safeWa)}?text=${encodeURIComponent(String(whatsMsg ?? ''))}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:4px;padding:5px 10px;background:#22c55e;color:white;border-radius:8px;font-size:11px;font-weight:700;text-decoration:none;">📱 WhatsApp</a>
             </div>
           </div>
         `);

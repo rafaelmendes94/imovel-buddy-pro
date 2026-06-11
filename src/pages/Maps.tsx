@@ -131,28 +131,30 @@ export default function Maps() {
       const imgs = im.imagens && im.imagens.length > 0 ? im.imagens : [];
       const mainImg = imgs[0] || PLACEHOLDER_IMAGE;
       const address = [im.endereco, im.numero, im.bairro].filter(Boolean).join(", ");
+      const esc = (s: any) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+      const safeUrl = (u: any) => { const s = String(u ?? ""); return /^https?:\/\//i.test(s) || /^data:image\//i.test(s) ? esc(s) : ""; };
 
       marker.addListener("click", () => {
         const popupContent = `
         <div style="width:280px;font-family:system-ui,-apple-system,sans-serif;padding:0;">
-          <img src="${mainImg}" alt="${im.titulo}" style="width:100%;height:140px;object-fit:cover;border-radius:8px 8px 0 0;display:block;" />
+          <img src="${safeUrl(mainImg)}" alt="${esc(im.titulo)}" style="width:100%;height:140px;object-fit:cover;border-radius:8px 8px 0 0;display:block;" />
           <div style="padding:12px;">
             <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-              <span style="font-size:10px;font-weight:700;color:#fff;background:${cfg.color};padding:2px 8px;border-radius:4px;letter-spacing:0.5px;text-transform:uppercase;">${im.tipo}</span>
-              <span style="font-size:10px;font-weight:600;color:${im.status === 'Disponível' ? '#059669' : im.status === 'Vendido' ? '#dc2626' : '#d97706'};">${im.status}</span>
+              <span style="font-size:10px;font-weight:700;color:#fff;background:${cfg.color};padding:2px 8px;border-radius:4px;letter-spacing:0.5px;text-transform:uppercase;">${esc(im.tipo)}</span>
+              <span style="font-size:10px;font-weight:600;color:${im.status === 'Disponível' ? '#059669' : im.status === 'Vendido' ? '#dc2626' : '#d97706'};">${esc(im.status)}</span>
             </div>
-            <h3 style="font-size:14px;font-weight:700;margin:0 0 4px 0;color:#0f172a;line-height:1.3;text-transform:uppercase;">${im.titulo}</h3>
-            <p style="font-size:11px;color:#64748b;margin:0 0 6px 0;line-height:1.4;">📍 ${address} – ${im.cidade}</p>
-            ${im.empreendimento ? `<p style="font-size:10px;color:#94a3b8;margin:0 0 6px 0;">🏗 ${im.empreendimento}</p>` : ""}
+            <h3 style="font-size:14px;font-weight:700;margin:0 0 4px 0;color:#0f172a;line-height:1.3;text-transform:uppercase;">${esc(im.titulo)}</h3>
+            <p style="font-size:11px;color:#64748b;margin:0 0 6px 0;line-height:1.4;">📍 ${esc(address)} – ${esc(im.cidade)}</p>
+            ${im.empreendimento ? `<p style="font-size:10px;color:#94a3b8;margin:0 0 6px 0;">🏗 ${esc(im.empreendimento)}</p>` : ""}
             <div style="display:flex;gap:10px;margin-bottom:8px;font-size:10px;color:#64748b;">
-              ${im.quartos > 0 ? `<span>🛏 ${im.quartos}</span>` : ""}
-              ${im.banheiros > 0 ? `<span>🚿 ${im.banheiros}</span>` : ""}
-              ${im.vagas > 0 ? `<span>🚗 ${im.vagas}</span>` : ""}
-              ${im.area > 0 ? `<span>📐 ${im.area}m²</span>` : ""}
+              ${im.quartos > 0 ? `<span>🛏 ${esc(im.quartos)}</span>` : ""}
+              ${im.banheiros > 0 ? `<span>🚿 ${esc(im.banheiros)}</span>` : ""}
+              ${im.vagas > 0 ? `<span>🚗 ${esc(im.vagas)}</span>` : ""}
+              ${im.area > 0 ? `<span>📐 ${esc(im.area)}m²</span>` : ""}
             </div>
             <div style="display:flex;align-items:center;justify-content:space-between;">
-              <p style="font-size:18px;font-weight:800;color:${cfg.color};margin:0;">${formatCurrency(im.preco)}</p>
-              <span id="gmaps-ver-${im.id}" style="font-size:11px;color:${cfg.color};cursor:pointer;font-weight:700;text-decoration:underline;padding:4px 8px;">Ver mais →</span>
+              <p style="font-size:18px;font-weight:800;color:${cfg.color};margin:0;">${esc(formatCurrency(im.preco))}</p>
+              <span id="gmaps-ver-${esc(im.id)}" style="font-size:11px;color:${cfg.color};cursor:pointer;font-weight:700;text-decoration:underline;padding:4px 8px;">Ver mais →</span>
             </div>
           </div>
         </div>`;
