@@ -957,6 +957,7 @@ export type Database = {
           quadra: string | null
           quartos: number
           status: string
+          suites: number | null
           termo_exclusividade: string | null
           termo_exclusividade_url: string | null
           tipo: string
@@ -1029,6 +1030,7 @@ export type Database = {
           quadra?: string | null
           quartos?: number
           status?: string
+          suites?: number | null
           termo_exclusividade?: string | null
           termo_exclusividade_url?: string | null
           tipo?: string
@@ -1101,6 +1103,7 @@ export type Database = {
           quadra?: string | null
           quartos?: number
           status?: string
+          suites?: number | null
           termo_exclusividade?: string | null
           termo_exclusividade_url?: string | null
           tipo?: string
