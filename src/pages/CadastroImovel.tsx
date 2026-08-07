@@ -279,6 +279,7 @@ function EntitySelectorsGroup({ form, set, handleEntitySelect }: {
           if (id) { set('condominio_id', ''); set('empreendimento_id', ''); }
         }}
         onSelect={handleEntitySelect}
+        createHref="/cadastro-edificio"
       />
       <EntitySelector
         id="condominio"
@@ -293,6 +294,7 @@ function EntitySelectorsGroup({ form, set, handleEntitySelect }: {
           if (id) { set('edificio_id', ''); set('empreendimento_id', ''); }
         }}
         onSelect={handleEntitySelect}
+        createHref="/cadastro-condominio"
       />
       <EntitySelector
         id="loteamento"
@@ -307,6 +309,7 @@ function EntitySelectorsGroup({ form, set, handleEntitySelect }: {
           if (id) { set('edificio_id', ''); set('condominio_id', ''); }
         }}
         onSelect={handleEntitySelect}
+        createHref="/cadastro-empreendimento"
       />
     </div>
   );
