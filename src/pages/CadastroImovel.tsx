@@ -161,7 +161,7 @@ interface EntityOption {
   estado?: string;
 }
 
-function EntitySelector({ label, icon, table, value, onChange, onSelect, openId, setOpenId, id }: {
+function EntitySelector({ label, icon, table, value, onChange, onSelect, openId, setOpenId, id, createHref }: {
   label: string;
   icon: React.ReactNode;
   table: 'edificios' | 'condominios' | 'empreendimentos';
@@ -171,10 +171,12 @@ function EntitySelector({ label, icon, table, value, onChange, onSelect, openId,
   openId: string | null;
   setOpenId: (id: string | null) => void;
   id: string;
+  createHref?: string;
 }) {
   const [options, setOptions] = useState<EntityOption[]>([]);
   const [search, setSearch] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
   const open = openId === id;
 
   useEffect(() => {
@@ -203,15 +205,26 @@ function EntitySelector({ label, icon, table, value, onChange, onSelect, openId,
   return (
     <div className="space-y-1.5 relative" ref={containerRef}>
       <Label className="text-xs flex items-center gap-1">{icon} {label}</Label>
-      <div className="relative">
+      <div className="relative flex items-center gap-2">
         <Input
           placeholder={`Buscar ${label.toLowerCase()}...`}
           value={open ? search : selectedName}
           onChange={(e) => { setSearch(e.target.value); setOpenId(id); }}
           onFocus={() => setOpenId(id)}
+          className="flex-1"
         />
+        {createHref && (
+          <button
+            type="button"
+            title={`Novo ${label}`}
+            onClick={() => navigate(createHref)}
+            className="shrink-0 flex items-center justify-center w-9 h-9 rounded-lg bg-secondary text-secondary-foreground hover:bg-muted transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+          </button>
+        )}
         {value && (
-          <button type="button" onClick={() => { onChange(''); setSearch(''); }} className="absolute right-2 top-1/2 -translate-y-1/2">
+          <button type="button" onClick={() => { onChange(''); setSearch(''); }} className="absolute right-12 top-1/2 -translate-y-1/2">
             <X className="w-3.5 h-3.5 text-muted-foreground" />
           </button>
         )}
@@ -266,6 +279,7 @@ function EntitySelectorsGroup({ form, set, handleEntitySelect }: {
           if (id) { set('condominio_id', ''); set('empreendimento_id', ''); }
         }}
         onSelect={handleEntitySelect}
+        createHref="/cadastro-edificio"
       />
       <EntitySelector
         id="condominio"
@@ -280,6 +294,7 @@ function EntitySelectorsGroup({ form, set, handleEntitySelect }: {
           if (id) { set('edificio_id', ''); set('empreendimento_id', ''); }
         }}
         onSelect={handleEntitySelect}
+        createHref="/cadastro-condominio"
       />
       <EntitySelector
         id="loteamento"
@@ -294,6 +309,7 @@ function EntitySelectorsGroup({ form, set, handleEntitySelect }: {
           if (id) { set('edificio_id', ''); set('condominio_id', ''); }
         }}
         onSelect={handleEntitySelect}
+        createHref="/cadastro-empreendimento"
       />
     </div>
   );
