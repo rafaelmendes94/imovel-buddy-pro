@@ -1814,18 +1814,21 @@ export type Database = {
           avatar_url: string | null
           full_name: string | null
           phone: string | null
+          ratings_public: boolean | null
           user_id: string | null
         }
         Insert: {
           avatar_url?: string | null
           full_name?: string | null
           phone?: string | null
+          ratings_public?: boolean | null
           user_id?: string | null
         }
         Update: {
           avatar_url?: string | null
           full_name?: string | null
           phone?: string | null
+          ratings_public?: boolean | null
           user_id?: string | null
         }
         Relationships: []
@@ -1840,6 +1843,7 @@ export type Database = {
         Args: { _plan_id: string; _user_id: string }
         Returns: string
       }
+      current_agency_id: { Args: never; Returns: string }
       get_effective_subscription: {
         Args: { _user_id: string }
         Returns: {
