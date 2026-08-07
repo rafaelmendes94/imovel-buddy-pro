@@ -19,7 +19,7 @@ interface BrickItem {
   categoria: string;
   estado: string;
   cidade: string;
-  telefone: string;
+  telefone?: string | null;
   imagens: string[];
   vendido: boolean;
   created_at: string;
@@ -34,26 +34,27 @@ export default function BrickStore() {
   const [filterEstado, setFilterEstado] = useState("");
   const [priceSort, setPriceSort] = useState<"" | "asc" | "desc">("");
   const [selectedItem, setSelectedItem] = useState<BrickItem | null>(null);
+  const [contatoBloqueado, setContatoBloqueado] = useState(false);
   const [imgIndex, setImgIndex] = useState(0);
 
   useEffect(() => {
     const fetch = async () => {
       const { data } = await supabase
         .from("brick_items" as any)
-        .select("*")
+        .select("id, user_id, titulo, descricao, preco, categoria, estado, cidade, imagens, vendido, created_at")
         .eq("vendido", false)
         .order("created_at", { ascending: false });
 
       if (data) {
-        // Get seller names from profiles
+        // Get seller names from the public broker directory
         const userIds = [...new Set((data as any[]).map((d: any) => d.user_id))];
-        const { data: profiles } = await supabase
-          .from("profiles")
+        const { data: profiles } = await (supabase as any)
+          .from("public_broker_profiles")
           .select("user_id, full_name")
           .in("user_id", userIds);
 
         const nameMap: Record<string, string> = {};
-        profiles?.forEach(p => { nameMap[p.user_id] = p.full_name; });
+        (profiles || []).forEach((p: any) => { nameMap[p.user_id] = p.full_name; });
 
         setItems((data as any[]).map((d: any) => ({
           ...d,
@@ -64,6 +65,27 @@ export default function BrickStore() {
     };
     fetch();
   }, []);
+
+  // O telefone do vendedor não é exposto publicamente: só é carregado
+  // para usuários autenticados quando o anúncio é aberto.
+  const openItem = async (item: BrickItem) => {
+    setSelectedItem(item);
+    setImgIndex(0);
+    setContatoBloqueado(false);
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      setContatoBloqueado(true);
+      return;
+    }
+    const { data } = await supabase
+      .from("brick_items" as any)
+      .select("telefone")
+      .eq("id", item.id)
+      .maybeSingle();
+    const telefone = (data as any)?.telefone || "";
+    setSelectedItem(prev => (prev && prev.id === item.id ? { ...prev, telefone } : prev));
+  };
 
   const filtered = items.filter(item => {
     const matchSearch = !search ||
@@ -207,7 +229,7 @@ export default function BrickStore() {
             {filtered.map(item => (
               <div
                 key={item.id}
-                onClick={() => { setSelectedItem(item); setImgIndex(0); }}
+                onClick={() => { openItem(item); }}
                 className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer group"
               >
                 <div className="relative h-40 bg-gray-100">
@@ -298,6 +320,15 @@ export default function BrickStore() {
                 {selectedItem.cidade && <span className="flex items-center gap-1"><MapPin className="w-4 h-4" /> {selectedItem.cidade}</span>}
                 <span className="flex items-center gap-1"><Tag className="w-4 h-4" /> {selectedItem.seller_name}</span>
               </div>
+
+              {contatoBloqueado && (
+                <Link
+                  to="/login"
+                  className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-gray-100 text-gray-700 font-bold text-sm hover:bg-gray-200 transition-colors"
+                >
+                  <Phone className="w-4 h-4" /> Entre para ver o contato do vendedor
+                </Link>
+              )}
 
               {selectedItem.telefone && (
                 <a

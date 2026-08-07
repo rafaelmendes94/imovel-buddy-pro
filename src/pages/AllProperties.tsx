@@ -1,4 +1,5 @@
 import { PLACEHOLDER_IMAGE } from "@/lib/placeholderImage";
+import { PUBLIC_IMOVEL_COLUMNS } from "@/lib/publicImovelColumns";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { formatCurrency } from "@/data/mockData";
@@ -254,9 +255,8 @@ export default function AllProperties() {
   useEffect(() => {
     const fetchProperties = async () => {
       setLoading(true);
-      let query = supabase
-        .from('imoveis')
-        .select('*, edificios(nome), condominios(nome), empreendimentos(nome)');
+      let query: any = (supabase.from('imoveis') as any)
+        .select(`${PUBLIC_IMOVEL_COLUMNS}, edificios(nome), condominios(nome), empreendimentos(nome)`);
       if (sharedIds && sharedIds.length) {
         query = query.in('id', sharedIds);
       } else {

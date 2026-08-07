@@ -240,13 +240,13 @@ export default function ConstrutoraAvaliacoes() {
 
     // Load profiles for each avaliacao
     const userIds = [...new Set(data.map((a) => a.user_id))];
-    const { data: profiles } = await supabase.from("profiles").select("user_id, full_name, avatar_url").in("user_id", userIds);
+    const { data: profiles } = await (supabase as any).from("public_broker_profiles").select("user_id, full_name, avatar_url").in("user_id", userIds);
     const profileMap = new Map(profiles?.map((p) => [p.user_id, p]) || []);
 
     setAvaliacoes(
       data.map((a) => ({
         ...a,
-        profile: profileMap.get(a.user_id) || { full_name: "Corretor", avatar_url: null },
+        profile: (profileMap.get(a.user_id) as any) || { full_name: "Corretor", avatar_url: null },
       }))
     );
   }

@@ -149,8 +149,8 @@ export default function RankingPage() {
       userIds.add(id);
     });
 
-    const { data: profiles } = await supabase
-      .from("profiles")
+    const { data: profiles } = await (supabase as any)
+      .from("public_broker_profiles")
       .select("user_id, full_name, avatar_url")
       .in("user_id", Array.from(userIds));
 

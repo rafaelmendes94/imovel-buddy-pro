@@ -347,7 +347,7 @@ export function DocumentViewer({
         html2canvas: { scale: 2, useCORS: true },
         jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
         pagebreak: { mode: ["avoid-all", "css", "legacy"] },
-      }).from(tmp).save();
+      } as any).from(tmp).save();
       document.body.removeChild(tmp);
       toast.success("PDF salvo com sucesso!");
     } catch {
