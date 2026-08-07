@@ -256,7 +256,7 @@ export default function AllProperties() {
       setLoading(true);
       let query = supabase
         .from('imoveis')
-        .select('*, edificios(nome), condominios(nome), empreendimentos(nome)');
+        .select(`${PUBLIC_IMOVEL_COLUMNS}, edificios(nome), condominios(nome), empreendimentos(nome)`);
       if (sharedIds && sharedIds.length) {
         query = query.in('id', sharedIds);
       } else {
