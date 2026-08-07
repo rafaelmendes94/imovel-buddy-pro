@@ -212,38 +212,32 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
         )}
         {orderedItems.map((item, index) => {
           const dragProps = {
-            draggable: true,
-            onDragStart: (e: React.DragEvent) => {
-              setDragIndex(index);
-              e.dataTransfer.effectAllowed = "move";
-              e.dataTransfer.setData("text/plain", item.path);
+            "data-nav-index": index,
+            onPointerDown: (e: React.PointerEvent) => {
+              if (e.pointerType === "mouse" && e.button !== 0) return;
+              if (e.pointerType === "mouse") startDrag(index, e.clientY);
             },
-            onDragOver: (e: React.DragEvent) => {
-              e.preventDefault();
-              if (dragIndex !== null && dragIndex !== index) setOverIndex(index);
-            },
-            onDragLeave: () => setOverIndex(prev => (prev === index ? null : prev)),
-            onDrop: (e: React.DragEvent) => {
-              e.preventDefault();
-              handleDropOn(index);
-            },
-            onDragEnd: () => {
-              setDragIndex(null);
-              setOverIndex(null);
-            },
+            onClickCapture: suppressClickAfterDrag,
             className: cn(
-              "group relative rounded-lg transition-all",
+              "group relative rounded-lg transition-all select-none",
               dragIndex === index && "opacity-40",
-              overIndex === index && "ring-2 ring-sidebar-primary/60"
+              dragIndex !== null && overIndex === index && dragIndex !== index && "ring-2 ring-sidebar-primary/60"
             ),
           };
 
           const grip = !collapsed && (
-            <GripVertical
-              className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-sidebar-foreground/40 opacity-0 group-hover:opacity-100 transition-opacity"
-              aria-hidden
-            />
+            <span
+              onPointerDown={(e) => {
+                e.stopPropagation();
+                startDrag(index, e.clientY);
+              }}
+              title="Arraste para reordenar"
+              className="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded cursor-grab active:cursor-grabbing text-sidebar-foreground/40 opacity-0 group-hover:opacity-100 transition-opacity touch-none"
+            >
+              <GripVertical className="w-3.5 h-3.5" aria-hidden />
+            </span>
           );
+
 
           if (item.children) {
             const open = isMenuOpen(item);
