@@ -102,6 +102,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
   useEffect(() => {
     const onMove = (e: PointerEvent) => {
       const d = dragState.current;
+      console.log("DBG move", !!d, e.clientY);
       if (!d) return;
       if (!d.moved) {
         if (Math.abs(e.clientY - d.startY) < 6) return;
@@ -215,7 +216,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
             "data-nav-index": index,
             onPointerDown: (e: React.PointerEvent) => {
               if (e.pointerType === "mouse" && e.button !== 0) return;
-              if (e.pointerType === "mouse") startDrag(index, e.clientY);
+              if (e.pointerType === "mouse") { console.log("DBG down", index); startDrag(index, e.clientY); }
             },
             onClickCapture: suppressClickAfterDrag,
             className: cn(
