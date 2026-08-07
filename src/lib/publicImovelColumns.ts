@@ -8,7 +8,7 @@
  */
 export const PUBLIC_IMOVEL_COLUMNS = [
   "id", "user_id", "titulo", "endereco", "cidade", "tipo", "preco", "quartos",
-  "banheiros", "area", "descricao", "status", "imagens", "created_at",
+  "suites", "banheiros", "area", "descricao", "status", "imagens", "created_at",
   "updated_at", "destaque_home", "empreendimento", "unidade", "box", "quadra",
   "lote", "vagas", "area_privativa", "vista_mar", "decorado", "aceita_permuta",
   "ativo_site", "bairro", "condicoes_pagamento", "condicao", "padrao",
