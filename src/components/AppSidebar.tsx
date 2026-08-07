@@ -148,12 +148,47 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
             )}
           </div>
         )}
-        {navItems.map((item) => {
+        {orderedItems.map((item, index) => {
+          const dragProps = {
+            draggable: true,
+            onDragStart: (e: React.DragEvent) => {
+              setDragIndex(index);
+              e.dataTransfer.effectAllowed = "move";
+              e.dataTransfer.setData("text/plain", item.path);
+            },
+            onDragOver: (e: React.DragEvent) => {
+              e.preventDefault();
+              if (dragIndex !== null && dragIndex !== index) setOverIndex(index);
+            },
+            onDragLeave: () => setOverIndex(prev => (prev === index ? null : prev)),
+            onDrop: (e: React.DragEvent) => {
+              e.preventDefault();
+              handleDropOn(index);
+            },
+            onDragEnd: () => {
+              setDragIndex(null);
+              setOverIndex(null);
+            },
+            className: cn(
+              "group relative rounded-lg transition-all",
+              dragIndex === index && "opacity-40",
+              overIndex === index && "ring-2 ring-sidebar-primary/60"
+            ),
+          };
+
+          const grip = !collapsed && (
+            <GripVertical
+              className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-sidebar-foreground/40 opacity-0 group-hover:opacity-100 transition-opacity"
+              aria-hidden
+            />
+          );
+
           if (item.children) {
             const open = isMenuOpen(item);
             const childActive = isChildActive(item);
             return (
-              <div key={item.label}>
+              <div key={item.label} {...dragProps}>
+                {grip}
                 <button
                   onClick={() => toggleMenu(item.label)}
                   className={cn(
@@ -196,22 +231,35 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
           }
 
           return (
-            <Link
-              key={item.path}
-              to={item.path}
-              onClick={onNavigate}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200",
-                isActive(item.path)
-                  ? "bg-sidebar-accent text-sidebar-primary"
-                  : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-              )}
-            >
-              <item.icon className="w-5 h-5 flex-shrink-0" />
-              {!collapsed && <span>{item.label}</span>}
-            </Link>
+            <div key={item.path} {...dragProps}>
+              {grip}
+              <Link
+                to={item.path}
+                onClick={onNavigate}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+                  isActive(item.path)
+                    ? "bg-sidebar-accent text-sidebar-primary"
+                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                )}
+              >
+                <item.icon className="w-5 h-5 flex-shrink-0" />
+                {!collapsed && <span>{item.label}</span>}
+              </Link>
+            </div>
           );
         })}
+
+        {!collapsed && hasCustomOrder && (
+          <button
+            onClick={resetOrder}
+            className="mt-2 flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-[11px] text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Restaurar ordem original</span>
+          </button>
+        )}
+
       </nav>
 
       {/* Collapse toggle */}
