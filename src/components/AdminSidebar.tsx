@@ -1,12 +1,15 @@
+import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Users, UserCog, CreditCard, LogOut, Crown,
   Building2, Building, Fence, Camera, ClipboardCheck, Wallet,
   Table2, FileSignature, Clapperboard, Globe, Landmark, Settings,
   FileText, Map, Briefcase, ShoppingBag, Brain, Handshake,
+  GripVertical, RotateCcw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
+import { useSidebarOrder } from "@/hooks/useSidebarOrder";
 import { Separator } from "@/components/ui/separator";
 import logoImg from "@/assets/logo.png";
 
@@ -40,32 +43,145 @@ const operationalItems = [
   // { icon: ShoppingBag, label: "Brick", path: "/admin/brick", moduleKey: "brick" }, // oculto
 ];
 
-export function AdminSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
+type Item = typeof adminItems[0];
+
+/** Reorderable list of sidebar links (drag with mouse or the grip handle). */
+function DraggableNav({
+  items,
+  scopeId,
+  onNavigate,
+}: {
+  items: Item[];
+  scopeId: string;
+  onNavigate?: () => void;
+}) {
   const location = useLocation();
+  const { applyOrder, moveItem, hasCustomOrder, resetOrder } = useSidebarOrder(scopeId);
+  const ordered = applyOrder(items, i => i.path);
+  const orderedKeys = ordered.map(i => i.path);
+
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [overIndex, setOverIndex] = useState<number | null>(null);
+  const dragState = useRef<{ index: number; startY: number; moved: boolean } | null>(null);
+  const justDragged = useRef(false);
+
+  const startDrag = (index: number, clientY: number) => {
+    dragState.current = { index, startY: clientY, moved: false };
+  };
+
+  useEffect(() => {
+    const onMove = (e: PointerEvent) => {
+      const d = dragState.current;
+      if (!d) return;
+      if (!d.moved) {
+        if (Math.abs(e.clientY - d.startY) < 6) return;
+        d.moved = true;
+        setDragIndex(d.index);
+      }
+      const el = (document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null)
+        ?.closest<HTMLElement>(`[data-nav-scope="${scopeId}"]`);
+      setOverIndex(el ? Number(el.dataset.navIndex) : null);
+    };
+
+    const onUp = () => {
+      const d = dragState.current;
+      if (d?.moved) {
+        justDragged.current = true;
+        setTimeout(() => (justDragged.current = false), 100);
+        setOverIndex(prev => {
+          if (prev !== null) moveItem(orderedKeys, d.index, prev);
+          return null;
+        });
+      }
+      dragState.current = null;
+      setDragIndex(null);
+      setOverIndex(null);
+    };
+
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+    };
+  }, [moveItem, scopeId, orderedKeys.join("|")]);
+
+  const suppressClickAfterDrag = (e: React.MouseEvent) => {
+    if (justDragged.current) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
+
+  return (
+    <>
+      {ordered.map((item, index) => {
+        const isActive = location.pathname === item.path;
+        return (
+          <div
+            key={item.path}
+            data-nav-scope={scopeId}
+            data-nav-index={index}
+            onPointerDown={(e: React.PointerEvent) => {
+              if (e.pointerType === "mouse" && e.button !== 0) return;
+              if (e.pointerType === "mouse") startDrag(index, e.clientY);
+            }}
+            onClickCapture={suppressClickAfterDrag}
+            className={cn(
+              "group relative rounded-lg transition-all select-none",
+              dragIndex === index && "opacity-40",
+              dragIndex !== null && overIndex === index && dragIndex !== index && "ring-2 ring-sidebar-primary/60"
+            )}
+          >
+            <span
+              onPointerDown={(e) => {
+                e.stopPropagation();
+                startDrag(index, e.clientY);
+              }}
+              title="Arraste para reordenar"
+              className="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded cursor-grab active:cursor-grabbing text-sidebar-foreground/40 opacity-0 group-hover:opacity-100 transition-opacity touch-none"
+            >
+              <GripVertical className="w-3.5 h-3.5" aria-hidden />
+            </span>
+            <Link
+              to={item.path}
+              draggable={false}
+              onClick={onNavigate}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+                isActive
+                  ? "bg-sidebar-accent text-sidebar-primary"
+                  : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+              )}
+            >
+              <item.icon className="w-5 h-5 flex-shrink-0" />
+              <span>{item.label}</span>
+            </Link>
+          </div>
+        );
+      })}
+      {hasCustomOrder && (
+        <button
+          onClick={resetOrder}
+          className="mt-1 flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-[11px] text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
+        >
+          <RotateCcw className="w-3.5 h-3.5" />
+          <span>Restaurar ordem original</span>
+        </button>
+      )}
+    </>
+  );
+}
+
+export function AdminSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
   const { signOut, profile, isSuperAdmin, hasModuleAccess } = useAuth();
 
   const visibleAdmin = isSuperAdmin ? adminItems : adminItems.filter(i => hasModuleAccess(i.moduleKey));
   const visibleOps = isSuperAdmin ? operationalItems : operationalItems.filter(i => hasModuleAccess(i.moduleKey));
 
-  const renderItem = (item: typeof adminItems[0]) => {
-    const isActive = location.pathname === item.path;
-    return (
-      <Link
-        key={item.path}
-        to={item.path}
-        onClick={onNavigate}
-        className={cn(
-          "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200",
-          isActive
-            ? "bg-sidebar-accent text-sidebar-primary"
-            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-        )}
-      >
-        <item.icon className="w-5 h-5 flex-shrink-0" />
-        <span>{item.label}</span>
-      </Link>
-    );
-  };
+  const userId = profile?.id || "anon";
 
   return (
     <aside className="flex flex-col h-screen w-[260px] bg-sidebar border-r border-sidebar-border sticky top-0">
@@ -83,7 +199,7 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
             <p className="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/50">
               Administração
             </p>
-            {visibleAdmin.map(renderItem)}
+            <DraggableNav items={visibleAdmin} scopeId={`${userId}:admin`} onNavigate={onNavigate} />
           </>
         )}
 
@@ -98,7 +214,7 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
             <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/50">
               Operacional
             </p>
-            {visibleOps.map(renderItem)}
+            <DraggableNav items={visibleOps} scopeId={`${userId}:ops`} onNavigate={onNavigate} />
           </>
         )}
       </nav>
