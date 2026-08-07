@@ -22,6 +22,8 @@ const adminItems = [
   { icon: Brain, label: "Configuração IA", path: "/admin/ia", moduleKey: "dashboard_admin" },
   { icon: CreditCard, label: "Asaas / Pagamentos", path: "/admin/asaas", moduleKey: "dashboard_admin" },
   { icon: Handshake, label: "Parceiros", path: "/admin/parceiros", moduleKey: "dashboard_admin" },
+  { icon: Users, label: "Corretores", path: "/corretores", moduleKey: "corretores" },
+  { icon: Landmark, label: "Imobiliárias", path: "/imobiliarias", moduleKey: "imobiliarias" },
 ];
 
 const operationalItems = [
