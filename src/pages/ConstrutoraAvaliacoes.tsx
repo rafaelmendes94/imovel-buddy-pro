@@ -246,7 +246,7 @@ export default function ConstrutoraAvaliacoes() {
     setAvaliacoes(
       data.map((a) => ({
         ...a,
-        profile: profileMap.get(a.user_id) || { full_name: "Corretor", avatar_url: null },
+        profile: (profileMap.get(a.user_id) as any) || { full_name: "Corretor", avatar_url: null },
       }))
     );
   }

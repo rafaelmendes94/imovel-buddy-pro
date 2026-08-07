@@ -254,8 +254,7 @@ export default function AllProperties() {
   useEffect(() => {
     const fetchProperties = async () => {
       setLoading(true);
-      let query = supabase
-        .from('imoveis')
+      let query: any = (supabase.from('imoveis') as any)
         .select(`${PUBLIC_IMOVEL_COLUMNS}, edificios(nome), condominios(nome), empreendimentos(nome)`);
       if (sharedIds && sharedIds.length) {
         query = query.in('id', sharedIds);

@@ -806,7 +806,7 @@ export default function Site() {
     const fetchProperties = async () => {
       setLoading(true);
       const [{ data, error }, { data: brokersData }] = await Promise.all([
-        supabase.from("imoveis").select(`${PUBLIC_IMOVEL_COLUMNS}, edificios(nome), condominios(nome), empreendimentos(nome)`).eq("ativo_site", true).neq("status", "Vendido"),
+        (supabase.from("imoveis") as any).select(`${PUBLIC_IMOVEL_COLUMNS}, edificios(nome), condominios(nome), empreendimentos(nome)`).eq("ativo_site", true).neq("status", "Vendido"),
         supabase.from("subscriber_brokers").select("name, phone").eq("status", "active"),
       ]);
 
