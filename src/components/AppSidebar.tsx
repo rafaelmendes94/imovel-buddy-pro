@@ -87,17 +87,64 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
 
   const { applyOrder, moveItem, hasCustomOrder, resetOrder } = useSidebarOrder(profile?.id);
   const orderedItems = applyOrder(navItems, item => item.path);
+  const orderedKeys = orderedItems.map(i => i.path);
 
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [overIndex, setOverIndex] = useState<number | null>(null);
+  const dragState = useRef<{ index: number; startY: number; moved: boolean } | null>(null);
+  const justDragged = useRef(false);
 
-  const handleDropOn = (toIndex: number) => {
-    if (dragIndex !== null) {
-      moveItem(orderedItems.map(i => i.path), dragIndex, toIndex);
-    }
-    setDragIndex(null);
-    setOverIndex(null);
+  const startDrag = (index: number, clientY: number) => {
+    dragState.current = { index, startY: clientY, moved: false };
   };
+
+  // Global pointer listeners while a drag is pending/active
+  useEffect(() => {
+    const onMove = (e: PointerEvent) => {
+      const d = dragState.current;
+      if (!d) return;
+      if (!d.moved) {
+        if (Math.abs(e.clientY - d.startY) < 6) return;
+        d.moved = true;
+        setDragIndex(d.index);
+      }
+      e.preventDefault();
+      const el = (document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null)?.closest<HTMLElement>("[data-nav-index]");
+      setOverIndex(el ? Number(el.dataset.navIndex) : null);
+    };
+
+    const onUp = () => {
+      const d = dragState.current;
+      if (d?.moved) {
+        justDragged.current = true;
+        setTimeout(() => (justDragged.current = false), 100);
+        setOverIndex(prev => {
+          if (prev !== null) moveItem(orderedKeys, d.index, prev);
+          return null;
+        });
+      }
+      dragState.current = null;
+      setDragIndex(null);
+      setOverIndex(null);
+    };
+
+    window.addEventListener("pointermove", onMove, { passive: false });
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+    };
+  }, [moveItem, orderedKeys.join("|")]);
+
+  const suppressClickAfterDrag = (e: React.MouseEvent) => {
+    if (justDragged.current) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
+
 
   const isActive = (path: string) => location.pathname === path;
   const isChildActive = (item: NavItem) =>
