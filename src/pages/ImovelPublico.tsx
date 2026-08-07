@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { trackPropertyView } from "@/lib/trackPropertyView";
+import { PUBLIC_IMOVEL_COLUMNS } from "@/lib/publicImovelColumns";
 import { toast } from "sonner";
 
 interface ImovelRow {
@@ -67,7 +68,7 @@ export default function ImovelPublico() {
       setLoading(true);
       const { data, error } = await supabase
         .from("imoveis")
-        .select("*")
+        .select(PUBLIC_IMOVEL_COLUMNS)
         .eq("id", id)
         .eq("ativo_site", true)
         .maybeSingle();

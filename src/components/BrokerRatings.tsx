@@ -49,7 +49,7 @@ export function BrokerRatings({ brokerId, brokerName }: { brokerId: string | nul
       setLoading(true);
       const [{ data }, { data: prof }] = await Promise.all([
         (supabase as any).from("broker_ratings").select("*").eq("broker_id", brokerId),
-        (supabase as any).from("profiles").select("ratings_public").eq("user_id", brokerId).maybeSingle(),
+        (supabase as any).from("public_broker_profiles").select("ratings_public").eq("user_id", brokerId).maybeSingle(),
       ]);
       setRatings((data as BrokerRating[]) || []);
       setRatingsPublic(prof?.ratings_public !== false);
