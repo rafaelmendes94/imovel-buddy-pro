@@ -12,7 +12,7 @@ import { QuickPick } from '@/components/QuickPick';
 import { CepAutoFill, type AddressData } from '@/components/CepAutoFill';
 import { InfraToggle } from '@/components/InfraToggle';
 import { useSystemOptions } from '@/hooks/useSystemOptions';
-import { Building, MapPin, Layers, Save, Image, Loader2, Building2, FileText, Video, FolderDown, Camera } from 'lucide-react';
+import { Building, MapPin, Layers, Save, Image, Loader2, Building2, FileText, Video, FolderDown, Camera, Plus } from 'lucide-react';
 import { MediaGalleryUpload } from '@/components/MediaGalleryUpload';
 
 const statusOptions = ["Lançamento", "Em construção", "Pronto"];
@@ -103,7 +103,16 @@ export default function CadastroEdificio() {
     <AppLayout>
       <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-4xl mx-auto">
         <BackButton />
-        <h1 className="text-2xl font-bold text-foreground">{editId ? "Editar Edifício" : "Novo Edifício"}</h1>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <h1 className="text-2xl font-bold text-foreground">{editId ? "Editar Edifício" : "Novo Edifício"}</h1>
+          <button
+            onClick={() => navigate("/cadastro-empreendimento")}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium hover:bg-muted transition-colors self-start"
+          >
+            <Plus className="w-4 h-4" />
+            Novo Empreendimento
+          </button>
+        </div>
 
         <section>
           <SectionHeader icon={Building} title="Dados Básicos" />
