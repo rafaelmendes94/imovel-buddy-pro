@@ -1,15 +1,16 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Building2, Users, FileText, Settings,
   ChevronLeft, ChevronRight, Building, Camera, Fence,
   Globe, ClipboardCheck, Wallet, Table2, FileSignature,
   Clapperboard, Landmark, Landmark as Landmark2, HardHat, ShoppingBag, Map,
-  ChevronDown, CreditCard,
+  ChevronDown, CreditCard, GripVertical, RotateCcw,
 } from "lucide-react";
 import { Share2, Home as HomeIcon } from "lucide-react";
 import { cn, toSlug } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
+import { useSidebarOrder } from "@/hooks/useSidebarOrder";
 import { toast } from "sonner";
 import logoImg from "@/assets/logo.png";
 
@@ -84,6 +85,66 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
       return { ...item, children: filteredChildren };
     });
 
+  const { applyOrder, moveItem, hasCustomOrder, resetOrder } = useSidebarOrder(profile?.id);
+  const orderedItems = applyOrder(navItems, item => item.path);
+  const orderedKeys = orderedItems.map(i => i.path);
+
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [overIndex, setOverIndex] = useState<number | null>(null);
+  const dragState = useRef<{ index: number; startY: number; moved: boolean } | null>(null);
+  const justDragged = useRef(false);
+
+  const startDrag = (index: number, clientY: number) => {
+    dragState.current = { index, startY: clientY, moved: false };
+  };
+
+  // Global pointer listeners while a drag is pending/active
+  useEffect(() => {
+    const onMove = (e: PointerEvent) => {
+      const d = dragState.current;
+      if (!d) return;
+      if (!d.moved) {
+        if (Math.abs(e.clientY - d.startY) < 6) return;
+        d.moved = true;
+        setDragIndex(d.index);
+      }
+      const el = (document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null)?.closest<HTMLElement>("[data-nav-index]");
+      setOverIndex(el ? Number(el.dataset.navIndex) : null);
+    };
+
+    const onUp = () => {
+      const d = dragState.current;
+      if (d?.moved) {
+        justDragged.current = true;
+        setTimeout(() => (justDragged.current = false), 100);
+        setOverIndex(prev => {
+          if (prev !== null) moveItem(orderedKeys, d.index, prev);
+          return null;
+        });
+      }
+      dragState.current = null;
+      setDragIndex(null);
+      setOverIndex(null);
+    };
+
+    window.addEventListener("pointermove", onMove, { passive: false });
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+    };
+  }, [moveItem, orderedKeys.join("|")]);
+
+  const suppressClickAfterDrag = (e: React.MouseEvent) => {
+    if (justDragged.current) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
+
+
   const isActive = (path: string) => location.pathname === path;
   const isChildActive = (item: NavItem) =>
     item.children?.some(c => location.pathname === c.path) || false;
@@ -148,13 +209,43 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
             )}
           </div>
         )}
-        {navItems.map((item) => {
+        {orderedItems.map((item, index) => {
+          const dragProps = {
+            "data-nav-index": index,
+            onPointerDown: (e: React.PointerEvent) => {
+              if (e.pointerType === "mouse" && e.button !== 0) return;
+              if (e.pointerType === "mouse") startDrag(index, e.clientY);
+            },
+            onClickCapture: suppressClickAfterDrag,
+            className: cn(
+              "group relative rounded-lg transition-all select-none",
+              dragIndex === index && "opacity-40",
+              dragIndex !== null && overIndex === index && dragIndex !== index && "ring-2 ring-sidebar-primary/60"
+            ),
+          };
+
+          const grip = !collapsed && (
+            <span
+              onPointerDown={(e) => {
+                e.stopPropagation();
+                startDrag(index, e.clientY);
+              }}
+              title="Arraste para reordenar"
+              className="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded cursor-grab active:cursor-grabbing text-sidebar-foreground/40 opacity-0 group-hover:opacity-100 transition-opacity touch-none"
+            >
+              <GripVertical className="w-3.5 h-3.5" aria-hidden />
+            </span>
+          );
+
+
           if (item.children) {
             const open = isMenuOpen(item);
             const childActive = isChildActive(item);
             return (
-              <div key={item.label}>
+              <div key={item.label} {...dragProps}>
+                {grip}
                 <button
+                  draggable={false}
                   onClick={() => toggleMenu(item.label)}
                   className={cn(
                     "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 w-full",
@@ -196,22 +287,36 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
           }
 
           return (
-            <Link
-              key={item.path}
-              to={item.path}
-              onClick={onNavigate}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200",
-                isActive(item.path)
-                  ? "bg-sidebar-accent text-sidebar-primary"
-                  : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-              )}
-            >
-              <item.icon className="w-5 h-5 flex-shrink-0" />
-              {!collapsed && <span>{item.label}</span>}
-            </Link>
+            <div key={item.path} {...dragProps}>
+              {grip}
+              <Link
+                to={item.path}
+                draggable={false}
+                onClick={onNavigate}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+                  isActive(item.path)
+                    ? "bg-sidebar-accent text-sidebar-primary"
+                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                )}
+              >
+                <item.icon className="w-5 h-5 flex-shrink-0" />
+                {!collapsed && <span>{item.label}</span>}
+              </Link>
+            </div>
           );
         })}
+
+        {!collapsed && hasCustomOrder && (
+          <button
+            onClick={resetOrder}
+            className="mt-2 flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-[11px] text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Restaurar ordem original</span>
+          </button>
+        )}
+
       </nav>
 
       {/* Collapse toggle */}
