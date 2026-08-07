@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
+import { AppSidebar } from "@/components/AppSidebar";
 import { AuthGuard } from "@/components/AuthGuard";
 
 // Public pages
@@ -83,6 +84,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
+            <Route path="/__dragtest" element={<div className="flex"><AppSidebar /></div>} />
             {/* Public routes */}
             <Route path="/" element={<Site />} />
             <Route path="/login" element={<Login />} />
