@@ -80,6 +80,7 @@ export interface FormData {
   area: string;
   areaPrivativa: string;
   quartos: number;
+  suites: number;
   banheiros: number;
   lavabo: number;
   vagas: number;
@@ -123,7 +124,7 @@ export const initialForm: FormData = {
   bairro: '', cidade: '', estado: '',
   empreendimento: '', unidade: '', box: '', quadra: '', lote: '',
   preco: '', precoParcelado: '', comissao: '', bonus: '', bonusValidade: '',
-  area: '', areaPrivativa: '', quartos: 0, banheiros: 0, lavabo: 0, vagas: 0, elevadores: 0,
+  area: '', areaPrivativa: '', quartos: 0, suites: 0, banheiros: 0, lavabo: 0, vagas: 0, elevadores: 0,
   descricao: '', proprietario: '', proprietarioTelefone: '', proprietarioTipo: '',
   condicao: '', padrao: '', posicaoPredio: '', posicaoSolar: '', vista: '',
   localChaves: '', termoExclusividade: '', termoExclusividadeUrl: '',
@@ -330,6 +331,7 @@ function DescriptionAI({ form, onGenerated }: { form: FormData; onGenerated: (te
             area: parseFloat(form.area) || 0,
             privateArea: parseFloat(form.areaPrivativa) || 0,
             bedrooms: form.quartos,
+            suites: form.suites,
             bathrooms: form.banheiros,
             parking: form.vagas,
             seaView: form.vistaMar,
@@ -390,7 +392,7 @@ const fieldLabels: Record<string, string> = {
   numero: 'Número', complemento: 'Complemento', bairro: 'Bairro', cidade: 'Cidade', estado: 'Estado',
   empreendimento: 'Loteamento', unidade: 'Unidade', box: 'Box', quadra: 'Quadra', lote: 'Lote',
   preco: 'Preço', precoParcelado: 'Preço Parcelado', comissao: 'Comissão %', bonus: 'Bônus', bonusValidade: 'Validade Bônus',
-  area: 'Área Total', areaPrivativa: 'Área Privativa', quartos: 'Quartos', banheiros: 'Banheiros',
+  area: 'Área Total', areaPrivativa: 'Área Privativa', quartos: 'Quartos', suites: 'Suítes', banheiros: 'Banheiros',
   lavabo: 'Lavabo', vagas: 'Vagas', elevadores: 'Elevadores', descricao: 'Descrição',
   proprietario: 'Proprietário', proprietarioTelefone: 'Tel. Proprietário', proprietarioTipo: 'Tipo Proprietário',
   condicao: 'Condição', padrao: 'Padrão', posicaoPredio: 'Posição Prédio', posicaoSolar: 'Posição Solar',
@@ -521,6 +523,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         area: data.area ? String(data.area) : '',
         areaPrivativa: data.area_privativa ? String(data.area_privativa) : '',
         quartos: data.quartos || 0,
+        suites: data.suites || 0,
         banheiros: data.banheiros || 0,
         lavabo: (data as any).lavabo || 0,
         vagas: data.vagas || 0,
@@ -568,7 +571,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         comissao: data.comissao ? String(data.comissao) : '', bonus: data.bonus ? String(data.bonus) : '',
         bonusValidade: data.bonus_validade || '', area: data.area ? String(data.area) : '',
         areaPrivativa: data.area_privativa ? String(data.area_privativa) : '', quartos: data.quartos || 0,
-        banheiros: data.banheiros || 0, lavabo: (data as any).lavabo || 0, vagas: data.vagas || 0,
+        suites: data.suites || 0, banheiros: data.banheiros || 0, lavabo: (data as any).lavabo || 0, vagas: data.vagas || 0,
         elevadores: data.elevadores || 0, descricao: data.descricao || '', proprietario: data.proprietario || '',
         proprietarioTelefone: data.proprietario_telefone || '', proprietarioTipo: data.proprietario_tipo || '',
         condicao: data.condicao || '', padrao: data.padrao || '', posicaoPredio: data.posicao_predio || '',
@@ -755,6 +758,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         area: parseFloat(form.area) || 0,
         area_privativa: parseFloat(form.areaPrivativa) || 0,
         quartos: form.quartos,
+        suites: form.suites,
         banheiros: form.banheiros,
         lavabo: form.lavabo,
         vagas: form.vagas,
@@ -986,8 +990,9 @@ export function ImovelForm({ editId }: { editId?: string }) {
         </div>
 
 
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4 mb-4">
-          <QuickPick label="Dormitórios" options={[0, 1, 2, 3, 4, "5+"]} value={form.quartos} onChange={(v) => set('quartos', v === "5+" ? 5 : Number(v))} icon={<BedDouble className="w-3.5 h-3.5" />} />
+        <div className="grid grid-cols-2 sm:grid-cols-6 gap-3 sm:gap-4 mb-4">
+          <QuickPick label="Dormitórios" options={[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]} value={form.quartos} onChange={(v) => set('quartos', Number(v))} icon={<BedDouble className="w-3.5 h-3.5" />} />
+          <QuickPick label="Suítes" options={[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]} value={form.suites} onChange={(v) => set('suites', Number(v))} icon={<BedDouble className="w-3.5 h-3.5" />} />
           <QuickPick label="Banheiros" options={[0, 1, 2, 3, 4, "5+"]} value={form.banheiros} onChange={(v) => set('banheiros', v === "5+" ? 5 : Number(v))} icon={<Bath className="w-3.5 h-3.5" />} />
           <QuickPick label="Lavabo" options={[0, 1, "2+"]} value={form.lavabo} onChange={(v) => set('lavabo', v === "2+" ? 2 : Number(v))} icon={<Bath className="w-3.5 h-3.5" />} />
           <QuickPick label="Vagas" options={[0, 1, 2, 3, "4+"]} value={form.vagas} onChange={(v) => set('vagas', v === "4+" ? 4 : Number(v))} icon={<Car className="w-3.5 h-3.5" />} />
