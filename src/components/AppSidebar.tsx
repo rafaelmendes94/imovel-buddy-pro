@@ -5,11 +5,12 @@ import {
   ChevronLeft, ChevronRight, Building, Camera, Fence,
   Globe, ClipboardCheck, Wallet, Table2, FileSignature,
   Clapperboard, Landmark, Landmark as Landmark2, HardHat, ShoppingBag, Map,
-  ChevronDown, CreditCard,
+  ChevronDown, CreditCard, GripVertical, RotateCcw,
 } from "lucide-react";
 import { Share2, Home as HomeIcon } from "lucide-react";
 import { cn, toSlug } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
+import { useSidebarOrder } from "@/hooks/useSidebarOrder";
 import { toast } from "sonner";
 import logoImg from "@/assets/logo.png";
 
@@ -83,6 +84,20 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
         : item.children.filter(c => !c.module || enabledModules.includes(c.module));
       return { ...item, children: filteredChildren };
     });
+
+  const { applyOrder, moveItem, hasCustomOrder, resetOrder } = useSidebarOrder(profile?.id);
+  const orderedItems = applyOrder(navItems, item => item.path);
+
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [overIndex, setOverIndex] = useState<number | null>(null);
+
+  const handleDropOn = (toIndex: number) => {
+    if (dragIndex !== null) {
+      moveItem(orderedItems.map(i => i.path), dragIndex, toIndex);
+    }
+    setDragIndex(null);
+    setOverIndex(null);
+  };
 
   const isActive = (path: string) => location.pathname === path;
   const isChildActive = (item: NavItem) =>
