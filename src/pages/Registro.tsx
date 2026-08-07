@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { UserPlus } from "lucide-react";
+import { UserPlus, MailCheck } from "lucide-react";
 import logoImg from "@/assets/logo.png";
 
 export default function Registro() {
@@ -14,14 +14,25 @@ export default function Registro() {
   const [password, setPassword] = useState("");
   const [accountType, setAccountType] = useState<"corretor" | "imobiliaria" | "parceiro">("corretor");
   const [loading, setLoading] = useState(false);
+  const [emailEnviado, setEmailEnviado] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const traduzErro = (msg: string) => {
+    const m = msg.toLowerCase();
+    if (m.includes("weak") || m.includes("pwned")) return "Esta senha é muito comum e foi vazada em bases públicas. Escolha uma senha mais forte (letras, números e símbolos).";
+    if (m.includes("already registered") || m.includes("already been registered")) return "Este e-mail já possui uma conta. Faça login.";
+    if (m.includes("invalid email")) return "E-mail inválido.";
+    if (m.includes("password should be at least")) return "A senha deve ter no mínimo 6 caracteres.";
+    if (m.includes("rate limit") || m.includes("too many")) return "Muitas tentativas. Aguarde alguns minutos e tente novamente.";
+    return msg;
+  };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -31,8 +42,20 @@ export default function Registro() {
     });
 
     if (error) {
-      toast({ title: "Erro ao criar conta", description: error.message, variant: "destructive" });
+      toast({ title: "Erro ao criar conta", description: traduzErro(error.message), variant: "destructive" });
       setLoading(false);
+      return;
+    }
+
+    setLoading(false);
+
+    // Com confirmação de e-mail ativa, signUp NÃO cria sessão
+    if (!data.session) {
+      setEmailEnviado(true);
+      toast({
+        title: "Confirme seu e-mail",
+        description: "Enviamos um link de confirmação. Clique nele para ativar sua conta e depois faça login.",
+      });
       return;
     }
 
@@ -40,10 +63,28 @@ export default function Registro() {
       title: "Conta criada!",
       description: "Agora escolha seu plano para começar.",
     });
-    // Login automático já foi feito pelo signUp; redireciona pra escolha de plano
     navigate("/escolher-plano");
-    setLoading(false);
   };
+
+  if (emailEnviado) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background px-4">
+        <div className="w-full max-w-md space-y-6 text-center">
+          <img src={logoImg} alt="MV BROKER CONNECT" className="mx-auto w-28 h-28 object-contain" />
+          <div className="bg-card p-6 rounded-xl border border-border shadow-sm space-y-3">
+            <MailCheck className="w-10 h-10 mx-auto text-accent" />
+            <h1 className="text-lg font-semibold text-foreground">Verifique seu e-mail</h1>
+            <p className="text-sm text-muted-foreground">
+              Enviamos um link de confirmação para <span className="font-medium text-foreground">{email}</span>.
+              Confirme para ativar sua conta e depois entre normalmente.
+            </p>
+            <Button className="w-full" onClick={() => navigate("/login")}>Ir para o login</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
