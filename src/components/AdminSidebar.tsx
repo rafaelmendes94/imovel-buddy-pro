@@ -22,6 +22,8 @@ const adminItems = [
   { icon: Brain, label: "Configuração IA", path: "/admin/ia", moduleKey: "dashboard_admin" },
   { icon: CreditCard, label: "Asaas / Pagamentos", path: "/admin/asaas", moduleKey: "dashboard_admin" },
   { icon: Handshake, label: "Parceiros", path: "/admin/parceiros", moduleKey: "dashboard_admin" },
+  { icon: Users, label: "Corretores", path: "/corretores", moduleKey: "corretores" },
+  { icon: Landmark, label: "Imobiliárias", path: "/imobiliarias", moduleKey: "imobiliarias" },
 ];
 
 const operationalItems = [
@@ -37,8 +39,6 @@ const operationalItems = [
   { icon: Table2, label: "Tabelas", path: "/tabelas", moduleKey: "tabelas" },
   { icon: FileSignature, label: "Contratos", path: "/contratos", moduleKey: "contratos" },
   { icon: Clapperboard, label: "Material Extra", path: "/videomaker", moduleKey: "material_extra" },
-  { icon: Users, label: "Corretores", path: "/corretores", moduleKey: "corretores" },
-  { icon: Landmark, label: "Imobiliárias", path: "/imobiliarias", moduleKey: "imobiliarias" },
   { icon: Settings, label: "Configurações", path: "/configuracoes", moduleKey: "configuracoes" },
   // { icon: ShoppingBag, label: "Brick", path: "/admin/brick", moduleKey: "brick" }, // oculto
 ];
