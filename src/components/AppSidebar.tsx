@@ -109,7 +109,6 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
         d.moved = true;
         setDragIndex(d.index);
       }
-      e.preventDefault();
       const el = (document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null)?.closest<HTMLElement>("[data-nav-index]");
       setOverIndex(el ? Number(el.dataset.navIndex) : null);
     };
