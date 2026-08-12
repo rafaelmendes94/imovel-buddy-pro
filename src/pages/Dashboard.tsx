@@ -238,7 +238,7 @@ export default function Dashboard() {
               Vendas por Mês
             </h3>
             <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={salesData}>
+              <BarChart data={salesByMonth}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis dataKey="month" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
                 <YAxis tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
@@ -263,7 +263,7 @@ export default function Dashboard() {
             <ResponsiveContainer width="100%" height={200}>
               <PieChart>
                 <Pie
-                  data={propertyTypeData}
+                  data={typeData}
                   cx="50%"
                   cy="50%"
                   innerRadius={50}
@@ -271,7 +271,7 @@ export default function Dashboard() {
                   dataKey="value"
                   strokeWidth={0}
                 >
-                  {propertyTypeData.map((entry, index) => (
+                  {typeData.map((entry, index) => (
                     <Cell key={index} fill={entry.fill} />
                   ))}
                 </Pie>
@@ -286,7 +286,7 @@ export default function Dashboard() {
               </PieChart>
             </ResponsiveContainer>
             <div className="space-y-2 mt-2">
-              {propertyTypeData.map((item) => (
+              {typeData.map((item) => (
                 <div key={item.name} className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2">
                     <div
