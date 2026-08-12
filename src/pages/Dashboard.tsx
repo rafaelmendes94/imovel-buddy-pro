@@ -212,7 +212,7 @@ export default function Dashboard() {
               <div>
                 <p className="text-xs text-muted-foreground">VGV Total Vendido</p>
                 <p className="text-xl font-bold text-emerald-500">{formatCurrency(vgvVendido)}</p>
-                <p className="text-[10px] text-muted-foreground">{((vgvVendido / vgvCadastrado) * 100).toFixed(1)}% do cadastrado</p>
+                <p className="text-[10px] text-muted-foreground">{vgvCadastrado ? ((vgvVendido / vgvCadastrado) * 100).toFixed(1) : "0.0"}% do cadastrado</p>
               </div>
             </div>
           </div>
@@ -224,7 +224,7 @@ export default function Dashboard() {
               <div>
                 <p className="text-xs text-muted-foreground">Quantidade de Vendas</p>
                 <p className="text-xl font-bold text-foreground">{qtdVendas}</p>
-                <p className="text-[10px] text-muted-foreground">Ticket médio: {formatCurrency(vgvVendido / qtdVendas)}</p>
+                <p className="text-[10px] text-muted-foreground">Ticket médio: {formatCurrency(qtdVendas ? vgvVendido / qtdVendas : 0)}</p>
               </div>
             </div>
           </div>
