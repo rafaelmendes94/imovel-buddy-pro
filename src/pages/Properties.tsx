@@ -10,7 +10,7 @@ import { RoutePlanner } from "@/components/RoutePlanner";
 import { SharkAI } from "@/components/SharkAI";
 import { PartnersAdSlider } from "@/components/PartnersAdSlider";
 import { SoldConfirmDialog, SoldConfirmPayload } from "@/components/SoldConfirmDialog";
-import { properties as initialProperties, salesRecords, formatCurrency, Property } from "@/data/mockData";
+import { formatCurrency, Property } from "@/data/mockData";
 import {
   Building2, Search, Plus, MapPin, BedDouble, Bath, Car, Ruler,
   Download, Send, LayoutGrid, List, Map, ChevronLeft, ChevronRight, HardDrive,
