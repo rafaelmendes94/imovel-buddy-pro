@@ -2634,7 +2634,7 @@ function PropertyRow({
           <div className="flex items-center gap-1">
             <InlinePrice value={property.price} onChange={(v) => onPriceChange?.(property.id, "price", v)} className="text-[22px] font-black text-emerald-500 drop-shadow-sm" />
             {(() => {
-              const original = initialProperties.find(p => p.id === property.id);
+              const original = null as Property | null;
               if (!original || original.price === property.price) return null;
               return property.price > original.price
                 ? <ArrowUp className="w-4 h-4 text-emerald-500 flex-shrink-0" />
