@@ -18,14 +18,7 @@ import {
   UserCheck,
   HardHat,
 } from "lucide-react";
-import {
-  salesData,
-  propertyTypeData,
-  formatCurrency,
-  properties,
-  brokers,
-  salesRecords,
-} from "@/data/mockData";
+import { formatCurrency } from "@/data/mockData";
 import {
   BarChart,
   Bar,
@@ -37,9 +30,25 @@ import {
   PieChart,
   Pie,
   Cell,
-  LineChart,
-  Line,
 } from "recharts";
+
+const MONTHS = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+const PIE_COLORS = [
+  "hsl(var(--primary))",
+  "hsl(var(--accent))",
+  "hsl(160 84% 39%)",
+  "hsl(38 92% 50%)",
+  "hsl(280 65% 60%)",
+  "hsl(200 90% 55%)",
+];
+
+interface ImovelRow {
+  preco: number | null;
+  tipo: string | null;
+  status: string | null;
+  data_venda: string | null;
+  updated_at: string | null;
+}
 
 export default function Dashboard() {
   const { isSuperAdmin, isAdminStaff } = useAuth();
@@ -47,13 +56,15 @@ export default function Dashboard() {
   const Layout = isAdmin ? AdminLayout : AppLayout;
 
   const [dbStats, setDbStats] = useState({ clients: 0, imobiliarias: 0, corretores: 0, construtoras: 0 });
+  const [imoveis, setImoveis] = useState<ImovelRow[]>([]);
 
   useEffect(() => {
     const fetchStats = async () => {
-      const [corretoresRes, imobiliariasRes, construtorasRes] = await Promise.all([
+      const [corretoresRes, imobiliariasRes, construtorasRes, imoveisRes] = await Promise.all([
         supabase.from("subscriptions").select("id, plans!inner(plan_type)", { count: "exact", head: true }).eq("status", "active").eq("plans.plan_type", "corretor"),
         supabase.from("subscriptions").select("id, plans!inner(plan_type)", { count: "exact", head: true }).eq("status", "active").eq("plans.plan_type", "imobiliaria"),
         supabase.from("construtoras").select("id", { count: "exact", head: true }).eq("status", "active"),
+        supabase.from("imoveis").select("preco, tipo, status, data_venda, updated_at").limit(5000),
       ]);
       setDbStats({
         clients: 0,
@@ -61,18 +72,51 @@ export default function Dashboard() {
         corretores: corretoresRes.count || 0,
         construtoras: construtorasRes.count || 0,
       });
+      setImoveis((imoveisRes.data as ImovelRow[]) || []);
     };
     fetchStats();
   }, []);
 
-  const totalProperties = properties.length;
-  const available = properties.filter((p) => p.status === "Disponível").length;
-  const totalRevenue = salesData.reduce((sum, d) => sum + d.receita, 0);
-  const totalSales = salesData.reduce((sum, d) => sum + d.vendas, 0);
+  const isSold = (s: string | null) => !!s && s.toLowerCase().includes("vendid");
 
-  const vgvCadastrado = properties.reduce((sum, p) => sum + p.price, 0);
-  const vgvVendido = salesRecords.reduce((sum, s) => sum + s.price, 0);
-  const qtdVendas = salesRecords.length;
+  const totalProperties = imoveis.length;
+  const available = imoveis.filter((p) => (p.status || "").toLowerCase().includes("dispon")).length;
+  const soldList = imoveis.filter((p) => isSold(p.status));
+
+  const vgvCadastrado = imoveis.reduce((sum, p) => sum + (Number(p.preco) || 0), 0);
+  const vgvVendido = soldList.reduce((sum, p) => sum + (Number(p.preco) || 0), 0);
+  const qtdVendas = soldList.length;
+  const totalRevenue = vgvVendido;
+  const totalSales = qtdVendas;
+
+  const salesByMonth = MONTHS.map((month, i) => {
+    const monthSales = soldList.filter((p) => {
+      const d = p.data_venda || p.updated_at;
+      return d ? new Date(d).getMonth() === i : false;
+    });
+    return {
+      month,
+      vendas: monthSales.length,
+      receita: monthSales.reduce((sum, p) => sum + (Number(p.preco) || 0), 0),
+    };
+  });
+
+  const typeData = (() => {
+    const counts: Record<string, number> = {};
+    imoveis.forEach((p) => {
+      const key = p.tipo || "Outros";
+      counts[key] = (counts[key] || 0) + 1;
+    });
+    const total = imoveis.length || 1;
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, value], i) => ({
+        name,
+        value: Math.round((value / total) * 100),
+        fill: PIE_COLORS[i % PIE_COLORS.length],
+      }));
+  })();
+
 
   return (
     <Layout>
@@ -104,23 +148,22 @@ export default function Dashboard() {
           />
           <MetricCard
             title="Corretores Ativos"
-            value={brokers.filter((b) => b.status === "Ativo").length.toString()}
-            change="+2 este mês"
-            changeType="positive"
+            value={dbStats.corretores.toString()}
+            changeType="neutral"
             icon={Users}
           />
           <MetricCard
             title="Receita Total"
             value={formatCurrency(totalRevenue)}
-            change="+12.5% vs mês anterior"
-            changeType="positive"
+            change="VGV vendido"
+            changeType="neutral"
             icon={DollarSign}
           />
           <MetricCard
             title="Vendas Realizadas"
             value={totalSales.toString()}
-            change="+8.3% vs mês anterior"
-            changeType="positive"
+            change="imóveis vendidos"
+            changeType="neutral"
             icon={TrendingUp}
           />
         </div>
@@ -169,7 +212,7 @@ export default function Dashboard() {
               <div>
                 <p className="text-xs text-muted-foreground">VGV Total Vendido</p>
                 <p className="text-xl font-bold text-emerald-500">{formatCurrency(vgvVendido)}</p>
-                <p className="text-[10px] text-muted-foreground">{((vgvVendido / vgvCadastrado) * 100).toFixed(1)}% do cadastrado</p>
+                <p className="text-[10px] text-muted-foreground">{vgvCadastrado ? ((vgvVendido / vgvCadastrado) * 100).toFixed(1) : "0.0"}% do cadastrado</p>
               </div>
             </div>
           </div>
@@ -181,7 +224,7 @@ export default function Dashboard() {
               <div>
                 <p className="text-xs text-muted-foreground">Quantidade de Vendas</p>
                 <p className="text-xl font-bold text-foreground">{qtdVendas}</p>
-                <p className="text-[10px] text-muted-foreground">Ticket médio: {formatCurrency(vgvVendido / qtdVendas)}</p>
+                <p className="text-[10px] text-muted-foreground">Ticket médio: {formatCurrency(qtdVendas ? vgvVendido / qtdVendas : 0)}</p>
               </div>
             </div>
           </div>
@@ -195,7 +238,7 @@ export default function Dashboard() {
               Vendas por Mês
             </h3>
             <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={salesData}>
+              <BarChart data={salesByMonth}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis dataKey="month" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
                 <YAxis tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
@@ -220,7 +263,7 @@ export default function Dashboard() {
             <ResponsiveContainer width="100%" height={200}>
               <PieChart>
                 <Pie
-                  data={propertyTypeData}
+                  data={typeData}
                   cx="50%"
                   cy="50%"
                   innerRadius={50}
@@ -228,7 +271,7 @@ export default function Dashboard() {
                   dataKey="value"
                   strokeWidth={0}
                 >
-                  {propertyTypeData.map((entry, index) => (
+                  {typeData.map((entry, index) => (
                     <Cell key={index} fill={entry.fill} />
                   ))}
                 </Pie>
@@ -243,7 +286,7 @@ export default function Dashboard() {
               </PieChart>
             </ResponsiveContainer>
             <div className="space-y-2 mt-2">
-              {propertyTypeData.map((item) => (
+              {typeData.map((item) => (
                 <div key={item.name} className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2">
                     <div
@@ -259,38 +302,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Revenue line chart */}
-        <div className="elevated-card rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-card-foreground mb-4">
-            Receita Mensal
-          </h3>
-          <ResponsiveContainer width="100%" height={250}>
-            <LineChart data={salesData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="month" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
-              <YAxis
-                tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
-                tickFormatter={(v) => `${(v / 1000000).toFixed(1)}M`}
-              />
-              <Tooltip
-                contentStyle={{
-                  background: "hsl(var(--card))",
-                  border: "1px solid hsl(var(--border))",
-                  borderRadius: "8px",
-                  fontSize: "12px",
-                }}
-                formatter={(value: number) => [formatCurrency(value), "Receita"]}
-              />
-              <Line
-                type="monotone"
-                dataKey="receita"
-                stroke="hsl(var(--accent))"
-                strokeWidth={2.5}
-                dot={{ fill: "hsl(var(--accent))", r: 4 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
       </div>
     </Layout>
   );

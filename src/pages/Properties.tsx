@@ -10,7 +10,7 @@ import { RoutePlanner } from "@/components/RoutePlanner";
 import { SharkAI } from "@/components/SharkAI";
 import { PartnersAdSlider } from "@/components/PartnersAdSlider";
 import { SoldConfirmDialog, SoldConfirmPayload } from "@/components/SoldConfirmDialog";
-import { properties as initialProperties, salesRecords, formatCurrency, Property } from "@/data/mockData";
+import { formatCurrency, Property } from "@/data/mockData";
 import {
   Building2, Search, Plus, MapPin, BedDouble, Bath, Car, Ruler,
   Download, Send, LayoutGrid, List, Map, ChevronLeft, ChevronRight, HardDrive,
@@ -408,11 +408,8 @@ const getSavedCategoryOrder = (): typeof defaultCategories => {
   return defaultCategories;
 };
 
-// Auto-generate codes for properties that don't have one
-const propertiesWithCodes = initialProperties.map((p, i) => ({
-  ...p,
-  code: p.code || `MV${String(i + 1).padStart(2, "0")}`,
-}));
+// (sem dados de exemplo — a lista vem 100% do banco)
+
 
 export default function Properties() {
   const navigate = useNavigate();
@@ -505,7 +502,7 @@ export default function Properties() {
 
       if (error) {
         toast.error("Erro ao carregar imóveis");
-        setPropertyList(propertiesWithCodes);
+        setPropertyList([]);
         return;
       }
 
@@ -2637,7 +2634,7 @@ function PropertyRow({
           <div className="flex items-center gap-1">
             <InlinePrice value={property.price} onChange={(v) => onPriceChange?.(property.id, "price", v)} className="text-[22px] font-black text-emerald-500 drop-shadow-sm" />
             {(() => {
-              const original = initialProperties.find(p => p.id === property.id);
+              const original = null as Property | null;
               if (!original || original.price === property.price) return null;
               return property.price > original.price
                 ? <ArrowUp className="w-4 h-4 text-emerald-500 flex-shrink-0" />
