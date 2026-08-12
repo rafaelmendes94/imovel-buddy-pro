@@ -408,11 +408,8 @@ const getSavedCategoryOrder = (): typeof defaultCategories => {
   return defaultCategories;
 };
 
-// Auto-generate codes for properties that don't have one
-const propertiesWithCodes = initialProperties.map((p, i) => ({
-  ...p,
-  code: p.code || `MV${String(i + 1).padStart(2, "0")}`,
-}));
+// (sem dados de exemplo — a lista vem 100% do banco)
+
 
 export default function Properties() {
   const navigate = useNavigate();
