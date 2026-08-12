@@ -18,14 +18,7 @@ import {
   UserCheck,
   HardHat,
 } from "lucide-react";
-import {
-  salesData,
-  propertyTypeData,
-  formatCurrency,
-  properties,
-  brokers,
-  salesRecords,
-} from "@/data/mockData";
+import { formatCurrency } from "@/data/mockData";
 import {
   BarChart,
   Bar,
@@ -37,9 +30,25 @@ import {
   PieChart,
   Pie,
   Cell,
-  LineChart,
-  Line,
 } from "recharts";
+
+const MONTHS = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+const PIE_COLORS = [
+  "hsl(var(--primary))",
+  "hsl(var(--accent))",
+  "hsl(160 84% 39%)",
+  "hsl(38 92% 50%)",
+  "hsl(280 65% 60%)",
+  "hsl(200 90% 55%)",
+];
+
+interface ImovelRow {
+  preco: number | null;
+  tipo: string | null;
+  status: string | null;
+  data_venda: string | null;
+  updated_at: string | null;
+}
 
 export default function Dashboard() {
   const { isSuperAdmin, isAdminStaff } = useAuth();
@@ -47,13 +56,15 @@ export default function Dashboard() {
   const Layout = isAdmin ? AdminLayout : AppLayout;
 
   const [dbStats, setDbStats] = useState({ clients: 0, imobiliarias: 0, corretores: 0, construtoras: 0 });
+  const [imoveis, setImoveis] = useState<ImovelRow[]>([]);
 
   useEffect(() => {
     const fetchStats = async () => {
-      const [corretoresRes, imobiliariasRes, construtorasRes] = await Promise.all([
+      const [corretoresRes, imobiliariasRes, construtorasRes, imoveisRes] = await Promise.all([
         supabase.from("subscriptions").select("id, plans!inner(plan_type)", { count: "exact", head: true }).eq("status", "active").eq("plans.plan_type", "corretor"),
         supabase.from("subscriptions").select("id, plans!inner(plan_type)", { count: "exact", head: true }).eq("status", "active").eq("plans.plan_type", "imobiliaria"),
         supabase.from("construtoras").select("id", { count: "exact", head: true }).eq("status", "active"),
+        supabase.from("imoveis").select("preco, tipo, status, data_venda, updated_at").limit(5000),
       ]);
       setDbStats({
         clients: 0,
@@ -61,18 +72,51 @@ export default function Dashboard() {
         corretores: corretoresRes.count || 0,
         construtoras: construtorasRes.count || 0,
       });
+      setImoveis((imoveisRes.data as ImovelRow[]) || []);
     };
     fetchStats();
   }, []);
 
-  const totalProperties = properties.length;
-  const available = properties.filter((p) => p.status === "Disponível").length;
-  const totalRevenue = salesData.reduce((sum, d) => sum + d.receita, 0);
-  const totalSales = salesData.reduce((sum, d) => sum + d.vendas, 0);
+  const isSold = (s: string | null) => !!s && s.toLowerCase().includes("vendid");
 
-  const vgvCadastrado = properties.reduce((sum, p) => sum + p.price, 0);
-  const vgvVendido = salesRecords.reduce((sum, s) => sum + s.price, 0);
-  const qtdVendas = salesRecords.length;
+  const totalProperties = imoveis.length;
+  const available = imoveis.filter((p) => (p.status || "").toLowerCase().includes("dispon")).length;
+  const soldList = imoveis.filter((p) => isSold(p.status));
+
+  const vgvCadastrado = imoveis.reduce((sum, p) => sum + (Number(p.preco) || 0), 0);
+  const vgvVendido = soldList.reduce((sum, p) => sum + (Number(p.preco) || 0), 0);
+  const qtdVendas = soldList.length;
+  const totalRevenue = vgvVendido;
+  const totalSales = qtdVendas;
+
+  const salesByMonth = MONTHS.map((month, i) => {
+    const monthSales = soldList.filter((p) => {
+      const d = p.data_venda || p.updated_at;
+      return d ? new Date(d).getMonth() === i : false;
+    });
+    return {
+      month,
+      vendas: monthSales.length,
+      receita: monthSales.reduce((sum, p) => sum + (Number(p.preco) || 0), 0),
+    };
+  });
+
+  const typeData = (() => {
+    const counts: Record<string, number> = {};
+    imoveis.forEach((p) => {
+      const key = p.tipo || "Outros";
+      counts[key] = (counts[key] || 0) + 1;
+    });
+    const total = imoveis.length || 1;
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, value], i) => ({
+        name,
+        value: Math.round((value / total) * 100),
+        fill: PIE_COLORS[i % PIE_COLORS.length],
+      }));
+  })();
+
 
   return (
     <Layout>
