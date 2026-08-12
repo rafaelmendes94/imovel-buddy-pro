@@ -148,23 +148,22 @@ export default function Dashboard() {
           />
           <MetricCard
             title="Corretores Ativos"
-            value={brokers.filter((b) => b.status === "Ativo").length.toString()}
-            change="+2 este mês"
-            changeType="positive"
+            value={dbStats.corretores.toString()}
+            changeType="neutral"
             icon={Users}
           />
           <MetricCard
             title="Receita Total"
             value={formatCurrency(totalRevenue)}
-            change="+12.5% vs mês anterior"
-            changeType="positive"
+            change="VGV vendido"
+            changeType="neutral"
             icon={DollarSign}
           />
           <MetricCard
             title="Vendas Realizadas"
             value={totalSales.toString()}
-            change="+8.3% vs mês anterior"
-            changeType="positive"
+            change="imóveis vendidos"
+            changeType="neutral"
             icon={TrendingUp}
           />
         </div>
