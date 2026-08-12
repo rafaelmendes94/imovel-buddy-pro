@@ -505,7 +505,7 @@ export default function Properties() {
 
       if (error) {
         toast.error("Erro ao carregar imóveis");
-        setPropertyList(propertiesWithCodes);
+        setPropertyList([]);
         return;
       }
 
