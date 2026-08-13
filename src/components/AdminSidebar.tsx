@@ -28,6 +28,7 @@ const adminItems = [
 
 const operationalItems = [
   { icon: FileText, label: "Relatórios", path: "/relatorios", moduleKey: "relatorios" },
+  { icon: Trophy, label: "Ranking", path: "/ranking", moduleKey: "relatorios" },
   { icon: Globe, label: "Site", path: "/site-editor", moduleKey: "site_editor" },
   { icon: Building2, label: "Imóveis", path: "/imoveis", moduleKey: "imoveis" },
   { icon: Building, label: "Edifícios", path: "/edificios", moduleKey: "edificios" },
