@@ -17,6 +17,8 @@ import { QuickPick } from '@/components/QuickPick';
 import { QuickPickWithConfirm } from '@/components/QuickPickWithConfirm';
 import { CepAutoFill, type AddressData } from '@/components/CepAutoFill';
 import { DraggableBlocks } from '@/components/DraggableBlocks';
+import { AIImovelImport } from '@/components/AIImovelImport';
+
 import { InfraToggle } from '@/components/InfraToggle';
 import { useSystemOptions } from '@/hooks/useSystemOptions';
 import {
