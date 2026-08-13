@@ -3,6 +3,10 @@ project_id = "mgnawkfmfbwzpjiilhcf"
 [functions.shark-ai]
 verify_jwt = false
 
+[functions.parse-imovel-ia]
+verify_jwt = false
+
+
 [functions.property-valuation]
 verify_jwt = false
 
