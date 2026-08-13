@@ -1,0 +1,1 @@
+GRANT SELECT (corretor_cadastro_id) ON public.imoveis TO anon;
