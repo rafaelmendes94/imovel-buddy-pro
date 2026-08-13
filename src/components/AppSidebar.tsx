@@ -5,7 +5,7 @@ import {
   ChevronLeft, ChevronRight, Building, Camera, Fence,
   Globe, ClipboardCheck, Wallet, Table2, FileSignature,
   Clapperboard, Landmark, Landmark as Landmark2, HardHat, ShoppingBag, Map,
-  ChevronDown, CreditCard, GripVertical, RotateCcw,
+  ChevronDown, CreditCard, GripVertical, RotateCcw, Trophy,
 } from "lucide-react";
 import { Share2, Home as HomeIcon } from "lucide-react";
 import { cn, toSlug } from "@/lib/utils";
@@ -28,6 +28,7 @@ interface NavItem {
 const allNavItems: NavItem[] = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard", always: true },
   { icon: FileText, label: "Relatórios", path: "/relatorios" }, // admin
+  { icon: Trophy, label: "Ranking", path: "/ranking", always: true },
   { icon: Globe, label: "Site", path: "/site-editor", module: "site" },
   { icon: Building2, label: "Imóveis", path: "/imoveis", module: "imoveis" },
   { icon: Map, label: "Mapas Condomínio", path: "/mapas-condominio", module: "condominios" },
