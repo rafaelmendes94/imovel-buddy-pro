@@ -538,7 +538,7 @@ export default function Properties() {
         bedrooms: row.quartos || 0,
         bathrooms: row.banheiros || 0,
         parking: row.vagas || 0,
-        broker: owner?.full_name?.trim() || (row as any).corretor_nome?.trim() || "Corretor",
+        broker: (row as any).corretor_nome?.trim() || owner?.full_name?.trim() || "Corretor",
         brokerPhoto: owner?.avatar_url || undefined,
         brokerWhatsapp: normalizePhone(owner?.phone || ""),
         owner: row.proprietario || "",

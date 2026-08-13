@@ -284,7 +284,7 @@ export default function AllProperties() {
           .map((row) => {
             const ownerProfile = profilesById[(row as any).user_id];
             // Prioriza o corretor que CADASTROU o imóvel (dono do user_id); corretor_nome só como fallback
-            const brokerName = ownerProfile?.full_name?.trim() || (row as any).corretor_nome?.trim() || "Corretor";
+            const brokerName = (row as any).corretor_nome?.trim() || ownerProfile?.full_name?.trim() || "Corretor";
             const brokerProfile = ownerProfile || profilesByName[brokerName.toLowerCase()];
             return {
               id: row.id,
