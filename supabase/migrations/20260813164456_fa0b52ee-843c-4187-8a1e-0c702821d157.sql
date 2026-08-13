@@ -1,0 +1,1 @@
+GRANT SELECT (suites) ON public.imoveis TO anon;
