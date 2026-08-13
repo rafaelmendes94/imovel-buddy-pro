@@ -17,6 +17,8 @@ import { QuickPick } from '@/components/QuickPick';
 import { QuickPickWithConfirm } from '@/components/QuickPickWithConfirm';
 import { CepAutoFill, type AddressData } from '@/components/CepAutoFill';
 import { DraggableBlocks } from '@/components/DraggableBlocks';
+import { AIImovelImport } from '@/components/AIImovelImport';
+
 import { InfraToggle } from '@/components/InfraToggle';
 import { useSystemOptions } from '@/hooks/useSystemOptions';
 import {
@@ -921,7 +923,19 @@ export function ImovelForm({ editId }: { editId?: string }) {
         </Button>
       </div>
 
+      {!isEdit && (
+        <AIImovelImport
+          onApply={updates => setForm(prev => ({ ...prev, ...updates }))}
+          currentArrays={{
+            condicoesPagemento: form.condicoesPagemento,
+            infraestrutura: form.infraestrutura,
+            outrasCaracteristicas: form.outrasCaracteristicas,
+          }}
+        />
+      )}
+
       <DraggableBlocks storageKey="cadastro-imovel-blocks-order">
+
       {/* ===== BLOCO 1: IDENTIFICAÇÃO ===== */}
       <div key="identificacao" className="bg-card border border-border rounded-xl p-4 sm:p-5">
         <SectionHeader icon={Building2} title="Identificação" />
