@@ -5,7 +5,7 @@ import {
   Building2, Building, Fence, Camera, ClipboardCheck, Wallet,
   Table2, FileSignature, Clapperboard, Globe, Landmark, Settings,
   FileText, Map, Briefcase, ShoppingBag, Brain, Handshake,
-  GripVertical, RotateCcw,
+  GripVertical, RotateCcw, Trophy,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
