@@ -16,7 +16,7 @@ export const PUBLIC_IMOVEL_COLUMNS = [
   "termo_exclusividade", "infraestrutura", "outras_caracteristicas", "comissao",
   "bonus", "bonus_validade", "preco_parcelado", "elevadores",
   "destaque_categoria", "latitude", "longitude", "edificio_id", "condominio_id",
-  "empreendimento_id", "corretor_id", "corretor_nome", "imobiliaria_nome",
+  "empreendimento_id", "corretor_id", "corretor_cadastro_id", "corretor_nome", "imobiliaria_nome",
   "cep", "numero", "complemento", "estado", "link_video", "link_material",
   "link_360", "views", "lavabo", "plataforma_venda", "data_venda",
   "termo_exclusividade_url", "drive_fotos_url", "fotos_pdf_url", "publicar_xml",

@@ -48,6 +48,7 @@ import CondominiumDetail from "./pages/CondominiumDetail";
 import Maps from "./pages/Maps";
 import CityPhotos from "./pages/CityPhotos";
 import Brokers from "./pages/Brokers";
+import CadastroCorretores from "./pages/CadastroCorretores";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
 import Site from "./pages/Site";
@@ -128,6 +129,7 @@ const App = () => (
             <Route path="/mapas" element={<AuthGuard><Maps /></AuthGuard>} />
             <Route path="/fotos-cidade" element={<AuthGuard><CityPhotos /></AuthGuard>} />
             <Route path="/corretores" element={<AuthGuard><Brokers /></AuthGuard>} />
+            <Route path="/cadastro-corretores" element={<AuthGuard><CadastroCorretores /></AuthGuard>} />
             <Route path="/relatorios" element={<AuthGuard><Reports /></AuthGuard>} />
             <Route path="/configuracoes" element={<AuthGuard><Settings /></AuthGuard>} />
             <Route path="/site-editor" element={<AuthGuard><Site /></AuthGuard>} />
