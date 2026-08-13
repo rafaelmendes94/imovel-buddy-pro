@@ -5,7 +5,7 @@ import {
   ChevronLeft, ChevronRight, Building, Camera, Fence,
   Globe, ClipboardCheck, Wallet, Table2, FileSignature,
   Clapperboard, Landmark, Landmark as Landmark2, HardHat, ShoppingBag, Map,
-  ChevronDown, CreditCard, GripVertical, RotateCcw,
+  ChevronDown, CreditCard, GripVertical, RotateCcw, Trophy,
 } from "lucide-react";
 import { Share2, Home as HomeIcon } from "lucide-react";
 import { cn, toSlug } from "@/lib/utils";
