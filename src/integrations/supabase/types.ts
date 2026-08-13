@@ -690,6 +690,45 @@ export type Database = {
         }
         Relationships: []
       }
+      corretores: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          creci: string | null
+          email: string | null
+          foto_url: string | null
+          id: string
+          nome: string
+          telefone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          creci?: string | null
+          email?: string | null
+          foto_url?: string | null
+          id?: string
+          nome: string
+          telefone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          creci?: string | null
+          email?: string | null
+          foto_url?: string | null
+          id?: string
+          nome?: string
+          telefone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       edificios: {
         Row: {
           andares: number | null
@@ -914,6 +953,7 @@ export type Database = {
           condicao: string | null
           condicoes_pagamento: string[] | null
           condominio_id: string | null
+          corretor_cadastro_id: string | null
           corretor_id: string | null
           corretor_nome: string | null
           created_at: string
@@ -987,6 +1027,7 @@ export type Database = {
           condicao?: string | null
           condicoes_pagamento?: string[] | null
           condominio_id?: string | null
+          corretor_cadastro_id?: string | null
           corretor_id?: string | null
           corretor_nome?: string | null
           created_at?: string
@@ -1060,6 +1101,7 @@ export type Database = {
           condicao?: string | null
           condicoes_pagamento?: string[] | null
           condominio_id?: string | null
+          corretor_cadastro_id?: string | null
           corretor_id?: string | null
           corretor_nome?: string | null
           created_at?: string
@@ -1122,6 +1164,13 @@ export type Database = {
             columns: ["condominio_id"]
             isOneToOne: false
             referencedRelation: "condominios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "imoveis_corretor_cadastro_id_fkey"
+            columns: ["corretor_cadastro_id"]
+            isOneToOne: false
+            referencedRelation: "corretores"
             referencedColumns: ["id"]
           },
           {
