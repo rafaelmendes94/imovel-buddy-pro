@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { AppLayout } from '@/components/AppLayout';
 import { BackButton } from '@/components/BackButton';
+import { CorretorSelect } from '@/components/CorretorSelect';
 import { QuickPick } from '@/components/QuickPick';
 import { QuickPickWithConfirm } from '@/components/QuickPickWithConfirm';
 import { CepAutoFill, type AddressData } from '@/components/CepAutoFill';
@@ -109,6 +110,8 @@ export interface FormData {
   outrasCaracteristicas: string[];
   latitude: string;
   longitude: string;
+  corretorCadastroId: string;
+  corretorNome: string;
   edificio_id: string;
   condominio_id: string;
   empreendimento_id: string;
@@ -132,6 +135,7 @@ export const initialForm: FormData = {
   destaqueCategoria: 'none',
   condicoesPagemento: [], infraestrutura: [], outrasCaracteristicas: [],
   latitude: '', longitude: '',
+  corretorCadastroId: '', corretorNome: '',
   edificio_id: '', condominio_id: '', empreendimento_id: '',
   linkVideo: '', linkMaterial: '', link360: '', driveFotosUrl: '', fotosPdfUrl: '',
 };
@@ -568,6 +572,8 @@ export function ImovelForm({ editId }: { editId?: string }) {
         outrasCaracteristicas: data.outras_caracteristicas || [],
         latitude: data.latitude ? String(data.latitude) : '',
         longitude: data.longitude ? String(data.longitude) : '',
+        corretorCadastroId: (data as any).corretor_cadastro_id || '',
+        corretorNome: (data as any).corretor_nome || '',
         edificio_id: data.edificio_id || '',
         condominio_id: data.condominio_id || '',
         empreendimento_id: data.empreendimento_id || '',
@@ -598,6 +604,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         destaqueCategoria: data.destaque_categoria || 'none', condicoesPagemento: data.condicoes_pagamento || [],
         infraestrutura: data.infraestrutura || [], outrasCaracteristicas: data.outras_caracteristicas || [],
         latitude: data.latitude ? String(data.latitude) : '', longitude: data.longitude ? String(data.longitude) : '',
+        corretorCadastroId: (data as any).corretor_cadastro_id || '', corretorNome: (data as any).corretor_nome || '',
         edificio_id: data.edificio_id || '', condominio_id: data.condominio_id || '',
         empreendimento_id: data.empreendimento_id || '', linkVideo: (data as any).link_video || '',
         linkMaterial: (data as any).link_material || '', link360: (data as any).link_360 || '', driveFotosUrl: (data as any).drive_fotos_url || '', fotosPdfUrl: (data as any).fotos_pdf_url || '',
@@ -803,6 +810,8 @@ export function ImovelForm({ editId }: { editId?: string }) {
         imagens: allImages.length > 0 ? allImages : null,
         latitude: parseFloat(form.latitude) || 0,
         longitude: parseFloat(form.longitude) || 0,
+        corretor_cadastro_id: form.corretorCadastroId || null,
+        ...(form.corretorCadastroId ? { corretor_nome: form.corretorNome } : {}),
         edificio_id: form.edificio_id || null,
         condominio_id: form.condominio_id || null,
         empreendimento_id: form.empreendimento_id || null,
@@ -842,7 +851,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
           ...payload,
           user_id: ownerUserId,
           corretor_id: ownerUserId,
-          corretor_nome: ownerName,
+          corretor_nome: form.corretorCadastroId ? form.corretorNome : ownerName,
         }]).select().single();
         if (error) throw error;
 
@@ -1032,6 +1041,13 @@ export function ImovelForm({ editId }: { editId?: string }) {
         <SectionHeader icon={Landmark} title="Vincular a Edifício / Condomínio / Loteamento" />
         <p className="text-xs text-muted-foreground mb-4">Selecione apenas um. O endereço e infraestrutura serão preenchidos automaticamente.</p>
         <EntitySelectorsGroup form={form} set={set} handleEntitySelect={handleEntitySelect} />
+
+        <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <CorretorSelect
+            value={form.corretorCadastroId}
+            onChange={(id, nome) => { set('corretorCadastroId', id); set('corretorNome', nome); }}
+          />
+        </div>
 
       </div>
 
