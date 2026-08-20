@@ -166,24 +166,43 @@ export async function generateBrokerCatalogPdf(params: CatalogParams) {
 </div>
 `;
 
+  const filename = `catalogo-${fileSlug}.pdf`;
+
   const container = document.createElement("div");
+  // Renderização fora da tela: o catálogo não deve aparecer dentro da página do corretor
+  container.style.position = "fixed";
+  container.style.left = "-10000px";
+  container.style.top = "0";
   container.style.width = "210mm";
+  container.style.zIndex = "-1";
+  container.style.pointerEvents = "none";
+  container.setAttribute("aria-hidden", "true");
   container.innerHTML = html;
   document.body.appendChild(container);
 
   try {
-    await html2pdf()
+    const blob: Blob = await html2pdf()
       .set({
         margin: [8, 0, 8, 0],
-        filename: `catalogo-${fileSlug}.pdf`,
+        filename,
         image: { type: "jpeg", quality: 0.9 },
         html2canvas: { scale: 2, useCORS: true, logging: false },
         jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
         pagebreak: { mode: ["avoid-all", "css", "legacy"] },
       })
       .from(container)
-      .save();
+      .outputPdf("blob");
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    link.style.display = "none";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
   } finally {
-    document.body.removeChild(container);
+    container.remove();
   }
 }
