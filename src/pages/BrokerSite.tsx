@@ -845,6 +845,23 @@ export default function BrokerSite() {
           </DialogContent>
         </Dialog>
 
+        <Dialog open={quickOpen} onOpenChange={setQuickOpen}>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-xl font-black">
+                <Zap className="h-5 w-5 text-accent" /> Cadastro rápido de imóvel
+              </DialogTitle>
+            </DialogHeader>
+            <QuickImovelForm
+              onSaved={() => { setQuickOpen(false); window.location.reload(); }}
+              onCancel={() => setQuickOpen(false)}
+              cancelLabel="Fechar"
+            />
+          </DialogContent>
+        </Dialog>
+
+
+
         <PropertyDetailModal
           property={selectedProperty}
           onClose={() => setSelectedProperty(null)}
