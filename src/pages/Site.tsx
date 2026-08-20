@@ -934,15 +934,17 @@ export default function Site() {
     setFilterVista("");
     setFilterNeighborhood("");
     setFilterCaracteristica("");
+    setFilterBroker("");
     setSearchTerm("");
   };
 
-  const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterType || filterCondition || filterEmpreendimento || filterParking || filterVista || filterNeighborhood || filterCaracteristica;
+  const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterType || filterCondition || filterEmpreendimento || filterParking || filterVista || filterNeighborhood || filterCaracteristica || filterBroker;
 
   const uniqueEmpreendimentos = [...new Set(available.map((p) => p.empreendimento).filter(Boolean))].sort();
   const uniqueNeighborhoods = [...new Set(available.map((p) => p.neighborhood).filter(Boolean))].sort();
   const uniqueVistas = [...new Set(available.map((p) => p.vista).filter(Boolean))].sort();
   const uniqueCaracteristicas = [...new Set(available.flatMap((p) => p.caracteristicas || []).filter(Boolean))].sort();
+  const uniqueBrokers = [...new Set(available.map((p) => p.broker).filter(Boolean))].sort();
 
   const filteredAll = available.filter((p) => {
     const matchSearch = !searchTerm ||
@@ -963,7 +965,8 @@ export default function Site() {
     const matchVista = !filterVista || p.vista === filterVista;
     const matchNeighborhood = !filterNeighborhood || p.neighborhood === filterNeighborhood;
     const matchCaracteristica = !filterCaracteristica || (p.caracteristicas || []).includes(filterCaracteristica);
-    return matchSearch && matchCity && matchBedrooms && matchPriceMin && matchPriceMax && matchType && matchCondition && matchEmpreendimento && matchParking && matchVista && matchNeighborhood && matchCaracteristica;
+    const matchBroker = !filterBroker || p.broker === filterBroker;
+    return matchSearch && matchCity && matchBedrooms && matchPriceMin && matchPriceMax && matchType && matchCondition && matchEmpreendimento && matchParking && matchVista && matchNeighborhood && matchCaracteristica && matchBroker;
   });
 
   const sortByPrice = <T extends { price: number }>(arr: T[]): T[] => {
