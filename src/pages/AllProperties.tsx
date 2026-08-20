@@ -244,6 +244,8 @@ export default function AllProperties() {
   const [filterPriceMax, setFilterPriceMax] = useState("");
   const [filterType, setFilterType] = useState("");
   const [filterCondition, setFilterCondition] = useState("");
+  const [filterEmpreendimento, setFilterEmpreendimento] = useState("");
+  const [filterBroker, setFilterBroker] = useState("");
   const [priceSort, setPriceSort] = useState<"" | "asc" | "desc">("");
   const [selectedProperty, setSelectedProperty] = useState<SiteProperty | null>(null);
   useEffect(() => { trackPropertyView(selectedProperty?.id); }, [selectedProperty?.id]);
