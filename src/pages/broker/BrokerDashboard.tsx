@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { BrokerLayout } from "@/components/BrokerLayout";
 import { BackButton } from "@/components/BackButton";
 import { MetricCard } from "@/components/MetricCard";
@@ -15,6 +16,7 @@ import {
   Eye,
   CheckCircle2,
   CreditCard,
+  Zap,
 } from "lucide-react";
 import {
   BarChart,
@@ -125,13 +127,21 @@ export default function BrokerDashboard() {
         <BackButton />
         <PartnersAdSlider />
 
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">
-            Olá, {profile?.full_name || "Corretor"}! 👋
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Plano: <strong className="text-accent">{planName}</strong> · Status: <strong>{status}</strong>
-          </p>
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">
+              Olá, {profile?.full_name || "Corretor"}! 👋
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Plano: <strong className="text-accent">{planName}</strong> · Status: <strong>{status}</strong>
+            </p>
+          </div>
+          <Link
+            to="/painel/cadastro-rapido"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity"
+          >
+            <Zap className="w-4 h-4" /> Cadastrar imóvel rápido
+          </Link>
         </div>
 
         {/* Métricas principais */}

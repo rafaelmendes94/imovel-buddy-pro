@@ -36,6 +36,7 @@ import AdminParceiros from "./pages/admin/AdminParceiros";
 import BrokerDashboard from "./pages/broker/BrokerDashboard";
 import BrokerAssinatura from "./pages/broker/BrokerAssinatura";
 import BrokerXmlFeeds from "./pages/broker/BrokerXmlFeeds";
+import BrokerCadastroRapido from "./pages/broker/BrokerCadastroRapido";
 import PainelParceiro from "./pages/PainelParceiro";
 
 // Legacy pages (used in broker panel context)
@@ -116,6 +117,7 @@ const App = () => (
             <Route path="/painel" element={<AuthGuard requiredRoles={["broker"]}><BrokerDashboard /></AuthGuard>} />
             <Route path="/painel/assinatura" element={<AuthGuard requiredRoles={["broker"]} allowBlocked><BrokerAssinatura /></AuthGuard>} />
             <Route path="/painel/feeds-xml" element={<AuthGuard requiredRoles={["broker"]}><BrokerXmlFeeds /></AuthGuard>} />
+            <Route path="/painel/cadastro-rapido" element={<AuthGuard requiredRoles={["broker"]}><BrokerCadastroRapido /></AuthGuard>} />
             <Route path="/painel-parceiro" element={<AuthGuard requiredRoles={["partner"]}><PainelParceiro /></AuthGuard>} />
 
             {/* Legacy routes - now require auth */}
