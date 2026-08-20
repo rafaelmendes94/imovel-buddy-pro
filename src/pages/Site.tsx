@@ -752,6 +752,7 @@ export default function Site() {
   const [filterVista, setFilterVista] = useState("");
   const [filterNeighborhood, setFilterNeighborhood] = useState("");
   const [filterCaracteristica, setFilterCaracteristica] = useState("");
+  const [filterBroker, setFilterBroker] = useState("");
   const [selectedProperty, setSelectedProperty] = useState<SiteProperty | null>(null);
   useEffect(() => { trackPropertyView(selectedProperty?.id); }, [selectedProperty?.id]);
   const [carouselIndex, setCarouselIndex] = useState(0);
@@ -933,15 +934,17 @@ export default function Site() {
     setFilterVista("");
     setFilterNeighborhood("");
     setFilterCaracteristica("");
+    setFilterBroker("");
     setSearchTerm("");
   };
 
-  const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterType || filterCondition || filterEmpreendimento || filterParking || filterVista || filterNeighborhood || filterCaracteristica;
+  const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterType || filterCondition || filterEmpreendimento || filterParking || filterVista || filterNeighborhood || filterCaracteristica || filterBroker;
 
   const uniqueEmpreendimentos = [...new Set(available.map((p) => p.empreendimento).filter(Boolean))].sort();
   const uniqueNeighborhoods = [...new Set(available.map((p) => p.neighborhood).filter(Boolean))].sort();
   const uniqueVistas = [...new Set(available.map((p) => p.vista).filter(Boolean))].sort();
   const uniqueCaracteristicas = [...new Set(available.flatMap((p) => p.caracteristicas || []).filter(Boolean))].sort();
+  const uniqueBrokers = [...new Set(available.map((p) => p.broker).filter(Boolean))].sort();
 
   const filteredAll = available.filter((p) => {
     const matchSearch = !searchTerm ||
@@ -962,7 +965,8 @@ export default function Site() {
     const matchVista = !filterVista || p.vista === filterVista;
     const matchNeighborhood = !filterNeighborhood || p.neighborhood === filterNeighborhood;
     const matchCaracteristica = !filterCaracteristica || (p.caracteristicas || []).includes(filterCaracteristica);
-    return matchSearch && matchCity && matchBedrooms && matchPriceMin && matchPriceMax && matchType && matchCondition && matchEmpreendimento && matchParking && matchVista && matchNeighborhood && matchCaracteristica;
+    const matchBroker = !filterBroker || p.broker === filterBroker;
+    return matchSearch && matchCity && matchBedrooms && matchPriceMin && matchPriceMax && matchType && matchCondition && matchEmpreendimento && matchParking && matchVista && matchNeighborhood && matchCaracteristica && matchBroker;
   });
 
   const sortByPrice = <T extends { price: number }>(arr: T[]): T[] => {
@@ -1234,7 +1238,7 @@ export default function Site() {
       {showFilters && (
         <div className="bg-white border-b border-gray-200 shadow-md">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-8 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
               <div>
                 <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">Cidade</label>
                 <select
@@ -1334,6 +1338,19 @@ export default function Site() {
                   <option value="">Todos</option>
                   {uniqueEmpreendimentos.map((emp) => (
                     <option key={emp} value={emp}>{emp}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">Corretor</label>
+                <select
+                  value={filterBroker}
+                  onChange={(e) => setFilterBroker(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                >
+                  <option value="">Todos</option>
+                  {uniqueBrokers.map((b) => (
+                    <option key={b} value={b}>{b}</option>
                   ))}
                 </select>
               </div>

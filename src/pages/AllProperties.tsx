@@ -244,6 +244,8 @@ export default function AllProperties() {
   const [filterPriceMax, setFilterPriceMax] = useState("");
   const [filterType, setFilterType] = useState("");
   const [filterCondition, setFilterCondition] = useState("");
+  const [filterEmpreendimento, setFilterEmpreendimento] = useState("");
+  const [filterBroker, setFilterBroker] = useState("");
   const [priceSort, setPriceSort] = useState<"" | "asc" | "desc">("");
   const [selectedProperty, setSelectedProperty] = useState<SiteProperty | null>(null);
   useEffect(() => { trackPropertyView(selectedProperty?.id); }, [selectedProperty?.id]);
@@ -330,10 +332,13 @@ export default function AllProperties() {
 
   const clearFilters = () => {
     setFilterCity(""); setFilterBedrooms(""); setFilterPriceMin(""); setFilterPriceMax("");
-    setFilterType(""); setFilterCondition(""); setSearchTerm(""); setPriceSort("");
+    setFilterType(""); setFilterCondition(""); setFilterEmpreendimento(""); setFilterBroker(""); setSearchTerm(""); setPriceSort("");
   };
 
-  const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterType || filterCondition;
+  const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterType || filterCondition || filterEmpreendimento || filterBroker;
+
+  const uniqueEmpreendimentos = [...new Set(allProperties.map((p) => p.empreendimento).filter(Boolean))].sort() as string[];
+  const uniqueBrokers = [...new Set(allProperties.map((p) => p.broker).filter(Boolean))].sort() as string[];
 
   let filtered = allProperties.filter((p) => {
     if (sharedIds && !sharedIds.includes(p.id)) return false;
@@ -350,7 +355,9 @@ export default function AllProperties() {
     const matchCondition = !filterCondition || (
       Array.isArray(p.paymentConditions) && p.paymentConditions.some(c => c.toLowerCase().includes(filterCondition.toLowerCase()))
     );
-    return matchSearch && matchCity && matchBedrooms && matchPriceMin && matchPriceMax && matchType && matchCondition;
+    const matchEmpreendimento = !filterEmpreendimento || p.empreendimento === filterEmpreendimento;
+    const matchBroker = !filterBroker || p.broker === filterBroker;
+    return matchSearch && matchCity && matchBedrooms && matchPriceMin && matchPriceMax && matchType && matchCondition && matchEmpreendimento && matchBroker;
   });
 
   if (priceSort) {
@@ -448,7 +455,7 @@ export default function AllProperties() {
       {showFilters && (
         <div className="bg-white border-b border-gray-200 shadow-md">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
               <div>
                 <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">Cidade</label>
                 <select value={filterCity} onChange={(e) => setFilterCity(e.target.value)}
@@ -504,6 +511,22 @@ export default function AllProperties() {
                   <option value="12x">12x</option><option value="24x">24x</option><option value="36x">36x</option>
                   <option value="48x">48x</option><option value="60x">60x</option><option value="72x">72x</option>
                   <option value="84x">84x</option><option value="Permuta">Permuta</option><option value="Carro">Carro</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">Empreendimento</label>
+                <select value={filterEmpreendimento} onChange={(e) => setFilterEmpreendimento(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                  <option value="">Todos</option>
+                  {uniqueEmpreendimentos.map((emp) => <option key={emp} value={emp}>{emp}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">Corretor</label>
+                <select value={filterBroker} onChange={(e) => setFilterBroker(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                  <option value="">Todos</option>
+                  {uniqueBrokers.map((b) => <option key={b} value={b}>{b}</option>)}
                 </select>
               </div>
               <div className="flex items-end gap-2">
