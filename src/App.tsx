@@ -117,6 +117,7 @@ const App = () => (
             <Route path="/painel" element={<AuthGuard requiredRoles={["broker"]}><BrokerDashboard /></AuthGuard>} />
             <Route path="/painel/assinatura" element={<AuthGuard requiredRoles={["broker"]} allowBlocked><BrokerAssinatura /></AuthGuard>} />
             <Route path="/painel/feeds-xml" element={<AuthGuard requiredRoles={["broker"]}><BrokerXmlFeeds /></AuthGuard>} />
+            <Route path="/painel/cadastro-rapido" element={<AuthGuard requiredRoles={["broker"]}><BrokerCadastroRapido /></AuthGuard>} />
             <Route path="/painel-parceiro" element={<AuthGuard requiredRoles={["partner"]}><PainelParceiro /></AuthGuard>} />
 
             {/* Legacy routes - now require auth */}
