@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import {
   ArrowLeft,
@@ -29,6 +29,10 @@ import {
   X,
   Images,
   ExternalLink,
+  Pencil,
+  CheckCircle2,
+  RotateCcw,
+  EyeOff,
 } from "lucide-react";
 import { cn, toSlug } from "@/lib/utils";
 import { trackPropertyView } from "@/lib/trackPropertyView";
@@ -99,11 +103,26 @@ interface DBProperty {
   drive_fotos_url: string | null;
   fotos_pdf_url: string | null;
   views: number | null;
+  ativo_site?: boolean | null;
 }
 
-function PropertyCard({ p, brokerName, whatsapp, onOpen }: { p: DBProperty; brokerName: string; whatsapp: string; onOpen: (p: DBProperty) => void }) {
+function PropertyCard({ p, brokerName, whatsapp, onOpen, isOwner = false, onUpdated }: { p: DBProperty; brokerName: string; whatsapp: string; onOpen: (p: DBProperty) => void; isOwner?: boolean; onUpdated?: (id: string, patch: Partial<DBProperty>) => void }) {
+  const navigate = useNavigate();
+  const [saving, setSaving] = useState(false);
+  const isSold = p.status === "Vendido";
   const img = p.imagens?.[0] || "/placeholder.svg";
   const msg = encodeURIComponent(`Olá ${brokerName}! Tenho interesse no imóvel: ${p.titulo} - ${formatCurrency(p.preco)}`);
+
+  const patchImovel = async (e: React.MouseEvent, patch: Partial<DBProperty>, successMsg: string) => {
+    e.stopPropagation();
+    setSaving(true);
+    const { error } = await supabase.from("imoveis").update(patch as any).eq("id", p.id);
+    setSaving(false);
+    if (error) { toast.error("Não foi possível atualizar: " + error.message); return; }
+    toast.success(successMsg);
+    onUpdated?.(p.id, patch);
+  };
+
 
   const handleExclusividade = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -222,6 +241,39 @@ function PropertyCard({ p, brokerName, whatsapp, onOpen }: { p: DBProperty; brok
             <ExternalLink className="h-3.5 w-3.5" /> Drive
           </button>
         </div>
+        {isOwner && (
+          <div className="grid grid-cols-3 gap-2 rounded-2xl border border-dashed border-accent/50 bg-accent/5 p-2">
+            <button
+              type="button"
+              disabled={saving}
+              onClick={(e) => { e.stopPropagation(); navigate(`/editar-imovel/${p.id}`); }}
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-primary px-2 py-2 text-[11px] font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+            >
+              <Pencil className="h-3.5 w-3.5" /> Editar
+            </button>
+            <button
+              type="button"
+              disabled={saving}
+              onClick={(e) => isSold
+                ? patchImovel(e, { status: "Disponível", data_venda: null }, "Imóvel reativado")
+                : patchImovel(e, { status: "Vendido", data_venda: new Date().toISOString().slice(0, 10) }, "Imóvel marcado como vendido")}
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-success/15 px-2 py-2 text-[11px] font-bold text-success transition-colors hover:bg-success/25 disabled:opacity-50"
+            >
+              {isSold ? <><RotateCcw className="h-3.5 w-3.5" /> Reabrir</> : <><CheckCircle2 className="h-3.5 w-3.5" /> Vendido</>}
+            </button>
+            <button
+              type="button"
+              disabled={saving}
+              onClick={(e) => patchImovel(e, { ativo_site: !p.ativo_site }, p.ativo_site ? "Imóvel desativado no site" : "Imóvel ativado no site")}
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-muted px-2 py-2 text-[11px] font-bold text-foreground transition-colors hover:bg-muted/70 disabled:opacity-50"
+            >
+              {p.ativo_site ? <><EyeOff className="h-3.5 w-3.5" /> Ocultar</> : <><Eye className="h-3.5 w-3.5" /> Ativar</>}
+            </button>
+          </div>
+        )}
+        {isOwner && !p.ativo_site && (
+          <p className="text-center text-[11px] font-semibold text-muted-foreground">Oculto no site público</p>
+        )}
         {whatsapp && (
           <a href={`https://wa.me/${whatsapp}?text=${msg}`} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
             className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-accent px-4 py-3 text-sm font-bold text-accent-foreground transition-opacity hover:opacity-90">
@@ -277,6 +329,9 @@ export default function BrokerSite() {
 
       setLoading(true);
 
+      const { data: { session } } = await supabase.auth.getSession();
+      const uid = session?.user?.id || null;
+
       const [{ data: brokersData }, { data: propertiesData }, { data: pageConfig }, { data: profilesData }] = await Promise.all([
         supabase
           .from("subscriber_brokers")
@@ -284,8 +339,7 @@ export default function BrokerSite() {
           .eq("status", "active"),
         supabase
           .from("imoveis")
-          .select("id, user_id, titulo, endereco, cidade, tipo, status, preco, area, quartos, banheiros, vagas, comissao, imagens, vista_mar, decorado, aceita_permuta, condicoes_pagamento, empreendimento, unidade, box, quadra, lote, bairro, corretor_nome, created_at, data_venda, termo_exclusividade_url, link_material, drive_fotos_url, fotos_pdf_url")
-          .eq("ativo_site", true),
+          .select("id, user_id, titulo, endereco, cidade, tipo, status, preco, area, quartos, banheiros, vagas, comissao, imagens, vista_mar, decorado, aceita_permuta, condicoes_pagamento, empreendimento, unidade, box, quadra, lote, bairro, corretor_nome, created_at, data_venda, termo_exclusividade_url, link_material, drive_fotos_url, fotos_pdf_url, ativo_site"),
         supabase
           .from("site_config")
           .select("site_title, slogan, cover_photo_url, profile_photo_url, logo_url, whatsapp, footer_text, email_contact, bio, tabela_url, accent_color")
@@ -303,7 +357,10 @@ export default function BrokerSite() {
           if (matchedProfile && property.user_id === matchedProfile.user_id) return true;
           return toSlug(property.corretor_nome || "") === slug;
         })
+        // visitantes só veem imóveis ativos; o corretor dono vê também os ocultos
+        .filter((property) => property.ativo_site || (!!uid && property.user_id === uid))
         .sort((a, b) => Number(b.preco) - Number(a.preco));
+
 
       const resolvedName = matchedProfile?.full_name || matchedBroker?.name || matchedProperties[0]?.corretor_nome || (slug ? slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) : "");
 
@@ -413,6 +470,13 @@ export default function BrokerSite() {
   }
 
   const isOwner = !!currentUserId && !!brokerId && currentUserId === brokerId;
+
+  const handlePropertyUpdated = (id: string, patch: Partial<DBProperty>) => {
+    const apply = (list: DBProperty[]) => list.map((p) => (p.id === id ? { ...p, ...patch } : p));
+    const all = apply([...properties, ...soldProperties]);
+    setProperties(all.filter((p) => p.status !== "Vendido"));
+    setSoldProperties(all.filter((p) => p.status === "Vendido"));
+  };
 
   const handleUploadTabela = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -746,7 +810,7 @@ export default function BrokerSite() {
               <p className="text-muted-foreground">Os imóveis mais estratégicos publicados por {brokerName}.</p>
             </div>
             <div className="grid gap-6 lg:grid-cols-3">
-              {featuredProperties.map((property) => <PropertyCard key={property.id} p={property} brokerName={brokerName} whatsapp={whatsapp} onOpen={setSelectedProperty} />)}
+              {featuredProperties.map((property) => <PropertyCard key={property.id} p={property} brokerName={brokerName} whatsapp={whatsapp} onOpen={setSelectedProperty} isOwner={isOwner} onUpdated={handlePropertyUpdated} />)}
             </div>
           </section>
         )}
@@ -773,7 +837,7 @@ export default function BrokerSite() {
                   </div>
                 </div>
                 <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                  {items.map((property) => <PropertyCard key={property.id} p={property} brokerName={brokerName} whatsapp={whatsapp} onOpen={setSelectedProperty} />)}
+                  {items.map((property) => <PropertyCard key={property.id} p={property} brokerName={brokerName} whatsapp={whatsapp} onOpen={setSelectedProperty} isOwner={isOwner} onUpdated={handlePropertyUpdated} />)}
                 </div>
               </section>
             ))
