@@ -25,6 +25,7 @@ import {
   TreePine,
   Upload,
   Waves,
+  Zap,
   X,
   Images,
   ExternalLink,
