@@ -471,6 +471,13 @@ export default function BrokerSite() {
 
   const isOwner = !!currentUserId && !!brokerId && currentUserId === brokerId;
 
+  const handlePropertyUpdated = (id: string, patch: Partial<DBProperty>) => {
+    const apply = (list: DBProperty[]) => list.map((p) => (p.id === id ? { ...p, ...patch } : p));
+    const all = apply([...properties, ...soldProperties]);
+    setProperties(all.filter((p) => p.status !== "Vendido"));
+    setSoldProperties(all.filter((p) => p.status === "Vendido"));
+  };
+
   const handleUploadTabela = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !slug || !currentUserId) return;
