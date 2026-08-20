@@ -25,6 +25,7 @@ import {
   TreePine,
   Upload,
   Waves,
+  Zap,
   X,
   Images,
   ExternalLink,
@@ -34,6 +35,7 @@ import { trackPropertyView } from "@/lib/trackPropertyView";
 import { BrokerRatings } from "@/components/BrokerRatings";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PropertyDetailModal } from "@/components/PropertyDetailModal";
+import { QuickImovelForm } from "@/components/QuickImovelForm";
 import { toast } from "sonner";
 import { generateBrokerCatalogPdf } from "@/utils/generateBrokerCatalogPdf";
 
@@ -253,6 +255,8 @@ export default function BrokerSite() {
   const [selectedProperty, setSelectedProperty] = useState<any>(null);
   useEffect(() => { trackPropertyView(selectedProperty?.id); }, [selectedProperty?.id]);
   const [profileAvatar, setProfileAvatar] = useState<string | null>(null);
+  const [quickOpen, setQuickOpen] = useState(false);
+
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setCurrentUserId(data.user?.id || null));
@@ -602,7 +606,16 @@ export default function BrokerSite() {
                   >
                     <FileDown className="h-4 w-4" /> Gerar PDF dos imóveis
                   </button>
+                  {isOwner && (
+                    <button
+                      onClick={() => setQuickOpen(true)}
+                      className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-indigo-600 px-5 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-105"
+                    >
+                      <Zap className="h-4 w-4" /> Cadastro rápido de imóvel
+                    </button>
+                  )}
                 </div>
+
               </div>
             </div>
           </div>
@@ -832,6 +845,23 @@ export default function BrokerSite() {
             </div>
           </DialogContent>
         </Dialog>
+
+        <Dialog open={quickOpen} onOpenChange={setQuickOpen}>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-xl font-black">
+                <Zap className="h-5 w-5 text-accent" /> Cadastro rápido de imóvel
+              </DialogTitle>
+            </DialogHeader>
+            <QuickImovelForm
+              onSaved={() => { setQuickOpen(false); window.location.reload(); }}
+              onCancel={() => setQuickOpen(false)}
+              cancelLabel="Fechar"
+            />
+          </DialogContent>
+        </Dialog>
+
+
 
         <PropertyDetailModal
           property={selectedProperty}
