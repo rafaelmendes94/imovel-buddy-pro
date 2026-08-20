@@ -1341,6 +1341,19 @@ export default function Site() {
                   ))}
                 </select>
               </div>
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">Corretor</label>
+                <select
+                  value={filterBroker}
+                  onChange={(e) => setFilterBroker(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                >
+                  <option value="">Todos</option>
+                  {uniqueBrokers.map((b) => (
+                    <option key={b} value={b}>{b}</option>
+                  ))}
+                </select>
+              </div>
               <div className="flex items-end gap-2">
                 <button
                   onClick={() => { setActiveCategory("todos"); setShowFilters(false); }}
