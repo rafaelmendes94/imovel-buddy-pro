@@ -604,7 +604,16 @@ export default function BrokerSite() {
                   >
                     <FileDown className="h-4 w-4" /> Gerar PDF dos imóveis
                   </button>
+                  {isOwner && (
+                    <button
+                      onClick={() => setQuickOpen(true)}
+                      className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-indigo-600 px-5 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-105"
+                    >
+                      <Zap className="h-4 w-4" /> Cadastro rápido de imóvel
+                    </button>
+                  )}
                 </div>
+
               </div>
             </div>
           </div>
