@@ -513,6 +513,22 @@ export default function AllProperties() {
                   <option value="84x">84x</option><option value="Permuta">Permuta</option><option value="Carro">Carro</option>
                 </select>
               </div>
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">Empreendimento</label>
+                <select value={filterEmpreendimento} onChange={(e) => setFilterEmpreendimento(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                  <option value="">Todos</option>
+                  {uniqueEmpreendimentos.map((emp) => <option key={emp} value={emp}>{emp}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1 block">Corretor</label>
+                <select value={filterBroker} onChange={(e) => setFilterBroker(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                  <option value="">Todos</option>
+                  {uniqueBrokers.map((b) => <option key={b} value={b}>{b}</option>)}
+                </select>
+              </div>
               <div className="flex items-end gap-2">
                 {hasActiveFilters && (
                   <button onClick={clearFilters} className="flex-1 px-4 py-2 rounded-lg bg-gray-100 text-gray-600 text-sm font-medium hover:bg-gray-200 transition-colors flex items-center justify-center gap-1">
