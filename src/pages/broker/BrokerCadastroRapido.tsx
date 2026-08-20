@@ -114,7 +114,7 @@ export default function BrokerCadastroRapido() {
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs">Preço</Label>
-              <CurrencyInput value={preco} onChange={setPreco} />
+              <CurrencyInput value={preco} onValueChange={(v) => setPreco(parseFloat(v) || 0)} />
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs">Cidade *</Label>
