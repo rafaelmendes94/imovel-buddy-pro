@@ -103,11 +103,26 @@ interface DBProperty {
   drive_fotos_url: string | null;
   fotos_pdf_url: string | null;
   views: number | null;
+  ativo_site?: boolean | null;
 }
 
-function PropertyCard({ p, brokerName, whatsapp, onOpen }: { p: DBProperty; brokerName: string; whatsapp: string; onOpen: (p: DBProperty) => void }) {
+function PropertyCard({ p, brokerName, whatsapp, onOpen, isOwner = false, onUpdated }: { p: DBProperty; brokerName: string; whatsapp: string; onOpen: (p: DBProperty) => void; isOwner?: boolean; onUpdated?: (id: string, patch: Partial<DBProperty>) => void }) {
+  const navigate = useNavigate();
+  const [saving, setSaving] = useState(false);
+  const isSold = p.status === "Vendido";
   const img = p.imagens?.[0] || "/placeholder.svg";
   const msg = encodeURIComponent(`Olá ${brokerName}! Tenho interesse no imóvel: ${p.titulo} - ${formatCurrency(p.preco)}`);
+
+  const patchImovel = async (e: React.MouseEvent, patch: Partial<DBProperty>, successMsg: string) => {
+    e.stopPropagation();
+    setSaving(true);
+    const { error } = await supabase.from("imoveis").update(patch as any).eq("id", p.id);
+    setSaving(false);
+    if (error) { toast.error("Não foi possível atualizar: " + error.message); return; }
+    toast.success(successMsg);
+    onUpdated?.(p.id, patch);
+  };
+
 
   const handleExclusividade = (e: React.MouseEvent) => {
     e.stopPropagation();
