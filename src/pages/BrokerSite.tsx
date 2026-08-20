@@ -29,6 +29,10 @@ import {
   X,
   Images,
   ExternalLink,
+  Pencil,
+  CheckCircle2,
+  RotateCcw,
+  EyeOff,
 } from "lucide-react";
 import { cn, toSlug } from "@/lib/utils";
 import { trackPropertyView } from "@/lib/trackPropertyView";
