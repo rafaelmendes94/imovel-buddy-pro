@@ -241,6 +241,39 @@ function PropertyCard({ p, brokerName, whatsapp, onOpen, isOwner = false, onUpda
             <ExternalLink className="h-3.5 w-3.5" /> Drive
           </button>
         </div>
+        {isOwner && (
+          <div className="grid grid-cols-3 gap-2 rounded-2xl border border-dashed border-accent/50 bg-accent/5 p-2">
+            <button
+              type="button"
+              disabled={saving}
+              onClick={(e) => { e.stopPropagation(); navigate(`/editar-imovel/${p.id}`); }}
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-primary px-2 py-2 text-[11px] font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+            >
+              <Pencil className="h-3.5 w-3.5" /> Editar
+            </button>
+            <button
+              type="button"
+              disabled={saving}
+              onClick={(e) => isSold
+                ? patchImovel(e, { status: "Disponível", data_venda: null }, "Imóvel reativado")
+                : patchImovel(e, { status: "Vendido", data_venda: new Date().toISOString().slice(0, 10) }, "Imóvel marcado como vendido")}
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-success/15 px-2 py-2 text-[11px] font-bold text-success transition-colors hover:bg-success/25 disabled:opacity-50"
+            >
+              {isSold ? <><RotateCcw className="h-3.5 w-3.5" /> Reabrir</> : <><CheckCircle2 className="h-3.5 w-3.5" /> Vendido</>}
+            </button>
+            <button
+              type="button"
+              disabled={saving}
+              onClick={(e) => patchImovel(e, { ativo_site: !p.ativo_site }, p.ativo_site ? "Imóvel desativado no site" : "Imóvel ativado no site")}
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-muted px-2 py-2 text-[11px] font-bold text-foreground transition-colors hover:bg-muted/70 disabled:opacity-50"
+            >
+              {p.ativo_site ? <><EyeOff className="h-3.5 w-3.5" /> Ocultar</> : <><Eye className="h-3.5 w-3.5" /> Ativar</>}
+            </button>
+          </div>
+        )}
+        {isOwner && !p.ativo_site && (
+          <p className="text-center text-[11px] font-semibold text-muted-foreground">Oculto no site público</p>
+        )}
         {whatsapp && (
           <a href={`https://wa.me/${whatsapp}?text=${msg}`} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
             className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-accent px-4 py-3 text-sm font-bold text-accent-foreground transition-opacity hover:opacity-90">
