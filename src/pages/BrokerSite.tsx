@@ -329,6 +329,9 @@ export default function BrokerSite() {
 
       setLoading(true);
 
+      const { data: { session } } = await supabase.auth.getSession();
+      const uid = session?.user?.id || null;
+
       const [{ data: brokersData }, { data: propertiesData }, { data: pageConfig }, { data: profilesData }] = await Promise.all([
         supabase
           .from("subscriber_brokers")
@@ -336,8 +339,7 @@ export default function BrokerSite() {
           .eq("status", "active"),
         supabase
           .from("imoveis")
-          .select("id, user_id, titulo, endereco, cidade, tipo, status, preco, area, quartos, banheiros, vagas, comissao, imagens, vista_mar, decorado, aceita_permuta, condicoes_pagamento, empreendimento, unidade, box, quadra, lote, bairro, corretor_nome, created_at, data_venda, termo_exclusividade_url, link_material, drive_fotos_url, fotos_pdf_url")
-          .eq("ativo_site", true),
+          .select("id, user_id, titulo, endereco, cidade, tipo, status, preco, area, quartos, banheiros, vagas, comissao, imagens, vista_mar, decorado, aceita_permuta, condicoes_pagamento, empreendimento, unidade, box, quadra, lote, bairro, corretor_nome, created_at, data_venda, termo_exclusividade_url, link_material, drive_fotos_url, fotos_pdf_url, ativo_site"),
         supabase
           .from("site_config")
           .select("site_title, slogan, cover_photo_url, profile_photo_url, logo_url, whatsapp, footer_text, email_contact, bio, tabela_url, accent_color")
@@ -355,7 +357,10 @@ export default function BrokerSite() {
           if (matchedProfile && property.user_id === matchedProfile.user_id) return true;
           return toSlug(property.corretor_nome || "") === slug;
         })
+        // visitantes só veem imóveis ativos; o corretor dono vê também os ocultos
+        .filter((property) => property.ativo_site || (!!uid && property.user_id === uid))
         .sort((a, b) => Number(b.preco) - Number(a.preco));
+
 
       const resolvedName = matchedProfile?.full_name || matchedBroker?.name || matchedProperties[0]?.corretor_nome || (slug ? slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) : "");
 
