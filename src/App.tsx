@@ -36,6 +36,7 @@ import AdminParceiros from "./pages/admin/AdminParceiros";
 import BrokerDashboard from "./pages/broker/BrokerDashboard";
 import BrokerAssinatura from "./pages/broker/BrokerAssinatura";
 import BrokerXmlFeeds from "./pages/broker/BrokerXmlFeeds";
+import BrokerCadastroRapido from "./pages/broker/BrokerCadastroRapido";
 import PainelParceiro from "./pages/PainelParceiro";
 
 // Legacy pages (used in broker panel context)
