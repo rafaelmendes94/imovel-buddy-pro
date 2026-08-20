@@ -752,6 +752,7 @@ export default function Site() {
   const [filterVista, setFilterVista] = useState("");
   const [filterNeighborhood, setFilterNeighborhood] = useState("");
   const [filterCaracteristica, setFilterCaracteristica] = useState("");
+  const [filterBroker, setFilterBroker] = useState("");
   const [selectedProperty, setSelectedProperty] = useState<SiteProperty | null>(null);
   useEffect(() => { trackPropertyView(selectedProperty?.id); }, [selectedProperty?.id]);
   const [carouselIndex, setCarouselIndex] = useState(0);
