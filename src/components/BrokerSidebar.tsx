@@ -29,6 +29,7 @@ export function BrokerSidebar() {
 
   const navItems = [
     { icon: LayoutDashboard, label: "Dashboard", path: "/painel" },
+    { icon: Zap, label: "Cadastro Rápido", path: "/painel/cadastro-rapido" },
     ...enabledModules
       .map(m => allModules[m as string])
       .filter(Boolean),
