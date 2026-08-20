@@ -16,6 +16,7 @@ import {
   Eye,
   CheckCircle2,
   CreditCard,
+  Zap,
 } from "lucide-react";
 import {
   BarChart,
