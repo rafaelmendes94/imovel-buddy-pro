@@ -332,10 +332,13 @@ export default function AllProperties() {
 
   const clearFilters = () => {
     setFilterCity(""); setFilterBedrooms(""); setFilterPriceMin(""); setFilterPriceMax("");
-    setFilterType(""); setFilterCondition(""); setSearchTerm(""); setPriceSort("");
+    setFilterType(""); setFilterCondition(""); setFilterEmpreendimento(""); setFilterBroker(""); setSearchTerm(""); setPriceSort("");
   };
 
-  const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterType || filterCondition;
+  const hasActiveFilters = filterCity || filterBedrooms || filterPriceMin || filterPriceMax || filterType || filterCondition || filterEmpreendimento || filterBroker;
+
+  const uniqueEmpreendimentos = [...new Set(allProperties.map((p) => p.empreendimento).filter(Boolean))].sort() as string[];
+  const uniqueBrokers = [...new Set(allProperties.map((p) => p.broker).filter(Boolean))].sort() as string[];
 
   let filtered = allProperties.filter((p) => {
     if (sharedIds && !sharedIds.includes(p.id)) return false;
@@ -352,7 +355,9 @@ export default function AllProperties() {
     const matchCondition = !filterCondition || (
       Array.isArray(p.paymentConditions) && p.paymentConditions.some(c => c.toLowerCase().includes(filterCondition.toLowerCase()))
     );
-    return matchSearch && matchCity && matchBedrooms && matchPriceMin && matchPriceMax && matchType && matchCondition;
+    const matchEmpreendimento = !filterEmpreendimento || p.empreendimento === filterEmpreendimento;
+    const matchBroker = !filterBroker || p.broker === filterBroker;
+    return matchSearch && matchCity && matchBedrooms && matchPriceMin && matchPriceMax && matchType && matchCondition && matchEmpreendimento && matchBroker;
   });
 
   if (priceSort) {
