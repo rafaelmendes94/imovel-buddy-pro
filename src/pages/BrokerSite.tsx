@@ -810,7 +810,7 @@ export default function BrokerSite() {
               <p className="text-muted-foreground">Os imóveis mais estratégicos publicados por {brokerName}.</p>
             </div>
             <div className="grid gap-6 lg:grid-cols-3">
-              {featuredProperties.map((property) => <PropertyCard key={property.id} p={property} brokerName={brokerName} whatsapp={whatsapp} onOpen={setSelectedProperty} />)}
+              {featuredProperties.map((property) => <PropertyCard key={property.id} p={property} brokerName={brokerName} whatsapp={whatsapp} onOpen={setSelectedProperty} isOwner={isOwner} onUpdated={handlePropertyUpdated} />)}
             </div>
           </section>
         )}
@@ -837,7 +837,7 @@ export default function BrokerSite() {
                   </div>
                 </div>
                 <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                  {items.map((property) => <PropertyCard key={property.id} p={property} brokerName={brokerName} whatsapp={whatsapp} onOpen={setSelectedProperty} />)}
+                  {items.map((property) => <PropertyCard key={property.id} p={property} brokerName={brokerName} whatsapp={whatsapp} onOpen={setSelectedProperty} isOwner={isOwner} onUpdated={handlePropertyUpdated} />)}
                 </div>
               </section>
             ))
