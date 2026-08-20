@@ -253,6 +253,8 @@ export default function BrokerSite() {
   const [selectedProperty, setSelectedProperty] = useState<any>(null);
   useEffect(() => { trackPropertyView(selectedProperty?.id); }, [selectedProperty?.id]);
   const [profileAvatar, setProfileAvatar] = useState<string | null>(null);
+  const [quickOpen, setQuickOpen] = useState(false);
+
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setCurrentUserId(data.user?.id || null));
