@@ -167,6 +167,21 @@ export function MediaGalleryUpload({
                     <span className="text-[10px] text-muted-foreground line-clamp-2 break-all">{url.split('/').pop()}</span>
                   </a>
                 )}
+                {reorderable && idx === 0 && (
+                  <span className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded-md bg-primary text-primary-foreground text-[9px] font-bold uppercase tracking-wide">
+                    {coverLabel}
+                  </span>
+                )}
+                {reorderable && idx > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => move(idx, 0)}
+                    className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded-md bg-background/90 text-[9px] font-semibold opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Definir como capa"
+                  >
+                    Tornar capa
+                  </button>
+                )}
                 <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <a href={url} target="_blank" rel="noopener noreferrer" className="w-6 h-6 rounded-md bg-background/90 flex items-center justify-center text-foreground hover:bg-background" title="Abrir">
                     <ExternalLink className="w-3 h-3" />
