@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { MediaGalleryUpload } from "@/components/MediaGalleryUpload";
+import { AIImovelImport } from "@/components/AIImovelImport";
 import { CurrencyInput } from "@/components/CurrencyInput";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -56,6 +57,24 @@ export function QuickImovelForm({ onSaved, onCancel, defaultCidade = "", cancelL
     setDriveUrl("");
   };
 
+  const applyAI = (u: Record<string, any>) => {
+    const str = (v: any) => (v === undefined || v === null ? "" : String(v));
+    if (u.titulo) setTitulo(str(u.titulo));
+    if (u.tipo && tipos.includes(str(u.tipo))) setTipo(str(u.tipo));
+    if (u.cidade) setCidade(str(u.cidade));
+    if (u.bairro) setBairro(str(u.bairro));
+    if (u.endereco) setEndereco(str(u.endereco));
+    if (u.preco) setPreco(parseFloat(str(u.preco)) || 0);
+    if (u.quartos !== undefined) setQuartos(str(u.quartos));
+    if (u.suites !== undefined) setSuites(str(u.suites));
+    if (u.banheiros !== undefined) setBanheiros(str(u.banheiros));
+    if (u.vagas !== undefined) setVagas(str(u.vagas));
+    const metragem = u.area ?? u.areaPrivativa;
+    if (metragem) setArea(str(metragem));
+    if (u.descricao) setDescricao(str(u.descricao));
+    if (u.linkVideo) setLinkVideo(str(u.linkVideo));
+  };
+
   const submit = async () => {
     if (!user) {
       toast({ title: "Faça login para cadastrar", variant: "destructive" });
@@ -100,6 +119,8 @@ export function QuickImovelForm({ onSaved, onCancel, defaultCidade = "", cancelL
 
   return (
     <div className="space-y-6">
+      <AIImovelImport onApply={applyAI} />
+
       <div className="elevated-card rounded-xl p-5 space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="sm:col-span-2 space-y-1.5">
