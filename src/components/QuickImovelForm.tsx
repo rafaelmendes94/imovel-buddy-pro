@@ -147,7 +147,7 @@ export function QuickImovelForm({ onSaved, onCancel, defaultCidade = "", cancelL
             { label: "Suítes", v: suites, set: setSuites },
             { label: "Banheiros", v: banheiros, set: setBanheiros },
             { label: "Vagas", v: vagas, set: setVagas },
-            { label: "Área (m²)", v: area, set: setArea },
+            { label: "Metragem Total (m²)", v: area, set: setArea },
           ].map((f) => (
             <div key={f.label} className="space-y-1.5">
               <Label className="text-xs">{f.label}</Label>
