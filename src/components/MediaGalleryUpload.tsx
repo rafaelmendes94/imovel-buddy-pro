@@ -17,6 +17,8 @@ interface MediaGalleryUploadProps {
   accept?: string; // override accept attribute
   allowUrl?: boolean; // also allow pasting an external URL
   multiple?: boolean;
+  reorderable?: boolean; // drag & drop to reorder, first item = cover
+  coverLabel?: string;
 }
 
 export function MediaGalleryUpload({
