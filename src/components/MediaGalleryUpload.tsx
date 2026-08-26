@@ -140,7 +140,20 @@ export function MediaGalleryUpload({
             const isPdf = /\.pdf($|\?)/i.test(url);
             const isImage = kind === 'image' || /\.(jpg|jpeg|png|webp|gif|avif)($|\?)/i.test(url);
             return (
-              <div key={idx} className="relative group rounded-lg overflow-hidden border border-border bg-muted/30 aspect-square">
+              <div
+                key={`${url}-${idx}`}
+                draggable={reorderable}
+                onDragStart={() => reorderable && setDragIdx(idx)}
+                onDragOver={(e) => { if (reorderable) e.preventDefault(); }}
+                onDrop={(e) => {
+                  if (!reorderable) return;
+                  e.preventDefault();
+                  if (dragIdx !== null) move(dragIdx, idx);
+                  setDragIdx(null);
+                }}
+                onDragEnd={() => setDragIdx(null)}
+                className={`relative group rounded-lg overflow-hidden border bg-muted/30 aspect-square ${reorderable ? 'cursor-move' : ''} ${dragIdx === idx ? 'opacity-50 border-primary' : 'border-border'}`}
+              >
                 {isImage && !isVideoUrl && !isPdf ? (
                   <img src={url} alt="" className="w-full h-full object-cover" />
                 ) : isVideoUrl ? (
