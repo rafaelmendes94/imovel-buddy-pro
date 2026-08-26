@@ -17,6 +17,8 @@ interface MediaGalleryUploadProps {
   accept?: string; // override accept attribute
   allowUrl?: boolean; // also allow pasting an external URL
   multiple?: boolean;
+  reorderable?: boolean; // drag & drop to reorder, first item = cover
+  coverLabel?: string;
 }
 
 export function MediaGalleryUpload({
@@ -28,11 +30,22 @@ export function MediaGalleryUpload({
   accept,
   allowUrl = true,
   multiple = true,
+  reorderable = false,
+  coverLabel = 'Foto de capa',
 }: MediaGalleryUploadProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
   const [urlInput, setUrlInput] = useState('');
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
+
+  const move = (from: number, to: number) => {
+    if (from === to || from < 0 || to < 0) return;
+    const next = [...(values || [])];
+    const [item] = next.splice(from, 1);
+    next.splice(to, 0, item);
+    onChange(next);
+  };
 
   const acceptAttr =
     accept ??
@@ -43,11 +56,15 @@ export function MediaGalleryUpload({
       : 'image/*,video/*,application/pdf,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx');
 
   const handleFiles = async (files: FileList | null) => {
-    if (!files || !user) return;
+    if (!files || files.length === 0) return;
+    if (!user) {
+      toast({ title: 'Faça login para enviar fotos', variant: 'destructive' });
+      return;
+    }
     setUploading(true);
     const uploaded: string[] = [];
     for (const file of Array.from(files)) {
-      const ext = file.name.split('.').pop() || 'bin';
+      const ext = (file.name.split('.').pop() || 'bin').toLowerCase();
       const path = `${user.id}/${folder}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
       const { error } = await supabase.storage.from('site-assets').upload(path, file, { upsert: false });
       if (error) {
@@ -123,7 +140,20 @@ export function MediaGalleryUpload({
             const isPdf = /\.pdf($|\?)/i.test(url);
             const isImage = kind === 'image' || /\.(jpg|jpeg|png|webp|gif|avif)($|\?)/i.test(url);
             return (
-              <div key={idx} className="relative group rounded-lg overflow-hidden border border-border bg-muted/30 aspect-square">
+              <div
+                key={`${url}-${idx}`}
+                draggable={reorderable}
+                onDragStart={() => reorderable && setDragIdx(idx)}
+                onDragOver={(e) => { if (reorderable) e.preventDefault(); }}
+                onDrop={(e) => {
+                  if (!reorderable) return;
+                  e.preventDefault();
+                  if (dragIdx !== null) move(dragIdx, idx);
+                  setDragIdx(null);
+                }}
+                onDragEnd={() => setDragIdx(null)}
+                className={`relative group rounded-lg overflow-hidden border bg-muted/30 aspect-square ${reorderable ? 'cursor-move' : ''} ${dragIdx === idx ? 'opacity-50 border-primary' : 'border-border'}`}
+              >
                 {isImage && !isVideoUrl && !isPdf ? (
                   <img src={url} alt="" className="w-full h-full object-cover" />
                 ) : isVideoUrl ? (
@@ -136,6 +166,21 @@ export function MediaGalleryUpload({
                     <FileText className="w-6 h-6 text-primary" />
                     <span className="text-[10px] text-muted-foreground line-clamp-2 break-all">{url.split('/').pop()}</span>
                   </a>
+                )}
+                {reorderable && idx === 0 && (
+                  <span className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded-md bg-primary text-primary-foreground text-[9px] font-bold uppercase tracking-wide">
+                    {coverLabel}
+                  </span>
+                )}
+                {reorderable && idx > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => move(idx, 0)}
+                    className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded-md bg-background/90 text-[9px] font-semibold opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Definir como capa"
+                  >
+                    Tornar capa
+                  </button>
                 )}
                 <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <a href={url} target="_blank" rel="noopener noreferrer" className="w-6 h-6 rounded-md bg-background/90 flex items-center justify-center text-foreground hover:bg-background" title="Abrir">
