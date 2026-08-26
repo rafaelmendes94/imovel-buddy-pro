@@ -30,11 +30,22 @@ export function MediaGalleryUpload({
   accept,
   allowUrl = true,
   multiple = true,
+  reorderable = false,
+  coverLabel = 'Foto de capa',
 }: MediaGalleryUploadProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
   const [urlInput, setUrlInput] = useState('');
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
+
+  const move = (from: number, to: number) => {
+    if (from === to || from < 0 || to < 0) return;
+    const next = [...(values || [])];
+    const [item] = next.splice(from, 1);
+    next.splice(to, 0, item);
+    onChange(next);
+  };
 
   const acceptAttr =
     accept ??
