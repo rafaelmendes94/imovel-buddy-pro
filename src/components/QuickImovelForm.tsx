@@ -187,12 +187,18 @@ export function QuickImovelForm({ onSaved, onCancel, defaultCidade = "", cancelL
 
       <div className="elevated-card rounded-xl p-5 space-y-5">
         <MediaGalleryUpload
-          label="Fotos do imóvel (a primeira é a capa)"
+          label="Fotos do imóvel (arraste para ordenar — a primeira é a capa)"
           values={imagens}
           onChange={setImagens}
           folder="imoveis/cadastro-rapido"
           kind="image"
+          reorderable
         />
+        {imagens.length === 0 && (
+          <p className="text-[11px] text-muted-foreground">
+            Nenhuma foto adicionada. Envie arquivos do seu dispositivo ou cole a URL de uma imagem.
+          </p>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
