@@ -56,11 +56,15 @@ export function MediaGalleryUpload({
       : 'image/*,video/*,application/pdf,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx');
 
   const handleFiles = async (files: FileList | null) => {
-    if (!files || !user) return;
+    if (!files || files.length === 0) return;
+    if (!user) {
+      toast({ title: 'Faça login para enviar fotos', variant: 'destructive' });
+      return;
+    }
     setUploading(true);
     const uploaded: string[] = [];
     for (const file of Array.from(files)) {
-      const ext = file.name.split('.').pop() || 'bin';
+      const ext = (file.name.split('.').pop() || 'bin').toLowerCase();
       const path = `${user.id}/${folder}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
       const { error } = await supabase.storage.from('site-assets').upload(path, file, { upsert: false });
       if (error) {
