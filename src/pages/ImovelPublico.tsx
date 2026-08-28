@@ -233,15 +233,15 @@ export default function ImovelPublico() {
       {/* Header */}
       <header className="bg-card border-b border-border sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 text-sm font-bold text-foreground">
-            <Building2 className="w-5 h-5 text-primary" /> MV BROKER CONNECT
+          <Link to="/" className="flex items-center gap-2 text-xs sm:text-sm font-bold text-foreground min-w-0">
+            <Building2 className="w-5 h-5 text-primary flex-shrink-0" /> <span className="truncate">MV BROKER CONNECT</span>
           </Link>
-          <div className="flex items-center gap-2">
-            <button onClick={handleDownloadFotos} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs sm:text-sm font-semibold text-foreground hover:bg-muted">
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button onClick={handleDownloadFotos} className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg border border-border text-xs sm:text-sm font-semibold text-foreground hover:bg-muted">
               <Download className="w-4 h-4" /> <span className="hidden sm:inline">Baixar fotos</span>
             </button>
-            <button onClick={handleShare} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs sm:text-sm font-semibold hover:bg-primary/90">
-              <Share2 className="w-4 h-4" /> Compartilhar
+            <button onClick={handleShare} className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs sm:text-sm font-semibold hover:bg-primary/90">
+              <Share2 className="w-4 h-4" /> <span className="hidden xs:inline sm:inline">Compartilhar</span>
             </button>
           </div>
         </div>
@@ -491,6 +491,34 @@ export default function ImovelPublico() {
           MV BROKER CONNECT • Para mais informações, entre em contato com o anunciante.
         </footer>
       </main>
+
+      {/* Barra fixa de CTA no mobile */}
+      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-card/95 backdrop-blur border-t border-border px-3 pt-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom))] shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+        <div className="flex items-center gap-3">
+          <div className="min-w-0 flex-shrink-0">
+            <p className="text-base font-black text-primary leading-tight truncate">{fmt(Number(imovel.preco))}</p>
+            {imovel.preco_parcelado ? (
+              <p className="text-[10px] text-muted-foreground leading-tight">a partir de {fmt(Number(imovel.preco_parcelado))}/mês</p>
+            ) : null}
+          </div>
+          <a
+            href={`https://wa.me/?text=${whatsappMsg}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold"
+          >
+            <MessageCircle className="w-4 h-4" /> Falar com Corretor
+          </a>
+          <a
+            href={`https://wa.me/?text=${encodeURIComponent(`Olá! Gostaria de agendar uma visita ao imóvel: ${imovel.titulo}`)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border border-primary text-primary text-xs font-bold"
+          >
+            <CalendarDays className="w-4 h-4" /> Visita
+          </a>
+        </div>
+      </div>
 
       {/* Lightbox */}
       {lightbox !== null && images[lightbox] && (
