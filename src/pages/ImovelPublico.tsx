@@ -399,6 +399,9 @@ export default function ImovelPublico() {
             {imovel.status}
           </span>
           <h1 className="text-xl sm:text-3xl font-black text-foreground leading-tight mt-2">{imovel.titulo}</h1>
+          {subtitle && (
+            <p className="text-xs sm:text-sm font-semibold text-primary mt-1.5">{subtitle}</p>
+          )}
           <a href={mapsSearchUrl} target="_blank" rel="noopener noreferrer" className="text-xs sm:text-sm text-muted-foreground mt-1.5 flex items-start gap-1.5 hover:text-primary transition-colors">
             <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
             <span>{fullAddress}</span>
