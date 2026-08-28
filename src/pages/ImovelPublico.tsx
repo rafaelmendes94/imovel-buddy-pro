@@ -366,13 +366,13 @@ export default function ImovelPublico() {
           </div>
 
           {/* ============ SIDEBAR ============ */}
-          <aside className="lg:sticky lg:top-20 space-y-5">
+          <aside className="lg:sticky lg:top-20 space-y-4 sm:space-y-5">
             {/* Resumo + CTA */}
-            <div className="bg-card border border-border rounded-2xl p-5 sm:p-6 shadow-sm">
+            <div className="bg-card border border-border rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm">
               <span className="inline-block px-2.5 py-1 rounded-md bg-primary text-primary-foreground text-[11px] font-bold uppercase tracking-wide">
                 {imovel.status}
               </span>
-              <h1 className="text-2xl font-black text-foreground leading-tight mt-3">{imovel.titulo}</h1>
+              <h1 className="text-xl sm:text-2xl font-black text-foreground leading-tight mt-2.5 sm:mt-3">{imovel.titulo}</h1>
               <a href={mapsSearchUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground mt-1.5 flex items-start gap-1.5 hover:text-primary transition-colors">
                 <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
                 <span>{[imovel.bairro, imovel.cidade, imovel.estado].filter(Boolean).join(" - ")}</span>
@@ -383,7 +383,7 @@ export default function ImovelPublico() {
                 </p>
               )}
 
-              <p className="text-3xl sm:text-4xl font-black text-primary mt-4">{fmt(Number(imovel.preco))}</p>
+              <p className="text-2xl sm:text-4xl font-black text-primary mt-3 sm:mt-4">{fmt(Number(imovel.preco))}</p>
               {imovel.preco_parcelado ? (
                 <p className="text-xs text-muted-foreground mt-1">Parcelado a partir de {fmt(Number(imovel.preco_parcelado))}</p>
               ) : null}
