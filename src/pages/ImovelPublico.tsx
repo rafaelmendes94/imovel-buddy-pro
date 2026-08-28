@@ -604,7 +604,7 @@ export default function ImovelPublico() {
       <div className="hidden lg:block fixed bottom-3 inset-x-3 z-40">
         <div className="max-w-6xl mx-auto bg-foreground text-background rounded-2xl shadow-2xl px-4 py-3 grid grid-cols-7 gap-2">
           <BottomResource icon={Images} title="Galeria de Fotos" sub={`${images.length} fotos`} onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} />
-          <BottomResource icon={Play} title="Vídeo do Imóvel" sub={hasVideo ? "Disponível" : "Não informado"} onClick={hasVideo ? () => { setVideoPlaying(true); window.scrollTo({ top: 0, behavior: "smooth" }); } : undefined} />
+          <BottomResource icon={Play} title="Vídeo do Imóvel" sub={hasVideo ? "Disponível" : "Não informado"} onClick={hasVideo ? () => scrollTo("video") : undefined} />
           <BottomResource icon={Box} title="Tour 360°" sub={imovel.link_360 ? "Disponível" : "Não informado"} onClick={imovel.link_360 ? () => scrollTo("tour360") : undefined} />
           <BottomResource icon={LayoutGrid} title="Plantas" sub={imovel.link_material ? "Ver plantas" : "Não informado"} onClick={imovel.link_material ? () => window.open(imovel.link_material!, "_blank") : undefined} />
           <BottomResource icon={FileText} title="Documentação" sub={imovel.fotos_pdf_url || imovel.link_material ? "Em dia" : "Não informada"} onClick={imovel.fotos_pdf_url ? () => window.open(imovel.fotos_pdf_url!, "_blank") : undefined} />
