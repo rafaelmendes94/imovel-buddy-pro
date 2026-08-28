@@ -67,24 +67,24 @@ function markerSvg(color: string, shortPrice: string, selected: boolean) {
 
 function buildPopup(property: Property, color: string): string {
   return `
-    <div style="width:270px;font-family:system-ui,-apple-system,sans-serif;padding:0;">
-      <img src="${property.image}" alt="${property.title}" style="width:100%;height:140px;object-fit:cover;border-radius:8px 8px 0 0;display:block;cursor:pointer;" />
-      <div style="padding:12px;">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-          <span style="font-size:10px;font-weight:700;color:#fff;background:${color};padding:2px 8px;border-radius:4px;letter-spacing:0.5px;text-transform:uppercase;">${property.type}</span>
-          <span style="font-size:10px;font-weight:500;color:#94a3b8;">${property.status}</span>
+    <div style="width:135px;font-family:system-ui,-apple-system,sans-serif;padding:0;">
+      <img src="${property.image}" alt="${property.title}" style="width:100%;height:70px;object-fit:cover;border-radius:6px 6px 0 0;display:block;cursor:pointer;" />
+      <div style="padding:6px;">
+        <div style="display:flex;align-items:center;gap:3px;margin-bottom:3px;">
+          <span style="font-size:9px;font-weight:700;color:#fff;background:${color};padding:1px 4px;border-radius:3px;letter-spacing:0.5px;text-transform:uppercase;">${property.type}</span>
+          <span style="font-size:9px;font-weight:500;color:#94a3b8;">${property.status}</span>
         </div>
-        <h3 style="font-size:14px;font-weight:700;margin:0 0 4px 0;color:#0f172a;line-height:1.3;">${property.title}</h3>
-        <p style="font-size:11px;color:#64748b;margin:0 0 4px 0;line-height:1.4;">📍 ${property.address}${property.neighborhood ? `, ${property.neighborhood}` : ""} – ${property.city}</p>
-        <div style="display:flex;gap:8px;margin-bottom:8px;font-size:10px;color:#64748b;">
+        <h3 style="font-size:11px;font-weight:700;margin:0 0 2px 0;color:#0f172a;line-height:1.25;">${property.title}</h3>
+        <p style="font-size:9px;color:#64748b;margin:0 0 2px 0;line-height:1.3;">📍 ${property.address}${property.neighborhood ? `, ${property.neighborhood}` : ""} – ${property.city}</p>
+        <div style="display:flex;gap:4px;margin-bottom:4px;font-size:9px;color:#64748b;">
           ${property.bedrooms > 0 ? `<span>🛏 ${property.bedrooms}</span>` : ""}
           ${property.bathrooms > 0 ? `<span>🚿 ${property.bathrooms}</span>` : ""}
           ${property.parking > 0 ? `<span>🚗 ${property.parking}</span>` : ""}
           <span>📐 ${property.area}m²</span>
         </div>
         <div style="display:flex;align-items:baseline;justify-content:space-between;">
-          <p style="font-size:18px;font-weight:800;color:${color};margin:0;">${formatCurrency(property.price)}</p>
-          <span id="gmaps-detail-${property.id}" style="font-size:10px;color:${color};cursor:pointer;font-weight:700;text-decoration:underline;">Ver detalhes →</span>
+          <p style="font-size:12px;font-weight:800;color:${color};margin:0;">${formatCurrency(property.price)}</p>
+          <span id="gmaps-detail-${property.id}" style="font-size:9px;color:${color};cursor:pointer;font-weight:700;text-decoration:underline;">Ver →</span>
         </div>
       </div>
     </div>`;
