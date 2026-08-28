@@ -247,18 +247,18 @@ export default function ImovelPublico() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-6 items-start">
+      <main className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-6 pb-28 lg:pb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-4 sm:gap-6 items-start">
           {/* ============ COLUNA ESQUERDA ============ */}
-          <div className="space-y-6 min-w-0">
+          <div className="space-y-4 sm:space-y-6 min-w-0">
             {/* Galeria */}
-            <div className="relative bg-foreground rounded-2xl overflow-hidden shadow-xl">
+            <div className="relative bg-foreground rounded-xl sm:rounded-2xl overflow-hidden shadow-xl">
               {images.length > 0 ? (
-                <button onClick={() => setLightbox(idx)} className="block w-full aspect-[16/10] cursor-zoom-in">
+                <button onClick={() => setLightbox(idx)} className="block w-full aspect-[4/3] sm:aspect-[16/10] cursor-zoom-in">
                   <img src={images[idx]} alt={`${imovel.titulo} - foto ${idx + 1}`} className="w-full h-full object-cover" />
                 </button>
               ) : (
-                <div className="w-full aspect-[16/10] flex items-center justify-center text-background/60 text-sm">Sem imagem</div>
+                <div className="w-full aspect-[4/3] sm:aspect-[16/10] flex items-center justify-center text-background/60 text-sm">Sem imagem</div>
               )}
               {images.length > 1 && (
                 <>
@@ -284,7 +284,7 @@ export default function ImovelPublico() {
             {images.length > 1 && (
               <div className="flex gap-2 overflow-x-auto pb-1">
                 {images.map((img, i) => (
-                  <button key={i} onClick={() => setIdx(i)} className={cn("flex-shrink-0 w-28 h-20 rounded-lg overflow-hidden border-2 transition-all", i === idx ? "border-primary" : "border-transparent opacity-60 hover:opacity-100")}>
+                  <button key={i} onClick={() => setIdx(i)} className={cn("flex-shrink-0 w-20 h-14 sm:w-28 sm:h-20 rounded-lg overflow-hidden border-2 transition-all", i === idx ? "border-primary" : "border-transparent opacity-60 hover:opacity-100")}>
                     <img src={img} alt="" className="w-full h-full object-cover" />
                   </button>
                 ))}
