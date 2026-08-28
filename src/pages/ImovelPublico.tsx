@@ -300,29 +300,12 @@ export default function ImovelPublico() {
       </header>
 
       <main className="max-w-6xl mx-auto px-3 sm:px-6 py-4 sm:py-6 pb-28">
-        {/* ===== Hero player ===== */}
+        {/* ===== Galeria de fotos ===== */}
         <div className="relative bg-foreground rounded-xl sm:rounded-2xl overflow-hidden shadow-xl aspect-[4/3] sm:aspect-video">
-          {videoPlaying && hasVideo ? (
-            yt ? (
-              <iframe src={`${yt}?autoplay=1&rel=0`} title="Vídeo do imóvel" className="w-full h-full" allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen />
-            ) : isMp4 ? (
-              <video src={imovel.link_video!} className="w-full h-full" controls autoPlay playsInline />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <a href={imovel.link_video!} target="_blank" rel="noopener noreferrer" className="px-5 py-3 rounded-xl bg-primary text-primary-foreground text-sm font-bold">Abrir vídeo</a>
-              </div>
-            )
-          ) : images.length > 0 ? (
+          {images.length > 0 ? (
             <img src={images[idx]} alt={`${imovel.titulo} - foto ${idx + 1}`} className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-background/60 text-sm">Sem imagem</div>
-          )}
-
-          {/* Badge vídeo */}
-          {hasVideo && !videoPlaying && (
-            <span className="absolute top-3 left-3 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-xs font-bold shadow-lg">
-              Vídeo do Imóvel
-            </span>
           )}
 
           {/* Contador */}
@@ -332,21 +315,8 @@ export default function ImovelPublico() {
             </span>
           )}
 
-          {/* Play central */}
-          {hasVideo && !videoPlaying && (
-            <button
-              aria-label="Reproduzir vídeo"
-              onClick={() => setVideoPlaying(true)}
-              className="absolute inset-0 flex items-center justify-center group"
-            >
-              <span className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-card/90 group-hover:bg-card flex items-center justify-center shadow-2xl transition-transform group-hover:scale-105">
-                <Play className="w-7 h-7 sm:w-9 sm:h-9 text-foreground fill-foreground ml-1" />
-              </span>
-            </button>
-          )}
-
           {/* Setas */}
-          {images.length > 1 && !videoPlaying && (
+          {images.length > 1 && (
             <>
               <button aria-label="Foto anterior" onClick={() => setIdx((i) => (i - 1 + images.length) % images.length)} className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-card/90 hover:bg-card flex items-center justify-center shadow-lg">
                 <ChevronLeft className="w-5 h-5 text-foreground" />
@@ -358,8 +328,8 @@ export default function ImovelPublico() {
           )}
 
           {/* Flags */}
-          {!videoPlaying && (imovel.vista_mar || imovel.decorado || imovel.aceita_permuta) && (
-            <div className={cn("absolute flex gap-1.5 flex-wrap", hasVideo ? "bottom-14 left-3" : "bottom-3 left-3")}>
+          {(imovel.vista_mar || imovel.decorado || imovel.aceita_permuta) && (
+            <div className="absolute bottom-3 left-3 flex gap-1.5 flex-wrap">
               {imovel.vista_mar && <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-500/90 text-white flex items-center gap-1"><Waves className="w-3 h-3" /> Vista Mar</span>}
               {imovel.decorado && <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-purple-500/90 text-white flex items-center gap-1"><Paintbrush className="w-3 h-3" /> Decorado</span>}
               {imovel.aceita_permuta && <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-orange-500/90 text-white flex items-center gap-1"><Repeat className="w-3 h-3" /> Permuta</span>}
@@ -367,18 +337,13 @@ export default function ImovelPublico() {
           )}
 
           {/* Barra inferior do player */}
-          <div className="absolute bottom-0 inset-x-0 h-11 bg-gradient-to-t from-foreground/80 to-transparent flex items-center justify-end gap-1 px-3">
-            {videoPlaying && (
-              <button aria-label="Fechar vídeo" onClick={() => setVideoPlaying(false)} className="w-9 h-9 rounded-md flex items-center justify-center text-background hover:bg-card/10">
-                <X className="w-4 h-4" />
-              </button>
-            )}
-            {!videoPlaying && images.length > 0 && (
+          {images.length > 0 && (
+            <div className="absolute bottom-0 inset-x-0 h-11 bg-gradient-to-t from-foreground/80 to-transparent flex items-center justify-end gap-1 px-3">
               <button aria-label="Tela cheia" onClick={() => setLightbox(idx)} className="w-9 h-9 rounded-md flex items-center justify-center text-background hover:bg-card/10">
                 <Maximize2 className="w-4 h-4" />
               </button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* ===== Miniaturas ===== */}
@@ -389,7 +354,7 @@ export default function ImovelPublico() {
             </button>
             <div ref={thumbsRef} className="flex gap-2 overflow-x-auto pb-1 scroll-smooth min-w-0" style={{ scrollbarWidth: "none" }}>
               {images.map((img, i) => (
-                <button key={i} onClick={() => { setIdx(i); setVideoPlaying(false); }} className={cn("flex-shrink-0 w-24 h-16 sm:w-36 sm:h-24 rounded-lg overflow-hidden border-2 transition-all", i === idx && !videoPlaying ? "border-primary" : "border-transparent opacity-70 hover:opacity-100")}>
+                <button key={i} onClick={() => setIdx(i)} className={cn("flex-shrink-0 w-24 h-16 sm:w-36 sm:h-24 rounded-lg overflow-hidden border-2 transition-all", i === idx ? "border-primary" : "border-transparent opacity-70 hover:opacity-100")}>
                   <img src={img} alt="" className="w-full h-full object-cover" />
                 </button>
               ))}
