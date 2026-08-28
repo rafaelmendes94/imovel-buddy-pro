@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   BedDouble, Bath, Car, Maximize, MapPin, Waves, Paintbrush, Repeat,
   ChevronLeft, ChevronRight, X, Play, Eye, Share2, Download, Building2, Loader2,
+  MessageCircle, CalendarDays, FileText, Images, HardDrive, Map as MapIcon,
+  Ruler, Box, ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { trackPropertyView } from "@/lib/trackPropertyView";
@@ -14,15 +16,20 @@ interface ImovelRow {
   id: string;
   titulo: string;
   endereco: string;
+  numero: string | null;
+  complemento: string | null;
+  cep: string | null;
   bairro: string | null;
   cidade: string;
   estado: string | null;
   tipo: string;
   status: string;
   preco: number;
+  preco_parcelado: number | null;
   area: number;
   area_privativa: number | null;
   quartos: number;
+  suites: number | null;
   banheiros: number;
   vagas: number;
   lavabo: number | null;
@@ -30,6 +37,9 @@ interface ImovelRow {
   descricao: string | null;
   link_video: string | null;
   link_360: string | null;
+  link_material: string | null;
+  drive_fotos_url: string | null;
+  fotos_pdf_url: string | null;
   vista_mar: boolean;
   decorado: boolean;
   aceita_permuta: boolean;
@@ -40,7 +50,12 @@ interface ImovelRow {
   outras_caracteristicas: string[] | null;
   condicoes_pagamento: string[] | null;
   vista: string | null;
+  padrao: string | null;
+  condicao: string | null;
   posicao_solar: string | null;
+  posicao_predio: string | null;
+  corretor_nome: string | null;
+  imobiliaria_nome: string | null;
   latitude: number | null;
   longitude: number | null;
 }
@@ -76,7 +91,6 @@ export default function ImovelPublico() {
         setNotFound(true);
       } else {
         setImovel(data as any);
-        // bump views (deduped per session)
         trackPropertyView(id);
       }
       setLoading(false);
@@ -103,6 +117,22 @@ export default function ImovelPublico() {
 
   const images = useMemo(() => imovel?.imagens?.filter(Boolean) || [], [imovel]);
   const yt = imovel?.link_video ? youtubeEmbed(imovel.link_video) : null;
+
+  const fullAddress = imovel
+    ? [
+        [imovel.endereco, imovel.numero].filter(Boolean).join(", "),
+        imovel.bairro,
+        [imovel.cidade, imovel.estado].filter(Boolean).join(" - "),
+        imovel.cep,
+      ].filter(Boolean).join(", ")
+    : "";
+
+  const mapsSearchUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`;
+  const mapEmbedUrl = imovel?.latitude && imovel?.longitude
+    ? `https://maps.google.com/maps?q=${imovel.latitude},${imovel.longitude}&z=15&output=embed`
+    : fullAddress
+      ? `https://maps.google.com/maps?q=${encodeURIComponent(fullAddress)}&z=15&output=embed`
+      : null;
 
   const handleShare = async () => {
     const url = window.location.href;
@@ -162,11 +192,47 @@ export default function ImovelPublico() {
     );
   }
 
+  const whatsappMsg = encodeURIComponent(`Olá! Tenho interesse no imóvel: ${imovel.titulo} - ${fmt(Number(imovel.preco))} (${window.location.href})`);
+  const specs = [
+    { icon: BedDouble, value: imovel.quartos, label: "Quartos" },
+    ...(imovel.suites ? [{ icon: BedDouble, value: imovel.suites, label: "Suítes" }] : []),
+    { icon: Bath, value: imovel.banheiros, label: "Banheiros" },
+    { icon: Car, value: imovel.vagas, label: "Vagas" },
+    ...(imovel.area_privativa ? [{ icon: Ruler, value: `${imovel.area_privativa} m²`, label: "Área privativa" }] : []),
+    { icon: Maximize, value: `${imovel.area} m²`, label: "Área total" },
+  ];
+
+  const fichaTecnica: [string, string][] = [
+    ["Tipo do imóvel", imovel.tipo],
+    ["Status", imovel.status],
+    ["Área total", `${imovel.area} m²`],
+    ...(imovel.area_privativa ? [["Área privativa", `${imovel.area_privativa} m²`] as [string, string]] : []),
+    ["Quartos", String(imovel.quartos)],
+    ...(imovel.suites ? [["Suítes", String(imovel.suites)] as [string, string]] : []),
+    ["Banheiros", String(imovel.banheiros)],
+    ...(imovel.lavabo ? [["Lavabo", String(imovel.lavabo)] as [string, string]] : []),
+    ["Vagas", String(imovel.vagas)],
+    ...(imovel.padrao ? [["Padrão", imovel.padrao] as [string, string]] : []),
+    ...(imovel.condicao ? [["Condição", imovel.condicao] as [string, string]] : []),
+    ...(imovel.vista ? [["Vista", imovel.vista] as [string, string]] : []),
+    ...(imovel.posicao_solar ? [["Posição solar", imovel.posicao_solar] as [string, string]] : []),
+    ...(imovel.posicao_predio ? [["Posição no prédio", imovel.posicao_predio] as [string, string]] : []),
+    ["Aceita permuta", imovel.aceita_permuta ? "Sim" : "Não"],
+  ];
+
+  const downloads = [
+    images.length > 0 && { icon: Images, title: "Baixar Todas as Fotos", sub: `PDF (${images.length} fotos)`, onClick: handleDownloadFotos },
+    imovel.link_video && { icon: Play, title: "Vídeo do Imóvel", sub: "Assistir agora", href: imovel.link_video },
+    imovel.link_360 && { icon: Box, title: "Tour 360°", sub: "Abrir tour", href: imovel.link_360 },
+    imovel.fotos_pdf_url && { icon: FileText, title: "Catálogo do Imóvel", sub: "PDF", href: imovel.fotos_pdf_url },
+    imovel.link_material && { icon: FileText, title: "Material / Plantas", sub: "Abrir arquivo", href: imovel.link_material },
+  ].filter(Boolean) as { icon: any; title: string; sub: string; href?: string; onClick?: () => void }[];
+
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header simples sem corretor */}
+    <div className="min-h-screen bg-muted/30">
+      {/* Header */}
       <header className="bg-card border-b border-border sticky top-0 z-30">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 text-sm font-bold text-foreground">
             <Building2 className="w-5 h-5 text-primary" /> MV BROKER CONNECT
           </Link>
@@ -181,123 +247,247 @@ export default function ImovelPublico() {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-6">
-        {/* Galeria */}
-        <div className="relative bg-foreground rounded-2xl overflow-hidden shadow-xl">
-          {images.length > 0 ? (
-            <button onClick={() => setLightbox(idx)} className="block w-full aspect-[16/10] cursor-zoom-in">
-              <img src={images[idx]} alt={imovel.titulo} className="w-full h-full object-cover" />
-            </button>
-          ) : (
-            <div className="w-full aspect-[16/10] flex items-center justify-center text-background/60">Sem fotos</div>
-          )}
-          {images.length > 1 && (
-            <>
-              <button onClick={() => setIdx((i) => (i - 1 + images.length) % images.length)} className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-card/90 hover:bg-card flex items-center justify-center shadow-lg">
-                <ChevronLeft className="w-5 h-5 text-foreground" />
-              </button>
-              <button onClick={() => setIdx((i) => (i + 1) % images.length)} className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-card/90 hover:bg-card flex items-center justify-center shadow-lg">
-                <ChevronRight className="w-5 h-5 text-foreground" />
-              </button>
-              <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-foreground/60 text-background text-xs font-bold backdrop-blur-sm">
-                {idx + 1} / {images.length}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-6 items-start">
+          {/* ============ COLUNA ESQUERDA ============ */}
+          <div className="space-y-6 min-w-0">
+            {/* Galeria */}
+            <div className="relative bg-foreground rounded-2xl overflow-hidden shadow-xl">
+              {images.length > 0 ? (
+                <button onClick={() => setLightbox(idx)} className="block w-full aspect-[16/10] cursor-zoom-in">
+                  <img src={images[idx]} alt={`${imovel.titulo} - foto ${idx + 1}`} className="w-full h-full object-cover" />
+                </button>
+              ) : (
+                <div className="w-full aspect-[16/10] flex items-center justify-center text-background/60 text-sm">Sem imagem</div>
+              )}
+              {images.length > 1 && (
+                <>
+                  <button aria-label="Foto anterior" onClick={() => setIdx((i) => (i - 1 + images.length) % images.length)} className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-card/90 hover:bg-card flex items-center justify-center shadow-lg">
+                    <ChevronLeft className="w-5 h-5 text-foreground" />
+                  </button>
+                  <button aria-label="Próxima foto" onClick={() => setIdx((i) => (i + 1) % images.length)} className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-card/90 hover:bg-card flex items-center justify-center shadow-lg">
+                    <ChevronRight className="w-5 h-5 text-foreground" />
+                  </button>
+                  <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-foreground/60 text-background text-xs font-bold backdrop-blur-sm">
+                    {idx + 1} / {images.length}
+                  </div>
+                </>
+              )}
+              <div className="absolute top-3 left-3 flex gap-1.5 flex-wrap">
+                {imovel.vista_mar && <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-500/90 text-white flex items-center gap-1"><Waves className="w-3 h-3" /> Vista Mar</span>}
+                {imovel.decorado && <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-purple-500/90 text-white flex items-center gap-1"><Paintbrush className="w-3 h-3" /> Decorado</span>}
+                {imovel.aceita_permuta && <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-orange-500/90 text-white flex items-center gap-1"><Repeat className="w-3 h-3" /> Permuta</span>}
               </div>
-            </>
-          )}
-          <div className="absolute top-3 left-3 flex gap-1.5 flex-wrap">
-            {imovel.vista_mar && <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-500/90 text-white flex items-center gap-1"><Waves className="w-3 h-3" /> Vista Mar</span>}
-            {imovel.decorado && <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-purple-500/90 text-white flex items-center gap-1"><Paintbrush className="w-3 h-3" /> Decorado</span>}
-            {imovel.aceita_permuta && <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-orange-500/90 text-white flex items-center gap-1"><Repeat className="w-3 h-3" /> Permuta</span>}
-          </div>
-        </div>
+            </div>
 
-        {/* Thumbs */}
-        {images.length > 1 && (
-          <div className="flex gap-2 overflow-x-auto pb-1">
-            {images.map((img, i) => (
-              <button key={i} onClick={() => setIdx(i)} className={cn("flex-shrink-0 w-20 h-16 rounded-lg overflow-hidden border-2 transition-all", i === idx ? "border-primary" : "border-transparent opacity-60 hover:opacity-100")}>
-                <img src={img} alt="" className="w-full h-full object-cover" />
-              </button>
-            ))}
-          </div>
-        )}
+            {/* Thumbs */}
+            {images.length > 1 && (
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                {images.map((img, i) => (
+                  <button key={i} onClick={() => setIdx(i)} className={cn("flex-shrink-0 w-28 h-20 rounded-lg overflow-hidden border-2 transition-all", i === idx ? "border-primary" : "border-transparent opacity-60 hover:opacity-100")}>
+                    <img src={img} alt="" className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
 
-        {/* Header info */}
-        <div className="bg-card border border-border rounded-2xl p-5 sm:p-6 shadow-sm">
-          <div className="flex items-start justify-between gap-4 flex-wrap">
-            <div className="min-w-0 flex-1">
-              <h1 className="text-2xl sm:text-3xl font-black text-foreground leading-tight">{imovel.titulo}</h1>
-              <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1.5">
-                <MapPin className="w-4 h-4" /> {[imovel.bairro, imovel.cidade, imovel.estado].filter(Boolean).join(" - ")}
-              </p>
+            {/* Vídeo */}
+            {imovel.link_video && (
+              <div className="bg-card border border-border rounded-2xl overflow-hidden">
+                <button onClick={() => setShowVideo((s) => !s)} className="w-full flex items-center justify-between p-4 hover:bg-muted/50">
+                  <span className="flex items-center gap-2 text-sm font-bold"><Play className="w-4 h-4 text-primary fill-primary" /> Vídeo do Imóvel</span>
+                  <ChevronRight className={cn("w-4 h-4 transition-transform", showVideo && "rotate-90")} />
+                </button>
+                {showVideo && (yt ? (
+                  <div className="aspect-video bg-foreground">
+                    <iframe src={yt} title="Vídeo do imóvel" className="w-full h-full" allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen />
+                  </div>
+                ) : (
+                  <a href={imovel.link_video} target="_blank" rel="noopener noreferrer" className="block p-4 text-sm text-primary font-semibold">Abrir vídeo <ExternalLink className="inline w-3.5 h-3.5" /></a>
+                ))}
+              </div>
+            )}
+
+            {/* Tour 360 + Sobre + Ficha */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {imovel.link_360 && (
+                <div className="bg-card border border-border rounded-2xl p-5 md:col-span-2">
+                  <h2 className="flex items-center gap-2 text-base font-bold text-foreground mb-3">
+                    <Eye className="w-4 h-4 text-primary" /> Tour Virtual 360°
+                  </h2>
+                  {imovel.link_360.includes("http") ? (
+                    <div className="aspect-video rounded-xl overflow-hidden">
+                      <iframe src={imovel.link_360} title="Tour 360" className="w-full h-full border-0" allowFullScreen />
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">{imovel.link_360}</p>
+                  )}
+                </div>
+              )}
+
+              {imovel.descricao && (
+                <div className="bg-card border border-border rounded-2xl p-5 sm:p-6">
+                  <h2 className="text-base font-bold text-foreground mb-3">Sobre o Imóvel</h2>
+                  <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{imovel.descricao}</p>
+                  {imovel.outras_caracteristicas && imovel.outras_caracteristicas.length > 0 && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 mt-5 pt-5 border-t border-border">
+                      {imovel.outras_caracteristicas.map((c, i) => (
+                        <span key={i} className="flex items-center gap-2 text-sm text-foreground">
+                          <span className="w-4 h-4 rounded-full bg-primary/15 text-primary flex items-center justify-center text-[9px] font-black">✓</span>
+                          {c}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Ficha técnica */}
+              <div className="bg-card border border-border rounded-2xl p-5 sm:p-6">
+                <h2 className="text-base font-bold text-foreground mb-3">Características</h2>
+                <dl className="divide-y divide-border">
+                  {fichaTecnica.map(([k, v]) => (
+                    <div key={k} className="flex items-center justify-between gap-3 py-2">
+                      <dt className="text-xs text-muted-foreground">{k}</dt>
+                      <dd className="text-xs font-bold text-foreground text-right">{v}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            </div>
+
+            {/* Infraestrutura / pagamento */}
+            {imovel.infraestrutura && imovel.infraestrutura.length > 0 && (
+              <ListBlock title="Infraestrutura e Lazer" items={imovel.infraestrutura} />
+            )}
+            {imovel.condicoes_pagamento && imovel.condicoes_pagamento.length > 0 && (
+              <ListBlock title="Condições de Pagamento" items={imovel.condicoes_pagamento} />
+            )}
+          </div>
+
+          {/* ============ SIDEBAR ============ */}
+          <aside className="lg:sticky lg:top-20 space-y-5">
+            {/* Resumo + CTA */}
+            <div className="bg-card border border-border rounded-2xl p-5 sm:p-6 shadow-sm">
+              <span className="inline-block px-2.5 py-1 rounded-md bg-primary text-primary-foreground text-[11px] font-bold uppercase tracking-wide">
+                {imovel.status}
+              </span>
+              <h1 className="text-2xl font-black text-foreground leading-tight mt-3">{imovel.titulo}</h1>
+              <a href={mapsSearchUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground mt-1.5 flex items-start gap-1.5 hover:text-primary transition-colors">
+                <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                <span>{[imovel.bairro, imovel.cidade, imovel.estado].filter(Boolean).join(" - ")}</span>
+              </a>
               {imovel.empreendimento && (
                 <p className="text-xs font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-md inline-flex items-center gap-1.5 mt-2">
                   <Building2 className="w-3.5 h-3.5" /> {imovel.empreendimento}{imovel.unidade ? ` • Un. ${imovel.unidade}` : ""}
                 </p>
               )}
-            </div>
-            <div className="text-right">
-              <p className="text-3xl sm:text-4xl font-black text-primary">{fmt(Number(imovel.preco))}</p>
-              <p className="text-xs text-muted-foreground uppercase tracking-wide mt-1">{imovel.tipo}</p>
-            </div>
-          </div>
 
-          {/* specs */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5 pt-5 border-t border-border">
-            <Spec icon={BedDouble} label="Quartos" value={imovel.quartos} />
-            <Spec icon={Bath} label="Banheiros" value={imovel.banheiros} />
-            <Spec icon={Car} label="Vagas" value={imovel.vagas} />
-            <Spec icon={Maximize} label="Área" value={`${imovel.area}m²`} />
-          </div>
-        </div>
+              <p className="text-3xl sm:text-4xl font-black text-primary mt-4">{fmt(Number(imovel.preco))}</p>
+              {imovel.preco_parcelado ? (
+                <p className="text-xs text-muted-foreground mt-1">Parcelado a partir de {fmt(Number(imovel.preco_parcelado))}</p>
+              ) : null}
 
-        {/* Vídeo */}
-        {imovel.link_video && (
-          <div className="bg-card border border-border rounded-2xl overflow-hidden">
-            <button onClick={() => setShowVideo((s) => !s)} className="w-full flex items-center justify-between p-4 hover:bg-muted/50">
-              <span className="flex items-center gap-2 text-sm font-bold"><Play className="w-4 h-4 text-primary fill-primary" /> Vídeo do Imóvel</span>
-              <ChevronRight className={cn("w-4 h-4 transition-transform", showVideo && "rotate-90")} />
-            </button>
-            {showVideo && yt && (
-              <div className="aspect-video bg-foreground">
-                <iframe src={yt} title="Vídeo" className="w-full h-full" allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen />
+              {/* Specs */}
+              <div className="grid grid-cols-3 gap-y-4 gap-x-2 mt-5 pt-5 border-t border-border">
+                {specs.map((s, i) => (
+                  <div key={i} className="text-center">
+                    <s.icon className="w-4 h-4 text-primary mx-auto" />
+                    <p className="text-sm font-bold text-foreground mt-1">{s.value}</p>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{s.label}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* CTAs */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-5">
+                <a
+                  href={`https://wa.me/?text=${whatsappMsg}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-colors"
+                >
+                  <MessageCircle className="w-4 h-4" /> Falar com Corretor
+                </a>
+                <a
+                  href={`https://wa.me/?text=${encodeURIComponent(`Olá! Gostaria de agendar uma visita ao imóvel: ${imovel.titulo}`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-primary text-primary text-sm font-bold hover:bg-primary/5 transition-colors"
+                >
+                  <CalendarDays className="w-4 h-4" /> Agendar Visita
+                </a>
+              </div>
+
+              {(imovel.corretor_nome || imovel.imobiliaria_nome) && (
+                <p className="text-xs text-muted-foreground mt-4 pt-4 border-t border-border">
+                  Anunciado por <strong className="text-foreground">{imovel.corretor_nome || imovel.imobiliaria_nome}</strong>
+                </p>
+              )}
+            </div>
+
+            {/* Downloads e Materiais */}
+            {downloads.length > 0 && (
+              <div className="bg-card border border-border rounded-2xl p-5 sm:p-6">
+                <h2 className="text-base font-bold text-foreground">Downloads e Materiais</h2>
+                <p className="text-xs text-muted-foreground mt-0.5">Baixe fotos, vídeos e documentos do imóvel</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4">
+                  {downloads.map((d, i) => {
+                    const inner = (
+                      <>
+                        <span className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                          <d.icon className="w-4 h-4 text-primary" />
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block text-xs font-bold text-foreground leading-tight">{d.title}</span>
+                          <span className="block text-[11px] text-muted-foreground">{d.sub}</span>
+                        </span>
+                      </>
+                    );
+                    const cls = "flex items-center gap-2.5 p-3 rounded-xl border border-border hover:border-primary/50 hover:bg-muted/40 transition-colors text-left";
+                    return d.href
+                      ? <a key={i} href={d.href} target="_blank" rel="noopener noreferrer" className={cls}>{inner}</a>
+                      : <button key={i} onClick={d.onClick} className={cls}>{inner}</button>;
+                  })}
+                </div>
+
+                {imovel.drive_fotos_url && (
+                  <a href={imovel.drive_fotos_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 p-3 mt-2 rounded-xl border border-border hover:border-primary/50 hover:bg-muted/40 transition-colors">
+                    <span className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center"><HardDrive className="w-4 h-4 text-primary" /></span>
+                    <span>
+                      <span className="block text-xs font-bold text-foreground">Abrir Pasta no Google Drive</span>
+                      <span className="block text-[11px] text-muted-foreground">Acesse todos os arquivos</span>
+                    </span>
+                  </a>
+                )}
               </div>
             )}
-          </div>
-        )}
 
-        {/* 360 */}
-        {imovel.link_360 && (
-          <div className="bg-card border border-border rounded-2xl overflow-hidden">
-            <div className="flex items-center gap-2 p-4 bg-muted/40 text-sm font-bold"><Eye className="w-4 h-4 text-accent" /> Tour Virtual 360°</div>
-            {imovel.link_360.includes("http") ? (
-              <div className="aspect-video"><iframe src={imovel.link_360} title="360" className="w-full h-full border-0" allowFullScreen /></div>
-            ) : (
-              <p className="p-4 text-sm text-muted-foreground">{imovel.link_360}</p>
+            {/* Localização */}
+            {mapEmbedUrl && (
+              <div className="bg-card border border-border rounded-2xl p-5 sm:p-6">
+                <h2 className="text-base font-bold text-foreground mb-3">Localização</h2>
+                <div className="aspect-[4/3] rounded-xl overflow-hidden border border-border">
+                  <iframe src={mapEmbedUrl} title="Mapa do imóvel" className="w-full h-full border-0" loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
+                </div>
+                <p className="text-xs text-muted-foreground mt-3">{fullAddress}</p>
+                <a href={mapsSearchUrl} target="_blank" rel="noopener noreferrer" className="mt-3 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-border text-sm font-semibold text-foreground hover:bg-muted">
+                  <MapIcon className="w-4 h-4 text-primary" /> Ver no Google Maps
+                </a>
+              </div>
             )}
-          </div>
-        )}
+          </aside>
+        </div>
 
-        {/* Descrição */}
-        {imovel.descricao && (
-          <div className="bg-card border border-border rounded-2xl p-5 sm:p-6">
-            <h2 className="text-base font-bold text-foreground mb-3">Sobre o imóvel</h2>
-            <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{imovel.descricao}</p>
-          </div>
-        )}
+        {/* Barra de recursos */}
+        <div className="bg-card border border-border rounded-2xl mt-6 p-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 divide-border">
+          <Resource icon={Images} title="Galeria de Fotos" sub={`${images.length} foto${images.length === 1 ? "" : "s"}`} />
+          <Resource icon={Play} title="Vídeo do Imóvel" sub={imovel.link_video ? "Disponível" : "Não informado"} />
+          <Resource icon={Box} title="Tour 360°" sub={imovel.link_360 ? "Disponível" : "Não informado"} />
+          <Resource icon={FileText} title="Documentação" sub={imovel.fotos_pdf_url || imovel.link_material ? "Disponível" : "Não informada"} />
+        </div>
 
-        {/* Infraestrutura */}
-        {imovel.infraestrutura && imovel.infraestrutura.length > 0 && (
-          <ListBlock title="Infraestrutura e Lazer" items={imovel.infraestrutura} />
-        )}
-        {imovel.outras_caracteristicas && imovel.outras_caracteristicas.length > 0 && (
-          <ListBlock title="Características" items={imovel.outras_caracteristicas} />
-        )}
-        {imovel.condicoes_pagamento && imovel.condicoes_pagamento.length > 0 && (
-          <ListBlock title="Condições de Pagamento" items={imovel.condicoes_pagamento} />
-        )}
-
-        <footer className="text-center text-xs text-muted-foreground py-6">
+        <footer className="text-center text-xs text-muted-foreground py-8">
           MV BROKER CONNECT • Para mais informações, entre em contato com o anunciante.
         </footer>
       </main>
@@ -319,14 +509,14 @@ export default function ImovelPublico() {
   );
 }
 
-function Spec({ icon: Icon, label, value }: { icon: any; label: string; value: any }) {
+function Resource({ icon: Icon, title, sub }: { icon: any; title: string; sub: string }) {
   return (
-    <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/40">
-      <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center"><Icon className="w-4.5 h-4.5 text-primary" /></div>
-      <div>
-        <p className="text-[11px] text-muted-foreground uppercase tracking-wide">{label}</p>
-        <p className="text-sm font-bold text-foreground">{value}</p>
-      </div>
+    <div className="flex items-center gap-3">
+      <span className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0"><Icon className="w-4 h-4 text-primary" /></span>
+      <span className="min-w-0">
+        <span className="block text-xs font-bold text-foreground leading-tight">{title}</span>
+        <span className="block text-[11px] text-muted-foreground">{sub}</span>
+      </span>
     </div>
   );
 }
