@@ -139,6 +139,17 @@ export default function ImovelPublico() {
       ].filter(Boolean).join(", ")
     : "";
 
+  const subtitle = imovel
+    ? [
+        imovel.empreendimento ? `Empreendimento: ${imovel.empreendimento}` : null,
+        imovel.unidade ? `Apto/Unidade ${imovel.unidade}` : null,
+        imovel.quadra || imovel.lote
+          ? `Quadra ${imovel.quadra || "-"}, Lote ${imovel.lote || "-"}`
+          : null,
+        imovel.box ? `Box ${imovel.box}` : null,
+      ].filter(Boolean).join(" • ")
+    : "";
+
   const mapsSearchUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`;
   const mapEmbedUrl = imovel?.latitude && imovel?.longitude
     ? `https://maps.google.com/maps?q=${imovel.latitude},${imovel.longitude}&z=15&output=embed`
