@@ -47,6 +47,9 @@ interface ImovelRow {
   ativo_site: boolean;
   empreendimento: string | null;
   unidade: string | null;
+  quadra: string | null;
+  lote: string | null;
+  box: string | null;
   infraestrutura: string[] | null;
   outras_caracteristicas: string[] | null;
   condicoes_pagamento: string[] | null;
