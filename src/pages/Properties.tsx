@@ -411,6 +411,9 @@ const getSavedCategoryOrder = (): typeof defaultCategories => {
 // (sem dados de exemplo — a lista vem 100% do banco)
 
 
+// Cache em memória para reabrir a página instantaneamente (stale-while-revalidate)
+let propertiesCache: Property[] | null = null;
+
 export default function Properties() {
   const navigate = useNavigate();
   const { user, subscription, isSuperAdmin, isAdminStaff } = useAuth();
@@ -503,7 +506,8 @@ export default function Properties() {
 
       if (error) {
         toast.error("Erro ao carregar imóveis");
-        setPropertyList([]);
+        if (!propertiesCache) setPropertyList([]);
+        setLoadingProperties(false);
         return;
       }
 
