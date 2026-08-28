@@ -170,31 +170,48 @@ export default function ImovelPublico() {
     if (!imovel || !images.length) { toast.info("Sem fotos para baixar."); return; }
     try {
       toast.loading("Gerando PDF...", { id: "pdf" });
-      const { jsPDF } = await import("jspdf");
-      const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
-      const pageW = pdf.internal.pageSize.getWidth();
-      const pageH = pdf.internal.pageSize.getHeight();
-      pdf.setFontSize(20); pdf.text(imovel.titulo, pageW / 2, 30, { align: "center" });
-      pdf.setFontSize(14); pdf.text(fmt(Number(imovel.preco)), pageW / 2, 42, { align: "center" });
-      pdf.setFontSize(11); pdf.text(`${imovel.endereco} - ${imovel.cidade}`, pageW / 2, 52, { align: "center" });
-      const loadImg = (src: string) => new Promise<HTMLImageElement>((res, rej) => {
-        const i = new Image(); i.crossOrigin = "anonymous"; i.onload = () => res(i); i.onerror = rej; i.src = src;
+      const { generatePhotoBookPdf } = await import("@/utils/generatePhotoBookPdf");
+      await generatePhotoBookPdf({
+        title: imovel.titulo,
+        price: Number(imovel.preco),
+        priceInstallment: imovel.preco_parcelado,
+        address: [imovel.endereco, imovel.numero].filter(Boolean).join(", "),
+        neighborhood: imovel.bairro,
+        city: [imovel.cidade, imovel.estado].filter(Boolean).join(" - "),
+        status: imovel.status,
+        type: imovel.tipo,
+        empreendimento: imovel.empreendimento,
+        unit: imovel.unidade,
+        quadra: imovel.quadra,
+        lote: imovel.lote,
+        box: imovel.box,
+        area: imovel.area,
+        privateArea: imovel.area_privativa,
+        bedrooms: imovel.quartos,
+        suites: imovel.suites,
+        bathrooms: imovel.banheiros,
+        parking: imovel.vagas,
+        description: imovel.descricao,
+        features: [
+          ...(imovel.infraestrutura || []),
+          ...(imovel.outras_caracteristicas || []),
+          imovel.vista ? `Vista: ${imovel.vista}` : "",
+          imovel.padrao ? `Padrão: ${imovel.padrao}` : "",
+          imovel.condicao ? `Condição: ${imovel.condicao}` : "",
+          imovel.posicao_solar ? `Posição solar: ${imovel.posicao_solar}` : "",
+          imovel.vista_mar ? "Vista para o mar" : "",
+          imovel.decorado ? "Decorado" : "",
+          imovel.aceita_permuta ? "Aceita permuta" : "",
+        ].filter(Boolean) as string[],
+        brokerName: imovel.corretor_nome,
+        agencyName: imovel.imobiliaria_nome,
+        images,
+        pageUrl: window.location.href,
       });
-      for (const src of images) {
-        try {
-          const img = await loadImg(src);
-          const c = document.createElement("canvas"); c.width = img.naturalWidth; c.height = img.naturalHeight;
-          c.getContext("2d")!.drawImage(img, 0, 0);
-          const d = c.toDataURL("image/jpeg", 0.85);
-          const r = img.naturalWidth / img.naturalHeight;
-          let w = pageW - 20, h = w / r; if (h > pageH - 20) { h = pageH - 20; w = h * r; }
-          pdf.addPage(); pdf.addImage(d, "JPEG", (pageW - w) / 2, (pageH - h) / 2, w, h);
-        } catch {}
-      }
-      pdf.save(`${imovel.titulo.replace(/\s+/g, "_")}.pdf`);
       toast.dismiss("pdf"); toast.success("PDF gerado!");
     } catch (e) { toast.dismiss("pdf"); toast.error("Erro ao gerar PDF"); }
   };
+
 
   const scrollThumbs = (dir: 1 | -1) => {
     thumbsRef.current?.scrollBy({ left: dir * 240, behavior: "smooth" });
