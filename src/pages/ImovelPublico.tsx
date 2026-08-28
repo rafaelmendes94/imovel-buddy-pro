@@ -79,7 +79,6 @@ export default function ImovelPublico() {
   const [notFound, setNotFound] = useState(false);
   const [idx, setIdx] = useState(0);
   const [lightbox, setLightbox] = useState<number | null>(null);
-  const [videoPlaying, setVideoPlaying] = useState(false);
   const [canEdit, setCanEdit] = useState(false);
   const thumbsRef = useRef<HTMLDivElement>(null);
 
