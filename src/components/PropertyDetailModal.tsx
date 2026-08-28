@@ -523,7 +523,7 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
           )}
 
           <div className="absolute top-3 right-3 px-3 py-1.5 rounded-full bg-black/50 text-white text-xs font-bold backdrop-blur-sm">
-            {Math.floor(currentImageIndex / 2) + 1} / {Math.ceil(images.length / 2)}
+            {currentImageIndex + 1} / {images.length}
           </div>
 
           {/* Badges */}
@@ -552,16 +552,13 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
             </p>
           </div>
 
-          {images.length > 2 && (
+          {images.length > 1 && (
             <div className="absolute bottom-3 right-3 flex gap-1.5">
-              {Array.from({ length: Math.ceil(images.length / 2) }).map((_, i) => {
-                const active = Math.floor(currentImageIndex / 2) === i;
-                return (
-                  <button key={i} onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(i * 2); }}
-                    className={cn("w-2.5 h-2.5 rounded-full transition-all", active ? "bg-card w-5" : "bg-card/50 hover:bg-card/80")}
-                  />
-                );
-              })}
+              {images.map((_, i) => (
+                <button key={i} onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(i); }}
+                  className={cn("w-2.5 h-2.5 rounded-full transition-all", i === currentImageIndex ? "bg-card w-5" : "bg-card/50 hover:bg-card/80")}
+                />
+              ))}
             </div>
           )}
         </div>
