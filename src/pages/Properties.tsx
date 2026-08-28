@@ -5,7 +5,6 @@ import { Link } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { BackButton } from "@/components/BackButton";
 import { PropertyMap } from "@/components/PropertyMap";
-import { PropertyDetailModal } from "@/components/PropertyDetailModal";
 import { RoutePlanner } from "@/components/RoutePlanner";
 import { SharkAI } from "@/components/SharkAI";
 import { PartnersAdSlider } from "@/components/PartnersAdSlider";
@@ -21,7 +20,7 @@ import {
   FolderDown, User, ShieldCheck, Percent, Gift, BarChart3, FileSignature,
   TrendingUp, Wallet, RefreshCw, ArrowUp, ArrowDown, Banknote, Copy, Maximize2, Scan, Route, Globe, Trash2,
 } from "lucide-react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { generatePropertyPdf } from "@/utils/generatePropertyPdf";
@@ -428,7 +427,6 @@ export default function Properties() {
       .then(({ data }) => setCurrentImoveis(Number(data) || 0));
   }, [user, subscription?.id]);
 
-  const [searchParams, setSearchParams] = useSearchParams();
   const [propertyList, setPropertyList] = useState<Property[]>(() => propertiesCache ?? []);
   const [loadingProperties, setLoadingProperties] = useState(!propertiesCache);
   const [search, setSearch] = useState("");
@@ -454,18 +452,7 @@ export default function Properties() {
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const ITEMS_PER_PAGE = 30;
 
-  // Restore selected property from URL param
-  const propertyIdFromUrl = searchParams.get("property");
-  const [selectedProperty, setSelectedPropertyState] = useState<Property | null>(null);
-
-  const setSelectedProperty = (p: Property | null) => {
-    setSelectedPropertyState(p);
-    if (p) {
-      setSearchParams(prev => { prev.set("property", p.id); return prev; }, { replace: true });
-    } else {
-      setSearchParams(prev => { prev.delete("property"); return prev; }, { replace: true });
-    }
-  };
+  const openProperty = (property: Property) => navigate(`/imovel/${property.id}`);
 
   const [viewingTerm, setViewingTerm] = useState<string | null>(null);
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
@@ -611,12 +598,6 @@ export default function Properties() {
     };
     loadFavorites();
   }, []);
-
-  useEffect(() => {
-    if (!propertyIdFromUrl || propertyList.length === 0) return;
-    const found = propertyList.find((p) => p.id === propertyIdFromUrl) || null;
-    setSelectedPropertyState(found);
-  }, [propertyIdFromUrl, propertyList]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -1431,7 +1412,7 @@ export default function Properties() {
                 key={property.id}
                 property={property}
                 onStatusChange={handleStatusChange}
-                onSelect={setSelectedProperty}
+                onSelect={openProperty}
                 onViewTerm={setViewingTerm}
                 isFavorited={favoriteIds.includes(property.id)}
                 onToggleFavorite={toggleFavorite}
@@ -1452,7 +1433,7 @@ export default function Properties() {
                 key={property.id}
                 property={property}
                 onStatusChange={handleStatusChange}
-                onSelect={setSelectedProperty}
+                onSelect={openProperty}
                 isFavorited={favoriteIds.includes(property.id)}
                 onToggleFavorite={toggleFavorite}
                 isInRoute={routeIds.includes(property.id)}
@@ -1473,7 +1454,7 @@ export default function Properties() {
             ))}
           </div>
         ) : (
-          <PropertyMap properties={sorted} onSelectProperty={(p) => setSelectedProperty(p)} />
+          <PropertyMap properties={sorted} onSelectProperty={openProperty} />
         )}
 
         {/* Pagination */}
@@ -1580,7 +1561,7 @@ export default function Properties() {
                   {favoritedProperties.map((p) => (
                     <div
                       key={p.id}
-                      onClick={() => { setShowFavoritesModal(false); setSelectedProperty(p); }}
+                      onClick={() => { setShowFavoritesModal(false); openProperty(p); }}
                       className="bg-background rounded-xl border border-border overflow-hidden cursor-pointer hover:shadow-md transition-shadow group"
                     >
                       <div className="relative h-36 overflow-hidden">
@@ -1732,7 +1713,7 @@ export default function Properties() {
 
       {/* Floating tools */}
       <RoutePlanner properties={routeProperties} />
-      <SharkAI properties={propertyList} onSelectProperty={setSelectedProperty} />
+      <SharkAI properties={propertyList} onSelectProperty={openProperty} />
 
       {/* Sold confirmation dialog */}
       <SoldConfirmDialog
@@ -1747,21 +1728,6 @@ export default function Properties() {
         open={importOpen}
         onClose={() => setImportOpen(false)}
         onImported={() => window.location.reload()}
-      />
-
-      {/* Property Detail Modal */}
-      <PropertyDetailModal
-        property={selectedProperty}
-        onClose={() => setSelectedProperty(null)}
-        allProperties={propertyList}
-        brokerInfo={brokerInfo}
-        onSelectSimilar={(p) => setSelectedProperty(p)}
-        onUpdateProperty={(updated) => {
-          setPropertyList((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
-          setSelectedProperty(updated);
-        }}
-        onFilterByTitle={(title) => { setSelectedProperty(null); setSearch(title.split(" ").slice(0, 2).join(" ")); setActiveCategory("todos"); }}
-        onFilterByCondition={(cond) => { setSelectedProperty(null); setFilterCondition(cond); setShowFilters(true); setActiveCategory("todos"); }}
       />
 
       {/* Delete Confirmation Modal */}
@@ -1855,7 +1821,7 @@ export default function Properties() {
                       <div
                         key={p.id}
                         className="flex items-center gap-3 p-3 rounded-xl border border-border hover:bg-muted/30 transition-colors cursor-pointer"
-                        onClick={() => { setShowSoldThisMonth(false); setSelectedProperty(p); }}
+                        onClick={() => { setShowSoldThisMonth(false); openProperty(p); }}
                       >
                         <img src={p.image} alt={p.title} className="w-16 h-12 rounded-lg object-cover flex-shrink-0" />
                         <div className="flex-1 min-w-0">
