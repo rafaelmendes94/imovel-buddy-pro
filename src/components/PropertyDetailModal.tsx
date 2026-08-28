@@ -197,21 +197,11 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
 
   const prevImage = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setCurrentImageIndex((prev) => {
-      const next = prev - 2;
-      if (next < 0) {
-        const lastPair = Math.max(0, (Math.ceil(images.length / 2) - 1) * 2);
-        return lastPair;
-      }
-      return next;
-    });
+    setCurrentImageIndex((prev) => (prev > 0 ? prev - 1 : images.length - 1));
   };
   const nextImage = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setCurrentImageIndex((prev) => {
-      const next = prev + 2;
-      return next >= images.length ? 0 : next;
-    });
+    setCurrentImageIndex((prev) => (prev < images.length - 1 ? prev + 1 : 0));
   };
 
   // -- Inline edit helpers --
@@ -514,20 +504,11 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
           </TooltipProvider>
         </div>
 
-        {/* Main image gallery - 2 imagens quadradas por vez */}
+        {/* Main image gallery - 1 foto por vez */}
         <div className="relative bg-gray-900">
-          <div className="grid grid-cols-2 gap-1">
-            <button type="button" onClick={() => setLightboxIndex(currentImageIndex)} className="relative aspect-square bg-gray-800 overflow-hidden group cursor-zoom-in">
-              <img src={images[currentImageIndex]} alt={property.title} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
-            </button>
-            {images[currentImageIndex + 1] ? (
-              <button type="button" onClick={() => setLightboxIndex(currentImageIndex + 1)} className="relative aspect-square bg-gray-800 overflow-hidden group cursor-zoom-in">
-                <img src={images[currentImageIndex + 1]} alt={property.title} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
-              </button>
-            ) : (
-              <div className="relative aspect-square bg-gray-800" />
-            )}
-          </div>
+          <button type="button" onClick={() => setLightboxIndex(currentImageIndex)} className="relative w-full aspect-[4/3] sm:aspect-video bg-gray-800 overflow-hidden group cursor-zoom-in block">
+            <img src={images[currentImageIndex]} alt={property.title} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+          </button>
           <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/40 via-transparent to-black/20" />
 
           {images.length > 1 && (
