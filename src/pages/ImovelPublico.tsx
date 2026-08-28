@@ -567,31 +567,6 @@ export default function ImovelPublico() {
               ))}
             </dl>
           </div>
-
-          {imovel.link_360 ? (
-            <div id="tour360" className="bg-card border border-border rounded-xl sm:rounded-2xl p-4 sm:p-6 scroll-mt-20">
-              <h2 className="text-base font-bold text-foreground mb-3 flex items-center gap-2">
-                Tour 360° <span className="px-2 py-0.5 rounded bg-primary text-primary-foreground text-[10px] font-bold">Novo</span>
-              </h2>
-              {imovel.link_360.includes("http") ? (
-                <>
-                  <div className="aspect-video rounded-xl overflow-hidden">
-                    <iframe src={imovel.link_360} title="Tour 360" className="w-full h-full border-0" allowFullScreen />
-                  </div>
-                  <a href={imovel.link_360} target="_blank" rel="noopener noreferrer" className="mt-3 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-border text-sm font-semibold text-foreground hover:bg-muted">
-                    <Box className="w-4 h-4 text-primary" /> Abrir Tour 360°
-                  </a>
-                </>
-              ) : (
-                <p className="text-sm text-muted-foreground">{imovel.link_360}</p>
-              )}
-            </div>
-          ) : (
-            <div className="bg-card border border-border rounded-xl sm:rounded-2xl p-4 sm:p-6 flex flex-col items-center justify-center text-center min-h-[160px]">
-              <Box className="w-8 h-8 text-muted-foreground/50 mb-2" />
-              <p className="text-xs text-muted-foreground">Tour 360° não informado</p>
-            </div>
-          )}
         </div>
 
         {/* ===== Infraestrutura / pagamento ===== */}
