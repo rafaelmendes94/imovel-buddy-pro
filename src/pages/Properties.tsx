@@ -411,6 +411,9 @@ const getSavedCategoryOrder = (): typeof defaultCategories => {
 // (sem dados de exemplo — a lista vem 100% do banco)
 
 
+// Cache em memória para reabrir a página instantaneamente (stale-while-revalidate)
+let propertiesCache: Property[] | null = null;
+
 export default function Properties() {
   const navigate = useNavigate();
   const { user, subscription, isSuperAdmin, isAdminStaff } = useAuth();
@@ -426,7 +429,8 @@ export default function Properties() {
   }, [user, subscription?.id]);
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const [propertyList, setPropertyList] = useState<Property[]>([]);
+  const [propertyList, setPropertyList] = useState<Property[]>(() => propertiesCache ?? []);
+  const [loadingProperties, setLoadingProperties] = useState(!propertiesCache);
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<Category>("todos");
   const [view, setView] = useState<"grid" | "list" | "map">("grid");
@@ -502,7 +506,8 @@ export default function Properties() {
 
       if (error) {
         toast.error("Erro ao carregar imóveis");
-        setPropertyList([]);
+        if (!propertiesCache) setPropertyList([]);
+        setLoadingProperties(false);
         return;
       }
 
@@ -588,7 +593,9 @@ export default function Properties() {
         };
       });
 
+      propertiesCache = mapped;
       setPropertyList(mapped);
+      setLoadingProperties(false);
     };
 
     fetchProperties();
@@ -1408,6 +1415,17 @@ export default function Properties() {
         {/* Content */}
         {view === "grid" ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+            {loadingProperties && propertyList.length === 0 &&
+              Array.from({ length: 8 }).map((_, i) => (
+                <div key={`skel-${i}`} className="rounded-xl overflow-hidden bg-card border border-border animate-pulse">
+                  <div className="h-44 bg-muted" />
+                  <div className="p-4 space-y-2">
+                    <div className="h-4 bg-muted rounded w-3/4" />
+                    <div className="h-3 bg-muted rounded w-1/2" />
+                    <div className="h-3 bg-muted rounded w-2/3" />
+                  </div>
+                </div>
+              ))}
             {paginated.map((property) => (
               <PropertyCard
                 key={property.id}
@@ -1506,7 +1524,7 @@ export default function Properties() {
           </div>
         )}
 
-        {filtered.length === 0 && (
+        {filtered.length === 0 && !loadingProperties && (
           <div className="text-center py-16 text-muted-foreground">
             <Building2 className="w-12 h-12 mx-auto mb-3 opacity-40" />
             <p>Nenhum imóvel encontrado</p>
