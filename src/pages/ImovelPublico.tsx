@@ -138,16 +138,14 @@ export default function ImovelPublico() {
       ].filter(Boolean).join(", ")
     : "";
 
-  const subtitle = imovel
+  const subtitleItems = imovel
     ? [
-        imovel.empreendimento ? `Empreendimento: ${imovel.empreendimento}` : null,
-        imovel.unidade ? `Apto/Unidade ${imovel.unidade}` : null,
-        imovel.quadra || imovel.lote
-          ? `Quadra ${imovel.quadra || "-"}, Lote ${imovel.lote || "-"}`
-          : null,
-        imovel.box ? `Box ${imovel.box}` : null,
-      ].filter(Boolean).join(" • ")
-    : "";
+        { label: "Empreendimento", value: imovel.empreendimento || "-" },
+        { label: "Apto/Unidade", value: imovel.unidade || "-" },
+        { label: "Quadra/Lote", value: [imovel.quadra, imovel.lote].filter(Boolean).join(" / ") || "-" },
+        { label: "Box", value: imovel.box || "-" },
+      ]
+    : [];
 
   const mapsSearchUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`;
   const mapEmbedUrl = imovel?.latitude && imovel?.longitude
@@ -380,8 +378,15 @@ export default function ImovelPublico() {
             {imovel.status}
           </span>
           <h1 className="text-xl sm:text-3xl font-black text-foreground leading-tight mt-2">{imovel.titulo}</h1>
-          {subtitle && (
-            <p className="text-xs sm:text-sm font-semibold text-primary mt-1.5">{subtitle}</p>
+          {subtitleItems.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2 mt-2">
+              {subtitleItems.map((item, i) => (
+                <span key={i} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-muted text-xs font-semibold text-foreground">
+                  <span className="text-muted-foreground font-medium">{item.label}:</span>
+                  <span className="text-primary">{item.value}</span>
+                </span>
+              ))}
+            </div>
           )}
           <a href={mapsSearchUrl} target="_blank" rel="noopener noreferrer" className="text-xs sm:text-sm text-muted-foreground mt-1.5 flex items-start gap-1.5 hover:text-primary transition-colors">
             <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
