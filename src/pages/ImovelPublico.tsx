@@ -266,7 +266,7 @@ export default function ImovelPublico() {
 
   const downloads = [
     images.length > 0 && { icon: Images, title: "Baixar Todas as Fotos", sub: `ZIP (${images.length} fotos)`, onClick: handleDownloadFotos },
-    hasVideo && { icon: Play, title: "Vídeo do Imóvel", sub: "Assistir agora", onClick: () => scrollTo("video") },
+    hasVideo && { icon: Play, title: "Vídeo do Imóvel", sub: "Assistir agora", onClick: () => document.getElementById("video")?.scrollIntoView({ behavior: "smooth", block: "start" }) },
     imovel.link_360 && { icon: Box, title: "Tour 360°", sub: "Abrir Tour", href: imovel.link_360 },
     imovel.fotos_pdf_url && { icon: FileText, title: "Documentação", sub: "PDF", href: imovel.fotos_pdf_url },
     imovel.link_material && { icon: LayoutGrid, title: "Plantas", sub: "PDF", href: imovel.link_material },
