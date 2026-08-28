@@ -242,7 +242,7 @@ export default function ImovelPublico() {
               <Download className="w-4 h-4" /> <span className="hidden sm:inline">Baixar fotos</span>
             </button>
             <button onClick={handleShare} className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs sm:text-sm font-semibold hover:bg-primary/90">
-              <Share2 className="w-4 h-4" /> <span className="hidden xs:inline sm:inline">Compartilhar</span>
+              <Share2 className="w-4 h-4" /> <span className="hidden sm:inline">Compartilhar</span>
             </button>
           </div>
         </div>
