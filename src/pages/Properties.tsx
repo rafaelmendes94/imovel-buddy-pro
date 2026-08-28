@@ -1454,7 +1454,7 @@ export default function Properties() {
             ))}
           </div>
         ) : (
-          <PropertyMap properties={sorted} onSelectProperty={(p) => setSelectedProperty(p)} />
+          <PropertyMap properties={sorted} onSelectProperty={openProperty} />
         )}
 
         {/* Pagination */}
@@ -1561,7 +1561,7 @@ export default function Properties() {
                   {favoritedProperties.map((p) => (
                     <div
                       key={p.id}
-                      onClick={() => { setShowFavoritesModal(false); setSelectedProperty(p); }}
+                      onClick={() => { setShowFavoritesModal(false); openProperty(p); }}
                       className="bg-background rounded-xl border border-border overflow-hidden cursor-pointer hover:shadow-md transition-shadow group"
                     >
                       <div className="relative h-36 overflow-hidden">
@@ -1821,7 +1821,7 @@ export default function Properties() {
                       <div
                         key={p.id}
                         className="flex items-center gap-3 p-3 rounded-xl border border-border hover:bg-muted/30 transition-colors cursor-pointer"
-                        onClick={() => { setShowSoldThisMonth(false); setSelectedProperty(p); }}
+                        onClick={() => { setShowSoldThisMonth(false); openProperty(p); }}
                       >
                         <img src={p.image} alt={p.title} className="w-16 h-12 rounded-lg object-cover flex-shrink-0" />
                         <div className="flex-1 min-w-0">
