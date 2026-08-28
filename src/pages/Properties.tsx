@@ -593,7 +593,9 @@ export default function Properties() {
         };
       });
 
+      propertiesCache = mapped;
       setPropertyList(mapped);
+      setLoadingProperties(false);
     };
 
     fetchProperties();
