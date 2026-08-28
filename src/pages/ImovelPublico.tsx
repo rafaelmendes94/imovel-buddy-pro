@@ -496,8 +496,49 @@ export default function ImovelPublico() {
           </div>
         )}
 
-        {/* ===== Sobre / Características / Tour 360 ===== */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mt-4 sm:mt-6 items-start">
+        {/* ===== Vídeo do Imóvel (largura total) ===== */}
+        {hasVideo && (
+          <div id="video" className="bg-card border border-border rounded-xl sm:rounded-2xl p-4 sm:p-6 mt-4 sm:mt-6 scroll-mt-20">
+            <h2 className="text-base font-bold text-foreground mb-3 flex items-center gap-2">
+              <Play className="w-4 h-4 text-primary" /> Vídeo do Imóvel
+            </h2>
+            <div className="aspect-video w-full rounded-xl overflow-hidden bg-foreground">
+              {yt ? (
+                <iframe src={yt} title="Vídeo do imóvel" className="w-full h-full" allow="accelerometer; autoplay; encrypted-media; picture-in-picture" allowFullScreen />
+              ) : isMp4 ? (
+                <video src={imovel.link_video!} className="w-full h-full" controls playsInline />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <a href={imovel.link_video!} target="_blank" rel="noopener noreferrer" className="px-5 py-3 rounded-xl bg-primary text-primary-foreground text-sm font-bold">Abrir vídeo</a>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ===== Tour 360° (largura total) ===== */}
+        {imovel.link_360 && (
+          <div id="tour360" className="bg-card border border-border rounded-xl sm:rounded-2xl p-4 sm:p-6 mt-4 sm:mt-6 scroll-mt-20">
+            <h2 className="text-base font-bold text-foreground mb-3 flex items-center gap-2">
+              Tour 360° <span className="px-2 py-0.5 rounded bg-primary text-primary-foreground text-[10px] font-bold">Novo</span>
+            </h2>
+            {imovel.link_360.includes("http") ? (
+              <>
+                <div className="aspect-video w-full rounded-xl overflow-hidden">
+                  <iframe src={imovel.link_360} title="Tour 360" className="w-full h-full border-0" allowFullScreen />
+                </div>
+                <a href={imovel.link_360} target="_blank" rel="noopener noreferrer" className="mt-3 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-border text-sm font-semibold text-foreground hover:bg-muted">
+                  <Box className="w-4 h-4 text-primary" /> Abrir Tour 360° em tela cheia
+                </a>
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">{imovel.link_360}</p>
+            )}
+          </div>
+        )}
+
+        {/* ===== Sobre / Características ===== */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mt-4 sm:mt-6 items-start">
           {imovel.descricao && (
             <div className="bg-card border border-border rounded-xl sm:rounded-2xl p-4 sm:p-6">
               <h2 className="text-base font-bold text-foreground mb-3">Sobre o Imóvel</h2>
