@@ -132,7 +132,7 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, 
     <div className="group rounded-xl overflow-hidden bg-card shadow-md hover:shadow-xl transition-all duration-300 border border-border flex flex-col h-full min-h-[300px]">
       {/* Image area */}
       <div className="relative cursor-pointer" onClick={() => onSelect?.(property)}>
-        <div className="relative h-52 overflow-hidden">
+        <div className="relative aspect-[4/3] overflow-hidden">
           <img
             src={imgs[imgIndex]}
             alt={property.title}
