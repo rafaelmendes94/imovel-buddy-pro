@@ -138,16 +138,14 @@ export default function ImovelPublico() {
       ].filter(Boolean).join(", ")
     : "";
 
-  const subtitle = imovel
+  const subtitleItems = imovel
     ? [
-        imovel.empreendimento ? `Empreendimento: ${imovel.empreendimento}` : null,
-        imovel.unidade ? `Apto/Unidade ${imovel.unidade}` : null,
-        imovel.quadra || imovel.lote
-          ? `Quadra ${imovel.quadra || "-"}, Lote ${imovel.lote || "-"}`
-          : null,
-        imovel.box ? `Box ${imovel.box}` : null,
-      ].filter(Boolean).join(" • ")
-    : "";
+        { label: "Empreendimento", value: imovel.empreendimento || "-" },
+        { label: "Apto/Unidade", value: imovel.unidade || "-" },
+        { label: "Quadra/Lote", value: [imovel.quadra, imovel.lote].filter(Boolean).join(" / ") || "-" },
+        { label: "Box", value: imovel.box || "-" },
+      ]
+    : [];
 
   const mapsSearchUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`;
   const mapEmbedUrl = imovel?.latitude && imovel?.longitude
