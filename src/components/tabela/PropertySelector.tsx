@@ -182,9 +182,9 @@ export function PropertySelector({ imoveis, corretores, selectedIds, onToggle, o
                   <p className="text-[11px] text-muted-foreground truncate">
                     {[p.bairro, p.cidade].filter(Boolean).join(", ")}
                   </p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-sm font-bold text-primary">{money(p.preco)}</span>
-                    <span className="text-[10px] text-muted-foreground">{p.code}</span>
+                  <div className="flex items-center gap-2 mt-1 min-w-0">
+                    <span className="text-sm font-bold text-primary truncate">{money(p.preco)}</span>
+                    <span className="text-[10px] text-muted-foreground truncate">{p.code}</span>
                   </div>
                 </div>
               </button>
