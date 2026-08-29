@@ -17,18 +17,11 @@ import {
   brl, isActiveProperty, isSoldProperty, metricsFor, type MetricImovel,
 } from "@/lib/condoMetrics";
 import {
-  ArrowLeft, ChevronLeft, ChevronRight, Download, Edit, ExternalLink, Fence,
-  FileText, Home, Images, Loader2, MapPin, Share2, Sparkles, X,
+  ArrowLeft, Download, Edit, ExternalLink, Fence,
+  FileText, Home, Images, Loader2, MapPin, Share2, Sparkles,
 } from "lucide-react";
-
-const SECTIONS = [
-  { id: "visao", label: "Visão Geral" },
-  { id: "fotos", label: "Fotos" },
-  { id: "infra", label: "Infraestrutura" },
-  { id: "implantacao", label: "Implantação" },
-  { id: "imoveis", label: "Imóveis" },
-  { id: "localizacao", label: "Localização" },
-];
+import { PhotoGallery } from "@/components/condo/PhotoGallery";
+import { VideoBlock, TourBlock, isFileVideo, videoEmbedUrl, isSafeEmbedUrl } from "@/components/condo/MediaHero";
 
 export default function CondominiumDetail() {
   const { id } = useParams<{ id: string }>();
@@ -41,8 +34,6 @@ export default function CondominiumDetail() {
   const [imoveis, setImoveis] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [mainIdx, setMainIdx] = useState(0);
-  const [lightbox, setLightbox] = useState<number | null>(null);
 
   // filtros internos dos imóveis
   const [tab, setTab] = useState<"disponiveis" | "vendidos" | "todos">("disponiveis");
