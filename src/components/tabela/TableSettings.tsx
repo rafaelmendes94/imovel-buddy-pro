@@ -7,15 +7,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { FIELDS, FORMATS, TITLE_PRESETS, type FieldKey, type TableSettingsState } from "@/lib/tabelaTemplates";
 import { autoDescription, type TabelaCorretor, type TabelaImovel } from "@/lib/tabelaData";
+import { PaletteSelector } from "./PaletteSelector";
+import type { Palette } from "@/lib/tabelaPalettes";
 
 interface Props {
   settings: TableSettingsState;
   onChange: (patch: Partial<TableSettingsState>) => void;
   corretores: TabelaCorretor[];
   items: TabelaImovel[];
+  companyPalette?: Palette | null;
 }
 
-export function TableSettings({ settings, onChange, corretores, items }: Props) {
+export function TableSettings({ settings, onChange, corretores, items, companyPalette }: Props) {
   const toggleField = (key: FieldKey) =>
     onChange({ fields: { ...settings.fields, [key]: !settings.fields[key] } });
 
@@ -56,6 +59,17 @@ export function TableSettings({ settings, onChange, corretores, items }: Props) 
           <Switch id="logo" checked={settings.showLogo} onCheckedChange={v => onChange({ showLogo: v })} />
           <Label htmlFor="logo" className="text-xs">Mostrar logo</Label>
         </div>
+      </section>
+
+      {/* Cores da apresentação */}
+      <section className="space-y-3 rounded-xl border border-border p-3">
+        <h3 className="text-sm font-semibold text-foreground">Cores da apresentação</h3>
+        <PaletteSelector
+          palette={settings.palette}
+          baseId={settings.paletteBaseId}
+          companyPalette={companyPalette}
+          onChange={(palette, paletteBaseId) => onChange({ palette, paletteBaseId })}
+        />
       </section>
 
       {/* Formato */}
