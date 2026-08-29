@@ -362,7 +362,6 @@ export default function GeradorTabela() {
               {savingTable && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Salvar
             </Button>
           </DialogFooter>
-        </DialogFooter>
         </DialogContent>
       </Dialog>
     </AppLayout>
