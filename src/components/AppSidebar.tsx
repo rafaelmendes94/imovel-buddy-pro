@@ -14,10 +14,16 @@ import { useSidebarOrder } from "@/hooks/useSidebarOrder";
 import { toast } from "sonner";
 import logoImg from "@/assets/logo.png";
 
+type NavGroup = "GESTÃO" | "COMERCIAL" | "FINANCEIRO" | "MÍDIA" | "CONFIGURAÇÕES";
+
+const GROUP_ORDER: NavGroup[] = ["GESTÃO", "COMERCIAL", "FINANCEIRO", "MÍDIA", "CONFIGURAÇÕES"];
+
 interface NavItem {
   icon: any;
   label: string;
   path: string;
+  /** Sidebar group this item belongs to. */
+  group: NavGroup;
   /** Module key required in subscription.plan.modules to show this item for brokers. If omitted, item is admin-only. */
   module?: string;
   /** If true, item is shown to everyone (broker + admin). */
@@ -26,26 +32,28 @@ interface NavItem {
 }
 
 const allNavItems: NavItem[] = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard", always: true },
-  { icon: FileText, label: "Relatórios", path: "/relatorios" }, // admin
-  { icon: Trophy, label: "Ranking", path: "/ranking", always: true },
-  { icon: Globe, label: "Site", path: "/site-editor", module: "site" },
-  { icon: Building2, label: "Imóveis", path: "/imoveis", module: "imoveis" },
-  { icon: Map, label: "Mapas Condomínio", path: "/mapas-condominio", module: "condominios" },
-  { icon: Camera, label: "Fotos da Cidade", path: "/fotos-cidade", module: "fotos" },
-  { icon: ClipboardCheck, label: "Avaliações", path: "/avaliacoes", module: "avaliacoes" },
-  
-  { icon: Table2, label: "Tabelas", path: "/tabelas", module: "tabelas" },
-  { icon: FileSignature, label: "Contratos", path: "/contratos", module: "contratos" },
-  { icon: Clapperboard, label: "Material Extra", path: "/videomaker", module: "videomaker" },
-  
-  { icon: Users, label: "Corretores", path: "/cadastro-corretores", always: true },
-  { icon: Landmark2, label: "Imobiliárias", path: "/imobiliarias" }, // admin
-  { icon: HardHat, label: "Construtoras", path: "/construtoras", always: true },
-  // { icon: ShoppingBag, label: "Brick", path: "/brick", always: true }, // oculto
-  { icon: CreditCard, label: "Assinatura", path: "/painel/assinatura", always: true },
-  { icon: Settings, label: "Configurações", path: "/configuracoes", always: true },
+  { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard", group: "GESTÃO", always: true },
+  { icon: Building2, label: "Imóveis", path: "/imoveis", group: "GESTÃO", module: "imoveis" },
+  { icon: Map, label: "Mapas Condomínio", path: "/mapas-condominio", group: "GESTÃO", module: "condominios" },
+  { icon: Globe, label: "Site", path: "/site-editor", group: "GESTÃO", module: "site" },
+
+  { icon: Users, label: "Corretores", path: "/cadastro-corretores", group: "COMERCIAL", always: true },
+  { icon: HardHat, label: "Construtoras", path: "/construtoras", group: "COMERCIAL", always: true },
+  { icon: Landmark2, label: "Imobiliárias", path: "/imobiliarias", group: "COMERCIAL" }, // admin
+  { icon: Trophy, label: "Ranking", path: "/ranking", group: "COMERCIAL", always: true },
+  { icon: ClipboardCheck, label: "Avaliações", path: "/avaliacoes", group: "COMERCIAL", module: "avaliacoes" },
+
+  { icon: FileText, label: "Relatórios", path: "/relatorios", group: "FINANCEIRO" }, // admin
+  { icon: Table2, label: "Tabelas", path: "/tabelas", group: "FINANCEIRO", module: "tabelas" },
+
+  { icon: Camera, label: "Fotos da Cidade", path: "/fotos-cidade", group: "MÍDIA", module: "fotos" },
+  { icon: Clapperboard, label: "Material Extra", path: "/videomaker", group: "MÍDIA", module: "videomaker" },
+  { icon: FileSignature, label: "Contratos", path: "/contratos", group: "MÍDIA", module: "contratos" },
+
+  { icon: CreditCard, label: "Assinatura", path: "/painel/assinatura", group: "CONFIGURAÇÕES", always: true },
+  { icon: Settings, label: "Configurações", path: "/configuracoes", group: "CONFIGURAÇÕES", always: true },
 ];
+
 
 interface AppSidebarProps {
   onNavigate?: () => void;
@@ -161,57 +169,24 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
     return isChildActive(item);
   };
 
-  return (
-    <aside
-      className={cn(
-        "flex flex-col h-screen bg-sidebar border-r border-sidebar-border transition-all duration-300 sticky top-0",
-        collapsed ? "w-[72px]" : "w-[260px]"
-      )}
-    >
-      {/* Logo */}
-      <div className="flex items-center gap-3 px-4 h-16 border-b border-sidebar-border flex-shrink-0">
-        <img src={logoImg} alt="MV BROKER CONNECT" className="w-9 h-9 object-contain flex-shrink-0" />
-        {!collapsed && (
-          <div className="overflow-hidden">
-            <h1 className="text-sm font-bold text-sidebar-accent-foreground tracking-tight">
-              MV BROKER CONNECT
-            </h1>
-            <p className="text-[10px] text-sidebar-foreground">
-              Gestão Imobiliária
-            </p>
-          </div>
-        )}
-      </div>
+  // Collapsible groups (persisted locally)
+  const [closedGroups, setClosedGroups] = useState<Record<string, boolean>>(() => {
+    try {
+      return JSON.parse(localStorage.getItem("sidebar-closed-groups") || "{}");
+    } catch {
+      return {};
+    }
+  });
+  const toggleGroup = (g: string) => {
+    setClosedGroups(prev => {
+      const next = { ...prev, [g]: !prev[g] };
+      try { localStorage.setItem("sidebar-closed-groups", JSON.stringify(next)); } catch { /* ignore */ }
+      return next;
+    });
+  };
 
-      {/* Navigation */}
-      <nav className="flex-1 py-2 px-2 space-y-0.5 overflow-y-auto scrollbar-thin">
-        {showMyPage && (
-          <div className="mb-1 rounded-lg bg-sidebar-accent/40 border border-sidebar-border p-2 space-y-1">
-            <Link
-              to={`/corretor/${brokerSlug}`}
-              onClick={onNavigate}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={cn(
-                "flex items-center gap-3 px-2 py-2 rounded-md text-sm font-semibold transition-all",
-                "text-sidebar-primary hover:bg-sidebar-accent"
-              )}
-            >
-              <HomeIcon className="w-5 h-5 flex-shrink-0" />
-              {!collapsed && <span className="flex-1">Meus Imóveis</span>}
-            </Link>
-            {!collapsed && (
-              <button
-                onClick={copyMyPageLink}
-                className="flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-[11px] text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
-              >
-                <Share2 className="w-3.5 h-3.5" />
-                <span className="truncate">Copiar link público</span>
-              </button>
-            )}
-          </div>
-        )}
-        {orderedItems.map((item, index) => {
+
+  const renderNavItem = (item: NavItem, index: number) => {
           const dragProps = {
             "data-nav-index": index,
             onPointerDown: (e: React.PointerEvent) => {
@@ -305,6 +280,81 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
                 <item.icon className="w-5 h-5 flex-shrink-0" />
                 {!collapsed && <span>{item.label}</span>}
               </Link>
+            </div>
+          );
+  };
+
+  return (
+    <aside
+      className={cn(
+        "flex flex-col h-screen bg-sidebar border-r border-sidebar-border transition-all duration-300 sticky top-0",
+        collapsed ? "w-[72px]" : "w-[260px]"
+      )}
+    >
+      {/* Logo */}
+      <div className="flex items-center gap-3 px-4 h-16 border-b border-sidebar-border flex-shrink-0">
+        <img src={logoImg} alt="MV BROKER CONNECT" className="w-9 h-9 object-contain flex-shrink-0" />
+        {!collapsed && (
+          <div className="overflow-hidden">
+            <h1 className="text-sm font-bold text-sidebar-accent-foreground tracking-tight">
+              MV BROKER CONNECT
+            </h1>
+            <p className="text-[10px] text-sidebar-foreground">
+              Gestão Imobiliária
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 py-2 px-2 space-y-0.5 overflow-y-auto scrollbar-thin">
+        {showMyPage && (
+          <div className="mb-1 rounded-lg bg-sidebar-accent/40 border border-sidebar-border p-2 space-y-1">
+            <Link
+              to={`/corretor/${brokerSlug}`}
+              onClick={onNavigate}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={cn(
+                "flex items-center gap-3 px-2 py-2 rounded-md text-sm font-semibold transition-all",
+                "text-sidebar-primary hover:bg-sidebar-accent"
+              )}
+            >
+              <HomeIcon className="w-5 h-5 flex-shrink-0" />
+              {!collapsed && <span className="flex-1">Meus Imóveis</span>}
+            </Link>
+            {!collapsed && (
+              <button
+                onClick={copyMyPageLink}
+                className="flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-[11px] text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
+              >
+                <Share2 className="w-3.5 h-3.5" />
+                <span className="truncate">Copiar link público</span>
+              </button>
+            )}
+          </div>
+        )}
+        {GROUP_ORDER.filter(g => orderedItems.some(i => i.group === g)).map(g => {
+          const groupItems = orderedItems
+            .map((item, index) => ({ item, index }))
+            .filter(x => x.item.group === g);
+          const open = collapsed || !closedGroups[g];
+          return (
+            <div key={g} className="pt-2 first:pt-0">
+              {!collapsed && (
+                <button
+                  onClick={() => toggleGroup(g)}
+                  className="flex items-center gap-1 w-full px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/50 hover:text-sidebar-foreground transition-colors"
+                >
+                  <span className="flex-1 text-left">{g}</span>
+                  <ChevronDown className={cn("w-3 h-3 transition-transform", !open && "-rotate-90")} />
+                </button>
+              )}
+              {open && (
+                <div className="space-y-0.5 mt-0.5">
+                  {groupItems.map(({ item, index }) => renderNavItem(item, index))}
+                </div>
+              )}
             </div>
           );
         })}

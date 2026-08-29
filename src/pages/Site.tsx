@@ -1,4 +1,5 @@
 import { PLACEHOLDER_IMAGE } from "@/lib/placeholderImage";
+import { getPropertyUnitParts } from "@/lib/propertyIdentity";
 import { PUBLIC_IMOVEL_COLUMNS } from "@/lib/publicImovelColumns";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
@@ -124,10 +125,13 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, 
   const [imgIndex, setImgIndex] = useState(0);
   const broker = brokerInfo[property.broker] || { photo: getBrokerAvatar(property.broker || "Corretor"), whatsapp: "" };
   const whatsappMessage = encodeURIComponent(`Olá! Tenho interesse no imóvel: ${property.title} - ${formatCurrency(property.price)}`);
-  const unitLabel = property.unitNumber && property.boxNumber
-    ? `${property.unitNumber} • Box ${property.boxNumber}`
-    : property.unitNumber || (property.boxNumber ? `Box ${property.boxNumber}` : "");
-  const unitParts = [unitLabel, property.quadra, property.lote].filter(Boolean);
+  const unitParts = getPropertyUnitParts({
+    tipo: property.type,
+    unidade: property.unitNumber,
+    box: property.boxNumber,
+    quadra: property.quadra,
+    lote: property.lote,
+  });
   const imgs = property.images && property.images.length > 0 ? property.images : [property.image];
   const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${property.address}, ${property.city}`)}`;
 

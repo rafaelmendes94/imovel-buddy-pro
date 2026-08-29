@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import { generatePropertyPdf } from "@/utils/generatePropertyPdf";
 import { useAuth } from "@/hooks/useAuth";
 import { ImportImoveisModal } from "@/components/ImportImoveisModal";
+import { getPropertyUnitParts } from "@/lib/propertyIdentity";
 
 // Broker info
 const brokerInfo: Record<string, { photo: string; whatsapp: string }> = {
@@ -1993,10 +1994,14 @@ function PropertyCard({
     whatsapp: property.brokerWhatsapp || fallback.whatsapp,
   };
   const whatsappMessage = encodeURIComponent(`Olá! Tenho interesse no imóvel: ${property.title} - ${formatCurrency(property.price)}`);
-  const unitLabel = property.unitNumber && property.boxNumber
-    ? `${property.unitNumber} • Box ${property.boxNumber}`
-    : property.unitNumber || (property.boxNumber ? `Box ${property.boxNumber}` : "");
-  const unitParts = [unitLabel, property.quadra, property.lote].filter(Boolean);
+  const unitParts = getPropertyUnitParts({
+    tipo: property.type,
+    unidade: property.unitNumber,
+    box: property.boxNumber,
+    quadra: property.quadra,
+    lote: property.lote,
+  });
+
 
   const handleStatusChange = (newStatus: Property["status"]) => {
     if (newStatus === "Vendido" && property.status !== "Vendido") {
@@ -2451,10 +2456,14 @@ function PropertyRow({
   };
 
   const ownerTypeInfo = property.ownerType ? ownerTypeConfig[property.ownerType] : null;
-  const unitLabel = property.unitNumber && property.boxNumber
-    ? `${property.unitNumber} • Box ${property.boxNumber}`
-    : property.unitNumber || (property.boxNumber ? `Box ${property.boxNumber}` : "");
-  const unitParts = [unitLabel, property.quadra, property.lote].filter(Boolean);
+  const unitParts = getPropertyUnitParts({
+    tipo: property.type,
+    unidade: property.unitNumber,
+    box: property.boxNumber,
+    quadra: property.quadra,
+    lote: property.lote,
+  });
+
 
   return (
     <div className={cn("elevated-card rounded-xl relative overflow-hidden transition-all duration-300", animatePulse && "animate-sold-pulse")}>
