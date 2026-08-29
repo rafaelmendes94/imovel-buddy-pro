@@ -17,13 +17,14 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Fence, Loader2, MapPin, Plus, Search, SlidersHorizontal, X } from "lucide-react";
+import { Download, Fence, Images, Loader2, Map as MapIcon, MapPin, Plus, Search, SlidersHorizontal, X } from "lucide-react";
 
 interface CondoRow {
   id: string; nome: string; endereco: string | null; cidade: string | null; estado: string | null;
   bairro: string | null; tipo: string | null; taxa_condominio: number | null; amenidades: string[] | null;
   imagem_url: string | null; descricao: string | null;
   fotos_empreendimento: string[] | null; fotos_infra: string[] | null;
+  mapa_pdf_url: string | null; implantacao_url: string | null;
 }
 
 const PRICE_RANGES = [
@@ -75,7 +76,7 @@ export default function Condominiums() {
       const [cRes, iRes] = await Promise.all([
         supabase
           .from("condominios")
-          .select("id, nome, endereco, cidade, estado, bairro, tipo, taxa_condominio, amenidades, imagem_url, descricao, fotos_empreendimento, fotos_infra")
+          .select("id, nome, endereco, cidade, estado, bairro, tipo, taxa_condominio, amenidades, imagem_url, descricao, fotos_empreendimento, fotos_infra, mapa_pdf_url, implantacao_url")
           .order("nome"),
         supabase
           .from("imoveis")
@@ -374,11 +375,15 @@ export default function Condominiums() {
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
             {pageItems.map(c => {
               const m = metricsOf(c.id);
+              const hasFotos = !!(c.imagem_url || (c.fotos_empreendimento?.length ?? 0) || (c.fotos_infra?.length ?? 0));
               return (
-                <button
+                <div
                   key={c.id}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => navigate(`/condominios/${c.id}`)}
-                  className="group relative block w-full text-left rounded-2xl overflow-hidden border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                  onKeyDown={e => { if (e.key === "Enter") navigate(`/condominios/${c.id}`); }}
+                  className="group relative block w-full text-left rounded-2xl overflow-hidden border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl cursor-pointer"
                 >
                   <div className="relative aspect-[4/3] overflow-hidden">
                     <img
@@ -407,7 +412,38 @@ export default function Condominiums() {
                       )}
                     </div>
                   </div>
-                </button>
+                  {(hasFotos || c.mapa_pdf_url || c.implantacao_url) && (
+                    <div className="flex items-stretch gap-2 p-2.5 border-t border-border bg-muted/40">
+                      {hasFotos && (
+                        <button
+                          title="Ver fotos do condomínio"
+                          onClick={e => { e.stopPropagation(); navigate(`/condominios/${c.id}`); }}
+                          className="flex-1 inline-flex items-center justify-center gap-1.5 h-9 rounded-lg border border-border bg-card text-xs font-medium text-foreground hover:border-primary hover:text-primary transition-colors"
+                        >
+                          <Images className="w-4 h-4 text-primary" /> Fotos
+                        </button>
+                      )}
+                      {c.mapa_pdf_url && (
+                        <button
+                          title="Baixar mapa (PDF)"
+                          onClick={e => { e.stopPropagation(); window.open(c.mapa_pdf_url!, "_blank", "noopener"); }}
+                          className="flex-1 inline-flex items-center justify-center gap-1.5 h-9 rounded-lg border border-border bg-card text-xs font-medium text-foreground hover:border-primary hover:text-primary transition-colors"
+                        >
+                          <MapIcon className="w-4 h-4 text-primary" /> Mapa
+                        </button>
+                      )}
+                      {c.implantacao_url && (
+                        <button
+                          title="Baixar implantação"
+                          onClick={e => { e.stopPropagation(); window.open(c.implantacao_url!, "_blank", "noopener"); }}
+                          className="flex-1 inline-flex items-center justify-center gap-1.5 h-9 rounded-lg border border-border bg-card text-xs font-medium text-foreground hover:border-primary hover:text-primary transition-colors"
+                        >
+                          <Download className="w-4 h-4 text-primary" /> Implantação
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
               );
             })}
           </div>
