@@ -169,57 +169,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
     return isChildActive(item);
   };
 
-  return (
-    <aside
-      className={cn(
-        "flex flex-col h-screen bg-sidebar border-r border-sidebar-border transition-all duration-300 sticky top-0",
-        collapsed ? "w-[72px]" : "w-[260px]"
-      )}
-    >
-      {/* Logo */}
-      <div className="flex items-center gap-3 px-4 h-16 border-b border-sidebar-border flex-shrink-0">
-        <img src={logoImg} alt="MV BROKER CONNECT" className="w-9 h-9 object-contain flex-shrink-0" />
-        {!collapsed && (
-          <div className="overflow-hidden">
-            <h1 className="text-sm font-bold text-sidebar-accent-foreground tracking-tight">
-              MV BROKER CONNECT
-            </h1>
-            <p className="text-[10px] text-sidebar-foreground">
-              Gestão Imobiliária
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* Navigation */}
-      <nav className="flex-1 py-2 px-2 space-y-0.5 overflow-y-auto scrollbar-thin">
-        {showMyPage && (
-          <div className="mb-1 rounded-lg bg-sidebar-accent/40 border border-sidebar-border p-2 space-y-1">
-            <Link
-              to={`/corretor/${brokerSlug}`}
-              onClick={onNavigate}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={cn(
-                "flex items-center gap-3 px-2 py-2 rounded-md text-sm font-semibold transition-all",
-                "text-sidebar-primary hover:bg-sidebar-accent"
-              )}
-            >
-              <HomeIcon className="w-5 h-5 flex-shrink-0" />
-              {!collapsed && <span className="flex-1">Meus Imóveis</span>}
-            </Link>
-            {!collapsed && (
-              <button
-                onClick={copyMyPageLink}
-                className="flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-[11px] text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
-              >
-                <Share2 className="w-3.5 h-3.5" />
-                <span className="truncate">Copiar link público</span>
-              </button>
-            )}
-          </div>
-        )}
-        {orderedItems.map((item, index) => {
+  const renderNavItem = (item: NavItem, index: number) => {
           const dragProps = {
             "data-nav-index": index,
             onPointerDown: (e: React.PointerEvent) => {
@@ -313,6 +263,81 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
                 <item.icon className="w-5 h-5 flex-shrink-0" />
                 {!collapsed && <span>{item.label}</span>}
               </Link>
+            </div>
+          );
+  };
+
+  return (
+    <aside
+      className={cn(
+        "flex flex-col h-screen bg-sidebar border-r border-sidebar-border transition-all duration-300 sticky top-0",
+        collapsed ? "w-[72px]" : "w-[260px]"
+      )}
+    >
+      {/* Logo */}
+      <div className="flex items-center gap-3 px-4 h-16 border-b border-sidebar-border flex-shrink-0">
+        <img src={logoImg} alt="MV BROKER CONNECT" className="w-9 h-9 object-contain flex-shrink-0" />
+        {!collapsed && (
+          <div className="overflow-hidden">
+            <h1 className="text-sm font-bold text-sidebar-accent-foreground tracking-tight">
+              MV BROKER CONNECT
+            </h1>
+            <p className="text-[10px] text-sidebar-foreground">
+              Gestão Imobiliária
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 py-2 px-2 space-y-0.5 overflow-y-auto scrollbar-thin">
+        {showMyPage && (
+          <div className="mb-1 rounded-lg bg-sidebar-accent/40 border border-sidebar-border p-2 space-y-1">
+            <Link
+              to={`/corretor/${brokerSlug}`}
+              onClick={onNavigate}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={cn(
+                "flex items-center gap-3 px-2 py-2 rounded-md text-sm font-semibold transition-all",
+                "text-sidebar-primary hover:bg-sidebar-accent"
+              )}
+            >
+              <HomeIcon className="w-5 h-5 flex-shrink-0" />
+              {!collapsed && <span className="flex-1">Meus Imóveis</span>}
+            </Link>
+            {!collapsed && (
+              <button
+                onClick={copyMyPageLink}
+                className="flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-[11px] text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
+              >
+                <Share2 className="w-3.5 h-3.5" />
+                <span className="truncate">Copiar link público</span>
+              </button>
+            )}
+          </div>
+        )}
+        {GROUP_ORDER.filter(g => orderedItems.some(i => i.group === g)).map(g => {
+          const groupItems = orderedItems
+            .map((item, index) => ({ item, index }))
+            .filter(x => x.item.group === g);
+          const open = collapsed || !closedGroups[g];
+          return (
+            <div key={g} className="pt-2 first:pt-0">
+              {!collapsed && (
+                <button
+                  onClick={() => toggleGroup(g)}
+                  className="flex items-center gap-1 w-full px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/50 hover:text-sidebar-foreground transition-colors"
+                >
+                  <span className="flex-1 text-left">{g}</span>
+                  <ChevronDown className={cn("w-3 h-3 transition-transform", !open && "-rotate-90")} />
+                </button>
+              )}
+              {open && (
+                <div className="space-y-0.5 mt-0.5">
+                  {groupItems.map(({ item, index }) => renderNavItem(item, index))}
+                </div>
+              )}
             </div>
           );
         })}
