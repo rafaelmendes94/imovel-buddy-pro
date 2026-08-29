@@ -5,7 +5,7 @@ import {
   Building2, Building, Fence, Camera, ClipboardCheck, Wallet,
   Table2, FileSignature, Clapperboard, Globe, Landmark, Settings,
   FileText, Map, Briefcase, ShoppingBag, Brain, Handshake,
-  GripVertical, RotateCcw, Trophy,
+  GripVertical, RotateCcw, Trophy, LayoutTemplate,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -38,6 +38,7 @@ const operationalItems = [
   { icon: ClipboardCheck, label: "Avaliações", path: "/avaliacoes", moduleKey: "avaliacoes" },
   { icon: Wallet, label: "Financeiro", path: "/financeiro", moduleKey: "financeiro" },
   { icon: Table2, label: "Tabelas", path: "/tabelas", moduleKey: "tabelas" },
+  { icon: LayoutTemplate, label: "Gerador de Tabela", path: "/ferramentas/gerador-tabela", moduleKey: "tabelas" },
   { icon: FileSignature, label: "Contratos", path: "/contratos", moduleKey: "contratos" },
   { icon: Clapperboard, label: "Material Extra", path: "/videomaker", moduleKey: "material_extra" },
   { icon: Settings, label: "Configurações", path: "/configuracoes", moduleKey: "configuracoes" },
