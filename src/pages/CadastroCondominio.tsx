@@ -12,7 +12,7 @@ import { QuickPick } from '@/components/QuickPick';
 import { CepAutoFill, type AddressData } from '@/components/CepAutoFill';
 import { InfraToggle } from '@/components/InfraToggle';
 import { useSystemOptions } from '@/hooks/useSystemOptions';
-import { Fence, MapPin, Layers, Save, Image, Loader2, Building2, FileText, DollarSign, FileUp, Upload, Camera, Video, FolderDown } from 'lucide-react';
+import { Fence, MapPin, Layers, Save, Image, Loader2, Building2, FileText, DollarSign, FileUp, Upload, Camera, Video, FolderDown, Box } from 'lucide-react';
 import { MediaGalleryUpload } from '@/components/MediaGalleryUpload';
 
 const typeOptions = ["Vertical", "Horizontal", "Misto"];
@@ -34,6 +34,7 @@ const initialForm = {
   imagem_url: '', latitude: '', longitude: '',
   implantacao_url: '',
   mapa_pdf_url: '',
+  link_360: '', video_capa_url: '', tour_capa_url: '',
   fotos_infra: [] as string[], fotos_empreendimento: [] as string[],
   videos: [] as string[], material_digital: [] as string[],
 };
@@ -65,6 +66,9 @@ export default function CadastroCondominio() {
             longitude: data.longitude ? String(data.longitude) : '',
             implantacao_url: (data as any).implantacao_url || '',
             mapa_pdf_url: (data as any).mapa_pdf_url || '',
+            link_360: (data as any).link_360 || '',
+            video_capa_url: (data as any).video_capa_url || '',
+            tour_capa_url: (data as any).tour_capa_url || '',
             fotos_infra: (data as any).fotos_infra || [],
             fotos_empreendimento: (data as any).fotos_empreendimento || [],
             videos: (data as any).videos || [],
@@ -106,6 +110,9 @@ export default function CadastroCondominio() {
       latitude: parseFloat(form.latitude) || 0, longitude: parseFloat(form.longitude) || 0,
       implantacao_url: form.implantacao_url,
       mapa_pdf_url: form.mapa_pdf_url,
+      link_360: form.link_360,
+      video_capa_url: form.video_capa_url,
+      tour_capa_url: form.tour_capa_url,
       fotos_infra: form.fotos_infra, fotos_empreendimento: form.fotos_empreendimento,
       videos: form.videos, material_digital: form.material_digital,
     };
@@ -283,14 +290,42 @@ export default function CadastroCondominio() {
         </section>
 
         <section>
-          <SectionHeader icon={Video} title="Vídeos" />
-          <MediaGalleryUpload
-            label="Tour, drone, vídeo institucional (arquivo ou link YouTube/Vimeo)"
-            values={form.videos}
-            onChange={(v) => setForm(f => ({ ...f, videos: v }))}
-            folder="condominios/videos"
-            kind="video"
-          />
+          <SectionHeader icon={Video} title="Vídeo do Condomínio" />
+          <div className="space-y-4">
+            <MediaGalleryUpload
+              label="Vídeo institucional / drone (arquivo MP4 ou link YouTube/Vimeo). O primeiro vídeo válido é exibido na página."
+              values={form.videos}
+              onChange={(v) => setForm(f => ({ ...f, videos: v }))}
+              folder="condominios/videos"
+              kind="video"
+            />
+            <MediaGalleryUpload
+              label="Capa/thumbnail do vídeo (opcional)"
+              values={form.video_capa_url ? [form.video_capa_url] : []}
+              onChange={(v) => setForm(f => ({ ...f, video_capa_url: v[v.length - 1] || '' }))}
+              folder="condominios/video-capa"
+              kind="image"
+              multiple={false}
+            />
+          </div>
+        </section>
+
+        <section>
+          <SectionHeader icon={Box} title="Tour Virtual 360°" />
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label className="text-xs">Link / embed do tour (Matterport, Kuula, Momento360, RoundMe)</Label>
+              <Input value={form.link_360} onChange={(e) => setForm({ ...form, link_360: e.target.value })} placeholder="https://my.matterport.com/show/?m=..." />
+            </div>
+            <MediaGalleryUpload
+              label="Capa/thumbnail do tour 360° (opcional)"
+              values={form.tour_capa_url ? [form.tour_capa_url] : []}
+              onChange={(v) => setForm(f => ({ ...f, tour_capa_url: v[v.length - 1] || '' }))}
+              folder="condominios/tour-capa"
+              kind="image"
+              multiple={false}
+            />
+          </div>
         </section>
 
         <section>
