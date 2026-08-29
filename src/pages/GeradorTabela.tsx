@@ -21,8 +21,9 @@ import { TemplateSelector } from "@/components/tabela/TemplateSelector";
 import { TableSettings } from "@/components/tabela/TableSettings";
 import { TablePreview } from "@/components/tabela/TablePreview";
 import { fetchTabelaImoveis, type TabelaCorretor, type TabelaImovel } from "@/lib/tabelaData";
-import { defaultSettings, getFormat, getTemplate, type TableSettingsState } from "@/lib/tabelaTemplates";
+import { defaultSettings, getFormat, type TableSettingsState } from "@/lib/tabelaTemplates";
 import { exportTableImages, exportTablePdf, fileBaseName } from "@/utils/exportTable";
+import type { Palette } from "@/lib/tabelaPalettes";
 
 interface SavedTable {
   id: string;
@@ -41,6 +42,7 @@ export default function GeradorTabela() {
   const [imoveis, setImoveis] = useState<TabelaImovel[]>([]);
   const [corretores, setCorretores] = useState<TabelaCorretor[]>([]);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [companyPalette, setCompanyPalette] = useState<Palette | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [settings, setSettings] = useState<TableSettingsState>(defaultSettings());
@@ -64,11 +66,27 @@ export default function GeradorTabela() {
         .select("id, nome, telefone, creci, foto_url")
         .eq("ativo", true)
         .order("nome"),
-      (supabase.from("site_config") as any).select("logo_url").not("logo_url", "is", null).limit(1),
+      (supabase.from("site_config") as any)
+        .select("logo_url, header_color, accent_color, footer_color, title_color")
+        .limit(1),
     ]);
     setImoveis(props);
     setCorretores((brokers?.data as TabelaCorretor[]) || []);
-    setLogoUrl(config?.data?.[0]?.logo_url || null);
+    const cfg = config?.data?.[0];
+    setLogoUrl(cfg?.logo_url || null);
+    setCompanyPalette(
+      cfg?.header_color
+        ? {
+            id: "minha-imobiliaria",
+            name: "Minha imobiliária",
+            principal: cfg.header_color,
+            secundaria: cfg.footer_color || cfg.header_color,
+            destaque: cfg.accent_color || "#D6A23A",
+            fundo: "#FFFFFF",
+            texto: cfg.title_color || "#10233F",
+          }
+        : null
+    );
     setLoading(false);
   }, []);
 
@@ -132,7 +150,7 @@ export default function GeradorTabela() {
     setExporting("pdf");
     try {
       await withRealSize(pages =>
-        exportTablePdf(pages, getFormat(settings.formato), getTemplate(settings.template).colors.pageBg, fileBaseName(settings.titulo))
+        exportTablePdf(pages, getFormat(settings.formato), settings.palette.fundo, fileBaseName(settings.titulo))
       );
       toast.success("PDF gerado com links clicáveis!");
     } catch (e: any) {
@@ -147,7 +165,7 @@ export default function GeradorTabela() {
     setExporting(type);
     try {
       await withRealSize(pages =>
-        exportTableImages(pages, getTemplate(settings.template).colors.pageBg, fileBaseName(settings.titulo), type)
+        exportTableImages(pages, settings.palette.fundo, fileBaseName(settings.titulo), type)
       );
       toast.success(`Imagem ${type.toUpperCase()} gerada!`);
     } catch (e: any) {
@@ -271,7 +289,7 @@ export default function GeradorTabela() {
                 </Step>
 
                 <Step n={4} icon={<Settings2 className="w-4 h-4" />} title="Configurações">
-                  <TableSettings settings={settings} onChange={patch} corretores={corretores} items={selectedItems} />
+                  <TableSettings settings={settings} onChange={patch} corretores={corretores} items={selectedItems} companyPalette={companyPalette} />
                 </Step>
               </div>
 
