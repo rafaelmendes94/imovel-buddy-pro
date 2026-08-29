@@ -376,10 +376,13 @@ export default function Condominiums() {
             {pageItems.map(c => {
               const m = metricsOf(c.id);
               return (
-                <button
+                <div
                   key={c.id}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => navigate(`/condominios/${c.id}`)}
-                  className="group relative block w-full text-left rounded-2xl overflow-hidden border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                  onKeyDown={e => { if (e.key === "Enter") navigate(`/condominios/${c.id}`); }}
+                  className="group relative block w-full text-left rounded-2xl overflow-hidden border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl cursor-pointer"
                 >
                   <div className="relative aspect-[4/3] overflow-hidden">
                     <img
