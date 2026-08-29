@@ -1,4 +1,5 @@
 import { PLACEHOLDER_IMAGE } from "@/lib/placeholderImage";
+import { getPropertyUnitParts } from "@/lib/propertyIdentity";
 import { PUBLIC_IMOVEL_COLUMNS } from "@/lib/publicImovelColumns";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
