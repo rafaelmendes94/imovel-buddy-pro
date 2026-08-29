@@ -24,6 +24,7 @@ interface CondoRow {
   bairro: string | null; tipo: string | null; taxa_condominio: number | null; amenidades: string[] | null;
   imagem_url: string | null; descricao: string | null;
   fotos_empreendimento: string[] | null; fotos_infra: string[] | null;
+  mapa_pdf_url: string | null; implantacao_url: string | null;
 }
 
 const PRICE_RANGES = [
@@ -75,7 +76,7 @@ export default function Condominiums() {
       const [cRes, iRes] = await Promise.all([
         supabase
           .from("condominios")
-          .select("id, nome, endereco, cidade, estado, bairro, tipo, taxa_condominio, amenidades, imagem_url, descricao, fotos_empreendimento, fotos_infra")
+          .select("id, nome, endereco, cidade, estado, bairro, tipo, taxa_condominio, amenidades, imagem_url, descricao, fotos_empreendimento, fotos_infra, mapa_pdf_url, implantacao_url")
           .order("nome"),
         supabase
           .from("imoveis")
