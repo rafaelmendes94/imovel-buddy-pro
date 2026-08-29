@@ -227,7 +227,14 @@ export const TablePreview = forwardRef<HTMLDivElement, Props>(function TablePrev
   }
 
   return (
-    <div ref={ref} style={{ width: fmt.width * scale, height: (fmt.height * scale + 24) * pages.length }}>
+    <div
+      ref={node => {
+        outer.current = node;
+        if (typeof ref === "function") ref(node);
+        else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
+      }}
+      style={{ width: fmt.width * scale, height: (fmt.height * scale + 24) * pages.length }}
+    >
       <div style={{ transform: `scale(${scale})`, transformOrigin: "top left", width: fmt.width }}>
         {pages.map((pageItems, pi) => (
           <div
