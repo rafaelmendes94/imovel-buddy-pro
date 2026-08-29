@@ -21,7 +21,7 @@ import { TemplateSelector } from "@/components/tabela/TemplateSelector";
 import { TableSettings } from "@/components/tabela/TableSettings";
 import { TablePreview } from "@/components/tabela/TablePreview";
 import { fetchTabelaImoveis, type TabelaCorretor, type TabelaImovel } from "@/lib/tabelaData";
-import { defaultSettings, getFormat, getTemplate, type TableSettingsState } from "@/lib/tabelaTemplates";
+import { defaultSettings, getFormat, type TableSettingsState } from "@/lib/tabelaTemplates";
 import { exportTableImages, exportTablePdf, fileBaseName } from "@/utils/exportTable";
 import type { Palette } from "@/lib/tabelaPalettes";
 
