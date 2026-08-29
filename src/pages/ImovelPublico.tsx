@@ -62,6 +62,9 @@ interface ImovelRow {
   imobiliaria_nome: string | null;
   latitude: number | null;
   longitude: number | null;
+  edificios?: { nome: string | null } | null;
+  condominios?: { nome: string | null } | null;
+  empreendimentos?: { nome: string | null } | null;
 }
 
 const fmt = (v: number) =>
@@ -92,14 +95,23 @@ export default function ImovelPublico() {
       setLoading(true);
       const { data, error } = await supabase
         .from("imoveis")
-        .select(PUBLIC_IMOVEL_COLUMNS)
+        .select(`${PUBLIC_IMOVEL_COLUMNS}, edificios(nome), condominios(nome), empreendimentos(nome)`)
         .eq("id", id)
         .eq("ativo_site", true)
         .maybeSingle();
       if (error || !data) {
         setNotFound(true);
       } else {
-        setImovel(data as any);
+        const row = data as unknown as ImovelRow;
+        setImovel({
+          ...row,
+          empreendimento:
+            row.empreendimento?.trim() ||
+            row.edificios?.nome?.trim() ||
+            row.condominios?.nome?.trim() ||
+            row.empreendimentos?.nome?.trim() ||
+            null,
+        });
         trackPropertyView(id);
       }
       setLoading(false);
@@ -140,8 +152,9 @@ export default function ImovelPublico() {
 
   const subtitleItems = imovel
     ? (() => {
-        const isApto = imovel.tipo === "Apartamento";
-        const isCasaOuCondominio = imovel.tipo === "Casa" || imovel.tipo === "Condomínio";
+        const tipoNormalizado = imovel.tipo.trim().toLocaleLowerCase("pt-BR");
+        const isApto = tipoNormalizado.includes("apartamento") || tipoNormalizado === "apto";
+        const isCasaOuCondominio = tipoNormalizado.includes("casa") || tipoNormalizado.includes("condomínio") || tipoNormalizado.includes("condominio");
         const items: { label: string; value: string }[] = [];
         if (isApto) {
           if (imovel.empreendimento) items.push({ label: "Empreendimento", value: imovel.empreendimento });
