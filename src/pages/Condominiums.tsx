@@ -411,7 +411,38 @@ export default function Condominiums() {
                       )}
                     </div>
                   </div>
-                </button>
+                  {(hasFotos || c.mapa_pdf_url || c.implantacao_url) && (
+                    <div className="flex items-stretch gap-2 p-2.5 border-t border-border bg-muted/40">
+                      {hasFotos && (
+                        <button
+                          title="Ver fotos do condomínio"
+                          onClick={e => { e.stopPropagation(); navigate(`/condominios/${c.id}`); }}
+                          className="flex-1 inline-flex items-center justify-center gap-1.5 h-9 rounded-lg border border-border bg-card text-xs font-medium text-foreground hover:border-primary hover:text-primary transition-colors"
+                        >
+                          <Images className="w-4 h-4 text-primary" /> Fotos
+                        </button>
+                      )}
+                      {c.mapa_pdf_url && (
+                        <button
+                          title="Baixar mapa (PDF)"
+                          onClick={e => { e.stopPropagation(); window.open(c.mapa_pdf_url!, "_blank", "noopener"); }}
+                          className="flex-1 inline-flex items-center justify-center gap-1.5 h-9 rounded-lg border border-border bg-card text-xs font-medium text-foreground hover:border-primary hover:text-primary transition-colors"
+                        >
+                          <MapIcon className="w-4 h-4 text-primary" /> Mapa
+                        </button>
+                      )}
+                      {c.implantacao_url && (
+                        <button
+                          title="Baixar implantação"
+                          onClick={e => { e.stopPropagation(); window.open(c.implantacao_url!, "_blank", "noopener"); }}
+                          className="flex-1 inline-flex items-center justify-center gap-1.5 h-9 rounded-lg border border-border bg-card text-xs font-medium text-foreground hover:border-primary hover:text-primary transition-colors"
+                        >
+                          <Download className="w-4 h-4 text-primary" /> Implantação
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
               );
             })}
           </div>
