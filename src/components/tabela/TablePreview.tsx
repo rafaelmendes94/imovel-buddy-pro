@@ -222,6 +222,125 @@ export const TablePreview = forwardRef<HTMLDivElement, Props>(function TablePrev
     );
   };
 
+  /* ---------- modelo Exclusividade (tabela em colunas) ---------- */
+  const gridColumns = () => {
+    const cols: { key: string; label: string; w: string }[] = [{ key: "imovel", label: "IMÓVEL", w: "1.05fr" }];
+    if (f.capa) cols.push({ key: "capa", label: "FOTO CAPA", w: "1.75fr" });
+    if (f.caracteristicas) cols.push({ key: "desc", label: "DESCRIÇÃO RESUMIDA", w: "1.7fr" });
+    cols.push({ key: "specs", label: "CARACTERÍSTICAS", w: "1.25fr" });
+    if (f.valor) cols.push({ key: "valor", label: "VALOR", w: "1fr" });
+    if (f.cidade || f.bairro || f.endereco) cols.push({ key: "local", label: "LOCALIZAÇÃO", w: "1.1fr" });
+    if (f.linkFotos || f.drive || f.paginaImovel || f.qrcode) cols.push({ key: "links", label: "DRIVE (FOTOS)", w: "0.95fr" });
+    if (settings.showBroker && settings.brokerMode !== "nenhum") cols.push({ key: "broker", label: "CORRETOR RESPONSÁVEL", w: "1.35fr" });
+    return cols;
+  };
+
+  const GridCell = ({ p, k }: { p: TabelaImovel; k: string }) => {
+    const broker = brokerFor(p);
+    const pad = { padding: "8px 10px" } as const;
+    if (k === "imovel")
+      return (
+        <div style={{ ...pad, display: "flex", flexDirection: "column", gap: 3, justifyContent: "center", background: c.headerBg, color: c.headerText }}>
+          {f.titulo && <span style={{ fontSize: 11.5, fontWeight: 900, letterSpacing: 0.4, lineHeight: 1.2 }}>{p.titulo.toUpperCase()}</span>}
+          {identity(p).length > 0 && (
+            <span style={{ fontSize: 9.5, fontWeight: 800, color: c.accent, letterSpacing: 0.4 }}>{identity(p).join(" • ")}</span>
+          )}
+          {f.codigo && <span style={{ fontSize: 7.5, opacity: 0.75, marginTop: 4, letterSpacing: 0.4 }}>CÓD. {p.code}</span>}
+        </div>
+      );
+    if (k === "capa")
+      return (
+        <div style={{ background: c.rowAltBg, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+          {p.capa ? (
+            <img src={p.capa} alt="" crossOrigin="anonymous" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          ) : (
+            <span style={{ fontSize: 9, color: c.muted, letterSpacing: 0.5 }}>SEM IMAGEM</span>
+          )}
+        </div>
+      );
+    if (k === "desc")
+      return (
+        <div style={{ ...pad, display: "flex", flexDirection: "column", gap: 2.5, justifyContent: "center" }}>
+          {descFor(p).slice(0, 6).map((d, i) => (
+            <span key={i} style={{ fontSize: 8.8, color: c.text, lineHeight: 1.3, display: "flex", gap: 5 }}>
+              <span style={{ color: c.accent, fontWeight: 900 }}>•</span> {d}
+            </span>
+          ))}
+        </div>
+      );
+    if (k === "specs")
+      return (
+        <div style={{ ...pad, display: "flex", flexDirection: "column", gap: 3, justifyContent: "center" }}>
+          {specs(p).map((s, i) => (
+            <span key={i} style={{ fontSize: 8.8, color: c.text, fontWeight: 600 }}>{s}</span>
+          ))}
+        </div>
+      );
+    if (k === "valor")
+      return (
+        <div style={{ ...pad, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3, textAlign: "center" }}>
+          <span style={{ fontSize: 14, fontWeight: 900, color: c.priceText }}>{money(p.preco)}</span>
+          {f.condicoesPagamento && p.condicoesPagamento.length > 0 && (
+            <span style={{ fontSize: 7.8, color: c.muted }}>{p.condicoesPagamento.slice(0, 2).join(" • ")}</span>
+          )}
+        </div>
+      );
+    if (k === "local")
+      return (
+        <div style={{ ...pad, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2, textAlign: "center" }}>
+          {[f.endereco ? p.endereco : "", f.bairro ? p.bairro : "", f.cidade ? p.cidade : ""].filter(Boolean).map((l, i) => (
+            <span key={i} style={{ fontSize: 8.8, color: c.text }}>{l}</span>
+          ))}
+        </div>
+      );
+    if (k === "links")
+      return (
+        <div style={{ ...pad, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4 }}>
+          {linksFor(p).slice(0, 2).map(l => <LinkChip key={l.label + l.url} {...l} />)}
+          {f.qrcode && <QRCodeImg value={qrUrl(p)} size={40} dark={c.priceText} />}
+        </div>
+      );
+    if (k === "broker")
+      return (
+        <div style={{ ...pad, display: "flex", alignItems: "center", gap: 8, justifyContent: "center" }}>
+          {broker?.foto_url && (
+            <img src={broker.foto_url} alt="" crossOrigin="anonymous" style={{ width: 40, height: 40, borderRadius: 999, objectFit: "cover", border: `1px solid ${c.border}` }} />
+          )}
+          <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+            <span style={{ fontSize: 9.5, fontWeight: 800, color: c.text }}>{broker?.nome || "—"}</span>
+            {f.creci && broker?.creci && <span style={{ fontSize: 7.8, color: c.muted }}>CRECI {broker.creci}</span>}
+            {f.corretorTelefone && broker?.telefone && <span style={{ fontSize: 8.2, color: c.text }}>{broker.telefone}</span>}
+          </div>
+        </div>
+      );
+    return null;
+  };
+
+  const GridTable = ({ pageItems }: { pageItems: TabelaImovel[] }) => {
+    const cols = gridColumns();
+    const template = cols.map(x => x.w).join(" ");
+    return (
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", border: `1px solid ${c.border}`, overflow: "hidden" }}>
+        <div style={{ display: "grid", gridTemplateColumns: template, background: c.accent }}>
+          {cols.map(col => (
+            <div key={col.key} style={{ padding: "7px 8px", textAlign: "center", fontSize: 8.6, fontWeight: 900, letterSpacing: 0.7, color: isDark(c.accent) ? "#ffffff" : c.headerBg, borderRight: `1px solid ${c.pageBg}22` }}>
+              {col.label}
+            </div>
+          ))}
+        </div>
+        {pageItems.map((p, i) => (
+          <div key={p.id} style={{ display: "grid", gridTemplateColumns: template, flex: 1, minHeight: 0, background: i % 2 ? c.rowAltBg : c.rowBg, borderTop: `1px solid ${c.border}` }}>
+            {cols.map(col => (
+              <div key={col.key} style={{ borderRight: `1px solid ${c.border}`, overflow: "hidden", display: "grid", minWidth: 0 }}>
+                <GridCell p={p} k={col.key} />
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   if (items.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
@@ -269,9 +388,11 @@ export const TablePreview = forwardRef<HTMLDivElement, Props>(function TablePrev
 
             {/* Conteúdo */}
             <div style={{ flex: 1, padding: "14px 24px", display: tpl.layout === "cards" ? "grid" : "flex", flexDirection: "column", gap: 10, gridTemplateColumns: tpl.layout === "cards" ? `repeat(${fmt.orientation === "landscape" ? 3 : 2}, 1fr)` : undefined, alignContent: "start", overflow: "hidden" }}>
-              {pageItems.map((p, i) =>
-                tpl.layout === "cards" ? <Card key={p.id} p={p} /> : <Row key={p.id} p={p} i={i} />
-              )}
+              {tpl.layout === "grid-table"
+                ? <GridTable pageItems={pageItems} />
+                : pageItems.map((p, i) =>
+                    tpl.layout === "cards" ? <Card key={p.id} p={p} /> : <Row key={p.id} p={p} i={i} />
+                  )}
             </div>
 
             {/* Rodapé */}
