@@ -2456,10 +2456,14 @@ function PropertyRow({
   };
 
   const ownerTypeInfo = property.ownerType ? ownerTypeConfig[property.ownerType] : null;
-  const unitLabel = property.unitNumber && property.boxNumber
-    ? `${property.unitNumber} • Box ${property.boxNumber}`
-    : property.unitNumber || (property.boxNumber ? `Box ${property.boxNumber}` : "");
-  const unitParts = [unitLabel, property.quadra, property.lote].filter(Boolean);
+  const unitParts = getPropertyUnitParts({
+    tipo: property.type,
+    unidade: property.unitNumber,
+    box: property.boxNumber,
+    quadra: property.quadra,
+    lote: property.lote,
+  });
+
 
   return (
     <div className={cn("elevated-card rounded-xl relative overflow-hidden transition-all duration-300", animatePulse && "animate-sold-pulse")}>
