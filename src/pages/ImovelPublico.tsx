@@ -139,12 +139,24 @@ export default function ImovelPublico() {
     : "";
 
   const subtitleItems = imovel
-    ? [
-        { label: "Empreendimento", value: imovel.empreendimento || "-" },
-        { label: "Apto/Unidade", value: imovel.unidade || "-" },
-        { label: "Quadra/Lote", value: [imovel.quadra, imovel.lote].filter(Boolean).join(" / ") || "-" },
-        { label: "Box", value: imovel.box || "-" },
-      ]
+    ? (() => {
+        const isApto = imovel.tipo === "Apartamento";
+        const isCasaOuCondominio = imovel.tipo === "Casa" || imovel.tipo === "Condomínio";
+        const items: { label: string; value: string }[] = [];
+        if (isApto) {
+          if (imovel.empreendimento) items.push({ label: "Empreendimento", value: imovel.empreendimento });
+          if (imovel.unidade) items.push({ label: "Apto/Unidade", value: imovel.unidade });
+          if (imovel.box) items.push({ label: "Box", value: imovel.box });
+        } else if (isCasaOuCondominio) {
+          const ql = [imovel.quadra, imovel.lote].filter(Boolean).join(" / ");
+          if (ql) items.push({ label: "Quadra/Lote", value: ql });
+        } else {
+          if (imovel.empreendimento) items.push({ label: "Empreendimento", value: imovel.empreendimento });
+          const ql = [imovel.quadra, imovel.lote].filter(Boolean).join(" / ");
+          if (ql) items.push({ label: "Quadra/Lote", value: ql });
+        }
+        return items;
+      })()
     : [];
 
   const mapsSearchUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`;
