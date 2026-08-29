@@ -25,6 +25,30 @@ interface CondoRow {
   imagem_url: string | null; descricao: string | null;
   fotos_empreendimento: string[] | null; fotos_infra: string[] | null;
   mapa_pdf_url: string | null; implantacao_url: string | null;
+  material_digital: string[] | null;
+}
+
+const slugify = (s: string) =>
+  s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-|-$/g, "").toLowerCase() || "condominio";
+
+const photosOf = (c: CondoRow) =>
+  Array.from(new Set([...(c.fotos_empreendimento || []), ...(c.fotos_infra || []), ...(c.imagem_url ? [c.imagem_url] : [])].filter(Boolean)));
+
+const driveOf = (c: CondoRow) =>
+  (c.material_digital || []).find(u => /drive\.google|onedrive|dropbox/i.test(u || "")) || null;
+
+async function downloadFile(url: string, filename: string) {
+  try {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    const href = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = href; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(href);
+  } catch {
+    window.open(url, "_blank", "noopener");
+  }
 }
 
 const PRICE_RANGES = [
