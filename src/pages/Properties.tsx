@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import { generatePropertyPdf } from "@/utils/generatePropertyPdf";
 import { useAuth } from "@/hooks/useAuth";
 import { ImportImoveisModal } from "@/components/ImportImoveisModal";
+import { getPropertyUnitParts } from "@/lib/propertyIdentity";
 
 // Broker info
 const brokerInfo: Record<string, { photo: string; whatsapp: string }> = {
