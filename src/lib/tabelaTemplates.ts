@@ -3,6 +3,8 @@
  * Somente definições visuais/estruturais — nenhum dado é alterado.
  */
 
+import { PALETTES, type Palette } from "./tabelaPalettes";
+
 export type TemplateId = "classico" | "premium-escuro" | "clean" | "cards";
 
 export interface TemplateDef {
