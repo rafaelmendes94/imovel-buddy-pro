@@ -44,7 +44,7 @@ export const TablePreview = forwardRef<HTMLDivElement, Props>(function TablePrev
     if (settings.brokerMode === "outro") return corretores.find(x => x.id === settings.brokerId) || null;
     const found = corretores.find(x => x.id === p.corretorId);
     if (found) return found;
-    return p.corretorNome ? { id: p.id, nome: p.corretorNome, telefone: null, creci: null, email: null } : null;
+    return p.corretorNome ? { id: p.id, nome: p.corretorNome, telefone: null, creci: null, foto_url: null } : null;
   };
 
   const qrUrl = (p: TabelaImovel) => {
