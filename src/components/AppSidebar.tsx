@@ -14,10 +14,16 @@ import { useSidebarOrder } from "@/hooks/useSidebarOrder";
 import { toast } from "sonner";
 import logoImg from "@/assets/logo.png";
 
+type NavGroup = "GESTÃO" | "COMERCIAL" | "FINANCEIRO" | "MÍDIA" | "CONFIGURAÇÕES";
+
+const GROUP_ORDER: NavGroup[] = ["GESTÃO", "COMERCIAL", "FINANCEIRO", "MÍDIA", "CONFIGURAÇÕES"];
+
 interface NavItem {
   icon: any;
   label: string;
   path: string;
+  /** Sidebar group this item belongs to. */
+  group: NavGroup;
   /** Module key required in subscription.plan.modules to show this item for brokers. If omitted, item is admin-only. */
   module?: string;
   /** If true, item is shown to everyone (broker + admin). */
@@ -26,26 +32,28 @@ interface NavItem {
 }
 
 const allNavItems: NavItem[] = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard", always: true },
-  { icon: FileText, label: "Relatórios", path: "/relatorios" }, // admin
-  { icon: Trophy, label: "Ranking", path: "/ranking", always: true },
-  { icon: Globe, label: "Site", path: "/site-editor", module: "site" },
-  { icon: Building2, label: "Imóveis", path: "/imoveis", module: "imoveis" },
-  { icon: Map, label: "Mapas Condomínio", path: "/mapas-condominio", module: "condominios" },
-  { icon: Camera, label: "Fotos da Cidade", path: "/fotos-cidade", module: "fotos" },
-  { icon: ClipboardCheck, label: "Avaliações", path: "/avaliacoes", module: "avaliacoes" },
-  
-  { icon: Table2, label: "Tabelas", path: "/tabelas", module: "tabelas" },
-  { icon: FileSignature, label: "Contratos", path: "/contratos", module: "contratos" },
-  { icon: Clapperboard, label: "Material Extra", path: "/videomaker", module: "videomaker" },
-  
-  { icon: Users, label: "Corretores", path: "/cadastro-corretores", always: true },
-  { icon: Landmark2, label: "Imobiliárias", path: "/imobiliarias" }, // admin
-  { icon: HardHat, label: "Construtoras", path: "/construtoras", always: true },
-  // { icon: ShoppingBag, label: "Brick", path: "/brick", always: true }, // oculto
-  { icon: CreditCard, label: "Assinatura", path: "/painel/assinatura", always: true },
-  { icon: Settings, label: "Configurações", path: "/configuracoes", always: true },
+  { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard", group: "GESTÃO", always: true },
+  { icon: Building2, label: "Imóveis", path: "/imoveis", group: "GESTÃO", module: "imoveis" },
+  { icon: Map, label: "Mapas Condomínio", path: "/mapas-condominio", group: "GESTÃO", module: "condominios" },
+  { icon: Globe, label: "Site", path: "/site-editor", group: "GESTÃO", module: "site" },
+
+  { icon: Users, label: "Corretores", path: "/cadastro-corretores", group: "COMERCIAL", always: true },
+  { icon: HardHat, label: "Construtoras", path: "/construtoras", group: "COMERCIAL", always: true },
+  { icon: Landmark2, label: "Imobiliárias", path: "/imobiliarias", group: "COMERCIAL" }, // admin
+  { icon: Trophy, label: "Ranking", path: "/ranking", group: "COMERCIAL", always: true },
+  { icon: ClipboardCheck, label: "Avaliações", path: "/avaliacoes", group: "COMERCIAL", module: "avaliacoes" },
+
+  { icon: FileText, label: "Relatórios", path: "/relatorios", group: "FINANCEIRO" }, // admin
+  { icon: Table2, label: "Tabelas", path: "/tabelas", group: "FINANCEIRO", module: "tabelas" },
+
+  { icon: Camera, label: "Fotos da Cidade", path: "/fotos-cidade", group: "MÍDIA", module: "fotos" },
+  { icon: Clapperboard, label: "Material Extra", path: "/videomaker", group: "MÍDIA", module: "videomaker" },
+  { icon: FileSignature, label: "Contratos", path: "/contratos", group: "MÍDIA", module: "contratos" },
+
+  { icon: CreditCard, label: "Assinatura", path: "/painel/assinatura", group: "CONFIGURAÇÕES", always: true },
+  { icon: Settings, label: "Configurações", path: "/configuracoes", group: "CONFIGURAÇÕES", always: true },
 ];
+
 
 interface AppSidebarProps {
   onNavigate?: () => void;
