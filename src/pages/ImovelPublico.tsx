@@ -158,8 +158,8 @@ export default function ImovelPublico() {
         const items: { label: string; value: string }[] = [];
         if (isApto) {
           if (imovel.empreendimento) items.push({ label: "Empreendimento", value: imovel.empreendimento });
-          if (imovel.unidade) items.push({ label: "Apto/Unidade", value: imovel.unidade });
-          if (imovel.box) items.push({ label: "Box", value: imovel.box });
+          const unitBox = [imovel.unidade, imovel.box ? `Box ${imovel.box}` : null].filter(Boolean).join(" • ");
+          if (unitBox) items.push({ label: "Apto/Unidade", value: unitBox });
         } else if (isCasaOuCondominio) {
           const ql = [imovel.quadra, imovel.lote].filter(Boolean).join(" / ");
           if (ql) items.push({ label: "Quadra/Lote", value: ql });

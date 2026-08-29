@@ -1993,7 +1993,10 @@ function PropertyCard({
     whatsapp: property.brokerWhatsapp || fallback.whatsapp,
   };
   const whatsappMessage = encodeURIComponent(`Olá! Tenho interesse no imóvel: ${property.title} - ${formatCurrency(property.price)}`);
-  const unitParts = [property.unitNumber, property.boxNumber, property.quadra, property.lote].filter(Boolean);
+  const unitLabel = property.unitNumber && property.boxNumber
+    ? `${property.unitNumber} • Box ${property.boxNumber}`
+    : property.unitNumber || (property.boxNumber ? `Box ${property.boxNumber}` : "");
+  const unitParts = [unitLabel, property.quadra, property.lote].filter(Boolean);
 
   const handleStatusChange = (newStatus: Property["status"]) => {
     if (newStatus === "Vendido" && property.status !== "Vendido") {
@@ -2448,7 +2451,10 @@ function PropertyRow({
   };
 
   const ownerTypeInfo = property.ownerType ? ownerTypeConfig[property.ownerType] : null;
-  const unitParts = [property.unitNumber, property.boxNumber, property.quadra, property.lote].filter(Boolean);
+  const unitLabel = property.unitNumber && property.boxNumber
+    ? `${property.unitNumber} • Box ${property.boxNumber}`
+    : property.unitNumber || (property.boxNumber ? `Box ${property.boxNumber}` : "");
+  const unitParts = [unitLabel, property.quadra, property.lote].filter(Boolean);
 
   return (
     <div className={cn("elevated-card rounded-xl relative overflow-hidden transition-all duration-300", animatePulse && "animate-sold-pulse")}>
