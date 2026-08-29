@@ -331,12 +331,8 @@ export const TablePreview = forwardRef<HTMLDivElement, Props>(function TablePrev
         {pageItems.map((p, i) => (
           <div key={p.id} style={{ display: "grid", gridTemplateColumns: template, flex: 1, minHeight: 0, background: i % 2 ? c.rowAltBg : c.rowBg, borderTop: `1px solid ${c.border}` }}>
             {cols.map(col => (
-              <div key={col.key} style={{ borderRight: `1px solid ${c.border}`, overflow: "hidden", display: "flex" }}>
-                <div style={{ flex: 1, minWidth: 0, display: "flex" }}>
-                  <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
-                    <GridCell p={p} k={col.key} />
-                  </div>
-                </div>
+              <div key={col.key} style={{ borderRight: `1px solid ${c.border}`, overflow: "hidden", display: "grid", minWidth: 0 }}>
+                <GridCell p={p} k={col.key} />
               </div>
             ))}
           </div>
@@ -392,9 +388,11 @@ export const TablePreview = forwardRef<HTMLDivElement, Props>(function TablePrev
 
             {/* Conteúdo */}
             <div style={{ flex: 1, padding: "14px 24px", display: tpl.layout === "cards" ? "grid" : "flex", flexDirection: "column", gap: 10, gridTemplateColumns: tpl.layout === "cards" ? `repeat(${fmt.orientation === "landscape" ? 3 : 2}, 1fr)` : undefined, alignContent: "start", overflow: "hidden" }}>
-              {pageItems.map((p, i) =>
-                tpl.layout === "cards" ? <Card key={p.id} p={p} /> : <Row key={p.id} p={p} i={i} />
-              )}
+              {tpl.layout === "grid-table"
+                ? <GridTable pageItems={pageItems} />
+                : pageItems.map((p, i) =>
+                    tpl.layout === "cards" ? <Card key={p.id} p={p} /> : <Row key={p.id} p={p} i={i} />
+                  )}
             </div>
 
             {/* Rodapé */}
