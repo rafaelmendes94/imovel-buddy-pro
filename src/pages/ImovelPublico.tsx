@@ -151,26 +151,22 @@ export default function ImovelPublico() {
     : "";
 
   const subtitleItems = imovel
-    ? (() => {
-        const tipoNormalizado = imovel.tipo.trim().toLocaleLowerCase("pt-BR");
-        const isApto = tipoNormalizado.includes("apartamento") || tipoNormalizado === "apto";
-        const isCasaOuCondominio = tipoNormalizado.includes("casa") || tipoNormalizado.includes("condomínio") || tipoNormalizado.includes("condominio");
-        const items: { label: string; value: string }[] = [];
-        if (isApto) {
-          if (imovel.empreendimento) items.push({ label: "Empreendimento", value: imovel.empreendimento });
-          const unitBox = [imovel.unidade, imovel.box ? `Box ${imovel.box}` : null].filter(Boolean).join(" • ");
-          if (unitBox) items.push({ label: "Apto/Unidade", value: unitBox });
-        } else if (isCasaOuCondominio) {
-          const ql = [imovel.quadra, imovel.lote].filter(Boolean).join(" / ");
-          if (ql) items.push({ label: "Quadra/Lote", value: ql });
-        } else {
-          if (imovel.empreendimento) items.push({ label: "Empreendimento", value: imovel.empreendimento });
-          const ql = [imovel.quadra, imovel.lote].filter(Boolean).join(" / ");
-          if (ql) items.push({ label: "Quadra/Lote", value: ql });
-        }
-        return items;
-      })()
+    ? getPropertyIdentityParts({
+        tipo: imovel.tipo,
+        empreendimento: imovel.empreendimento,
+        unidade: imovel.unidade,
+        box: imovel.box,
+        quadra: imovel.quadra,
+        lote: imovel.lote,
+      }).map((part) => {
+        if (part.startsWith("Unidade ")) return { label: "Apto/Unidade", value: part.replace("Unidade ", "") };
+        if (part.startsWith("Box ")) return { label: "Box", value: part.replace("Box ", "") };
+        if (part.startsWith("Quadra ")) return { label: "Quadra", value: part.replace("Quadra ", "") };
+        if (part.startsWith("Lote ")) return { label: "Lote", value: part.replace("Lote ", "") };
+        return { label: "Empreendimento", value: part };
+      })
     : [];
+
 
   const mapsSearchUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`;
   const mapEmbedUrl = imovel?.latitude && imovel?.longitude
