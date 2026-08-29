@@ -144,12 +144,8 @@ export default function ImovelPublico() {
         const isCasaOuCondominio = imovel.tipo === "Casa" || imovel.tipo === "Condomínio";
         const items: { label: string; value: string }[] = [];
         if (isApto) {
-          const unidade = imovel.unidade || "-";
-          const empreendimento = imovel.empreendimento;
-          items.push({
-            label: "Apto/Unidade",
-            value: empreendimento ? `${unidade} • ${empreendimento}` : unidade,
-          });
+          if (imovel.empreendimento) items.push({ label: "Empreendimento", value: imovel.empreendimento });
+          if (imovel.unidade) items.push({ label: "Apto/Unidade", value: imovel.unidade });
           if (imovel.box) items.push({ label: "Box", value: imovel.box });
         } else if (isCasaOuCondominio) {
           const ql = [imovel.quadra, imovel.lote].filter(Boolean).join(" / ");
