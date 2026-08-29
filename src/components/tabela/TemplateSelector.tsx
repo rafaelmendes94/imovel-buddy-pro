@@ -25,7 +25,7 @@ export function TemplateSelector({ value, onChange }: { value: TemplateId; onCha
                 <div className="h-1 w-8 rounded" style={{ background: c.accent }} />
               </div>
               <div className="p-1.5 space-y-1">
-                {t.layout === "rows"
+                {t.layout !== "cards"
                   ? Array.from({ length: 4 }).map((_, i) => (
                       <div key={i} className="flex gap-1 items-center" style={{ background: i % 2 ? c.rowAltBg : c.rowBg }}>
                         <div className="w-5 h-4 rounded-sm" style={{ background: c.border }} />

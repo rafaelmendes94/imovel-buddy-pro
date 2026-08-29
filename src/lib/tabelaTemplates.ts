@@ -5,13 +5,13 @@
 
 import { PALETTES, type Palette } from "./tabelaPalettes";
 
-export type TemplateId = "classico" | "premium-escuro" | "clean" | "cards";
+export type TemplateId = "exclusividade" | "classico" | "premium-escuro" | "clean" | "cards";
 
 export interface TemplateDef {
   id: TemplateId;
   name: string;
   description: string;
-  layout: "rows" | "cards";
+  layout: "rows" | "cards" | "grid-table";
   itemsPerPage: { landscape: number; portrait: number };
   colors: {
     pageBg: string;
@@ -28,6 +28,25 @@ export interface TemplateDef {
 }
 
 export const TEMPLATES: TemplateDef[] = [
+  {
+    id: "exclusividade",
+    name: "Exclusividade MV",
+    description: "Tabela em colunas com faixa dourada, ideal para exclusividades.",
+    layout: "grid-table",
+    itemsPerPage: { landscape: 4, portrait: 5 },
+    colors: {
+      pageBg: "#ffffff",
+      headerBg: "#0A1B33",
+      headerText: "#ffffff",
+      text: "#0B1B33",
+      muted: "#5A6A80",
+      accent: "#C8A24A",
+      rowBg: "#ffffff",
+      rowAltBg: "#F7F9FC",
+      border: "#DCE3EC",
+      priceText: "#0A1B33",
+    },
+  },
   {
     id: "classico",
     name: "Clássico Premium",
@@ -208,7 +227,7 @@ export interface TableSettingsState {
 export const defaultSettings = (): TableSettingsState => ({
   titulo: "EXCLUSIVIDADE DE IMÓVEIS",
   subtitulo: "",
-  template: "classico",
+  template: "exclusividade",
   formato: "a4-landscape",
   fields: defaultFields(),
   showLogo: true,
