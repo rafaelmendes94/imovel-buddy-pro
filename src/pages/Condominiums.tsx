@@ -17,7 +17,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Fence, Loader2, MapPin, Plus, Search, SlidersHorizontal, X } from "lucide-react";
+import { Download, Fence, Images, Loader2, Map as MapIcon, MapPin, Plus, Search, SlidersHorizontal, X } from "lucide-react";
 
 interface CondoRow {
   id: string; nome: string; endereco: string | null; cidade: string | null; estado: string | null;
@@ -375,6 +375,7 @@ export default function Condominiums() {
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
             {pageItems.map(c => {
               const m = metricsOf(c.id);
+              const hasFotos = !!(c.imagem_url || (c.fotos_empreendimento?.length ?? 0) || (c.fotos_infra?.length ?? 0));
               return (
                 <div
                   key={c.id}
