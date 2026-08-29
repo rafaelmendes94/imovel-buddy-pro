@@ -53,7 +53,10 @@ const normalizePhone = (p?: string) => (p || "").replace(/\D/g, "");
 function PropertyCard({ property, onSelect, isFavorited, onToggleFavorite, isInRoute, onToggleRoute }: { property: SiteProperty; onSelect?: (p: SiteProperty) => void; isFavorited?: boolean; onToggleFavorite?: (id: string) => void; isInRoute?: boolean; onToggleRoute?: (id: string) => void }) {
   const [imgIndex, setImgIndex] = useState(0);
   const imgs = property.images && property.images.length > 0 ? property.images : [property.image];
-  const unitParts = [property.unitNumber, property.boxNumber, property.quadra, property.lote].filter(Boolean);
+  const unitLabel = property.unitNumber && property.boxNumber
+    ? `${property.unitNumber} • Box ${property.boxNumber}`
+    : property.unitNumber || (property.boxNumber ? `Box ${property.boxNumber}` : "");
+  const unitParts = [unitLabel, property.quadra, property.lote].filter(Boolean);
   const whatsappMessage = encodeURIComponent(`Olá! Tenho interesse no imóvel: ${property.title} - ${formatCurrency(property.price)}`);
   const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${property.address}, ${property.city}`)}`;
   const brokerPhoto = property.brokerPhoto || FALLBACK_AVATAR;
