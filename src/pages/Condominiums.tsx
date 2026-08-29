@@ -1,138 +1,444 @@
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { BackButton } from "@/components/BackButton";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { InfraMediaModal } from "@/components/InfraMediaModal";
 import { cn } from "@/lib/utils";
-import { formatCurrency } from "@/data/mockData";
+import { PLACEHOLDER_IMAGE } from "@/lib/placeholderImage";
 import {
-  Fence, Plus, Search, MapPin, Home, Edit, Trash2, Camera, Map, Loader2,
-} from "lucide-react";
-
-const typeColors: Record<string, string> = {
-  Horizontal: "bg-success/10 text-success border-success/30",
-  Vertical: "bg-info/10 text-info border-info/30",
-  Misto: "bg-warning/10 text-warning border-warning/30",
-};
+  brl, brlShort, emptyMetrics, metricsByCondo, type CondoMetrics, type MetricImovel,
+} from "@/lib/condoMetrics";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Fence, Loader2, MapPin, Plus, Search, SlidersHorizontal, X } from "lucide-react";
 
 interface CondoRow {
-  id: string; nome: string; endereco: string; cidade: string; total_unidades: number;
-  unidades_disponiveis: number; taxa_condominio: number; amenidades: string[];
-  tipo: string; imagem_url: string; latitude: number; longitude: number; user_id: string;
+  id: string; nome: string; endereco: string | null; cidade: string | null; estado: string | null;
+  bairro: string | null; tipo: string | null; taxa_condominio: number | null; amenidades: string[] | null;
+  imagem_url: string | null; descricao: string | null;
+  fotos_empreendimento: string[] | null; fotos_infra: string[] | null;
 }
 
+const PRICE_RANGES = [
+  { label: "Até R$ 500 mil", min: 0, max: 500_000 },
+  { label: "R$ 500 mil – R$ 1 milhão", min: 500_000, max: 1_000_000 },
+  { label: "R$ 1 – 2 milhões", min: 1_000_000, max: 2_000_000 },
+  { label: "R$ 2 – 3 milhões", min: 2_000_000, max: 3_000_000 },
+  { label: "R$ 3 – 5 milhões", min: 3_000_000, max: 5_000_000 },
+  { label: "Acima de R$ 5 milhões", min: 5_000_000, max: null as number | null },
+];
+
+const CONDO_FEE_RANGES = [
+  { id: "todos", label: "Todos", min: null as number | null, max: null as number | null },
+  { id: "ate500", label: "Até R$ 500", min: 0, max: 500 },
+  { id: "500a1000", label: "R$ 500 – R$ 1.000", min: 500, max: 1000 },
+  { id: "1000a2000", label: "R$ 1.000 – R$ 2.000", min: 1000, max: 2000 },
+  { id: "acima2000", label: "Acima de R$ 2.000", min: 2000, max: null },
+];
+
+const coverOf = (c: CondoRow) =>
+  c.imagem_url || c.fotos_empreendimento?.[0] || c.fotos_infra?.[0] || PLACEHOLDER_IMAGE;
+
 export default function Condominiums() {
-  const [condos, setCondos] = useState<CondoRow[]>([]);
-  const [search, setSearch] = useState("");
-  const [mediaCondo, setMediaCondo] = useState<CondoRow | null>(null);
-  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const { toast } = useToast();
   const { isSuperAdmin, isAdminStaff } = useAuth();
   const canManage = isSuperAdmin || isAdminStaff;
 
-  useEffect(() => { loadData(); }, []);
+  const [condos, setCondos] = useState<CondoRow[]>([]);
+  const [imoveis, setImoveis] = useState<MetricImovel[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const loadData = async () => {
-    setLoading(true);
-    const { data } = await supabase.from("condominios").select("*").order("nome");
-    if (data) setCondos(data as any);
-    setLoading(false);
-  };
+  // filtros
+  const [search, setSearch] = useState("");
+  const [cidade, setCidade] = useState("todas");
+  const [tipo, setTipo] = useState("todos");
+  const [fee, setFee] = useState("todos");
+  const [minVal, setMinVal] = useState("");
+  const [maxVal, setMaxVal] = useState("");
+  const [features, setFeatures] = useState<string[]>([]);
+  const [onlyAvailable, setOnlyAvailable] = useState(false);
+  const [sort, setSort] = useState("padrao");
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(12);
 
-  const filtered = condos.filter(c =>
-    c.nome.toLowerCase().includes(search.toLowerCase()) ||
-    (c.endereco || "").toLowerCase().includes(search.toLowerCase())
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      // Duas consultas agregadas apenas — nada de query por condomínio (sem N+1)
+      const [cRes, iRes] = await Promise.all([
+        supabase
+          .from("condominios")
+          .select("id, nome, endereco, cidade, estado, bairro, tipo, taxa_condominio, amenidades, imagem_url, descricao, fotos_empreendimento, fotos_infra")
+          .order("nome"),
+        supabase
+          .from("imoveis")
+          .select("id, condominio_id, status, preco")
+          .not("condominio_id", "is", null),
+      ]);
+      setCondos((cRes.data as any) || []);
+      setImoveis((iRes.data as any) || []);
+      setLoading(false);
+    })();
+  }, []);
+
+  const metricsMap = useMemo(() => metricsByCondo(imoveis), [imoveis]);
+  const metricsOf = (id: string): CondoMetrics => metricsMap[id] || emptyMetrics();
+
+  const cidades = useMemo(
+    () => Array.from(new Set(condos.map(c => (c.cidade || "").trim()).filter(Boolean))).sort(),
+    [condos]
+  );
+  const tipos = useMemo(
+    () => Array.from(new Set(condos.map(c => (c.tipo || "").trim()).filter(Boolean))).sort(),
+    [condos]
+  );
+  const allFeatures = useMemo(
+    () => Array.from(new Set(condos.flatMap(c => c.amenidades || []).map(a => a.trim()).filter(Boolean))).sort(),
+    [condos]
   );
 
-  const handleDelete = async (id: string) => {
-    await supabase.from("condominios").delete().eq("id", id);
-    toast({ title: "Condomínio excluído" });
-    loadData();
+  const priceRange = useMemo(() => {
+    const min = minVal ? Number(minVal.replace(/\D/g, "")) : null;
+    const max = maxVal ? Number(maxVal.replace(/\D/g, "")) : null;
+    return { min, max };
+  }, [minVal, maxVal]);
+
+  const activeFilters =
+    (search ? 1 : 0) + (cidade !== "todas" ? 1 : 0) + (tipo !== "todos" ? 1 : 0) +
+    (fee !== "todos" ? 1 : 0) + (priceRange.min != null || priceRange.max != null ? 1 : 0) +
+    features.length + (onlyAvailable ? 1 : 0);
+
+  const clearFilters = () => {
+    setSearch(""); setCidade("todas"); setTipo("todos"); setFee("todos");
+    setMinVal(""); setMaxVal(""); setFeatures([]); setOnlyAvailable(false); setPage(1);
   };
+
+  const norm = (s?: string | null) =>
+    (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+  const filtered = useMemo(() => {
+    const q = norm(search).trim();
+    const feeCfg = CONDO_FEE_RANGES.find(f => f.id === fee)!;
+
+    const list = condos.filter(c => {
+      const m = metricsOf(c.id);
+
+      if (q) {
+        const haystack = norm(
+          [c.nome, c.cidade, c.bairro, c.endereco, c.estado, c.descricao, ...(c.amenidades || [])].join(" ")
+        );
+        if (!haystack.includes(q)) return false;
+      }
+      if (cidade !== "todas" && (c.cidade || "").trim() !== cidade) return false;
+      if (tipo !== "todos" && (c.tipo || "").trim() !== tipo) return false;
+
+      if (feeCfg.min != null || feeCfg.max != null) {
+        const v = Number(c.taxa_condominio || 0);
+        if (feeCfg.min != null && v < feeCfg.min) return false;
+        if (feeCfg.max != null && v > feeCfg.max) return false;
+      }
+
+      if (features.length) {
+        const own = (c.amenidades || []).map(norm);
+        if (!features.every(f => own.some(o => o.includes(norm(f))))) return false;
+      }
+
+      if (onlyAvailable && m.ativos === 0) return false;
+
+      if (priceRange.min != null || priceRange.max != null) {
+        // Ao menos um imóvel ATIVO dentro da faixa
+        const ok = imoveis.some(i => {
+          if (i.condominio_id !== c.id) return false;
+          const p = Number(i.preco || 0);
+          if (!p) return false;
+          if (!m.ativos) return false;
+          if (priceRange.min != null && p < priceRange.min) return false;
+          if (priceRange.max != null && p > priceRange.max) return false;
+          return true;
+        });
+        if (!ok) return false;
+      }
+      return true;
+    });
+
+    const byM = (id: string) => metricsOf(id);
+    const sorted = [...list];
+    switch (sort) {
+      case "nome-az": sorted.sort((a, b) => a.nome.localeCompare(b.nome)); break;
+      case "nome-za": sorted.sort((a, b) => b.nome.localeCompare(a.nome)); break;
+      case "vgv-ativo": sorted.sort((a, b) => byM(b.id).vgvAtivo - byM(a.id).vgvAtivo); break;
+      case "vgv-vendido": sorted.sort((a, b) => byM(b.id).vgvVendido - byM(a.id).vgvVendido); break;
+      case "mais-ativos": sorted.sort((a, b) => byM(b.id).ativos - byM(a.id).ativos); break;
+      case "mais-vendidos": sorted.sort((a, b) => byM(b.id).vendidos - byM(a.id).vendidos); break;
+      case "menor-preco":
+        sorted.sort((a, b) => (byM(a.id).minPreco ?? Infinity) - (byM(b.id).minPreco ?? Infinity)); break;
+      case "maior-preco":
+        sorted.sort((a, b) => (byM(b.id).maxPreco ?? -1) - (byM(a.id).maxPreco ?? -1)); break;
+      default: break;
+    }
+    return sorted;
+  }, [condos, imoveis, search, cidade, tipo, fee, features, onlyAvailable, priceRange, sort, metricsMap]);
+
+  // Indicadores reagem aos filtros
+  const totals = useMemo(() => {
+    return filtered.reduce(
+      (acc, c) => {
+        const m = metricsOf(c.id);
+        acc.ativos += m.ativos; acc.vendidos += m.vendidos;
+        acc.vgvAtivo += m.vgvAtivo; acc.vgvVendido += m.vgvVendido;
+        return acc;
+      },
+      { ativos: 0, vendidos: 0, vgvAtivo: 0, vgvVendido: 0 }
+    );
+  }, [filtered, metricsMap]);
+
+  useEffect(() => { setPage(1); }, [search, cidade, tipo, fee, minVal, maxVal, features, onlyAvailable, perPage]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
+  const pageItems = filtered.slice((page - 1) * perPage, page * perPage);
+
+  const toggleFeature = (f: string) =>
+    setFeatures(prev => (prev.includes(f) ? prev.filter(x => x !== f) : [...prev, f]));
+
+  const Indicator = ({ label, value }: { label: string; value: string }) => (
+    <div className="flex flex-col px-3.5 py-1.5 min-w-0">
+      <span className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</span>
+      <span className="text-sm font-bold text-foreground truncate">{value}</span>
+    </div>
+  );
 
   return (
     <AppLayout>
-      <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
+      <div className="p-4 sm:p-6 lg:p-8 space-y-5 max-w-[1700px] mx-auto">
         <BackButton />
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Condomínios</h1>
-            <p className="text-sm text-muted-foreground mt-1">{condos.length} condomínios cadastrados</p>
+            <p className="text-sm text-muted-foreground mt-1">Gerencie e visualize os condomínios cadastrados</p>
           </div>
           {canManage && (
-            <button onClick={() => navigate("/cadastro-condominio")} className="flex items-center gap-2 px-4 py-2.5 rounded-lg gradient-gold text-primary text-sm font-semibold hover:opacity-90 transition-opacity self-start">
-              <Plus className="w-4 h-4" /> Novo Condomínio
-            </button>
+            <Button onClick={() => navigate("/cadastro-condominio")} className="self-start">
+              <Plus className="w-4 h-4 mr-2" /> Novo Condomínio
+            </Button>
           )}
         </div>
 
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input type="text" placeholder="Buscar condomínio..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full pl-10 pr-4 py-2.5 bg-card border border-input rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
-        </div>
+        {/* Busca + filtros */}
+        <div className="flex flex-col lg:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Buscar condomínio por nome, cidade, bairro ou características..."
+              className="h-12 pl-10 text-sm"
+            />
+          </div>
 
-        {loading ? (
-          <div className="flex items-center justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-            {filtered.map((condo) => (
-              <div key={condo.id} className="elevated-card rounded-xl overflow-hidden group cursor-pointer" onClick={() => navigate(`/condominios/${condo.id}`)}>
-                <div className="relative h-44 overflow-hidden">
-                  <img src={condo.imagem_url || "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&h=300&fit=crop"} alt={condo.nome} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  <span className={cn("absolute top-3 left-3 px-2.5 py-1 rounded-md text-[11px] font-semibold border", typeColors[condo.tipo] || "bg-muted text-muted-foreground")}>{condo.tipo}</span>
-                  {canManage && (
-                    <div className="absolute top-3 right-3 flex gap-1.5">
-                      <button onClick={(e) => { e.stopPropagation(); navigate(`/editar-condominio/${condo.id}`); }} className="w-7 h-7 rounded-md bg-card/90 backdrop-blur-sm flex items-center justify-center hover:bg-card transition-colors"><Edit className="w-3.5 h-3.5 text-foreground" /></button>
-                      <button onClick={(e) => { e.stopPropagation(); handleDelete(condo.id); }} className="w-7 h-7 rounded-md bg-card/90 backdrop-blur-sm flex items-center justify-center hover:bg-destructive/90 transition-colors"><Trash2 className="w-3.5 h-3.5 text-foreground" /></button>
-                    </div>
-                  )}
+          <div className="flex flex-wrap gap-2">
+            <Select value={cidade} onValueChange={setCidade}>
+              <SelectTrigger className="h-12 w-[160px]"><SelectValue placeholder="Cidade" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todas">Todas as cidades</SelectItem>
+                {cidades.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+              </SelectContent>
+            </Select>
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="h-12">
+                  <SlidersHorizontal className="w-4 h-4 mr-2" />
+                  Filtros{activeFilters > 0 ? ` (${activeFilters})` : ""}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-[330px] space-y-4 max-h-[70vh] overflow-y-auto">
+                <div className="space-y-2">
+                  <Label className="text-xs">Faixa de valor dos imóveis ativos</Label>
+                  <div className="flex gap-2">
+                    <Input value={minVal} onChange={e => setMinVal(e.target.value)} placeholder="Mínimo" inputMode="numeric" />
+                    <Input value={maxVal} onChange={e => setMaxVal(e.target.value)} placeholder="Máximo" inputMode="numeric" />
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {PRICE_RANGES.map(r => (
+                      <button
+                        key={r.label}
+                        onClick={() => { setMinVal(String(r.min)); setMaxVal(r.max ? String(r.max) : ""); }}
+                        className="px-2 py-1 rounded-md border border-border text-[11px] hover:border-primary hover:text-primary"
+                      >
+                        {r.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <div className="p-4 space-y-3">
-                  <div>
-                    <h3 className="font-semibold text-card-foreground text-sm">{condo.nome}</h3>
-                    <div className="flex items-center gap-1 mt-1">
-                      <MapPin className="w-3 h-3 text-muted-foreground" />
-                      <p className="text-xs text-muted-foreground">{condo.endereco}, {condo.cidade}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <p className="text-base font-bold text-accent">{formatCurrency(condo.taxa_condominio)}<span className="text-xs text-muted-foreground font-normal">/mês</span></p>
-                    <span className="text-xs text-success font-semibold">{condo.unidades_disponiveis} disponíveis</span>
-                  </div>
-                  {condo.amenidades && condo.amenidades.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 pt-2 border-t border-border">
-                      {condo.amenidades.map(a => (
-                        <span key={a} className="px-2 py-0.5 rounded text-[10px] font-medium bg-muted text-muted-foreground">{a}</span>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Tipo</Label>
+                  <Select value={tipo} onValueChange={setTipo}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todos">Todos</SelectItem>
+                      {tipos.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Valor do condomínio</Label>
+                  <Select value={fee} onValueChange={setFee}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {CONDO_FEE_RANGES.map(f => <SelectItem key={f.id} value={f.id}>{f.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {allFeatures.length > 0 && (
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Características</Label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {allFeatures.map(f => (
+                        <button
+                          key={f}
+                          onClick={() => toggleFeature(f)}
+                          className={cn(
+                            "px-2 py-1 rounded-md border text-[11px] transition-colors",
+                            features.includes(f)
+                              ? "border-primary bg-primary/10 text-primary font-semibold"
+                              : "border-border hover:border-primary/50"
+                          )}
+                        >
+                          {f}
+                        </button>
                       ))}
                     </div>
-                  )}
-                  <div className="flex gap-2 mt-2">
-                    <button onClick={(e) => { e.stopPropagation(); navigate(`/condominios/${condo.id}`); }} className="flex items-center gap-1.5 flex-1 justify-center py-2 rounded-lg bg-emerald-500/15 text-emerald-500 text-xs font-semibold hover:bg-emerald-500/25 transition-colors border border-emerald-500/30">
-                      <Home className="w-3.5 h-3.5" /> Imóveis
-                    </button>
-                    <button onClick={(e) => { e.stopPropagation(); setMediaCondo(condo); }} className="flex items-center gap-1.5 flex-1 justify-center py-2 rounded-lg bg-gradient-to-r from-foreground/10 to-foreground/5 text-foreground text-xs font-semibold hover:from-foreground/20 hover:to-foreground/10 transition-all border border-foreground/20">
-                      <Camera className="w-3.5 h-3.5" /> Mídia
-                    </button>
-                    <button onClick={(e) => { e.stopPropagation(); window.open(`https://www.google.com/maps?q=${condo.latitude},${condo.longitude}`, "_blank"); }} className="flex items-center gap-1.5 flex-1 justify-center py-2 rounded-lg bg-info/10 text-info text-xs font-semibold hover:bg-info/20 transition-colors border border-info/20">
-                      <Map className="w-3.5 h-3.5" /> Mapa
-                    </button>
                   </div>
-                </div>
-              </div>
-            ))}
+                )}
+
+                <label className="flex items-center gap-2 text-xs text-foreground cursor-pointer">
+                  <Checkbox checked={onlyAvailable} onCheckedChange={v => setOnlyAvailable(!!v)} />
+                  Somente com imóveis disponíveis
+                </label>
+
+                {activeFilters > 0 && (
+                  <Button variant="ghost" size="sm" onClick={clearFilters} className="w-full">
+                    <X className="w-3.5 h-3.5 mr-1.5" /> Limpar filtros
+                  </Button>
+                )}
+              </PopoverContent>
+            </Popover>
+
+            <Select value={sort} onValueChange={setSort}>
+              <SelectTrigger className="h-12 w-[190px]"><SelectValue placeholder="Ordenar por" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="padrao">Padrão</SelectItem>
+                <SelectItem value="nome-az">Nome A-Z</SelectItem>
+                <SelectItem value="nome-za">Nome Z-A</SelectItem>
+                <SelectItem value="vgv-ativo">Maior VGV ativo</SelectItem>
+                <SelectItem value="vgv-vendido">Maior VGV vendido</SelectItem>
+                <SelectItem value="mais-ativos">Mais imóveis disponíveis</SelectItem>
+                <SelectItem value="mais-vendidos">Mais imóveis vendidos</SelectItem>
+                <SelectItem value="menor-preco">Menor preço disponível</SelectItem>
+                <SelectItem value="maior-preco">Maior preço disponível</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Indicadores compactos */}
+        <div className="flex flex-wrap items-center divide-x divide-border rounded-xl border border-border bg-card py-1.5">
+          <Indicator label="Condomínios" value={String(filtered.length)} />
+          <Indicator label="Imóveis ativos" value={String(totals.ativos)} />
+          <Indicator label="VGV ativo" value={brlShort(totals.vgvAtivo)} />
+          <Indicator label="Imóveis vendidos" value={String(totals.vendidos)} />
+          <Indicator label="VGV vendido" value={brlShort(totals.vgvVendido)} />
+        </div>
+
+        {/* Galeria */}
+        {loading ? (
+          <div className="flex items-center justify-center py-24"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
+        ) : pageItems.length === 0 ? (
+          <div className="text-center py-20 text-muted-foreground">
+            <Fence className="w-12 h-12 mx-auto mb-3 opacity-40" />
+            <p>Nenhum condomínio encontrado com esses filtros.</p>
+            <Button variant="outline" size="sm" className="mt-4" onClick={clearFilters}>Limpar filtros</Button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+            {pageItems.map(c => {
+              const m = metricsOf(c.id);
+              return (
+                <button
+                  key={c.id}
+                  onClick={() => navigate(`/condominios/${c.id}`)}
+                  className="group relative block w-full text-left rounded-2xl overflow-hidden border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                >
+                  <div className="relative aspect-[4/3] overflow-hidden">
+                    <img
+                      src={coverOf(c)}
+                      alt={c.nome}
+                      loading="lazy"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#04122a]/95 via-[#04122a]/35 to-transparent" />
+                    <div className="absolute inset-x-0 bottom-0 p-4 space-y-1.5">
+                      <h3 className="text-lg font-bold text-white leading-tight drop-shadow">{c.nome}</h3>
+                      <p className="flex items-center gap-1 text-[11px] text-white/85">
+                        <MapPin className="w-3 h-3" />
+                        {[c.cidade, c.estado].filter(Boolean).join(" / ") || "Localização não informada"}
+                      </p>
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-white/90 pt-0.5">
+                        <span><b className="text-white">{m.ativos}</b> ativos</span>
+                        <span className="text-accent font-semibold">VGV {brlShort(m.vgvAtivo)}</span>
+                        <span><b className="text-white">{m.vendidos}</b> vendidos</span>
+                        <span className="text-white/70">{brlShort(m.vgvVendido)}</span>
+                      </div>
+                      {m.minPreco != null && m.maxPreco != null && (
+                        <p className="text-[10px] text-white/70">
+                          Imóveis de {brl(m.minPreco)} a {brl(m.maxPreco)}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         )}
 
-        <InfraMediaModal open={!!mediaCondo} onClose={() => setMediaCondo(null)} title={mediaCondo?.nome || ""} media={[]} />
-
-        {!loading && filtered.length === 0 && (
-          <div className="text-center py-16 text-muted-foreground">
-            <Fence className="w-12 h-12 mx-auto mb-3 opacity-40" />
-            <p>Nenhum condomínio encontrado</p>
+        {/* Paginação */}
+        {!loading && filtered.length > 0 && (
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+            <p className="text-xs text-muted-foreground">
+              Mostrando {(page - 1) * perPage + 1}–{Math.min(page * perPage, filtered.length)} de {filtered.length} condomínios
+            </p>
+            <div className="flex items-center gap-2">
+              <Select value={String(perPage)} onValueChange={v => setPerPage(Number(v))}>
+                <SelectTrigger className="h-9 w-[90px]"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="12">12</SelectItem>
+                  <SelectItem value="24">24</SelectItem>
+                  <SelectItem value="48">48</SelectItem>
+                </SelectContent>
+              </Select>
+              {Array.from({ length: totalPages }).map((_, i) => (
+                <Button
+                  key={i}
+                  size="sm"
+                  variant={page === i + 1 ? "default" : "outline"}
+                  onClick={() => setPage(i + 1)}
+                >
+                  {i + 1}
+                </Button>
+              ))}
+            </div>
           </div>
         )}
       </div>
