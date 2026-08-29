@@ -1993,10 +1993,14 @@ function PropertyCard({
     whatsapp: property.brokerWhatsapp || fallback.whatsapp,
   };
   const whatsappMessage = encodeURIComponent(`Olá! Tenho interesse no imóvel: ${property.title} - ${formatCurrency(property.price)}`);
-  const unitLabel = property.unitNumber && property.boxNumber
-    ? `${property.unitNumber} • Box ${property.boxNumber}`
-    : property.unitNumber || (property.boxNumber ? `Box ${property.boxNumber}` : "");
-  const unitParts = [unitLabel, property.quadra, property.lote].filter(Boolean);
+  const unitParts = getPropertyUnitParts({
+    tipo: property.type,
+    unidade: property.unitNumber,
+    box: property.boxNumber,
+    quadra: property.quadra,
+    lote: property.lote,
+  });
+
 
   const handleStatusChange = (newStatus: Property["status"]) => {
     if (newStatus === "Vendido" && property.status !== "Vendido") {
