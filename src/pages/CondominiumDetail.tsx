@@ -68,6 +68,34 @@ export default function CondominiumDetail() {
     ].filter(Boolean)));
   }, [condo]);
 
+  /** Vídeo: primeiro item reproduzível de condominios.videos (arquivo, YouTube ou Vimeo). */
+  const videoUrl: string | null = useMemo(() => {
+    const list: string[] = condo?.videos || [];
+    return list.find(v => isFileVideo(v) || !!videoEmbedUrl(v)) || null;
+  }, [condo]);
+
+  /** Tour 360°: link salvo no cadastro (embed validado por provedor). */
+  const tourUrl: string | null = useMemo(() => {
+    const raw = (condo?.link_360 || "").trim();
+    if (!raw) return null;
+    return isSafeEmbedUrl(raw) || /^https:\/\//i.test(raw) ? raw : null;
+  }, [condo]);
+
+  const sections = useMemo(() => {
+    const s: { id: string; label: string }[] = [];
+    if (videoUrl) s.push({ id: "video", label: "Vídeo" });
+    if (photos.length) s.push({ id: "fotos", label: "Fotos" });
+    if (tourUrl) s.push({ id: "tour360", label: "Tour 360°" });
+    if (condo?.descricao) s.push({ id: "sobre", label: "Sobre" });
+    s.push({ id: "visao", label: "Indicadores" });
+    if (condo?.amenidades?.length) s.push({ id: "infra", label: "Infraestrutura" });
+    if (condo?.implantacao_url) s.push({ id: "implantacao", label: "Implantação" });
+    s.push({ id: "imoveis", label: "Imóveis" });
+    s.push({ id: "localizacao", label: "Localização" });
+    return s;
+  }, [condo, photos.length, videoUrl, tourUrl]);
+
+
   const metrics = useMemo(() => metricsFor((imoveis as MetricImovel[]) || []), [imoveis]);
 
   const visibleImoveis = useMemo(() => {
