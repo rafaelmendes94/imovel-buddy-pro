@@ -472,6 +472,21 @@ export function ImovelForm({ editId }: { editId?: string }) {
   const isEdit = !!editId;
   const set = (field: keyof FormData, value: any) => setForm(prev => ({ ...prev, [field]: value }));
 
+  // Adiciona o valor digitado no campo de Box ao estado do formulário (string, preserva "1.11", "A12", etc.)
+  const addBoxFromInput = (input: HTMLInputElement | null) => {
+    const val = input?.value?.trim();
+    if (!val) return;
+    setForm(prev => {
+      const current = prev.box.split(',').map(x => x.trim()).filter(Boolean);
+      for (const part of val.split(',').map(x => x.trim()).filter(Boolean)) {
+        if (!current.includes(part)) current.push(part);
+      }
+      return { ...prev, box: current.join(', ') };
+    });
+    if (input) input.value = '';
+  };
+
+
   // Auto-fill proprietário with current user's profile (broker/imobiliária flow, new only)
   useEffect(() => {
     if (editId || isSuperAdmin || !profile) return;
