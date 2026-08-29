@@ -168,62 +168,69 @@ export default function CondominiumDetail() {
           </div>
         </div>
 
-        {/* galeria */}
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2.2fr)_minmax(0,1fr)] gap-3">
-          <div
-            className="relative rounded-2xl overflow-hidden aspect-[16/10] bg-muted cursor-zoom-in"
-            onClick={() => photos.length > 0 && setLightbox(mainIdx)}
-          >
-            <img src={photos[mainIdx] || PLACEHOLDER_IMAGE} alt={condo.nome} className="w-full h-full object-cover" />
-            {photos.length > 1 && (
-              <button
-                onClick={e => { e.stopPropagation(); setLightbox(mainIdx); }}
-                className="absolute bottom-3 right-3 flex items-center gap-2 px-3 py-2 rounded-lg bg-black/60 text-white text-xs font-semibold backdrop-blur"
-              >
-                <Images className="w-3.5 h-3.5" /> Ver todas as fotos · {photos.length}
-              </button>
-            )}
-          </div>
-          {photos.length > 1 && (
-            <div className="grid grid-cols-3 lg:grid-cols-1 gap-3">
-              {photos.slice(1, 4).map((p, i) => (
-                <button
-                  key={p + i}
-                  onClick={() => setMainIdx(i + 1)}
-                  className={cn(
-                    "rounded-xl overflow-hidden aspect-[16/10] border-2 transition-colors",
-                    mainIdx === i + 1 ? "border-primary" : "border-transparent hover:border-primary/40"
-                  )}
-                >
-                  <img src={p} alt="" loading="lazy" className="w-full h-full object-cover" />
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
         {/* identificação */}
         <div className="space-y-1.5">
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-2xl font-bold text-foreground">{condo.nome}</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">{condo.nome}</h1>
             {condo.tipo && (
               <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-primary/10 text-primary border border-primary/25">{condo.tipo}</span>
             )}
           </div>
-          <p className="text-sm text-muted-foreground">{[condo.cidade, condo.estado].filter(Boolean).join(" / ")}</p>
+          <p className="text-sm font-medium text-muted-foreground">{[condo.cidade, condo.estado].filter(Boolean).join(" / ")}</p>
           {fullAddress && <p className="flex items-center gap-1.5 text-xs text-muted-foreground"><MapPin className="w-3.5 h-3.5" /> {fullAddress}</p>}
         </div>
 
-        {/* navegação sticky */}
-        <nav className="hidden lg:flex sticky top-2 z-20 gap-1 rounded-xl border border-border bg-card/95 backdrop-blur px-2 py-1.5">
-          {SECTIONS.map(s => (
-            <button key={s.id} onClick={() => go(s.id)} className="px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground">
-              {s.label}
-            </button>
-          ))}
-        </nav>
+        {/* navegação sticky (somente seções existentes) */}
+        {sections.length > 1 && (
+          <nav className="hidden lg:flex sticky top-2 z-20 gap-1 rounded-xl border border-border bg-card/95 backdrop-blur px-2 py-1.5">
+            {sections.map(s => (
+              <button key={s.id} onClick={() => go(s.id)} className="px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground">
+                {s.label}
+              </button>
+            ))}
+          </nav>
+        )}
 
-        {/* indicadores comerciais */}
+        {/* 1. vídeo */}
+        {videoUrl && (
+          <Section id="video" title="Vídeo do condomínio">
+            <VideoBlock url={videoUrl} poster={condo.video_capa_url || photos[0] || null} title={condo.nome} />
+          </Section>
+        )}
+
+        {/* 2. galeria */}
+        {photos.length > 0 && (
+          <Section id="fotos" title={`Galeria de fotos (${photos.length})`}>
+            <PhotoGallery photos={photos} alt={condo.nome} />
+          </Section>
+        )}
+
+        {/* 3. tour 360° */}
+        {tourUrl && (
+          <Section id="tour360" title="Tour virtual 360°">
+            <TourBlock url={tourUrl} poster={condo.tour_capa_url || null} title={condo.nome} />
+          </Section>
+        )}
+
+        {/* 4. informações */}
+        {condo.descricao && (
+          <Section id="sobre" title="Sobre o condomínio">
+            <p className="text-sm text-muted-foreground whitespace-pre-line rounded-xl border border-border bg-card p-4 leading-relaxed">{condo.descricao}</p>
+          </Section>
+        )}
+
+        {(condo.taxa_condominio > 0 || condo.total_unidades > 0 || condo.construtora || condo.ano_construcao) && (
+          <Section id="financeiro" title="Informações financeiras">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {condo.taxa_condominio > 0 && <Metric label="Condomínio médio" value={`${brl(condo.taxa_condominio)}/mês`} />}
+              {condo.total_unidades > 0 && <Metric label="Total de unidades" value={String(condo.total_unidades)} />}
+              {condo.construtora && <Metric label="Administração / Construtora" value={condo.construtora} />}
+              {condo.ano_construcao && <Metric label="Ano de construção" value={String(condo.ano_construcao)} />}
+            </div>
+          </Section>
+        )}
+
+        {/* 5. indicadores comerciais */}
         <Section id="visao" title="Indicadores comerciais">
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
             <Metric label="Imóveis ativos" value={String(metrics.ativos)} />
@@ -238,23 +245,7 @@ export default function CondominiumDetail() {
           </div>
         </Section>
 
-        {condo.descricao && (
-          <Section id="sobre" title="Sobre o condomínio">
-            <p className="text-sm text-muted-foreground whitespace-pre-line rounded-xl border border-border bg-card p-4">{condo.descricao}</p>
-          </Section>
-        )}
-
-        {(condo.taxa_condominio > 0 || condo.construtora || condo.ano_construcao) && (
-          <Section id="financeiro" title="Informações">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {condo.taxa_condominio > 0 && <Metric label="Condomínio" value={`${brl(condo.taxa_condominio)}/mês`} />}
-              {condo.total_unidades > 0 && <Metric label="Total de unidades" value={String(condo.total_unidades)} />}
-              {condo.construtora && <Metric label="Construtora" value={condo.construtora} />}
-              {condo.ano_construcao && <Metric label="Ano de construção" value={String(condo.ano_construcao)} />}
-            </div>
-          </Section>
-        )}
-
+        {/* 6. infraestrutura */}
         {condo.amenidades?.length > 0 && (
           <Section id="infra" title="Infraestrutura e diferenciais">
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
@@ -267,17 +258,6 @@ export default function CondominiumDetail() {
           </Section>
         )}
 
-        {photos.length > 0 && (
-          <Section id="fotos" title={`Fotos (${photos.length})`}>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-              {photos.map((p, i) => (
-                <button key={p + i} onClick={() => setLightbox(i)} className="rounded-xl overflow-hidden aspect-[4/3] group">
-                  <img src={p} alt="" loading="lazy" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
-                </button>
-              ))}
-            </div>
-          </Section>
-        )}
 
         {implantacaoUrl && (
           <Section id="implantacao" title="Implantação do condomínio">
