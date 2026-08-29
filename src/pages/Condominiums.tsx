@@ -102,7 +102,7 @@ export default function Condominiums() {
       const [cRes, iRes] = await Promise.all([
         supabase
           .from("condominios")
-          .select("id, nome, endereco, cidade, estado, bairro, tipo, taxa_condominio, amenidades, imagem_url, descricao, fotos_empreendimento, fotos_infra, mapa_pdf_url, implantacao_url")
+          .select("id, nome, endereco, cidade, estado, bairro, tipo, taxa_condominio, amenidades, imagem_url, descricao, fotos_empreendimento, fotos_infra, mapa_pdf_url, implantacao_url, material_digital")
           .order("nome"),
         supabase
           .from("imoveis")
