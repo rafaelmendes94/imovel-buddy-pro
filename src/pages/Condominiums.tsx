@@ -81,6 +81,41 @@ export default function Condominiums() {
   const [condos, setCondos] = useState<CondoRow[]>([]);
   const [imoveis, setImoveis] = useState<MetricImovel[]>([]);
   const [loading, setLoading] = useState(true);
+  const [zipping, setZipping] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  const downloadPhotos = async (c: CondoRow) => {
+    const urls = photosOf(c);
+    if (!urls.length) return;
+    setZipping(c.id);
+    try {
+      const zip = new JSZip();
+      let ok = 0;
+      await Promise.all(urls.map(async (u, i) => {
+        try {
+          const res = await fetch(u);
+          if (!res.ok) return;
+          const blob = await res.blob();
+          const ext = (u.split("?")[0].split(".").pop() || "jpg").slice(0, 5);
+          zip.file(`${String(i + 1).padStart(2, "0")}-${slugify(c.nome)}.${ext}`, blob);
+          ok++;
+        } catch { /* ignora foto inacessível */ }
+      }));
+      if (!ok) {
+        toast({ title: "Não foi possível baixar as fotos", variant: "destructive" });
+        return;
+      }
+      const blob = await zip.generateAsync({ type: "blob" });
+      const href = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = href; a.download = `${slugify(c.nome)}-fotos.zip`;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(href);
+      toast({ title: `${ok} foto(s) baixadas` });
+    } finally {
+      setZipping(null);
+    }
+  };
 
   // filtros
   const [search, setSearch] = useState("");
