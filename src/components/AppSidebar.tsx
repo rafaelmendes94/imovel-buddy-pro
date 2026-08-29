@@ -169,6 +169,23 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
     return isChildActive(item);
   };
 
+  // Collapsible groups (persisted locally)
+  const [closedGroups, setClosedGroups] = useState<Record<string, boolean>>(() => {
+    try {
+      return JSON.parse(localStorage.getItem("sidebar-closed-groups") || "{}");
+    } catch {
+      return {};
+    }
+  });
+  const toggleGroup = (g: string) => {
+    setClosedGroups(prev => {
+      const next = { ...prev, [g]: !prev[g] };
+      try { localStorage.setItem("sidebar-closed-groups", JSON.stringify(next)); } catch { /* ignore */ }
+      return next;
+    });
+  };
+
+
   const renderNavItem = (item: NavItem, index: number) => {
           const dragProps = {
             "data-nav-index": index,
