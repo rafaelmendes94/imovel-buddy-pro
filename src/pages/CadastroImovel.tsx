@@ -969,27 +969,18 @@ export function ImovelForm({ editId }: { editId?: string }) {
                   onKeyDown={e => {
                     if (e.key === 'Enter') {
                       e.preventDefault();
-                      const val = (e.target as HTMLInputElement).value.trim();
-                      if (!val) return;
-                      const current = form.box.split(',').filter(x => x.trim());
-                      current.push(val);
-                      set('box', current.join(', '));
-                      (e.target as HTMLInputElement).value = '';
+                      addBoxFromInput(e.target as HTMLInputElement);
                     }
                   }}
+                  onBlur={e => addBoxFromInput(e.target as HTMLInputElement)}
                 />
                 <Button type="button" variant="outline" size="icon" className="h-8 w-8 flex-shrink-0" onClick={(e) => {
-                  const input = (e.currentTarget.previousElementSibling as HTMLInputElement);
-                  const val = input?.value?.trim();
-                  if (!val) return;
-                  const current = form.box.split(',').filter(x => x.trim());
-                  current.push(val);
-                  set('box', current.join(', '));
-                  input.value = '';
+                  addBoxFromInput(e.currentTarget.previousElementSibling as HTMLInputElement);
                 }}>
                   <Plus className="w-3.5 h-3.5" />
                 </Button>
               </div>
+
             </div>
           </div>
           <div className="space-y-1.5">
