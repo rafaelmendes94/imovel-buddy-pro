@@ -195,6 +195,10 @@ export interface TableSettingsState {
   brokerMode: BrokerMode;
   brokerId: string | null;
   qrTarget: QrTarget;
+  /** Cores ativas da apresentação (paleta). */
+  palette: Palette;
+  /** Paleta de origem, mantida como referência quando há ajuste manual. */
+  paletteBaseId: string;
   /** Descrições editadas manualmente, por id de imóvel. */
   descricoes: Record<string, string>;
 }
@@ -210,6 +214,8 @@ export const defaultSettings = (): TableSettingsState => ({
   brokerMode: "responsavel",
   brokerId: null,
   qrTarget: "pagina",
+  palette: { ...PALETTES[0] },
+  paletteBaseId: PALETTES[0].id,
   descricoes: {},
 });
 
