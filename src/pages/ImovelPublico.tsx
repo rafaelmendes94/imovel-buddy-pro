@@ -384,6 +384,28 @@ export default function ImovelPublico() {
           </div>
         )}
 
+        {/* ===== Atalhos de mídia ===== */}
+        {(() => {
+          const mapaUrl = imovel.condominios?.mapa_pdf_url?.trim() || null;
+          const shortcuts = [
+            images.length > 0 && { icon: Download, label: "Fotos", tip: "Baixar fotos do imóvel", onClick: handleDownloadFotos },
+            imovel.drive_fotos_url && { icon: FolderOpen, label: "Drive", tip: "Acessar pasta no Drive", href: imovel.drive_fotos_url },
+            mapaUrl && { icon: MapIcon, label: "Mapa", tip: "Baixar mapa do imóvel", href: mapaUrl },
+          ].filter(Boolean) as { icon: any; label: string; tip: string; href?: string; onClick?: () => void }[];
+          if (!shortcuts.length) return null;
+          return (
+            <div className="mt-3 sm:mt-4 bg-card border border-border rounded-xl px-3 py-2.5 flex flex-wrap items-stretch gap-2">
+              {shortcuts.map((s, i) => {
+                const cls = "flex-1 min-w-[96px] flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border border-border bg-muted/30 hover:bg-primary/5 hover:border-primary/40 active:bg-primary/10 transition-colors text-sm font-semibold text-foreground cursor-pointer";
+                const inner = (<><s.icon className="w-4 h-4 text-primary flex-shrink-0" /><span>{s.label}</span></>);
+                return s.href
+                  ? <a key={i} href={s.href} target="_blank" rel="noopener noreferrer" title={s.tip} className={cls}>{inner}</a>
+                  : <button key={i} type="button" onClick={s.onClick} title={s.tip} className={cls}>{inner}</button>;
+              })}
+            </div>
+          );
+        })()}
+
         {/* ===== Cabeçalho do imóvel ===== */}
         <div className="bg-card border border-border rounded-xl sm:rounded-2xl p-4 sm:p-6 mt-4 sm:mt-6">
           {/* Breadcrumb */}
