@@ -142,7 +142,7 @@ export function PropertySelector({ imoveis, corretores, selectedIds, onToggle, o
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="h-28 rounded-xl bg-muted animate-pulse" />
           ))}
@@ -150,7 +150,7 @@ export function PropertySelector({ imoveis, corretores, selectedIds, onToggle, o
       ) : filtered.length === 0 ? (
         <p className="text-sm text-muted-foreground py-8 text-center">Nenhum imóvel encontrado com esses filtros.</p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 max-h-[520px] overflow-y-auto pr-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[520px] overflow-y-auto pr-1">
           {filtered.map(p => {
             const selected = selectedIds.includes(p.id);
             const lines = identityLines(p);
