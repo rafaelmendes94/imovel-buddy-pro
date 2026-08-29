@@ -1841,6 +1841,48 @@ export type Database = {
         }
         Relationships: []
       }
+      tabela_apresentacoes: {
+        Row: {
+          created_at: string
+          formato: string
+          id: string
+          nome: string
+          property_ids: string[]
+          settings: Json
+          subtitulo: string | null
+          template: string
+          titulo: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          formato?: string
+          id?: string
+          nome: string
+          property_ids?: string[]
+          settings?: Json
+          subtitulo?: string | null
+          template?: string
+          titulo?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          formato?: string
+          id?: string
+          nome?: string
+          property_ids?: string[]
+          settings?: Json
+          subtitulo?: string | null
+          template?: string
+          titulo?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
