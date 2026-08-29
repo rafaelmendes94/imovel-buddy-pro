@@ -445,32 +445,6 @@ export default function CondominiumDetail() {
           </Section>
         )}
       </div>
-
-      {/* lightbox */}
-      {lightbox != null && photos.length > 0 && (
-        <div className="fixed inset-0 z-50 bg-black/95 flex flex-col items-center justify-center p-4">
-          <button onClick={() => setLightbox(null)} className="absolute top-4 right-4 text-white/80 hover:text-white">
-            <X className="w-6 h-6" />
-          </button>
-          <span className="absolute top-5 left-5 text-white/70 text-xs">{lightbox + 1} / {photos.length}</span>
-          <button
-            onClick={() => setLightbox((lightbox - 1 + photos.length) % photos.length)}
-            className="absolute left-3 sm:left-8 text-white/80 hover:text-white"
-          ><ChevronLeft className="w-9 h-9" /></button>
-          <img src={photos[lightbox]} alt="" className="max-h-[78vh] max-w-full object-contain rounded-lg" />
-          <button
-            onClick={() => setLightbox((lightbox + 1) % photos.length)}
-            className="absolute right-3 sm:right-8 text-white/80 hover:text-white"
-          ><ChevronRight className="w-9 h-9" /></button>
-          <div className="flex gap-2 mt-4 overflow-x-auto max-w-full">
-            {photos.map((p, i) => (
-              <button key={p + i} onClick={() => setLightbox(i)} className={cn("w-16 h-12 rounded overflow-hidden border-2 flex-shrink-0", i === lightbox ? "border-white" : "border-transparent opacity-60")}>
-                <img src={p} alt="" className="w-full h-full object-cover" />
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
     </AppLayout>
   );
 }
