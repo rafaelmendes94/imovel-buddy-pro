@@ -1,56 +1,111 @@
-import { PLACEHOLDER_IMAGE } from "@/lib/placeholderImage";
-import { useState, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
-import { MiniMap } from "@/components/MiniMap";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
+import { MiniMap } from "@/components/MiniMap";
 import { supabase } from "@/integrations/supabase/client";
-import { formatCurrency } from "@/data/mockData";
-import {
-  ArrowLeft, Fence, MapPin, Home, Edit, Share2, ExternalLink, Loader2,
-  BedDouble, Bath, Car, Ruler, Layers, Wrench, Calendar, FileUp, Download,
-  Camera, Building2, Video, FolderDown,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MediaGalleryView } from "@/components/MediaGalleryView";
+import { useAuth } from "@/hooks/useAuth";
 import { useSmartBack } from "@/lib/useSmartBack";
+import { PLACEHOLDER_IMAGE } from "@/lib/placeholderImage";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import {
+  brl, isActiveProperty, isSoldProperty, metricsFor, type MetricImovel,
+} from "@/lib/condoMetrics";
+import {
+  ArrowLeft, ChevronLeft, ChevronRight, Download, Edit, ExternalLink, Fence,
+  FileText, Home, Images, Loader2, MapPin, Share2, Sparkles, X,
+} from "lucide-react";
 
-const imovelStatusColors: Record<string, string> = {
-  Disponível: "bg-success/10 text-success border-success/30",
-  Vendido: "bg-destructive/10 text-destructive border-destructive/30",
-  Reservado: "bg-warning/10 text-warning border-warning/30",
-  Alugado: "bg-info/10 text-info border-info/30",
-};
+const SECTIONS = [
+  { id: "visao", label: "Visão Geral" },
+  { id: "fotos", label: "Fotos" },
+  { id: "infra", label: "Infraestrutura" },
+  { id: "implantacao", label: "Implantação" },
+  { id: "imoveis", label: "Imóveis" },
+  { id: "localizacao", label: "Localização" },
+];
 
 export default function CondominiumDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const handleBack = useSmartBack("/condominios");
+  const { isSuperAdmin, isAdminStaff } = useAuth();
+  const canManage = isSuperAdmin || isAdminStaff;
+
   const [condo, setCondo] = useState<any>(null);
   const [imoveis, setImoveis] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const [mainIdx, setMainIdx] = useState(0);
+  const [lightbox, setLightbox] = useState<number | null>(null);
+
+  // filtros internos dos imóveis
+  const [tab, setTab] = useState<"disponiveis" | "vendidos" | "todos">("disponiveis");
+  const [fMin, setFMin] = useState("");
+  const [fMax, setFMax] = useState("");
+  const [fTipo, setFTipo] = useState("todos");
+  const [fDorm, setFDorm] = useState("todos");
+  const [fSuites, setFSuites] = useState("todos");
+  const [fQuadra, setFQuadra] = useState("todas");
+  const [iSort, setISort] = useState("recentes");
+
   useEffect(() => {
     if (!id) return;
-    const load = async () => {
+    (async () => {
       setLoading(true);
       const [cRes, iRes] = await Promise.all([
         supabase.from("condominios").select("*").eq("id", id).maybeSingle(),
-        supabase.from("imoveis").select("*").eq("condominio_id", id),
+        supabase.from("imoveis").select("*").eq("condominio_id", id).order("created_at", { ascending: false }),
       ]);
-      if (cRes.data) setCondo(cRes.data);
-      if (iRes.data) setImoveis(iRes.data);
+      setCondo(cRes.data);
+      setImoveis((iRes.data as any) || []);
       setLoading(false);
-    };
-    load();
+    })();
   }, [id]);
+
+  const photos: string[] = useMemo(() => {
+    if (!condo) return [];
+    return Array.from(new Set([
+      condo.imagem_url,
+      ...(condo.fotos_empreendimento || []),
+      ...(condo.fotos_infra || []),
+    ].filter(Boolean)));
+  }, [condo]);
+
+  const metrics = useMemo(() => metricsFor((imoveis as MetricImovel[]) || []), [imoveis]);
+
+  const visibleImoveis = useMemo(() => {
+    const min = fMin ? Number(fMin.replace(/\D/g, "")) : null;
+    const max = fMax ? Number(fMax.replace(/\D/g, "")) : null;
+    let list = imoveis.filter(i => {
+      if (tab === "disponiveis" && !isActiveProperty(i.status)) return false;
+      if (tab === "vendidos" && !isSoldProperty(i.status)) return false;
+      const p = Number(i.preco || 0);
+      if (min != null && p < min) return false;
+      if (max != null && p > max) return false;
+      if (fTipo !== "todos" && (i.tipo || "") !== fTipo) return false;
+      if (fDorm !== "todos" && Number(i.quartos || 0) !== Number(fDorm)) return false;
+      if (fSuites !== "todos" && Number(i.suites || 0) !== Number(fSuites)) return false;
+      if (fQuadra !== "todas" && (i.quadra || "") !== fQuadra) return false;
+      return true;
+    });
+    if (iSort === "menor") list = [...list].sort((a, b) => Number(a.preco || 0) - Number(b.preco || 0));
+    if (iSort === "maior") list = [...list].sort((a, b) => Number(b.preco || 0) - Number(a.preco || 0));
+    return list;
+  }, [imoveis, tab, fMin, fMax, fTipo, fDorm, fSuites, fQuadra, iSort]);
+
+  const tipos = useMemo(() => Array.from(new Set(imoveis.map(i => i.tipo).filter(Boolean))), [imoveis]);
+  const quadras = useMemo(() => Array.from(new Set(imoveis.map(i => i.quadra).filter(Boolean))), [imoveis]);
 
   if (loading) {
     return (
       <AppLayout>
-        <div className="flex items-center justify-center py-32">
-          <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-        </div>
+        <div className="flex items-center justify-center py-32"><Loader2 className="w-8 h-8 animate-spin text-muted-foreground" /></div>
       </AppLayout>
     );
   }
@@ -61,217 +116,361 @@ export default function CondominiumDetail() {
         <div className="p-8 text-center text-muted-foreground">
           <Fence className="w-16 h-16 mx-auto mb-4 opacity-40" />
           <p className="text-lg">Condomínio não encontrado</p>
-          <button onClick={handleBack} className="text-accent hover:underline mt-2 inline-block">Voltar</button>
+          <button onClick={handleBack} className="text-accent hover:underline mt-2">Voltar</button>
         </div>
       </AppLayout>
     );
   }
 
-  const fullAddress = [condo.endereco, condo.numero, condo.complemento, condo.bairro, condo.cidade, condo.estado].filter(Boolean).join(", ");
-  const implantacaoUrl = (condo as any).implantacao_url || '';
-  const isPdf = implantacaoUrl.match(/\.pdf$/i);
+  const fullAddress = [condo.endereco, condo.numero, condo.complemento, condo.bairro, condo.cidade, condo.estado]
+    .filter(Boolean).join(", ");
+  const implantacaoUrl: string = condo.implantacao_url || "";
+  const isPdf = /\.pdf($|\?)/i.test(implantacaoUrl);
+  const materiais: string[] = condo.material_digital || [];
 
-  function shareWhatsApp() {
-    const text = `🏘️ ${condo.nome}\n📍 ${fullAddress}\n🔗 ${window.location.href}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
-  }
+  const share = async () => {
+    const url = window.location.href;
+    if (navigator.share) { try { await navigator.share({ title: condo.nome, url }); return; } catch { /* ignore */ } }
+    window.open(`https://wa.me/?text=${encodeURIComponent(`🏘️ ${condo.nome}\n📍 ${fullAddress}\n${url}`)}`, "_blank");
+  };
+
+  const go = (sid: string) => document.getElementById(sid)?.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  const Metric = ({ label, value }: { label: string; value: string }) => (
+    <div className="rounded-xl border border-border bg-card px-4 py-3">
+      <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="text-base font-bold text-foreground mt-0.5">{value}</p>
+    </div>
+  );
+
+  const Section = ({ id: sid, title, children }: { id: string; title: string; children: React.ReactNode }) => (
+    <section id={sid} className="space-y-3 scroll-mt-24">
+      <h2 className="text-sm font-bold uppercase tracking-wide text-foreground">{title}</h2>
+      {children}
+    </section>
+  );
 
   return (
     <AppLayout>
-      <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <button onClick={handleBack} className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors">
-              <ArrowLeft className="w-4 h-4 text-foreground" />
+      <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1500px] mx-auto">
+        {/* topo */}
+        <div className="flex items-center justify-between gap-3">
+          <button onClick={handleBack} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+            <ArrowLeft className="w-4 h-4" /> Voltar
+          </button>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={share}><Share2 className="w-4 h-4 mr-1.5" /> Compartilhar</Button>
+            {canManage && (
+              <Button variant="outline" size="sm" onClick={() => navigate(`/editar-condominio/${condo.id}`)}>
+                <Edit className="w-4 h-4 mr-1.5" /> Editar condomínio
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* galeria */}
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2.2fr)_minmax(0,1fr)] gap-3">
+          <div
+            className="relative rounded-2xl overflow-hidden aspect-[16/10] bg-muted cursor-zoom-in"
+            onClick={() => photos.length > 0 && setLightbox(mainIdx)}
+          >
+            <img src={photos[mainIdx] || PLACEHOLDER_IMAGE} alt={condo.nome} className="w-full h-full object-cover" />
+            {photos.length > 1 && (
+              <button
+                onClick={e => { e.stopPropagation(); setLightbox(mainIdx); }}
+                className="absolute bottom-3 right-3 flex items-center gap-2 px-3 py-2 rounded-lg bg-black/60 text-white text-xs font-semibold backdrop-blur"
+              >
+                <Images className="w-3.5 h-3.5" /> Ver todas as fotos · {photos.length}
+              </button>
+            )}
+          </div>
+          {photos.length > 1 && (
+            <div className="grid grid-cols-3 lg:grid-cols-1 gap-3">
+              {photos.slice(1, 4).map((p, i) => (
+                <button
+                  key={p + i}
+                  onClick={() => setMainIdx(i + 1)}
+                  className={cn(
+                    "rounded-xl overflow-hidden aspect-[16/10] border-2 transition-colors",
+                    mainIdx === i + 1 ? "border-primary" : "border-transparent hover:border-primary/40"
+                  )}
+                >
+                  <img src={p} alt="" loading="lazy" className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* identificação */}
+        <div className="space-y-1.5">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-2xl font-bold text-foreground">{condo.nome}</h1>
+            {condo.tipo && (
+              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-primary/10 text-primary border border-primary/25">{condo.tipo}</span>
+            )}
+          </div>
+          <p className="text-sm text-muted-foreground">{[condo.cidade, condo.estado].filter(Boolean).join(" / ")}</p>
+          {fullAddress && <p className="flex items-center gap-1.5 text-xs text-muted-foreground"><MapPin className="w-3.5 h-3.5" /> {fullAddress}</p>}
+        </div>
+
+        {/* navegação sticky */}
+        <nav className="hidden lg:flex sticky top-2 z-20 gap-1 rounded-xl border border-border bg-card/95 backdrop-blur px-2 py-1.5">
+          {SECTIONS.map(s => (
+            <button key={s.id} onClick={() => go(s.id)} className="px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground">
+              {s.label}
             </button>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">{condo.nome}</h1>
-              <div className="flex items-center gap-1 mt-0.5">
-                <MapPin className="w-3.5 h-3.5 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">{fullAddress}</p>
+          ))}
+        </nav>
+
+        {/* indicadores comerciais */}
+        <Section id="visao" title="Indicadores comerciais">
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+            <Metric label="Imóveis ativos" value={String(metrics.ativos)} />
+            <Metric label="VGV ativo" value={brl(metrics.vgvAtivo)} />
+            <Metric label="Imóveis vendidos" value={String(metrics.vendidos)} />
+            <Metric label="VGV vendido" value={brl(metrics.vgvVendido)} />
+            <Metric label="Ticket médio ativo" value={metrics.ticketMedioAtivo != null ? brl(metrics.ticketMedioAtivo) : "—"} />
+            <Metric
+              label="Faixa de preço"
+              value={metrics.minPreco != null ? `${brl(metrics.minPreco)} – ${brl(metrics.maxPreco)}` : "—"}
+            />
+          </div>
+        </Section>
+
+        {condo.descricao && (
+          <Section id="sobre" title="Sobre o condomínio">
+            <p className="text-sm text-muted-foreground whitespace-pre-line rounded-xl border border-border bg-card p-4">{condo.descricao}</p>
+          </Section>
+        )}
+
+        {(condo.taxa_condominio > 0 || condo.construtora || condo.ano_construcao) && (
+          <Section id="financeiro" title="Informações">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {condo.taxa_condominio > 0 && <Metric label="Condomínio" value={`${brl(condo.taxa_condominio)}/mês`} />}
+              {condo.total_unidades > 0 && <Metric label="Total de unidades" value={String(condo.total_unidades)} />}
+              {condo.construtora && <Metric label="Construtora" value={condo.construtora} />}
+              {condo.ano_construcao && <Metric label="Ano de construção" value={String(condo.ano_construcao)} />}
+            </div>
+          </Section>
+        )}
+
+        {condo.amenidades?.length > 0 && (
+          <Section id="infra" title="Infraestrutura e diferenciais">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+              {condo.amenidades.map((a: string) => (
+                <div key={a} className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-xs text-foreground">
+                  <Sparkles className="w-3.5 h-3.5 text-accent flex-shrink-0" /> {a}
+                </div>
+              ))}
+            </div>
+          </Section>
+        )}
+
+        {photos.length > 0 && (
+          <Section id="fotos" title={`Fotos (${photos.length})`}>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+              {photos.map((p, i) => (
+                <button key={p + i} onClick={() => setLightbox(i)} className="rounded-xl overflow-hidden aspect-[4/3] group">
+                  <img src={p} alt="" loading="lazy" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                </button>
+              ))}
+            </div>
+          </Section>
+        )}
+
+        {implantacaoUrl && (
+          <Section id="implantacao" title="Implantação do condomínio">
+            <div className="rounded-xl border border-border bg-card overflow-hidden">
+              {isPdf ? (
+                <iframe src={implantacaoUrl} title="Implantação" className="w-full h-[520px]" />
+              ) : (
+                <img src={implantacaoUrl} alt="Implantação" loading="lazy" className="w-full object-contain max-h-[560px] bg-muted" />
+              )}
+              <div className="flex flex-wrap gap-2 p-3 border-t border-border">
+                <Button size="sm" variant="outline" onClick={() => window.open(implantacaoUrl, "_blank")}>
+                  {isPdf ? <FileText className="w-4 h-4 mr-1.5" /> : <Images className="w-4 h-4 mr-1.5" />}
+                  {isPdf ? "Abrir PDF" : "Ver implantação"}
+                </Button>
+                <a href={implantacaoUrl} download target="_blank" rel="noreferrer">
+                  <Button size="sm" variant="ghost"><Download className="w-4 h-4 mr-1.5" /> Baixar</Button>
+                </a>
               </div>
             </div>
+          </Section>
+        )}
+
+        {/* imóveis */}
+        <Section id="imoveis" title="Imóveis neste condomínio">
+          <div className="flex flex-wrap items-center gap-2">
+            {([["disponiveis", "Disponíveis"], ["vendidos", "Vendidos"], ["todos", "Todos"]] as const).map(([v, l]) => (
+              <button
+                key={v}
+                onClick={() => setTab(v)}
+                className={cn(
+                  "px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors",
+                  tab === v ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {l}
+              </button>
+            ))}
           </div>
-          <div className="flex items-center gap-2 self-start">
-            <button onClick={shareWhatsApp} className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-success text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity">
-              <Share2 className="w-4 h-4" /> WhatsApp
-            </button>
-            <button onClick={() => navigate(`/editar-condominio/${condo.id}`)} className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-accent text-accent-foreground text-sm font-semibold hover:opacity-90 transition-opacity">
-              <Edit className="w-4 h-4" /> Editar
-            </button>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-2">
+            <div><Label className="text-[10px]">Mínimo</Label><Input value={fMin} onChange={e => setFMin(e.target.value)} inputMode="numeric" className="h-9" /></div>
+            <div><Label className="text-[10px]">Máximo</Label><Input value={fMax} onChange={e => setFMax(e.target.value)} inputMode="numeric" className="h-9" /></div>
+            <div>
+              <Label className="text-[10px]">Tipo</Label>
+              <Select value={fTipo} onValueChange={setFTipo}><SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                <SelectContent><SelectItem value="todos">Todos</SelectItem>{tipos.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-[10px]">Dormitórios</Label>
+              <Select value={fDorm} onValueChange={setFDorm}><SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                <SelectContent><SelectItem value="todos">Todos</SelectItem>{[1,2,3,4,5,6].map(n => <SelectItem key={n} value={String(n)}>{n}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-[10px]">Suítes</Label>
+              <Select value={fSuites} onValueChange={setFSuites}><SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                <SelectContent><SelectItem value="todos">Todas</SelectItem>{[1,2,3,4,5,6].map(n => <SelectItem key={n} value={String(n)}>{n}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-[10px]">Quadra</Label>
+              <Select value={fQuadra} onValueChange={setFQuadra}><SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                <SelectContent><SelectItem value="todas">Todas</SelectItem>{quadras.map(q => <SelectItem key={q} value={q}>{q}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-[10px]">Ordenar</Label>
+              <Select value={iSort} onValueChange={setISort}><SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="recentes">Mais recentes</SelectItem>
+                  <SelectItem value="menor">Menor preço</SelectItem>
+                  <SelectItem value="maior">Maior preço</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-        </div>
 
-        {/* Hero */}
-        <div className="rounded-xl overflow-hidden h-64">
-          <img src={condo.imagem_url || "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&h=500&fit=crop"} alt={condo.nome} className="w-full h-full object-cover" />
-        </div>
-
-        {/* Info Bar */}
-        <div className="flex flex-wrap gap-4 p-4 rounded-xl bg-card border border-border">
-          {condo.tipo && <div className="flex items-center gap-2 text-sm text-muted-foreground"><Fence className="w-4 h-4 text-accent" />{condo.tipo}</div>}
-          <div className="flex items-center gap-2 text-sm text-muted-foreground"><Layers className="w-4 h-4 text-accent" />{condo.total_unidades} unidades</div>
-          {condo.unidades_disponiveis > 0 && <div className="flex items-center gap-2 text-sm text-success font-semibold">{condo.unidades_disponiveis} disponíveis</div>}
-          {condo.taxa_condominio > 0 && <div className="flex items-center gap-2 text-sm text-muted-foreground">Taxa: {formatCurrency(condo.taxa_condominio)}/mês</div>}
-          {condo.construtora && <div className="flex items-center gap-2 text-sm text-muted-foreground"><Wrench className="w-4 h-4 text-accent" />{condo.construtora}</div>}
-          {condo.ano_construcao && <div className="flex items-center gap-2 text-sm text-muted-foreground"><Calendar className="w-4 h-4 text-accent" />Ano {condo.ano_construcao}</div>}
-          {condo.cep && <div className="flex items-center gap-2 text-sm text-muted-foreground"><MapPin className="w-4 h-4 text-accent" />CEP {condo.cep}</div>}
-        </div>
-
-        <Tabs defaultValue="info" className="space-y-4">
-          <TabsList className="bg-secondary flex-wrap h-auto gap-1">
-            <TabsTrigger value="info">Informações</TabsTrigger>
-            <TabsTrigger value="midias">Mídias</TabsTrigger>
-            <TabsTrigger value="imoveis">Imóveis ({imoveis.length})</TabsTrigger>
-            {implantacaoUrl && <TabsTrigger value="implantacao">Implantação</TabsTrigger>}
-            {(condo as any).mapa_pdf_url && <TabsTrigger value="mapa">Mapa PDF</TabsTrigger>}
-            <TabsTrigger value="localizacao">Localização</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="info" className="space-y-4">
-            {condo.descricao && (
-              <div className="p-4 rounded-xl bg-card border border-border">
-                <h3 className="text-sm font-semibold text-foreground mb-2">Descrição</h3>
-                <p className="text-sm text-muted-foreground whitespace-pre-line">{condo.descricao}</p>
-              </div>
-            )}
-            {condo.amenidades && condo.amenidades.length > 0 && (
-              <div className="p-4 rounded-xl bg-card border border-border">
-                <h3 className="text-sm font-semibold text-foreground mb-3">Amenidades</h3>
-                <div className="flex flex-wrap gap-2">
-                  {condo.amenidades.map((a: string) => (
-                    <span key={a} className="px-2.5 py-1 rounded-lg text-xs font-medium bg-accent/10 text-accent border border-accent/20">{a}</span>
-                  ))}
-                </div>
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="midias" className="space-y-4">
-            <MediaGalleryView title="Fotos do Empreendimento" icon={Camera} items={(condo as any).fotos_empreendimento || []} kind="image" emptyText="Nenhuma foto cadastrada" />
-            <MediaGalleryView title="Fotos da Infraestrutura" icon={Building2} items={(condo as any).fotos_infra || []} kind="image" emptyText="Nenhuma foto cadastrada" />
-            <MediaGalleryView title="Vídeos" icon={Video} items={(condo as any).videos || []} kind="video" emptyText="Nenhum vídeo cadastrado" />
-            <MediaGalleryView title="Material Digital" icon={FolderDown} items={(condo as any).material_digital || []} kind="file" emptyText="Nenhum material disponível" />
-          </TabsContent>
-          <TabsContent value="imoveis" className="space-y-4">
-            {imoveis.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <Home className="w-12 h-12 mx-auto mb-3 opacity-40" />
-                <p>Nenhum imóvel vinculado a este condomínio</p>
-              </div>
-            ) : (
-              <>
-                <p className="text-sm text-muted-foreground mb-3">{imoveis.length} imóvel(is)</p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-                  {imoveis.map((im) => {
-                    const imgs = im.imagens && im.imagens.length > 0 ? im.imagens : [PLACEHOLDER_IMAGE];
-                    const conditions = im.condicoes_pagamento || [];
-                    return (
-                      <div key={im.id} onClick={() => navigate(`/editar-imovel/${im.id}`)} className="elevated-card rounded-xl overflow-hidden cursor-pointer group flex flex-col">
-                        <div className="relative h-44 overflow-hidden">
-                          <img src={imgs[0]} alt={im.titulo} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                          {im.proprietario_tipo && (
-                            <span className="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-success text-success-foreground">{im.proprietario_tipo}</span>
-                          )}
-                          <span className={cn("absolute top-2.5 right-2.5 px-2 py-0.5 rounded text-[10px] font-semibold border", imovelStatusColors[im.status] || "bg-muted text-muted-foreground")}>{im.status}</span>
-                          <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-end justify-between">
-                            <p className="text-lg font-bold text-white drop-shadow-lg">{formatCurrency(im.preco)}</p>
-                            <div className="flex gap-1">
-                              {im.vista_mar && <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-info/90 text-info-foreground">Mar</span>}
-                              {im.decorado && <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-purple-500/90 text-white">Dec.</span>}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="p-3.5 space-y-2.5 flex-1 flex flex-col">
-                          <h4 className="font-bold text-card-foreground text-sm leading-tight uppercase">{im.titulo}</h4>
-                          <p className="text-xs text-muted-foreground flex items-center gap-1">
-                            <MapPin className="w-3 h-3 flex-shrink-0" />
-                            <span className="truncate">{im.endereco}, {im.cidade}</span>
-                          </p>
-                          <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
-                            {im.quartos > 0 && <span className="flex items-center gap-1"><BedDouble className="w-3.5 h-3.5" /> {im.quartos}</span>}
-                            {im.banheiros > 0 && <span className="flex items-center gap-1"><Bath className="w-3.5 h-3.5" /> {im.banheiros}</span>}
-                            {im.vagas > 0 && <span className="flex items-center gap-1"><Car className="w-3.5 h-3.5" /> {im.vagas}</span>}
-                            {im.area > 0 && <span className="flex items-center gap-1"><Ruler className="w-3.5 h-3.5" /> {im.area}m² t.</span>}
-                            {im.area_privativa > 0 && <span className="flex items-center gap-1"><Ruler className="w-3.5 h-3.5" /> {im.area_privativa}m² p.</span>}
-                          </div>
-                          {conditions.length > 0 && (
-                            <div className="flex flex-wrap gap-1">
-                              {conditions.map((c: string) => (
-                                <span key={c} className="px-2 py-0.5 rounded text-[10px] font-bold bg-success/10 text-success border border-success/20">{c}</span>
-                              ))}
-                            </div>
-                          )}
-                          <div className="mt-auto pt-2 border-t border-border flex items-center gap-2">
-                            <span className="text-xs font-semibold text-accent">{im.corretor_nome || "Corretor"}</span>
-                          </div>
-                        </div>
+          {visibleImoveis.length === 0 ? (
+            <div className="text-center py-10 text-muted-foreground text-sm">
+              <Home className="w-10 h-10 mx-auto mb-2 opacity-40" />
+              Nenhum imóvel encontrado com esses filtros.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {visibleImoveis.map(im => {
+                const identity = [im.unidade && `Unid. ${im.unidade}`, im.quadra && `Q: ${im.quadra}`, im.lote && `L: ${im.lote}`]
+                  .filter(Boolean).join(" • ");
+                return (
+                  <div key={im.id} className="rounded-xl border border-border bg-card overflow-hidden flex flex-col">
+                    <div className="aspect-[4/3] overflow-hidden bg-muted">
+                      <img src={im.imagens?.[0] || PLACEHOLDER_IMAGE} alt={im.titulo} loading="lazy" className="w-full h-full object-cover" />
+                    </div>
+                    <div className="p-3 space-y-1.5 flex-1 flex flex-col">
+                      <div className="flex items-start justify-between gap-2">
+                        <h3 className="text-sm font-semibold text-foreground leading-tight">{im.titulo}</h3>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full border border-border text-muted-foreground whitespace-nowrap">{im.status}</span>
                       </div>
-                    );
-                  })}
-                </div>
-              </>
-            )}
-          </TabsContent>
-
-          {implantacaoUrl && (
-            <TabsContent value="implantacao" className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                  <FileUp className="w-4 h-4 text-accent" /> Implantação / Mapa de Lotes
-                </h3>
-                <a href={implantacaoUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 rounded-lg bg-accent/10 text-accent text-sm font-semibold hover:bg-accent/20 transition-colors border border-accent/20">
-                  <Download className="w-4 h-4" /> Baixar
-                </a>
-              </div>
-              {isPdf ? (
-                <iframe src={implantacaoUrl} className="w-full h-[600px] rounded-xl border border-border" title="Implantação PDF" />
-              ) : (
-                <img src={implantacaoUrl} alt="Implantação" className="w-full rounded-xl border border-border object-contain max-h-[600px]" />
-              )}
-            </TabsContent>
+                      {identity && <p className="text-[11px] text-accent font-semibold">{identity}</p>}
+                      <p className="text-[11px] text-muted-foreground">
+                        {[im.quartos && `${im.quartos} dorm.`, im.suites && `${im.suites} suítes`, im.area && `${im.area} m²`].filter(Boolean).join(" • ")}
+                      </p>
+                      <p className="text-base font-bold text-foreground mt-auto">{brl(Number(im.preco || 0))}</p>
+                      <Button size="sm" variant="outline" className="w-full" onClick={() => navigate(`/imovel/${im.id}`)}>
+                        Ver imóvel
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           )}
+        </Section>
 
-          {(condo as any).mapa_pdf_url && (
-            <TabsContent value="mapa" className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                  <FileUp className="w-4 h-4 text-accent" /> Mapa do Condomínio
-                </h3>
-                <a href={(condo as any).mapa_pdf_url} download className="flex items-center gap-2 px-4 py-2 rounded-lg bg-accent/10 text-accent text-sm font-semibold hover:bg-accent/20 transition-colors border border-accent/20">
-                  <Download className="w-4 h-4" /> Baixar PDF
-                </a>
-              </div>
-              <iframe src={(condo as any).mapa_pdf_url} className="w-full h-[600px] rounded-xl border border-border" title="Mapa do Condomínio PDF" />
-            </TabsContent>
-          )}
-
-          <TabsContent value="localizacao" className="space-y-3">
-            {Number(condo.latitude) !== 0 && Number(condo.longitude) !== 0 ? (
-              <>
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-accent" /> Localização
-                  </h3>
-                  <a href={`https://www.google.com/maps?q=${condo.latitude},${condo.longitude}`} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-info/10 text-info text-xs font-semibold hover:bg-info/20 transition-colors border border-info/20">
-                    <ExternalLink className="w-3 h-3" /> Google Maps
-                  </a>
-                </div>
-                <MiniMap lat={Number(condo.latitude)} lng={Number(condo.longitude)} name={condo.nome} height="400px" />
-                <p className="text-xs text-muted-foreground text-center">{fullAddress}</p>
-              </>
+        {/* localização */}
+        <Section id="localizacao" title="Localização">
+          <div className="rounded-xl border border-border overflow-hidden">
+            {condo.latitude && condo.longitude ? (
+              <MiniMap lat={Number(condo.latitude)} lng={Number(condo.longitude)} name={condo.nome} height="340px" />
             ) : (
-              <div className="text-center py-12 text-muted-foreground">
-                <MapPin className="w-12 h-12 mx-auto mb-3 opacity-40" />
-                <p>Coordenadas não cadastradas</p>
-              </div>
+              <div className="p-6 text-sm text-muted-foreground">Coordenadas não cadastradas.</div>
             )}
-          </TabsContent>
-        </Tabs>
+            <div className="flex flex-wrap items-center justify-between gap-2 p-3 border-t border-border">
+              <p className="text-xs text-muted-foreground">{fullAddress || "Endereço não informado"}</p>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => window.open(
+                  condo.latitude && condo.longitude
+                    ? `https://www.google.com/maps?q=${condo.latitude},${condo.longitude}`
+                    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress || condo.nome)}`,
+                  "_blank"
+                )}
+              >
+                <ExternalLink className="w-4 h-4 mr-1.5" /> Abrir no Google Maps
+              </Button>
+            </div>
+          </div>
+        </Section>
+
+        {(materiais.length > 0 || condo.mapa_pdf_url || implantacaoUrl || (condo.videos || []).length > 0) && (
+          <Section id="materiais" title="Materiais do condomínio">
+            <div className="flex flex-wrap gap-2">
+              {implantacaoUrl && (
+                <Button size="sm" variant="outline" onClick={() => window.open(implantacaoUrl, "_blank")}>
+                  <FileText className="w-4 h-4 mr-1.5" /> Implantação
+                </Button>
+              )}
+              {condo.mapa_pdf_url && (
+                <Button size="sm" variant="outline" onClick={() => window.open(condo.mapa_pdf_url, "_blank")}>
+                  <FileText className="w-4 h-4 mr-1.5" /> Mapa PDF
+                </Button>
+              )}
+              {(condo.videos || []).map((v: string, i: number) => (
+                <Button key={v + i} size="sm" variant="outline" onClick={() => window.open(v, "_blank")}>
+                  <ExternalLink className="w-4 h-4 mr-1.5" /> Vídeo {i + 1}
+                </Button>
+              ))}
+              {materiais.map((m, i) => (
+                <Button key={m + i} size="sm" variant="outline" onClick={() => window.open(m, "_blank")}>
+                  <Download className="w-4 h-4 mr-1.5" /> Material {i + 1}
+                </Button>
+              ))}
+            </div>
+          </Section>
+        )}
       </div>
+
+      {/* lightbox */}
+      {lightbox != null && photos.length > 0 && (
+        <div className="fixed inset-0 z-50 bg-black/95 flex flex-col items-center justify-center p-4">
+          <button onClick={() => setLightbox(null)} className="absolute top-4 right-4 text-white/80 hover:text-white">
+            <X className="w-6 h-6" />
+          </button>
+          <span className="absolute top-5 left-5 text-white/70 text-xs">{lightbox + 1} / {photos.length}</span>
+          <button
+            onClick={() => setLightbox((lightbox - 1 + photos.length) % photos.length)}
+            className="absolute left-3 sm:left-8 text-white/80 hover:text-white"
+          ><ChevronLeft className="w-9 h-9" /></button>
+          <img src={photos[lightbox]} alt="" className="max-h-[78vh] max-w-full object-contain rounded-lg" />
+          <button
+            onClick={() => setLightbox((lightbox + 1) % photos.length)}
+            className="absolute right-3 sm:right-8 text-white/80 hover:text-white"
+          ><ChevronRight className="w-9 h-9" /></button>
+          <div className="flex gap-2 mt-4 overflow-x-auto max-w-full">
+            {photos.map((p, i) => (
+              <button key={p + i} onClick={() => setLightbox(i)} className={cn("w-16 h-12 rounded overflow-hidden border-2 flex-shrink-0", i === lightbox ? "border-white" : "border-transparent opacity-60")}>
+                <img src={p} alt="" className="w-full h-full object-cover" />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </AppLayout>
   );
 }
