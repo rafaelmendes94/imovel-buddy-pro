@@ -5,6 +5,7 @@ import {
   type TabelaCorretor, type TabelaImovel,
 } from "@/lib/tabelaData";
 import { getFormat, getTemplate, type TableSettingsState } from "@/lib/tabelaTemplates";
+import { isDark, paletteColors } from "@/lib/tabelaPalettes";
 
 interface Props {
   items: TabelaImovel[];
@@ -28,7 +29,7 @@ export const TablePreview = forwardRef<HTMLDivElement, Props>(function TablePrev
 ) {
   const tpl = getTemplate(settings.template);
   const fmt = getFormat(settings.formato);
-  const c = tpl.colors;
+  const c = paletteColors(settings.palette);
   const f = settings.fields;
   const perPage = tpl.itemsPerPage[fmt.orientation];
   const pages = chunk(items, perPage);
@@ -101,13 +102,16 @@ export const TablePreview = forwardRef<HTMLDivElement, Props>(function TablePrev
       </div>
     );
 
+  const mixSoft = `${c.accent}22`;
+
   const LinkChip = ({ url, label }: { url: string; label: string }) => (
     <span
       data-pdf-link={url}
       style={{
         display: "inline-block", padding: "3px 8px", borderRadius: 999, fontSize: 8.5, fontWeight: 700,
-        letterSpacing: 0.4, color: c.headerBg === "#ffffff" ? c.accent : "#ffffff",
-        background: c.headerBg === "#ffffff" ? "rgba(11,94,215,0.10)" : c.accent, border: `1px solid ${c.accent}`,
+        letterSpacing: 0.4,
+        color: isDark(c.accent) ? "#ffffff" : c.text,
+        background: isDark(c.accent) ? c.accent : mixSoft, border: `1px solid ${c.accent}`,
       }}
     >
       {label}
