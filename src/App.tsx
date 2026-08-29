@@ -58,6 +58,7 @@ import RankingPage from "./pages/RankingPage";
 import Avaliacoes from "./pages/Avaliacoes";
 import Financeiro from "./pages/Financeiro";
 import Tabelas from "./pages/Tabelas";
+import GeradorTabela from "./pages/GeradorTabela";
 import Contratos from "./pages/Contratos";
 import VideoMaker from "./pages/VideoMaker";
 import Imobiliarias from "./pages/Imobiliarias";
@@ -140,6 +141,7 @@ const App = () => (
             <Route path="/avaliacoes" element={<AuthGuard><Avaliacoes /></AuthGuard>} />
             <Route path="/financeiro" element={<AuthGuard><Financeiro /></AuthGuard>} />
             <Route path="/tabelas" element={<AuthGuard><Tabelas /></AuthGuard>} />
+            <Route path="/ferramentas/gerador-tabela" element={<AuthGuard><GeradorTabela /></AuthGuard>} />
             <Route path="/contratos" element={<AuthGuard><Contratos /></AuthGuard>} />
             <Route path="/videomaker" element={<AuthGuard><VideoMaker /></AuthGuard>} />
             <Route path="/imobiliarias" element={<AuthGuard><Imobiliarias /></AuthGuard>} />

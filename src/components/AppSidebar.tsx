@@ -5,7 +5,7 @@ import {
   ChevronLeft, ChevronRight, Building, Camera, Fence,
   Globe, ClipboardCheck, Wallet, Table2, FileSignature,
   Clapperboard, Landmark, Landmark as Landmark2, HardHat, ShoppingBag, Map,
-  ChevronDown, CreditCard, GripVertical, RotateCcw, Trophy,
+  ChevronDown, CreditCard, GripVertical, RotateCcw, Trophy, LayoutTemplate,
 } from "lucide-react";
 import { Share2, Home as HomeIcon } from "lucide-react";
 import { cn, toSlug } from "@/lib/utils";
@@ -14,9 +14,9 @@ import { useSidebarOrder } from "@/hooks/useSidebarOrder";
 import { toast } from "sonner";
 import logoImg from "@/assets/logo.png";
 
-type NavGroup = "GESTÃO" | "COMERCIAL" | "FINANCEIRO" | "MÍDIA" | "CONFIGURAÇÕES";
+type NavGroup = "GESTÃO" | "COMERCIAL" | "FINANCEIRO" | "FERRAMENTAS" | "MÍDIA" | "CONFIGURAÇÕES";
 
-const GROUP_ORDER: NavGroup[] = ["GESTÃO", "COMERCIAL", "FINANCEIRO", "MÍDIA", "CONFIGURAÇÕES"];
+const GROUP_ORDER: NavGroup[] = ["GESTÃO", "COMERCIAL", "FINANCEIRO", "FERRAMENTAS", "MÍDIA", "CONFIGURAÇÕES"];
 
 interface NavItem {
   icon: any;
@@ -45,6 +45,8 @@ const allNavItems: NavItem[] = [
 
   { icon: FileText, label: "Relatórios", path: "/relatorios", group: "FINANCEIRO" }, // admin
   { icon: Table2, label: "Tabelas", path: "/tabelas", group: "FINANCEIRO", module: "tabelas" },
+
+  { icon: LayoutTemplate, label: "Gerador de Tabela", path: "/ferramentas/gerador-tabela", group: "FERRAMENTAS", always: true },
 
   { icon: Camera, label: "Fotos da Cidade", path: "/fotos-cidade", group: "MÍDIA", module: "fotos" },
   { icon: Clapperboard, label: "Material Extra", path: "/videomaker", group: "MÍDIA", module: "videomaker" },
