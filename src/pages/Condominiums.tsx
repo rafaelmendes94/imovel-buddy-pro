@@ -17,7 +17,9 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Download, Fence, Images, Loader2, Map as MapIcon, MapPin, Plus, Search, SlidersHorizontal, X } from "lucide-react";
+import { Download, Fence, FolderOpen, Images, Loader2, Map as MapIcon, MapPin, Plus, Search, SlidersHorizontal, X } from "lucide-react";
+import JSZip from "jszip";
+import { useToast } from "@/hooks/use-toast";
 
 interface CondoRow {
   id: string; nome: string; endereco: string | null; cidade: string | null; estado: string | null;
@@ -25,6 +27,30 @@ interface CondoRow {
   imagem_url: string | null; descricao: string | null;
   fotos_empreendimento: string[] | null; fotos_infra: string[] | null;
   mapa_pdf_url: string | null; implantacao_url: string | null;
+  material_digital: string[] | null;
+}
+
+const slugify = (s: string) =>
+  s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-|-$/g, "").toLowerCase() || "condominio";
+
+const photosOf = (c: CondoRow) =>
+  Array.from(new Set([...(c.fotos_empreendimento || []), ...(c.fotos_infra || []), ...(c.imagem_url ? [c.imagem_url] : [])].filter(Boolean)));
+
+const driveOf = (c: CondoRow) =>
+  (c.material_digital || []).find(u => /drive\.google|onedrive|dropbox/i.test(u || "")) || null;
+
+async function downloadFile(url: string, filename: string) {
+  try {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    const href = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = href; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(href);
+  } catch {
+    window.open(url, "_blank", "noopener");
+  }
 }
 
 const PRICE_RANGES = [
@@ -55,6 +81,41 @@ export default function Condominiums() {
   const [condos, setCondos] = useState<CondoRow[]>([]);
   const [imoveis, setImoveis] = useState<MetricImovel[]>([]);
   const [loading, setLoading] = useState(true);
+  const [zipping, setZipping] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  const downloadPhotos = async (c: CondoRow) => {
+    const urls = photosOf(c);
+    if (!urls.length) return;
+    setZipping(c.id);
+    try {
+      const zip = new JSZip();
+      let ok = 0;
+      await Promise.all(urls.map(async (u, i) => {
+        try {
+          const res = await fetch(u);
+          if (!res.ok) return;
+          const blob = await res.blob();
+          const ext = (u.split("?")[0].split(".").pop() || "jpg").slice(0, 5);
+          zip.file(`${String(i + 1).padStart(2, "0")}-${slugify(c.nome)}.${ext}`, blob);
+          ok++;
+        } catch { /* ignora foto inacessível */ }
+      }));
+      if (!ok) {
+        toast({ title: "Não foi possível baixar as fotos", variant: "destructive" });
+        return;
+      }
+      const blob = await zip.generateAsync({ type: "blob" });
+      const href = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = href; a.download = `${slugify(c.nome)}-fotos.zip`;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(href);
+      toast({ title: `${ok} foto(s) baixadas` });
+    } finally {
+      setZipping(null);
+    }
+  };
 
   // filtros
   const [search, setSearch] = useState("");
@@ -76,7 +137,7 @@ export default function Condominiums() {
       const [cRes, iRes] = await Promise.all([
         supabase
           .from("condominios")
-          .select("id, nome, endereco, cidade, estado, bairro, tipo, taxa_condominio, amenidades, imagem_url, descricao, fotos_empreendimento, fotos_infra, mapa_pdf_url, implantacao_url")
+          .select("id, nome, endereco, cidade, estado, bairro, tipo, taxa_condominio, amenidades, imagem_url, descricao, fotos_empreendimento, fotos_infra, mapa_pdf_url, implantacao_url, material_digital")
           .order("nome"),
         supabase
           .from("imoveis")
@@ -412,21 +473,33 @@ export default function Condominiums() {
                       )}
                     </div>
                   </div>
-                  {(hasFotos || c.mapa_pdf_url || c.implantacao_url) && (
+                  {(hasFotos || driveOf(c) || c.mapa_pdf_url || c.implantacao_url) && (
                     <div className="flex items-stretch gap-2 p-2.5 border-t border-border bg-muted/40">
                       {hasFotos && (
                         <button
-                          title="Ver fotos do condomínio"
-                          onClick={e => { e.stopPropagation(); navigate(`/condominios/${c.id}`); }}
+                          title="Baixar todas as fotos (ZIP)"
+                          disabled={zipping === c.id}
+                          onClick={e => { e.stopPropagation(); downloadPhotos(c); }}
+                          className="flex-1 inline-flex items-center justify-center gap-1.5 h-9 rounded-lg border border-border bg-card text-xs font-medium text-foreground hover:border-primary hover:text-primary transition-colors disabled:opacity-60"
+                        >
+                          {zipping === c.id
+                            ? <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                            : <Images className="w-4 h-4 text-primary" />} Fotos
+                        </button>
+                      )}
+                      {driveOf(c) && (
+                        <button
+                          title="Abrir pasta no Drive"
+                          onClick={e => { e.stopPropagation(); window.open(driveOf(c)!, "_blank", "noopener"); }}
                           className="flex-1 inline-flex items-center justify-center gap-1.5 h-9 rounded-lg border border-border bg-card text-xs font-medium text-foreground hover:border-primary hover:text-primary transition-colors"
                         >
-                          <Images className="w-4 h-4 text-primary" /> Fotos
+                          <FolderOpen className="w-4 h-4 text-primary" /> Drive
                         </button>
                       )}
                       {c.mapa_pdf_url && (
                         <button
-                          title="Baixar mapa (PDF)"
-                          onClick={e => { e.stopPropagation(); window.open(c.mapa_pdf_url!, "_blank", "noopener"); }}
+                          title="Baixar mapa"
+                          onClick={e => { e.stopPropagation(); downloadFile(c.mapa_pdf_url!, `${slugify(c.nome)}-mapa.${(c.mapa_pdf_url!.split(".").pop() || "pdf").split("?")[0]}`); }}
                           className="flex-1 inline-flex items-center justify-center gap-1.5 h-9 rounded-lg border border-border bg-card text-xs font-medium text-foreground hover:border-primary hover:text-primary transition-colors"
                         >
                           <MapIcon className="w-4 h-4 text-primary" /> Mapa
@@ -435,7 +508,7 @@ export default function Condominiums() {
                       {c.implantacao_url && (
                         <button
                           title="Baixar implantação"
-                          onClick={e => { e.stopPropagation(); window.open(c.implantacao_url!, "_blank", "noopener"); }}
+                          onClick={e => { e.stopPropagation(); downloadFile(c.implantacao_url!, `${slugify(c.nome)}-implantacao.${(c.implantacao_url!.split(".").pop() || "pdf").split("?")[0]}`); }}
                           className="flex-1 inline-flex items-center justify-center gap-1.5 h-9 rounded-lg border border-border bg-card text-xs font-medium text-foreground hover:border-primary hover:text-primary transition-colors"
                         >
                           <Download className="w-4 h-4 text-primary" /> Implantação
