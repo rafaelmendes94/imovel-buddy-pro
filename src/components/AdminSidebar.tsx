@@ -38,6 +38,7 @@ const operationalItems = [
   { icon: ClipboardCheck, label: "Avaliações", path: "/avaliacoes", moduleKey: "avaliacoes" },
   { icon: Wallet, label: "Financeiro", path: "/financeiro", moduleKey: "financeiro" },
   { icon: Table2, label: "Tabelas", path: "/tabelas", moduleKey: "tabelas" },
+  { icon: LayoutTemplate, label: "Gerador de Tabela", path: "/ferramentas/gerador-tabela", moduleKey: "tabelas" },
   { icon: FileSignature, label: "Contratos", path: "/contratos", moduleKey: "contratos" },
   { icon: Clapperboard, label: "Material Extra", path: "/videomaker", moduleKey: "material_extra" },
   { icon: Settings, label: "Configurações", path: "/configuracoes", moduleKey: "configuracoes" },
