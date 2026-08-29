@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useState } from "react";
+import { forwardRef, useEffect, useRef, useState } from "react";
 import { QRCodeImg } from "./QRCodeImg";
 import {
   autoDescription, identityLines, money, photosUrl, propertyPageUrl,
