@@ -32,12 +32,24 @@ export const TablePreview = forwardRef<HTMLDivElement, Props>(function TablePrev
   const f = settings.fields;
   const perPage = tpl.itemsPerPage[fmt.orientation];
   const pages = chunk(items, perPage);
-  const [scale, setScale] = useState(1);
+  const outer = useRef<HTMLDivElement | null>(null);
+  const [avail, setAvail] = useState(containerWidth || 0);
 
   useEffect(() => {
-    const w = containerWidth || 0;
-    setScale(w ? Math.min(1, w / fmt.width) : 1);
-  }, [containerWidth, fmt.width]);
+    if (containerWidth) setAvail(containerWidth);
+  }, [containerWidth]);
+
+  useEffect(() => {
+    const el = outer.current?.parentElement;
+    if (!el) return;
+    const measure = () => setAvail(el.clientWidth);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const scale = avail ? Math.min(1, avail / fmt.width) : 1;
 
   const brokerFor = (p: TabelaImovel): TabelaCorretor | null => {
     if (!settings.showBroker || settings.brokerMode === "nenhum") return null;
