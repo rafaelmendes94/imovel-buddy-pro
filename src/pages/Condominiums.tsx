@@ -17,7 +17,9 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Download, Fence, Images, Loader2, Map as MapIcon, MapPin, Plus, Search, SlidersHorizontal, X } from "lucide-react";
+import { Download, Fence, FolderOpen, Images, Loader2, Map as MapIcon, MapPin, Plus, Search, SlidersHorizontal, X } from "lucide-react";
+import JSZip from "jszip";
+import { useToast } from "@/hooks/use-toast";
 
 interface CondoRow {
   id: string; nome: string; endereco: string | null; cidade: string | null; estado: string | null;
