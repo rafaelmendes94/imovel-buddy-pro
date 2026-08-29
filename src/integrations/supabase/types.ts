@@ -367,6 +367,7 @@ export type Database = {
           imagem_url: string | null
           implantacao_url: string | null
           latitude: number | null
+          link_360: string | null
           longitude: number | null
           mapa_pdf_url: string | null
           material_digital: string[] | null
@@ -375,8 +376,10 @@ export type Database = {
           taxa_condominio: number | null
           tipo: string | null
           total_unidades: number | null
+          tour_capa_url: string | null
           unidades_disponiveis: number | null
           user_id: string
+          video_capa_url: string | null
           videos: string[] | null
         }
         Insert: {
@@ -397,6 +400,7 @@ export type Database = {
           imagem_url?: string | null
           implantacao_url?: string | null
           latitude?: number | null
+          link_360?: string | null
           longitude?: number | null
           mapa_pdf_url?: string | null
           material_digital?: string[] | null
@@ -405,8 +409,10 @@ export type Database = {
           taxa_condominio?: number | null
           tipo?: string | null
           total_unidades?: number | null
+          tour_capa_url?: string | null
           unidades_disponiveis?: number | null
           user_id: string
+          video_capa_url?: string | null
           videos?: string[] | null
         }
         Update: {
@@ -427,6 +433,7 @@ export type Database = {
           imagem_url?: string | null
           implantacao_url?: string | null
           latitude?: number | null
+          link_360?: string | null
           longitude?: number | null
           mapa_pdf_url?: string | null
           material_digital?: string[] | null
@@ -435,8 +442,10 @@ export type Database = {
           taxa_condominio?: number | null
           tipo?: string | null
           total_unidades?: number | null
+          tour_capa_url?: string | null
           unidades_disponiveis?: number | null
           user_id?: string
+          video_capa_url?: string | null
           videos?: string[] | null
         }
         Relationships: []
