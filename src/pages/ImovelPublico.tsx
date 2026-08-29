@@ -4,7 +4,7 @@ import { Link, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import {
   BedDouble, Bath, Car, Maximize, MapPin, Waves, Paintbrush, Repeat,
-  ChevronLeft, ChevronRight, X, Play, Share2, Building2, Loader2,
+  ChevronLeft, ChevronRight, X, Play, Share2, Building2, Loader2, FolderOpen,
   MessageCircle, CalendarDays, FileText, Images, HardDrive, Map as MapIcon,
   Ruler, Box, Pencil, Check, Volume2, Maximize2, ArrowLeft, Download,
   LayoutGrid, FileDown,
@@ -64,7 +64,7 @@ interface ImovelRow {
   latitude: number | null;
   longitude: number | null;
   edificios?: { nome: string | null } | null;
-  condominios?: { nome: string | null } | null;
+  condominios?: { nome: string | null; mapa_pdf_url: string | null } | null;
   empreendimentos?: { nome: string | null } | null;
 }
 
@@ -96,7 +96,7 @@ export default function ImovelPublico() {
       setLoading(true);
       const { data, error } = await supabase
         .from("imoveis")
-        .select(`${PUBLIC_IMOVEL_COLUMNS}, edificios(nome), condominios(nome), empreendimentos(nome)`)
+        .select(`${PUBLIC_IMOVEL_COLUMNS}, edificios(nome), condominios(nome, mapa_pdf_url), empreendimentos(nome)`)
         .eq("id", id)
         .eq("ativo_site", true)
         .maybeSingle();
