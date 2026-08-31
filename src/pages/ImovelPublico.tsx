@@ -7,7 +7,7 @@ import {
   ChevronLeft, ChevronRight, X, Play, Share2, Building2, Loader2, FolderOpen,
   MessageCircle, CalendarDays, FileText, Images, HardDrive, Map as MapIcon,
   Ruler, Box, Pencil, Check, Volume2, Maximize2, ArrowLeft, Download,
-  LayoutGrid, FileDown,
+  LayoutGrid, FileDown, ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { trackPropertyView } from "@/lib/trackPropertyView";
@@ -64,7 +64,7 @@ interface ImovelRow {
   latitude: number | null;
   longitude: number | null;
   edificios?: { nome: string | null } | null;
-  condominios?: { nome: string | null; mapa_pdf_url: string | null } | null;
+  condominios?: { nome: string | null; mapa_pdf_url: string | null; implantacao_url: string | null } | null;
   empreendimentos?: { nome: string | null } | null;
 }
 
@@ -85,6 +85,8 @@ export default function ImovelPublico() {
   const [lightbox, setLightbox] = useState<number | null>(null);
   const [canEdit, setCanEdit] = useState(false);
   const thumbsRef = useRef<HTMLDivElement>(null);
+  const touchX = useRef<number | null>(null);
+
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setCanEdit(!!data.session));
@@ -96,7 +98,7 @@ export default function ImovelPublico() {
       setLoading(true);
       const { data, error } = await supabase
         .from("imoveis")
-        .select(`${PUBLIC_IMOVEL_COLUMNS}, edificios(nome), condominios(nome, mapa_pdf_url), empreendimentos(nome)`)
+        .select(`${PUBLIC_IMOVEL_COLUMNS}, edificios(nome), condominios(nome, mapa_pdf_url, implantacao_url), empreendimentos(nome)`)
         .eq("id", id)
         .eq("ativo_site", true)
         .maybeSingle();
@@ -236,6 +238,20 @@ export default function ImovelPublico() {
     thumbsRef.current?.scrollBy({ left: dir * 240, behavior: "smooth" });
   };
 
+  const swipe = {
+    onTouchStart: (e: React.TouchEvent) => { touchX.current = e.touches[0].clientX; },
+    onTouchEnd: (e: React.TouchEvent) => {
+      if (touchX.current == null) return;
+      const dx = e.changedTouches[0].clientX - touchX.current;
+      const total = imovel?.imagens?.filter(Boolean).length || 0;
+      if (total > 1 && Math.abs(dx) > 45) {
+        setIdx(i => (dx < 0 ? (i + 1) % total : (i - 1 + total) % total));
+      }
+      touchX.current = null;
+    },
+  };
+
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -320,9 +336,9 @@ export default function ImovelPublico() {
 
       <main className="max-w-6xl mx-auto px-3 sm:px-6 py-4 sm:py-6 pb-28">
         {/* ===== Galeria de fotos ===== */}
-        <div className="relative bg-foreground rounded-xl sm:rounded-2xl overflow-hidden shadow-xl aspect-[4/3] sm:aspect-video">
+        <div {...swipe} className="relative bg-foreground rounded-xl sm:rounded-2xl overflow-hidden shadow-xl aspect-[4/3] sm:aspect-video">
           {images.length > 0 ? (
-            <img src={images[idx]} alt={`${imovel.titulo} - foto ${idx + 1}`} className="w-full h-full object-cover" />
+            <img src={images[idx]} alt={`${imovel.titulo} - foto ${idx + 1}`} onClick={() => setLightbox(idx)} className="w-full h-full object-cover cursor-zoom-in" />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-background/60 text-sm">Sem imagem</div>
           )}
@@ -384,20 +400,34 @@ export default function ImovelPublico() {
           </div>
         )}
 
-        {/* ===== Atalhos de mídia ===== */}
+        {images.length > 0 && (
+          <div className="flex justify-center mt-3">
+            <button onClick={() => setLightbox(idx)} className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors">
+              <Images className="w-3.5 h-3.5" /> Ver todas as fotos
+            </button>
+          </div>
+        )}
+
+        {/* ===== Barra de ações: Fotos / Implantação / Drive ===== */}
         {(() => {
-          const mapaUrl = imovel.condominios?.mapa_pdf_url?.trim() || null;
+          const implantUrl = imovel.condominios?.implantacao_url?.trim() || imovel.condominios?.mapa_pdf_url?.trim() || null;
           const shortcuts = [
-            images.length > 0 && { icon: Download, label: "Fotos", tip: "Baixar fotos do imóvel", onClick: handleDownloadFotos },
-            imovel.drive_fotos_url && { icon: FolderOpen, label: "Drive", tip: "Acessar pasta no Drive", href: imovel.drive_fotos_url },
-            mapaUrl && { icon: MapIcon, label: "Mapa", tip: "Baixar mapa do imóvel", href: mapaUrl },
-          ].filter(Boolean) as { icon: any; label: string; tip: string; href?: string; onClick?: () => void }[];
+            images.length > 0 && { icon: Download, label: "Baixar Fotos", tip: "Baixar fotos", onClick: handleDownloadFotos },
+            implantUrl && { icon: MapIcon, label: "Implantação", tip: "Ver implantação", href: implantUrl },
+            imovel.drive_fotos_url && { icon: FolderOpen, label: "Acessar Drive", tip: "Acessar Drive", href: imovel.drive_fotos_url, external: true },
+          ].filter(Boolean) as { icon: any; label: string; tip: string; href?: string; onClick?: () => void; external?: boolean }[];
           if (!shortcuts.length) return null;
           return (
-            <div className="mt-3 sm:mt-4 bg-card border border-border rounded-xl px-3 py-2.5 flex flex-wrap items-stretch gap-2">
+            <div className="mt-4 sm:mt-5 flex flex-wrap items-stretch gap-2 sm:gap-3">
               {shortcuts.map((s, i) => {
-                const cls = "flex-1 min-w-[96px] flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border border-border bg-muted/30 hover:bg-primary/5 hover:border-primary/40 active:bg-primary/10 transition-colors text-sm font-semibold text-foreground cursor-pointer";
-                const inner = (<><s.icon className="w-4 h-4 text-primary flex-shrink-0" /><span>{s.label}</span></>);
+                const cls = "flex-1 min-w-[140px] flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-border bg-card hover:border-primary/50 hover:text-primary transition-colors text-sm font-semibold text-foreground";
+                const inner = (
+                  <>
+                    <s.icon className="w-4 h-4 flex-shrink-0" />
+                    <span>{s.label}</span>
+                    {s.external && <ExternalLink className="w-3.5 h-3.5" />}
+                  </>
+                );
                 return s.href
                   ? <a key={i} href={s.href} target="_blank" rel="noopener noreferrer" title={s.tip} className={cls}>{inner}</a>
                   : <button key={i} type="button" onClick={s.onClick} title={s.tip} className={cls}>{inner}</button>;
@@ -405,6 +435,7 @@ export default function ImovelPublico() {
             </div>
           );
         })()}
+
 
         {/* ===== Cabeçalho do imóvel ===== */}
         <div className="bg-card border border-border rounded-xl sm:rounded-2xl p-4 sm:p-6 mt-4 sm:mt-6">
@@ -473,41 +504,38 @@ export default function ImovelPublico() {
           )}
         </div>
 
-        {/* ===== Downloads e Materiais ===== */}
-        {(downloads.length > 0 || imovel.drive_fotos_url) && (
-          <div id="downloads" className="bg-card border border-border rounded-xl sm:rounded-2xl p-4 sm:p-6 mt-4 sm:mt-6 scroll-mt-20">
-            <h2 className="text-base font-bold text-foreground">Downloads e Materiais</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">Baixe fotos, vídeos e documentos do imóvel</p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mt-4">
-              {downloads.map((d, i) => {
-                const inner = (
-                  <>
-                    <span className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <d.icon className="w-4 h-4 text-primary" />
+        {/* ===== Descrição / Características ===== */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mt-4 sm:mt-6 items-start">
+          {imovel.descricao && (
+            <div className="bg-card border border-border rounded-xl sm:rounded-2xl p-4 sm:p-6">
+              <h2 className="text-base font-bold text-foreground mb-3">Sobre o Imóvel</h2>
+              <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{imovel.descricao}</p>
+              {imovel.outras_caracteristicas && imovel.outras_caracteristicas.length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 mt-5 pt-5 border-t border-border">
+                  {imovel.outras_caracteristicas.map((c, i) => (
+                    <span key={i} className="flex items-center gap-2 text-sm text-foreground">
+                      <span className="w-4 h-4 rounded-full bg-primary/15 text-primary flex items-center justify-center flex-shrink-0"><Check className="w-2.5 h-2.5" /></span>
+                      {c}
                     </span>
-                    <span className="min-w-0">
-                      <span className="block text-xs font-bold text-foreground leading-tight">{d.title}</span>
-                      <span className="block text-[11px] text-muted-foreground">{d.sub}</span>
-                    </span>
-                  </>
-                );
-                const cls = "flex items-center gap-2.5 p-3 rounded-xl border border-border hover:border-primary/50 hover:bg-muted/40 transition-colors text-left";
-                return d.href
-                  ? <a key={i} href={d.href} target="_blank" rel="noopener noreferrer" className={cls}>{inner}</a>
-                  : <button key={i} onClick={d.onClick} className={cls}>{inner}</button>;
-              })}
+                  ))}
+                </div>
+              )}
             </div>
-            {imovel.drive_fotos_url && (
-              <a href={imovel.drive_fotos_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 p-3 mt-2 rounded-xl border border-border hover:border-primary/50 hover:bg-muted/40 transition-colors">
-                <span className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center"><HardDrive className="w-4 h-4 text-primary" /></span>
-                <span>
-                  <span className="block text-xs font-bold text-foreground">Abrir Pasta no Google Drive</span>
-                  <span className="block text-[11px] text-muted-foreground">Acesse todos os arquivos</span>
-                </span>
-              </a>
-            )}
+          )}
+
+          <div className="bg-card border border-border rounded-xl sm:rounded-2xl p-4 sm:p-6">
+            <h2 className="text-base font-bold text-foreground mb-3">Características</h2>
+            <dl className="divide-y divide-border">
+              {fichaTecnica.map(([k, v]) => (
+                <div key={k} className="flex items-center justify-between gap-3 py-2">
+                  <dt className="text-xs text-muted-foreground">{k}</dt>
+                  <dd className="text-xs font-bold text-foreground text-right">{v}</dd>
+                </div>
+              ))}
+            </dl>
           </div>
-        )}
+        </div>
+
 
         {/* ===== Vídeo do Imóvel (largura total) ===== */}
         {hasVideo && (
@@ -550,37 +578,32 @@ export default function ImovelPublico() {
           </div>
         )}
 
-        {/* ===== Sobre / Características ===== */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mt-4 sm:mt-6 items-start">
-          {imovel.descricao && (
-            <div className="bg-card border border-border rounded-xl sm:rounded-2xl p-4 sm:p-6">
-              <h2 className="text-base font-bold text-foreground mb-3">Sobre o Imóvel</h2>
-              <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{imovel.descricao}</p>
-              {imovel.outras_caracteristicas && imovel.outras_caracteristicas.length > 0 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 mt-5 pt-5 border-t border-border">
-                  {imovel.outras_caracteristicas.map((c, i) => (
-                    <span key={i} className="flex items-center gap-2 text-sm text-foreground">
-                      <span className="w-4 h-4 rounded-full bg-primary/15 text-primary flex items-center justify-center flex-shrink-0"><Check className="w-2.5 h-2.5" /></span>
-                      {c}
-                    </span>
-                  ))}
+        {/* ===== Implantação / Mapa ===== */}
+        {(() => {
+          const implantUrl = imovel.condominios?.implantacao_url?.trim() || imovel.condominios?.mapa_pdf_url?.trim() || null;
+          if (!implantUrl) return null;
+          const isImg = /\.(jpe?g|png|webp|avif)(\?|$)/i.test(implantUrl);
+          return (
+            <div id="implantacao" className="bg-card border border-border rounded-xl sm:rounded-2xl p-4 sm:p-6 mt-4 sm:mt-6 scroll-mt-20">
+              <h2 className="text-base font-bold text-foreground mb-3 flex items-center gap-2">
+                <MapIcon className="w-4 h-4 text-primary" /> Implantação
+              </h2>
+              {isImg ? (
+                <a href={implantUrl} target="_blank" rel="noopener noreferrer" className="block rounded-xl overflow-hidden border border-border">
+                  <img src={implantUrl} alt="Implantação do empreendimento" loading="lazy" className="w-full object-contain bg-muted" />
+                </a>
+              ) : (
+                <div className="aspect-video w-full rounded-xl overflow-hidden border border-border">
+                  <iframe src={implantUrl} title="Implantação" className="w-full h-full border-0" loading="lazy" />
                 </div>
               )}
+              <a href={implantUrl} target="_blank" rel="noopener noreferrer" className="mt-3 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-border text-sm font-semibold text-foreground hover:bg-muted">
+                <ExternalLink className="w-4 h-4 text-primary" /> Ver implantação em tela cheia
+              </a>
             </div>
-          )}
+          );
+        })()}
 
-          <div className="bg-card border border-border rounded-xl sm:rounded-2xl p-4 sm:p-6">
-            <h2 className="text-base font-bold text-foreground mb-3">Características</h2>
-            <dl className="divide-y divide-border">
-              {fichaTecnica.map(([k, v]) => (
-                <div key={k} className="flex items-center justify-between gap-3 py-2">
-                  <dt className="text-xs text-muted-foreground">{k}</dt>
-                  <dd className="text-xs font-bold text-foreground text-right">{v}</dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-        </div>
 
         {/* ===== Infraestrutura / pagamento ===== */}
         {imovel.infraestrutura && imovel.infraestrutura.length > 0 && (
@@ -608,9 +631,46 @@ export default function ImovelPublico() {
           </div>
         )}
 
+        {/* ===== Materiais ===== */}
+        {(downloads.length > 0 || imovel.drive_fotos_url) && (
+          <div id="downloads" className="bg-card border border-border rounded-xl sm:rounded-2xl p-4 sm:p-6 mt-4 sm:mt-6 scroll-mt-20">
+            <h2 className="text-base font-bold text-foreground">Materiais</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">Fotos, vídeos e documentos do imóvel</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mt-4">
+              {downloads.map((d, i) => {
+                const inner = (
+                  <>
+                    <span className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <d.icon className="w-4 h-4 text-primary" />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-xs font-bold text-foreground leading-tight">{d.title}</span>
+                      <span className="block text-[11px] text-muted-foreground">{d.sub}</span>
+                    </span>
+                  </>
+                );
+                const cls = "flex items-center gap-2.5 p-3 rounded-xl border border-border hover:border-primary/50 hover:bg-muted/40 transition-colors text-left";
+                return d.href
+                  ? <a key={i} href={d.href} target="_blank" rel="noopener noreferrer" className={cls}>{inner}</a>
+                  : <button key={i} onClick={d.onClick} className={cls}>{inner}</button>;
+              })}
+            </div>
+            {imovel.drive_fotos_url && (
+              <a href={imovel.drive_fotos_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 p-3 mt-2 rounded-xl border border-border hover:border-primary/50 hover:bg-muted/40 transition-colors">
+                <span className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center"><HardDrive className="w-4 h-4 text-primary" /></span>
+                <span>
+                  <span className="block text-xs font-bold text-foreground">Abrir Pasta no Google Drive</span>
+                  <span className="block text-[11px] text-muted-foreground">Acesse todos os arquivos</span>
+                </span>
+              </a>
+            )}
+          </div>
+        )}
+
         <footer className="text-center text-xs text-muted-foreground py-8">
           MV BROKER CONNECT • Para mais informações, entre em contato com o anunciante.
         </footer>
+
       </main>
 
       {/* ===== Barra inferior de recursos (desktop) ===== */}
