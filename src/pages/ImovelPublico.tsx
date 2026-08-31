@@ -85,6 +85,8 @@ export default function ImovelPublico() {
   const [lightbox, setLightbox] = useState<number | null>(null);
   const [canEdit, setCanEdit] = useState(false);
   const thumbsRef = useRef<HTMLDivElement>(null);
+  const touchX = useRef<number | null>(null);
+
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setCanEdit(!!data.session));
