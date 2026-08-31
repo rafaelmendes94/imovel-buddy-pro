@@ -236,6 +236,20 @@ export default function ImovelPublico() {
     thumbsRef.current?.scrollBy({ left: dir * 240, behavior: "smooth" });
   };
 
+  const swipe = {
+    onTouchStart: (e: React.TouchEvent) => { touchX.current = e.touches[0].clientX; },
+    onTouchEnd: (e: React.TouchEvent) => {
+      if (touchX.current == null) return;
+      const dx = e.changedTouches[0].clientX - touchX.current;
+      const total = imovel?.imagens?.filter(Boolean).length || 0;
+      if (total > 1 && Math.abs(dx) > 45) {
+        setIdx(i => (dx < 0 ? (i + 1) % total : (i - 1 + total) % total));
+      }
+      touchX.current = null;
+    },
+  };
+
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
