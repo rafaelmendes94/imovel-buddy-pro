@@ -64,7 +64,7 @@ interface ImovelRow {
   latitude: number | null;
   longitude: number | null;
   edificios?: { nome: string | null } | null;
-  condominios?: { nome: string | null; mapa_pdf_url: string | null } | null;
+  condominios?: { nome: string | null; mapa_pdf_url: string | null; implantacao_url: string | null } | null;
   empreendimentos?: { nome: string | null } | null;
 }
 
