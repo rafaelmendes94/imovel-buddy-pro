@@ -338,7 +338,7 @@ export default function ImovelPublico() {
         {/* ===== Galeria de fotos ===== */}
         <div {...swipe} className="relative bg-foreground rounded-xl sm:rounded-2xl overflow-hidden shadow-xl aspect-[4/3] sm:aspect-video">
           {images.length > 0 ? (
-            <img src={images[idx]} alt={`${imovel.titulo} - foto ${idx + 1}`} className="w-full h-full object-cover" />
+            <img src={images[idx]} alt={`${imovel.titulo} - foto ${idx + 1}`} onClick={() => setLightbox(idx)} className="w-full h-full object-cover cursor-zoom-in" />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-background/60 text-sm">Sem imagem</div>
           )}
