@@ -504,41 +504,38 @@ export default function ImovelPublico() {
           )}
         </div>
 
-        {/* ===== Downloads e Materiais ===== */}
-        {(downloads.length > 0 || imovel.drive_fotos_url) && (
-          <div id="downloads" className="bg-card border border-border rounded-xl sm:rounded-2xl p-4 sm:p-6 mt-4 sm:mt-6 scroll-mt-20">
-            <h2 className="text-base font-bold text-foreground">Downloads e Materiais</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">Baixe fotos, vídeos e documentos do imóvel</p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mt-4">
-              {downloads.map((d, i) => {
-                const inner = (
-                  <>
-                    <span className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <d.icon className="w-4 h-4 text-primary" />
+        {/* ===== Descrição / Características ===== */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mt-4 sm:mt-6 items-start">
+          {imovel.descricao && (
+            <div className="bg-card border border-border rounded-xl sm:rounded-2xl p-4 sm:p-6">
+              <h2 className="text-base font-bold text-foreground mb-3">Sobre o Imóvel</h2>
+              <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{imovel.descricao}</p>
+              {imovel.outras_caracteristicas && imovel.outras_caracteristicas.length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 mt-5 pt-5 border-t border-border">
+                  {imovel.outras_caracteristicas.map((c, i) => (
+                    <span key={i} className="flex items-center gap-2 text-sm text-foreground">
+                      <span className="w-4 h-4 rounded-full bg-primary/15 text-primary flex items-center justify-center flex-shrink-0"><Check className="w-2.5 h-2.5" /></span>
+                      {c}
                     </span>
-                    <span className="min-w-0">
-                      <span className="block text-xs font-bold text-foreground leading-tight">{d.title}</span>
-                      <span className="block text-[11px] text-muted-foreground">{d.sub}</span>
-                    </span>
-                  </>
-                );
-                const cls = "flex items-center gap-2.5 p-3 rounded-xl border border-border hover:border-primary/50 hover:bg-muted/40 transition-colors text-left";
-                return d.href
-                  ? <a key={i} href={d.href} target="_blank" rel="noopener noreferrer" className={cls}>{inner}</a>
-                  : <button key={i} onClick={d.onClick} className={cls}>{inner}</button>;
-              })}
+                  ))}
+                </div>
+              )}
             </div>
-            {imovel.drive_fotos_url && (
-              <a href={imovel.drive_fotos_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 p-3 mt-2 rounded-xl border border-border hover:border-primary/50 hover:bg-muted/40 transition-colors">
-                <span className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center"><HardDrive className="w-4 h-4 text-primary" /></span>
-                <span>
-                  <span className="block text-xs font-bold text-foreground">Abrir Pasta no Google Drive</span>
-                  <span className="block text-[11px] text-muted-foreground">Acesse todos os arquivos</span>
-                </span>
-              </a>
-            )}
+          )}
+
+          <div className="bg-card border border-border rounded-xl sm:rounded-2xl p-4 sm:p-6">
+            <h2 className="text-base font-bold text-foreground mb-3">Características</h2>
+            <dl className="divide-y divide-border">
+              {fichaTecnica.map(([k, v]) => (
+                <div key={k} className="flex items-center justify-between gap-3 py-2">
+                  <dt className="text-xs text-muted-foreground">{k}</dt>
+                  <dd className="text-xs font-bold text-foreground text-right">{v}</dd>
+                </div>
+              ))}
+            </dl>
           </div>
-        )}
+        </div>
+
 
         {/* ===== Vídeo do Imóvel (largura total) ===== */}
         {hasVideo && (
