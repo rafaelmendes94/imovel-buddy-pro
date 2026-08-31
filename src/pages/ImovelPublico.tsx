@@ -581,37 +581,32 @@ export default function ImovelPublico() {
           </div>
         )}
 
-        {/* ===== Sobre / Características ===== */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mt-4 sm:mt-6 items-start">
-          {imovel.descricao && (
-            <div className="bg-card border border-border rounded-xl sm:rounded-2xl p-4 sm:p-6">
-              <h2 className="text-base font-bold text-foreground mb-3">Sobre o Imóvel</h2>
-              <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{imovel.descricao}</p>
-              {imovel.outras_caracteristicas && imovel.outras_caracteristicas.length > 0 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 mt-5 pt-5 border-t border-border">
-                  {imovel.outras_caracteristicas.map((c, i) => (
-                    <span key={i} className="flex items-center gap-2 text-sm text-foreground">
-                      <span className="w-4 h-4 rounded-full bg-primary/15 text-primary flex items-center justify-center flex-shrink-0"><Check className="w-2.5 h-2.5" /></span>
-                      {c}
-                    </span>
-                  ))}
+        {/* ===== Implantação / Mapa ===== */}
+        {(() => {
+          const implantUrl = imovel.condominios?.implantacao_url?.trim() || imovel.condominios?.mapa_pdf_url?.trim() || null;
+          if (!implantUrl) return null;
+          const isImg = /\.(jpe?g|png|webp|avif)(\?|$)/i.test(implantUrl);
+          return (
+            <div id="implantacao" className="bg-card border border-border rounded-xl sm:rounded-2xl p-4 sm:p-6 mt-4 sm:mt-6 scroll-mt-20">
+              <h2 className="text-base font-bold text-foreground mb-3 flex items-center gap-2">
+                <MapIcon className="w-4 h-4 text-primary" /> Implantação
+              </h2>
+              {isImg ? (
+                <a href={implantUrl} target="_blank" rel="noopener noreferrer" className="block rounded-xl overflow-hidden border border-border">
+                  <img src={implantUrl} alt="Implantação do empreendimento" loading="lazy" className="w-full object-contain bg-muted" />
+                </a>
+              ) : (
+                <div className="aspect-video w-full rounded-xl overflow-hidden border border-border">
+                  <iframe src={implantUrl} title="Implantação" className="w-full h-full border-0" loading="lazy" />
                 </div>
               )}
+              <a href={implantUrl} target="_blank" rel="noopener noreferrer" className="mt-3 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-border text-sm font-semibold text-foreground hover:bg-muted">
+                <ExternalLink className="w-4 h-4 text-primary" /> Ver implantação em tela cheia
+              </a>
             </div>
-          )}
+          );
+        })()}
 
-          <div className="bg-card border border-border rounded-xl sm:rounded-2xl p-4 sm:p-6">
-            <h2 className="text-base font-bold text-foreground mb-3">Características</h2>
-            <dl className="divide-y divide-border">
-              {fichaTecnica.map(([k, v]) => (
-                <div key={k} className="flex items-center justify-between gap-3 py-2">
-                  <dt className="text-xs text-muted-foreground">{k}</dt>
-                  <dd className="text-xs font-bold text-foreground text-right">{v}</dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-        </div>
 
         {/* ===== Infraestrutura / pagamento ===== */}
         {imovel.infraestrutura && imovel.infraestrutura.length > 0 && (
