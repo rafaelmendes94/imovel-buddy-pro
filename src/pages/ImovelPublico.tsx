@@ -336,7 +336,7 @@ export default function ImovelPublico() {
 
       <main className="max-w-6xl mx-auto px-3 sm:px-6 py-4 sm:py-6 pb-28">
         {/* ===== Galeria de fotos ===== */}
-        <div className="relative bg-foreground rounded-xl sm:rounded-2xl overflow-hidden shadow-xl aspect-[4/3] sm:aspect-video">
+        <div {...swipe} className="relative bg-foreground rounded-xl sm:rounded-2xl overflow-hidden shadow-xl aspect-[4/3] sm:aspect-video">
           {images.length > 0 ? (
             <img src={images[idx]} alt={`${imovel.titulo} - foto ${idx + 1}`} className="w-full h-full object-cover" />
           ) : (
