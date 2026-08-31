@@ -7,7 +7,7 @@ import {
   ChevronLeft, ChevronRight, X, Play, Share2, Building2, Loader2, FolderOpen,
   MessageCircle, CalendarDays, FileText, Images, HardDrive, Map as MapIcon,
   Ruler, Box, Pencil, Check, Volume2, Maximize2, ArrowLeft, Download,
-  LayoutGrid, FileDown,
+  LayoutGrid, FileDown, ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { trackPropertyView } from "@/lib/trackPropertyView";
