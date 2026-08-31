@@ -96,7 +96,7 @@ export default function ImovelPublico() {
       setLoading(true);
       const { data, error } = await supabase
         .from("imoveis")
-        .select(`${PUBLIC_IMOVEL_COLUMNS}, edificios(nome), condominios(nome, mapa_pdf_url), empreendimentos(nome)`)
+        .select(`${PUBLIC_IMOVEL_COLUMNS}, edificios(nome), condominios(nome, mapa_pdf_url, implantacao_url), empreendimentos(nome)`)
         .eq("id", id)
         .eq("ativo_site", true)
         .maybeSingle();
