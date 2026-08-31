@@ -639,9 +639,46 @@ export default function ImovelPublico() {
           </div>
         )}
 
+        {/* ===== Materiais ===== */}
+        {(downloads.length > 0 || imovel.drive_fotos_url) && (
+          <div id="downloads" className="bg-card border border-border rounded-xl sm:rounded-2xl p-4 sm:p-6 mt-4 sm:mt-6 scroll-mt-20">
+            <h2 className="text-base font-bold text-foreground">Materiais</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">Fotos, vídeos e documentos do imóvel</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mt-4">
+              {downloads.map((d, i) => {
+                const inner = (
+                  <>
+                    <span className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <d.icon className="w-4 h-4 text-primary" />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-xs font-bold text-foreground leading-tight">{d.title}</span>
+                      <span className="block text-[11px] text-muted-foreground">{d.sub}</span>
+                    </span>
+                  </>
+                );
+                const cls = "flex items-center gap-2.5 p-3 rounded-xl border border-border hover:border-primary/50 hover:bg-muted/40 transition-colors text-left";
+                return d.href
+                  ? <a key={i} href={d.href} target="_blank" rel="noopener noreferrer" className={cls}>{inner}</a>
+                  : <button key={i} onClick={d.onClick} className={cls}>{inner}</button>;
+              })}
+            </div>
+            {imovel.drive_fotos_url && (
+              <a href={imovel.drive_fotos_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 p-3 mt-2 rounded-xl border border-border hover:border-primary/50 hover:bg-muted/40 transition-colors">
+                <span className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center"><HardDrive className="w-4 h-4 text-primary" /></span>
+                <span>
+                  <span className="block text-xs font-bold text-foreground">Abrir Pasta no Google Drive</span>
+                  <span className="block text-[11px] text-muted-foreground">Acesse todos os arquivos</span>
+                </span>
+              </a>
+            )}
+          </div>
+        )}
+
         <footer className="text-center text-xs text-muted-foreground py-8">
           MV BROKER CONNECT • Para mais informações, entre em contato com o anunciante.
         </footer>
+
       </main>
 
       {/* ===== Barra inferior de recursos (desktop) ===== */}
