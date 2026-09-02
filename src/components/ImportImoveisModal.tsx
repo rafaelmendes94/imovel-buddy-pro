@@ -230,11 +230,66 @@ export function ImportImoveisModal({ open, onClose, onImported }: Props) {
                 <table className="text-xs w-full">
                   <thead className="bg-muted/30 sticky top-0">
                     <tr>
+          {mvLayout && analysis && (
+            <div className="space-y-3">
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-2">
+                  <p className="text-lg font-bold text-emerald-600">{analysis.valid.length}</p>
+                  <p className="text-[11px] text-muted-foreground">Prontas para importar</p>
+                </div>
+                <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-2">
+                  <p className="text-lg font-bold text-amber-600">{analysis.pending.length}</p>
+                  <p className="text-[11px] text-muted-foreground">Pendentes de revisão</p>
+                </div>
+                <div className="rounded-lg border border-border bg-muted/40 p-2">
+                  <p className="text-lg font-bold text-foreground">{analysis.duplicates.length}</p>
+                  <p className="text-[11px] text-muted-foreground">Duplicadas (ignoradas)</p>
+                </div>
+              </div>
+
+              {analysis.pending.length > 0 && (
+                <div className="border border-border rounded-lg overflow-hidden">
+                  <div className="px-3 py-2 bg-muted/50 text-xs font-semibold text-muted-foreground border-b border-border">
+                    Linhas pendentes
+                  </div>
+                  <div className="max-h-40 overflow-y-auto divide-y divide-border">
+                    {analysis.pending.map((p, i) => (
+                      <div key={i} className="px-3 py-1.5 text-xs flex items-center justify-between gap-3">
+                        <span className="text-foreground truncate">
+                          {String(p.row.source_id || "")} · {String(p.row.property_name || p.row.unit_reference || "—")}
+                        </span>
+                        <span className="text-amber-600 shrink-0">{p.reasons.join(", ")}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <label className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground border-t border-border cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={includePending}
+                      onChange={(e) => setIncludePending(e.target.checked)}
+                      className="accent-primary"
+                    />
+                    Importar também as linhas pendentes (revisar depois no cadastro)
+                  </label>
+                </div>
+              )}
+            </div>
+          )}
+
+          {rows.length > 0 && (
+            <div className="border border-border rounded-lg overflow-hidden">
+              <div className="px-3 py-2 bg-muted/50 text-xs font-semibold text-muted-foreground border-b border-border">
+                Pré-visualização (primeiras 5 linhas de {rows.length})
+              </div>
+              <div className="overflow-x-auto max-h-64">
+                <table className="text-xs w-full">
+                  <thead className="bg-muted/30 sticky top-0">
+                    <tr>
                       {headers.map(h => (
                         <th key={h} className="px-2 py-1.5 text-left font-medium text-muted-foreground whitespace-nowrap border-r border-border last:border-r-0">
                           {h}
-                          {COLUMN_MAP[h] && (
-                            <span className="block text-[9px] text-primary">→ {COLUMN_MAP[h]}</span>
+                          {columnMap[h] && (
+                            <span className="block text-[9px] text-primary">→ {columnMap[h]}</span>
                           )}
                         </th>
                       ))}
@@ -255,6 +310,7 @@ export function ImportImoveisModal({ open, onClose, onImported }: Props) {
               </div>
             </div>
           )}
+
 
           {result && (
             <div className={`flex items-center gap-2 p-3 rounded-lg text-sm ${result.fail === 0 ? "bg-emerald-500/10 text-emerald-600" : "bg-amber-500/10 text-amber-600"}`}>
