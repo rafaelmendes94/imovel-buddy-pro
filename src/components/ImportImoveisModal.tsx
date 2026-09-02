@@ -1,15 +1,17 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { X, Upload, Loader2, CheckCircle2, AlertCircle, FileSpreadsheet } from "lucide-react";
+import { MV_COLUMN_MAP, isMvLayout, mapMvRow, validateMvRow } from "@/lib/importMvImoveis";
 
 interface Props {
   open: boolean;
   onClose: () => void;
   onImported: () => void;
 }
+
 
 const COLUMN_MAP: Record<string, string> = {
   EMPREENDIMENTO: "empreendimento",
@@ -109,16 +111,44 @@ export function ImportImoveisModal({ open, onClose, onImported }: Props) {
   const [importing, setImporting] = useState(false);
   const [result, setResult] = useState<{ ok: number; fail: number } | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [includePending, setIncludePending] = useState(false);
+
+  const headers = rows.length ? Object.keys(rows[0]) : [];
+  const mvLayout = headers.length > 0 && isMvLayout(headers);
+  const columnMap = mvLayout ? MV_COLUMN_MAP : COLUMN_MAP;
+
+  const analysis = useMemo(() => {
+    if (!mvLayout) return null;
+    const seen = new Set<string>();
+    const valid: any[] = [];
+    const pending: { row: any; reasons: string[] }[] = [];
+    const duplicates: any[] = [];
+    rows.forEach((row) => {
+      const fp = String(row.exact_fingerprint ?? row.fingerprint ?? "").trim();
+      if (fp && seen.has(fp)) { duplicates.push(row); return; }
+      if (fp) seen.add(fp);
+      const v = validateMvRow(row);
+      if (v.ok) valid.push(row);
+      else pending.push({ row, reasons: v.reasons });
+    });
+    return { valid, pending, duplicates };
+  }, [rows, mvLayout]);
+
+  const selectedRows = mvLayout && analysis
+    ? (includePending ? [...analysis.valid, ...analysis.pending.map((p) => p.row)] : analysis.valid)
+    : rows;
 
   const doImport = async () => {
     setConfirmOpen(false);
-    if (!user || rows.length === 0) return;
+    if (!user || selectedRows.length === 0) return;
     setImporting(true);
     let ok = 0, fail = 0;
-    const batch = rows.map(r => mapRow(r, user.id)).filter(r => r.titulo);
+    const batch = selectedRows
+      .map((r) => (mvLayout ? mapMvRow(r, user.id) : mapRow(r, user.id)))
+      .filter((r) => r.titulo);
     for (let i = 0; i < batch.length; i += 50) {
       const chunk = batch.slice(i, i + 50);
-      const { error } = await supabase.from("imoveis").insert(chunk);
+      const { error } = await supabase.from("imoveis").insert(chunk as any);
       if (error) { console.error("Import error:", error); fail += chunk.length; }
       else { ok += chunk.length; }
     }
@@ -142,11 +172,10 @@ export function ImportImoveisModal({ open, onClose, onImported }: Props) {
   };
 
   const handleImport = () => {
-    if (!user || rows.length === 0) return;
+    if (!user || selectedRows.length === 0) return;
     setConfirmOpen(true);
   };
 
-  const headers = rows.length ? Object.keys(rows[0]) : [];
 
   return (
     <div className="fixed inset-0 bg-foreground/50 z-50 flex items-center justify-center p-4">
@@ -163,10 +192,21 @@ export function ImportImoveisModal({ open, onClose, onImported }: Props) {
 
         <div className="p-5 space-y-4 overflow-y-auto">
           <div className="text-xs text-muted-foreground bg-muted/40 rounded-lg p-3">
-            <p className="font-semibold mb-1">Mapeamento esperado:</p>
-            <p>EMPREENDIMENTO, TIPO, N° APTO QUADRA LOTE, BOX, DORMITORIOS, M², ANO CONSTRUÇÃO, FRENTE FUNDOS LATERAL, MOBILIADO DECORADO, BAIRRO, RUA, VALOR, CONDIÇÃO PAGAMENTO, CHAVES OBRA, PROPRIETARIO NUMERO, NUMERO PROPRIETARIO, CIDADE DO PROPRIETARIO</p>
-            <p className="mt-2">⚠️ Valores são multiplicados por 1.000 quando menores que 10.000 (ex: 650 → R$ 650.000).</p>
+            {mvLayout ? (
+              <>
+                <p className="font-semibold mb-1 text-primary">Layout detectado: planilha normalizada MV</p>
+                <p>Colunas reconhecidas: property_name, property_type, unit_reference, city, neighborhood, street_raw, price_brl, bedrooms, suites, area_m2, parking_spaces, parking_raw (box), position_solar_raw, furnished/decorated, payment_terms, contact_name, contact_phone, keys_access, highlights, internal_notes.</p>
+                <p className="mt-2">Só entram linhas com <strong>import_approved</strong> e sem <strong>review_required</strong>. Duplicados são detectados por <strong>exact_fingerprint</strong>.</p>
+              </>
+            ) : (
+              <>
+                <p className="font-semibold mb-1">Mapeamento esperado:</p>
+                <p>EMPREENDIMENTO, TIPO, N° APTO QUADRA LOTE, BOX, DORMITORIOS, M², ANO CONSTRUÇÃO, FRENTE FUNDOS LATERAL, MOBILIADO DECORADO, BAIRRO, RUA, VALOR, CONDIÇÃO PAGAMENTO, CHAVES OBRA, PROPRIETARIO NUMERO, NUMERO PROPRIETARIO, CIDADE DO PROPRIETARIO</p>
+                <p className="mt-2">⚠️ Valores são multiplicados por 1.000 quando menores que 10.000 (ex: 650 → R$ 650.000).</p>
+              </>
+            )}
           </div>
+
 
           <label className="flex items-center justify-center gap-2 px-4 py-6 border-2 border-dashed border-input rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
             <Upload className="w-5 h-5 text-muted-foreground" />
@@ -181,6 +221,52 @@ export function ImportImoveisModal({ open, onClose, onImported }: Props) {
             />
           </label>
 
+          {mvLayout && analysis && (
+            <div className="space-y-3">
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-2">
+                  <p className="text-lg font-bold text-emerald-600">{analysis.valid.length}</p>
+                  <p className="text-[11px] text-muted-foreground">Prontas para importar</p>
+                </div>
+                <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-2">
+                  <p className="text-lg font-bold text-amber-600">{analysis.pending.length}</p>
+                  <p className="text-[11px] text-muted-foreground">Pendentes de revisão</p>
+                </div>
+                <div className="rounded-lg border border-border bg-muted/40 p-2">
+                  <p className="text-lg font-bold text-foreground">{analysis.duplicates.length}</p>
+                  <p className="text-[11px] text-muted-foreground">Duplicadas (ignoradas)</p>
+                </div>
+              </div>
+
+              {analysis.pending.length > 0 && (
+                <div className="border border-border rounded-lg overflow-hidden">
+                  <div className="px-3 py-2 bg-muted/50 text-xs font-semibold text-muted-foreground border-b border-border">
+                    Linhas pendentes
+                  </div>
+                  <div className="max-h-40 overflow-y-auto divide-y divide-border">
+                    {analysis.pending.map((p, i) => (
+                      <div key={i} className="px-3 py-1.5 text-xs flex items-center justify-between gap-3">
+                        <span className="text-foreground truncate">
+                          {String(p.row.source_id || "")} · {String(p.row.property_name || p.row.unit_reference || "—")}
+                        </span>
+                        <span className="text-amber-600 shrink-0">{p.reasons.join(", ")}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <label className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground border-t border-border cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={includePending}
+                      onChange={(e) => setIncludePending(e.target.checked)}
+                      className="accent-primary"
+                    />
+                    Importar também as linhas pendentes (revisar depois no cadastro)
+                  </label>
+                </div>
+              )}
+            </div>
+          )}
+
           {rows.length > 0 && (
             <div className="border border-border rounded-lg overflow-hidden">
               <div className="px-3 py-2 bg-muted/50 text-xs font-semibold text-muted-foreground border-b border-border">
@@ -193,8 +279,8 @@ export function ImportImoveisModal({ open, onClose, onImported }: Props) {
                       {headers.map(h => (
                         <th key={h} className="px-2 py-1.5 text-left font-medium text-muted-foreground whitespace-nowrap border-r border-border last:border-r-0">
                           {h}
-                          {COLUMN_MAP[h] && (
-                            <span className="block text-[9px] text-primary">→ {COLUMN_MAP[h]}</span>
+                          {columnMap[h] && (
+                            <span className="block text-[9px] text-primary">→ {columnMap[h]}</span>
                           )}
                         </th>
                       ))}
@@ -216,6 +302,7 @@ export function ImportImoveisModal({ open, onClose, onImported }: Props) {
             </div>
           )}
 
+
           {result && (
             <div className={`flex items-center gap-2 p-3 rounded-lg text-sm ${result.fail === 0 ? "bg-emerald-500/10 text-emerald-600" : "bg-amber-500/10 text-amber-600"}`}>
               {result.fail === 0 ? <CheckCircle2 className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
@@ -230,12 +317,13 @@ export function ImportImoveisModal({ open, onClose, onImported }: Props) {
           </button>
           <button
             onClick={handleImport}
-            disabled={importing || rows.length === 0}
+            disabled={importing || selectedRows.length === 0}
             className="flex items-center gap-2 px-4 py-2 rounded-lg gradient-gold text-primary text-sm font-semibold hover:opacity-90 disabled:opacity-50 transition-opacity"
           >
             {importing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-            Importar {rows.length > 0 && `(${rows.length})`}
+            Importar {selectedRows.length > 0 && `(${selectedRows.length})`}
           </button>
+
         </div>
       </div>
 
@@ -245,7 +333,7 @@ export function ImportImoveisModal({ open, onClose, onImported }: Props) {
             <div className="p-5 border-b border-border">
               <h3 className="text-base font-bold text-card-foreground">Confirmar importação</h3>
               <p className="text-xs text-muted-foreground mt-1">
-                Serão importadas <strong className="text-foreground">{rows.length}</strong> linhas. Confira o mapeamento de colunas antes de continuar.
+                Serão importadas <strong className="text-foreground">{selectedRows.length}</strong> linhas. Confira o mapeamento de colunas antes de continuar.
               </p>
             </div>
             <div className="p-5 overflow-y-auto">
@@ -260,7 +348,7 @@ export function ImportImoveisModal({ open, onClose, onImported }: Props) {
                   </thead>
                   <tbody>
                     {headers.map(h => {
-                      const mapped = COLUMN_MAP[h];
+                      const mapped = columnMap[h];
                       return (
                         <tr key={h} className="border-t border-border">
                           <td className="px-3 py-1.5 text-foreground border-r border-border">{h}</td>
