@@ -317,12 +317,13 @@ export function ImportImoveisModal({ open, onClose, onImported }: Props) {
           </button>
           <button
             onClick={handleImport}
-            disabled={importing || rows.length === 0}
+            disabled={importing || selectedRows.length === 0}
             className="flex items-center gap-2 px-4 py-2 rounded-lg gradient-gold text-primary text-sm font-semibold hover:opacity-90 disabled:opacity-50 transition-opacity"
           >
             {importing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-            Importar {rows.length > 0 && `(${rows.length})`}
+            Importar {selectedRows.length > 0 && `(${selectedRows.length})`}
           </button>
+
         </div>
       </div>
 
