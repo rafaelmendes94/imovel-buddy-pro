@@ -408,9 +408,10 @@ export function ImportImoveisWizard({ open, onClose, onImported }: Props) {
                           <td className="px-2 py-1.5">{r.mapped.bairro || "—"}</td>
 
                           <td className="px-2 py-1.5 whitespace-nowrap">{money(Number(r.mapped.preco))}</td>
-                          <td className="px-2 py-1.5">{r.mapped.quartos ?? 0}</td>
-                          <td className="px-2 py-1.5">{r.mapped.suites ?? 0}</td>
+                          <td className="px-2 py-1.5">{r.mapped.quartos || "—"}</td>
+                          <td className="px-2 py-1.5">{r.mapped.suites || "—"}</td>
                           <td className="px-2 py-1.5">{r.mapped.area || "—"}</td>
+
                           <td className="px-2 py-1.5 max-w-[130px] truncate">{r.mapped.proprietario || "—"}</td>
                           <td className="px-2 py-1.5 whitespace-nowrap">{r.mapped.proprietario_telefone || "—"}</td>
                           <td className={`px-2 py-1.5 font-medium whitespace-nowrap ${STATUS_CLASS[r.status]}`}>{STATUS_LABEL[r.status]}</td>
