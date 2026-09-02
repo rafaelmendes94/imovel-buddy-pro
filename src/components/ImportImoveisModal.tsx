@@ -333,7 +333,7 @@ export function ImportImoveisModal({ open, onClose, onImported }: Props) {
             <div className="p-5 border-b border-border">
               <h3 className="text-base font-bold text-card-foreground">Confirmar importação</h3>
               <p className="text-xs text-muted-foreground mt-1">
-                Serão importadas <strong className="text-foreground">{rows.length}</strong> linhas. Confira o mapeamento de colunas antes de continuar.
+                Serão importadas <strong className="text-foreground">{selectedRows.length}</strong> linhas. Confira o mapeamento de colunas antes de continuar.
               </p>
             </div>
             <div className="p-5 overflow-y-auto">
