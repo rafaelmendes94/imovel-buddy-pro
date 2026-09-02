@@ -192,12 +192,17 @@ export function ImportImoveisWizard({ open, onClose, onImported }: Props) {
       const exact = String(r.raw.exact_fingerprint ?? "").trim();
       const soft = String(r.raw.fingerprint ?? "").trim();
       const match = existingMap.get(key(r.mapped.titulo, r.mapped.unidade, r.mapped.cidade, r.mapped.preco));
-      if (exact && seenExact.has(exact)) {
-        return { ...r, status: "duplicate" as RowStatus, selected: false, reasons: ["já importado (exact_fingerprint)"], existingId: match?.id, existingLabel: match?.label };
-      }
-      if (match || (soft && seenSoft.has(soft))) {
-        return { ...r, status: "possible" as RowStatus, selected: false, reasons: ["possível duplicidade"], existingId: match?.id, existingLabel: match?.label };
-      }
+      const dup =
+        exact && seenExact.has(exact) ? "já importado (exact_fingerprint)"
+        : match || (soft && seenSoft.has(soft)) ? "possível duplicidade"
+        : "";
+      if (!dup) return r;
+      // Revisão tem prioridade sobre duplicidade: linha com problema nunca importa direto.
+      const status: RowStatus =
+        r.status === "review" ? "review" : exact && seenExact.has(exact) ? "duplicate" : "possible";
+      return { ...r, status, selected: false, reasons: [...r.reasons, dup], existingId: match?.id, existingLabel: match?.label };
+    });
+
       return r;
     });
 
