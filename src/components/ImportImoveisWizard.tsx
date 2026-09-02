@@ -361,11 +361,12 @@ export function ImportImoveisWizard({ open, onClose, onImported }: Props) {
                   Selecionar todos os válidos
                 </button>
                 <button
-                  onClick={() => setRows((p) => p.map((r) => ({ ...r, selected: true })))}
+                  onClick={() => setRows((p) => p.map((r) => ({ ...r, selected: importable(r) && r.action !== "ignore" ? true : r.status === "ready" })))}
                   className="px-2 py-1 rounded-md bg-secondary text-secondary-foreground font-medium"
                 >
-                  Selecionar todos
+                  Selecionar prontos + duplicidades resolvidas
                 </button>
+
                 <button
                   onClick={() => setRows((p) => p.map((r) => ({ ...r, selected: false })))}
                   className="px-2 py-1 rounded-md bg-secondary text-secondary-foreground font-medium"
