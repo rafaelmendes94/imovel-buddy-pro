@@ -103,7 +103,10 @@ export function ImportImoveisWizard({ open, onClose, onImported }: Props) {
     return c;
   }, [rows]);
 
-  const selectedRows = rows.filter((r) => r.selected);
+  // Regra CRÍTICA: registros em revisão/erro nunca são importados direto.
+  const importable = (r: RowState) => r.status !== "review" && r.status !== "error";
+  const selectedRows = rows.filter((r) => r.selected && importable(r));
+
 
   const reset = () => {
     setStep("upload");
