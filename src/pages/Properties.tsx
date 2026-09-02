@@ -25,7 +25,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { generatePropertyPdf } from "@/utils/generatePropertyPdf";
 import { useAuth } from "@/hooks/useAuth";
-import { ImportImoveisModal } from "@/components/ImportImoveisModal";
+import { ImportImoveisWizard } from "@/components/ImportImoveisWizard";
 import { getPropertyUnitParts } from "@/lib/propertyIdentity";
 
 // Broker info
@@ -1725,7 +1725,7 @@ export default function Properties() {
         onCancel={() => setPendingSold(null)}
       />
 
-      <ImportImoveisModal
+      <ImportImoveisWizard
         open={importOpen}
         onClose={() => setImportOpen(false)}
         onImported={() => window.location.reload()}
