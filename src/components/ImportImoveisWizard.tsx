@@ -203,8 +203,7 @@ export function ImportImoveisWizard({ open, onClose, onImported }: Props) {
       return { ...r, status, selected: false, reasons: [...r.reasons, dup], existingId: match?.id, existingLabel: match?.label };
     });
 
-      return r;
-    });
+
 
     setRows(withDupes);
     setStep("review");
