@@ -54,7 +54,9 @@ const STATUS_CLASS: Record<RowStatus, string> = {
 };
 
 const EDITABLE: { key: string; label: string; type?: "number" | "bool" }[] = [
-  { key: "titulo", label: "Título" },
+  { key: "titulo", label: "Título do anúncio" },
+  { key: "empreendimento", label: "Empreendimento" },
+
   { key: "tipo", label: "Tipo" },
   { key: "endereco", label: "Endereço" },
   { key: "cidade", label: "Cidade" },
