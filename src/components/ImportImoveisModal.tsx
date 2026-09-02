@@ -348,7 +348,7 @@ export function ImportImoveisModal({ open, onClose, onImported }: Props) {
                   </thead>
                   <tbody>
                     {headers.map(h => {
-                      const mapped = COLUMN_MAP[h];
+                      const mapped = columnMap[h];
                       return (
                         <tr key={h} className="border-t border-border">
                           <td className="px-3 py-1.5 text-foreground border-r border-border">{h}</td>
