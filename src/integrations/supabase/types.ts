@@ -1272,6 +1272,57 @@ export type Database = {
           },
         ]
       }
+      import_logs: {
+        Row: {
+          batch_id: string
+          created_at: string
+          error: string | null
+          exact_fingerprint: string | null
+          file_name: string
+          fingerprint: string | null
+          id: string
+          imovel_id: string | null
+          normalized_data: Json
+          raw_data: Json
+          row_number: number
+          status: string
+          user_id: string
+          warning: string | null
+        }
+        Insert: {
+          batch_id: string
+          created_at?: string
+          error?: string | null
+          exact_fingerprint?: string | null
+          file_name: string
+          fingerprint?: string | null
+          id?: string
+          imovel_id?: string | null
+          normalized_data?: Json
+          raw_data?: Json
+          row_number: number
+          status: string
+          user_id: string
+          warning?: string | null
+        }
+        Update: {
+          batch_id?: string
+          created_at?: string
+          error?: string | null
+          exact_fingerprint?: string | null
+          file_name?: string
+          fingerprint?: string | null
+          id?: string
+          imovel_id?: string | null
+          normalized_data?: Json
+          raw_data?: Json
+          row_number?: number
+          status?: string
+          user_id?: string
+          warning?: string | null
+        }
+        Relationships: []
+      }
       job_roles: {
         Row: {
           created_at: string
