@@ -380,8 +380,8 @@ export function ImportImoveisWizard({ open, onClose, onImported }: Props) {
                   <table className="text-xs w-full">
                     <thead className="bg-muted/50 sticky top-0">
                       <tr>
-                        {["", "Linha", "Título", "Tipo", "Unidade", "Cidade", "Bairro", "Preço", "Qtos", "Suítes", "Área", "Proprietário", "Telefone", "Status", "Problema", ""].map((h) => (
-                          <th key={h} className="px-2 py-2 text-left font-semibold text-muted-foreground whitespace-nowrap">{h}</th>
+                        {["", "Linha", "Título", "Empreendimento", "Tipo", "Unidade", "Box", "Cidade", "Bairro", "Preço", "Qtos", "Suítes", "Área", "Proprietário", "Telefone", "Status", "Problema", ""].map((h, i) => (
+                          <th key={`${h}-${i}`} className="px-2 py-2 text-left font-semibold text-muted-foreground whitespace-nowrap">{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -389,14 +389,24 @@ export function ImportImoveisWizard({ open, onClose, onImported }: Props) {
                       {rows.map((r) => (
                         <tr key={r.line} className="border-t border-border hover:bg-muted/20">
                           <td className="px-2 py-1.5">
-                            <input type="checkbox" checked={r.selected} onChange={(e) => patchRow(r.line, { selected: e.target.checked })} className="accent-primary" />
+                            <input
+                              type="checkbox"
+                              checked={r.selected && importable(r)}
+                              disabled={!importable(r)}
+                              title={importable(r) ? "" : "Corrija a linha na revisão para poder importar"}
+                              onChange={(e) => patchRow(r.line, { selected: e.target.checked })}
+                              className="accent-primary disabled:opacity-40"
+                            />
                           </td>
                           <td className="px-2 py-1.5 text-muted-foreground">{r.line}</td>
                           <td className="px-2 py-1.5 text-foreground max-w-[180px] truncate">{r.mapped.titulo}</td>
+                          <td className="px-2 py-1.5 max-w-[150px] truncate">{r.mapped.empreendimento || "—"}</td>
                           <td className="px-2 py-1.5">{r.mapped.tipo}</td>
-                          <td className="px-2 py-1.5">{r.mapped.unidade || [r.mapped.quadra, r.mapped.lote].filter(Boolean).join("-") || "—"}</td>
+                          <td className="px-2 py-1.5">{r.mapped.unidade || [r.mapped.quadra && `QD ${r.mapped.quadra}`, r.mapped.lote && `LT ${r.mapped.lote}`].filter(Boolean).join(" ") || "—"}</td>
+                          <td className="px-2 py-1.5">{r.mapped.box || "—"}</td>
                           <td className="px-2 py-1.5">{r.mapped.cidade || "—"}</td>
                           <td className="px-2 py-1.5">{r.mapped.bairro || "—"}</td>
+
                           <td className="px-2 py-1.5 whitespace-nowrap">{money(Number(r.mapped.preco))}</td>
                           <td className="px-2 py-1.5">{r.mapped.quartos ?? 0}</td>
                           <td className="px-2 py-1.5">{r.mapped.suites ?? 0}</td>
