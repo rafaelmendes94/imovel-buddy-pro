@@ -192,10 +192,21 @@ export function ImportImoveisModal({ open, onClose, onImported }: Props) {
 
         <div className="p-5 space-y-4 overflow-y-auto">
           <div className="text-xs text-muted-foreground bg-muted/40 rounded-lg p-3">
-            <p className="font-semibold mb-1">Mapeamento esperado:</p>
-            <p>EMPREENDIMENTO, TIPO, N° APTO QUADRA LOTE, BOX, DORMITORIOS, M², ANO CONSTRUÇÃO, FRENTE FUNDOS LATERAL, MOBILIADO DECORADO, BAIRRO, RUA, VALOR, CONDIÇÃO PAGAMENTO, CHAVES OBRA, PROPRIETARIO NUMERO, NUMERO PROPRIETARIO, CIDADE DO PROPRIETARIO</p>
-            <p className="mt-2">⚠️ Valores são multiplicados por 1.000 quando menores que 10.000 (ex: 650 → R$ 650.000).</p>
+            {mvLayout ? (
+              <>
+                <p className="font-semibold mb-1 text-primary">Layout detectado: planilha normalizada MV</p>
+                <p>Colunas reconhecidas: property_name, property_type, unit_reference, city, neighborhood, street_raw, price_brl, bedrooms, suites, area_m2, parking_spaces, parking_raw (box), position_solar_raw, furnished/decorated, payment_terms, contact_name, contact_phone, keys_access, highlights, internal_notes.</p>
+                <p className="mt-2">Só entram linhas com <strong>import_approved</strong> e sem <strong>review_required</strong>. Duplicados são detectados por <strong>exact_fingerprint</strong>.</p>
+              </>
+            ) : (
+              <>
+                <p className="font-semibold mb-1">Mapeamento esperado:</p>
+                <p>EMPREENDIMENTO, TIPO, N° APTO QUADRA LOTE, BOX, DORMITORIOS, M², ANO CONSTRUÇÃO, FRENTE FUNDOS LATERAL, MOBILIADO DECORADO, BAIRRO, RUA, VALOR, CONDIÇÃO PAGAMENTO, CHAVES OBRA, PROPRIETARIO NUMERO, NUMERO PROPRIETARIO, CIDADE DO PROPRIETARIO</p>
+                <p className="mt-2">⚠️ Valores são multiplicados por 1.000 quando menores que 10.000 (ex: 650 → R$ 650.000).</p>
+              </>
+            )}
           </div>
+
 
           <label className="flex items-center justify-center gap-2 px-4 py-6 border-2 border-dashed border-input rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
             <Upload className="w-5 h-5 text-muted-foreground" />
