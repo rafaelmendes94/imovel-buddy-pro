@@ -111,16 +111,44 @@ export function ImportImoveisModal({ open, onClose, onImported }: Props) {
   const [importing, setImporting] = useState(false);
   const [result, setResult] = useState<{ ok: number; fail: number } | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [includePending, setIncludePending] = useState(false);
+
+  const headers = rows.length ? Object.keys(rows[0]) : [];
+  const mvLayout = headers.length > 0 && isMvLayout(headers);
+  const columnMap = mvLayout ? MV_COLUMN_MAP : COLUMN_MAP;
+
+  const analysis = useMemo(() => {
+    if (!mvLayout) return null;
+    const seen = new Set<string>();
+    const valid: any[] = [];
+    const pending: { row: any; reasons: string[] }[] = [];
+    const duplicates: any[] = [];
+    rows.forEach((row) => {
+      const fp = String(row.exact_fingerprint ?? row.fingerprint ?? "").trim();
+      if (fp && seen.has(fp)) { duplicates.push(row); return; }
+      if (fp) seen.add(fp);
+      const v = validateMvRow(row);
+      if (v.ok) valid.push(row);
+      else pending.push({ row, reasons: v.reasons });
+    });
+    return { valid, pending, duplicates };
+  }, [rows, mvLayout]);
+
+  const selectedRows = mvLayout && analysis
+    ? (includePending ? [...analysis.valid, ...analysis.pending.map((p) => p.row)] : analysis.valid)
+    : rows;
 
   const doImport = async () => {
     setConfirmOpen(false);
-    if (!user || rows.length === 0) return;
+    if (!user || selectedRows.length === 0) return;
     setImporting(true);
     let ok = 0, fail = 0;
-    const batch = rows.map(r => mapRow(r, user.id)).filter(r => r.titulo);
+    const batch = selectedRows
+      .map((r) => (mvLayout ? mapMvRow(r, user.id) : mapRow(r, user.id)))
+      .filter((r) => r.titulo);
     for (let i = 0; i < batch.length; i += 50) {
       const chunk = batch.slice(i, i + 50);
-      const { error } = await supabase.from("imoveis").insert(chunk);
+      const { error } = await supabase.from("imoveis").insert(chunk as any);
       if (error) { console.error("Import error:", error); fail += chunk.length; }
       else { ok += chunk.length; }
     }
@@ -144,11 +172,10 @@ export function ImportImoveisModal({ open, onClose, onImported }: Props) {
   };
 
   const handleImport = () => {
-    if (!user || rows.length === 0) return;
+    if (!user || selectedRows.length === 0) return;
     setConfirmOpen(true);
   };
 
-  const headers = rows.length ? Object.keys(rows[0]) : [];
 
   return (
     <div className="fixed inset-0 bg-foreground/50 z-50 flex items-center justify-center p-4">
