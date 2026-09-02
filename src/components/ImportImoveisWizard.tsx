@@ -54,7 +54,9 @@ const STATUS_CLASS: Record<RowStatus, string> = {
 };
 
 const EDITABLE: { key: string; label: string; type?: "number" | "bool" }[] = [
-  { key: "titulo", label: "Título" },
+  { key: "titulo", label: "Título do anúncio" },
+  { key: "empreendimento", label: "Empreendimento" },
+
   { key: "tipo", label: "Tipo" },
   { key: "endereco", label: "Endereço" },
   { key: "cidade", label: "Cidade" },
@@ -103,7 +105,10 @@ export function ImportImoveisWizard({ open, onClose, onImported }: Props) {
     return c;
   }, [rows]);
 
-  const selectedRows = rows.filter((r) => r.selected);
+  // Regra CRÍTICA: registros em revisão/erro nunca são importados direto.
+  const importable = (r: RowState) => r.status !== "review" && r.status !== "error";
+  const selectedRows = rows.filter((r) => r.selected && importable(r));
+
 
   const reset = () => {
     setStep("upload");
@@ -187,14 +192,18 @@ export function ImportImoveisWizard({ open, onClose, onImported }: Props) {
       const exact = String(r.raw.exact_fingerprint ?? "").trim();
       const soft = String(r.raw.fingerprint ?? "").trim();
       const match = existingMap.get(key(r.mapped.titulo, r.mapped.unidade, r.mapped.cidade, r.mapped.preco));
-      if (exact && seenExact.has(exact)) {
-        return { ...r, status: "duplicate" as RowStatus, selected: false, reasons: ["já importado (exact_fingerprint)"], existingId: match?.id, existingLabel: match?.label };
-      }
-      if (match || (soft && seenSoft.has(soft))) {
-        return { ...r, status: "possible" as RowStatus, selected: false, reasons: ["possível duplicidade"], existingId: match?.id, existingLabel: match?.label };
-      }
-      return r;
+      const dup =
+        exact && seenExact.has(exact) ? "já importado (exact_fingerprint)"
+        : match || (soft && seenSoft.has(soft)) ? "possível duplicidade"
+        : "";
+      if (!dup) return r;
+      // Revisão tem prioridade sobre duplicidade: linha com problema nunca importa direto.
+      const status: RowStatus =
+        r.status === "review" ? "review" : exact && seenExact.has(exact) ? "duplicate" : "possible";
+      return { ...r, status, selected: false, reasons: [...r.reasons, dup], existingId: match?.id, existingLabel: match?.label };
     });
+
+
 
     setRows(withDupes);
     setStep("review");
@@ -358,11 +367,12 @@ export function ImportImoveisWizard({ open, onClose, onImported }: Props) {
                   Selecionar todos os válidos
                 </button>
                 <button
-                  onClick={() => setRows((p) => p.map((r) => ({ ...r, selected: true })))}
+                  onClick={() => setRows((p) => p.map((r) => ({ ...r, selected: importable(r) && r.action !== "ignore" ? true : r.status === "ready" })))}
                   className="px-2 py-1 rounded-md bg-secondary text-secondary-foreground font-medium"
                 >
-                  Selecionar todos
+                  Selecionar prontos + duplicidades resolvidas
                 </button>
+
                 <button
                   onClick={() => setRows((p) => p.map((r) => ({ ...r, selected: false })))}
                   className="px-2 py-1 rounded-md bg-secondary text-secondary-foreground font-medium"
@@ -376,8 +386,8 @@ export function ImportImoveisWizard({ open, onClose, onImported }: Props) {
                   <table className="text-xs w-full">
                     <thead className="bg-muted/50 sticky top-0">
                       <tr>
-                        {["", "Linha", "Título", "Tipo", "Unidade", "Cidade", "Bairro", "Preço", "Qtos", "Suítes", "Área", "Proprietário", "Telefone", "Status", "Problema", ""].map((h) => (
-                          <th key={h} className="px-2 py-2 text-left font-semibold text-muted-foreground whitespace-nowrap">{h}</th>
+                        {["", "Linha", "Título", "Empreendimento", "Tipo", "Unidade", "Box", "Cidade", "Bairro", "Preço", "Qtos", "Suítes", "Área", "Proprietário", "Telefone", "Status", "Problema", ""].map((h, i) => (
+                          <th key={`${h}-${i}`} className="px-2 py-2 text-left font-semibold text-muted-foreground whitespace-nowrap">{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -385,18 +395,29 @@ export function ImportImoveisWizard({ open, onClose, onImported }: Props) {
                       {rows.map((r) => (
                         <tr key={r.line} className="border-t border-border hover:bg-muted/20">
                           <td className="px-2 py-1.5">
-                            <input type="checkbox" checked={r.selected} onChange={(e) => patchRow(r.line, { selected: e.target.checked })} className="accent-primary" />
+                            <input
+                              type="checkbox"
+                              checked={r.selected && importable(r)}
+                              disabled={!importable(r)}
+                              title={importable(r) ? "" : "Corrija a linha na revisão para poder importar"}
+                              onChange={(e) => patchRow(r.line, { selected: e.target.checked })}
+                              className="accent-primary disabled:opacity-40"
+                            />
                           </td>
                           <td className="px-2 py-1.5 text-muted-foreground">{r.line}</td>
                           <td className="px-2 py-1.5 text-foreground max-w-[180px] truncate">{r.mapped.titulo}</td>
+                          <td className="px-2 py-1.5 max-w-[150px] truncate">{r.mapped.empreendimento || "—"}</td>
                           <td className="px-2 py-1.5">{r.mapped.tipo}</td>
-                          <td className="px-2 py-1.5">{r.mapped.unidade || [r.mapped.quadra, r.mapped.lote].filter(Boolean).join("-") || "—"}</td>
+                          <td className="px-2 py-1.5">{r.mapped.unidade || [r.mapped.quadra && `QD ${r.mapped.quadra}`, r.mapped.lote && `LT ${r.mapped.lote}`].filter(Boolean).join(" ") || "—"}</td>
+                          <td className="px-2 py-1.5">{r.mapped.box || "—"}</td>
                           <td className="px-2 py-1.5">{r.mapped.cidade || "—"}</td>
                           <td className="px-2 py-1.5">{r.mapped.bairro || "—"}</td>
+
                           <td className="px-2 py-1.5 whitespace-nowrap">{money(Number(r.mapped.preco))}</td>
-                          <td className="px-2 py-1.5">{r.mapped.quartos ?? 0}</td>
-                          <td className="px-2 py-1.5">{r.mapped.suites ?? 0}</td>
+                          <td className="px-2 py-1.5">{r.mapped.quartos || "—"}</td>
+                          <td className="px-2 py-1.5">{r.mapped.suites || "—"}</td>
                           <td className="px-2 py-1.5">{r.mapped.area || "—"}</td>
+
                           <td className="px-2 py-1.5 max-w-[130px] truncate">{r.mapped.proprietario || "—"}</td>
                           <td className="px-2 py-1.5 whitespace-nowrap">{r.mapped.proprietario_telefone || "—"}</td>
                           <td className={`px-2 py-1.5 font-medium whitespace-nowrap ${STATUS_CLASS[r.status]}`}>{STATUS_LABEL[r.status]}</td>
