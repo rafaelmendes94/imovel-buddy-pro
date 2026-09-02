@@ -1,15 +1,17 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { X, Upload, Loader2, CheckCircle2, AlertCircle, FileSpreadsheet } from "lucide-react";
+import { MV_COLUMN_MAP, isMvLayout, mapMvRow, validateMvRow } from "@/lib/importMvImoveis";
 
 interface Props {
   open: boolean;
   onClose: () => void;
   onImported: () => void;
 }
+
 
 const COLUMN_MAP: Record<string, string> = {
   EMPREENDIMENTO: "empreendimento",
