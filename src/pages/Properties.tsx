@@ -581,6 +581,7 @@ export default function Properties() {
         edificioId: (row as any).edificio_id || "",
         condominioId: (row as any).condominio_id || "",
         empreendimentoId: (row as any).empreendimento_id || "",
+        addressNumber: (row as any).numero || "",
         unitNumber: row.unidade || "",
         boxNumber: row.box || "",
         quadra: row.quadra || "",
@@ -2163,6 +2164,7 @@ function PropertyCard({
     box: property.boxNumber,
     quadra: property.quadra,
     lote: property.lote,
+    numero: property.addressNumber,
   });
 
 
@@ -2645,6 +2647,7 @@ function PropertyRow({
     box: property.boxNumber,
     quadra: property.quadra,
     lote: property.lote,
+    numero: property.addressNumber,
   });
 
 

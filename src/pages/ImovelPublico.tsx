@@ -161,6 +161,7 @@ export default function ImovelPublico() {
         box: imovel.box,
         quadra: imovel.quadra,
         lote: imovel.lote,
+        numero: (imovel as any).numero,
       }).map((part) => {
         if (part.startsWith("Unidade ")) return { label: "Apto/Unidade", value: part.replace("Unidade ", "") };
         if (part.startsWith("Box ")) return { label: "Box", value: part.replace("Box ", "") };

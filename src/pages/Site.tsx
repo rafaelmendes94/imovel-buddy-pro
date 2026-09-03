@@ -88,6 +88,7 @@ interface SiteProperty {
   boxNumber?: string;
   quadra?: string;
   lote?: string;
+  addressNumber?: string;
   exclusivityTerm?: string;
   exclusivityTermUrl?: string;
   paymentConditionsOther?: string;
@@ -131,6 +132,7 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, 
     box: property.boxNumber,
     quadra: property.quadra,
     lote: property.lote,
+    numero: property.addressNumber,
   });
   const imgs = property.images && property.images.length > 0 ? property.images : [property.image];
   const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${property.address}, ${property.city}`)}`;
@@ -878,6 +880,7 @@ export default function Site() {
             acceptsExchange: row.aceita_permuta,
             paymentConditions: row.condicoes_pagamento || [],
             empreendimento: row.empreendimento || (row as any).edificios?.nome || (row as any).condominios?.nome || (row as any).empreendimentos?.nome || "",
+            addressNumber: (row as any).numero || "",
             unitNumber: row.unidade || "",
             boxNumber: row.box || "",
             quadra: row.quadra || "",
