@@ -283,8 +283,8 @@ function generateChavesNaMaoXml(properties: Property[]): string {
       <bairro>${escapeXml(p.neighborhood || "")}</bairro>
       <cep></cep>
       <endereco>${escapeXml(p.address)}</endereco>
-      <numero>${escapeXml(p.unitNumber || "")}</numero>
-      <complemento></complemento>
+      <numero>${escapeXml(p.addressNumber || "")}</numero>
+      <complemento>${escapeXml(getPropertyUnitParts({ tipo: p.type, unidade: p.unitNumber, quadra: p.quadra, lote: p.lote, numero: p.addressNumber }).join(" | "))}</complemento>
       <esconder_endereco_imovel>0</esconder_endereco_imovel>
       <descritivo><![CDATA[${p.description || p.title}]]></descritivo>
 ${photosCnm(p.images)}
