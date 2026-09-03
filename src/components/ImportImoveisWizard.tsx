@@ -105,9 +105,10 @@ export function ImportImoveisWizard({ open, onClose, onImported }: Props) {
     return c;
   }, [rows]);
 
-  // Regra CRÍTICA: registros em revisão/erro nunca são importados direto.
-  const importable = (r: RowState) => r.status !== "review" && r.status !== "error";
+  // Por padrão registros em revisão/erro não importam; com "allowPending" o usuário força a importação.
+  const importable = (r: RowState) => allowPending || (r.status !== "review" && r.status !== "error");
   const selectedRows = rows.filter((r) => r.selected && importable(r));
+
 
 
   const reset = () => {
