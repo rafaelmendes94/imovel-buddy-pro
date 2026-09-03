@@ -403,7 +403,32 @@ export function ImportImoveisWizard({ open, onClose, onImported }: Props) {
                 >
                   Limpar seleção
                 </button>
+                {allowPending && (
+                  <button
+                    onClick={() => setRows((p) => p.map((r) => ({ ...r, selected: r.status !== "duplicate" && r.status !== "possible" })))}
+                    className="px-2 py-1 rounded-md bg-amber-500/15 text-amber-700 font-medium"
+                  >
+                    Selecionar tudo (inclusive pendentes)
+                  </button>
+                )}
               </div>
+
+              <label className="flex items-start gap-2 text-xs rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={allowPending}
+                  onChange={(e) => setAllowPending(e.target.checked)}
+                  className="mt-0.5 accent-amber-600"
+                />
+                <span>
+                  <span className="font-semibold text-foreground">Importar mesmo com dados incompletos ou incorretos</span>
+                  <span className="block text-muted-foreground">
+                    Libera a seleção de linhas em revisão/erro. Campos obrigatórios vazios recebem valores provisórios
+                    (“A definir”, 0) e você ajusta depois — pelo lápis aqui na prévia ou no cadastro do imóvel.
+                  </span>
+                </span>
+              </label>
+
 
               <div className="border border-border rounded-lg overflow-hidden">
                 <div className="overflow-auto max-h-[45vh]">
