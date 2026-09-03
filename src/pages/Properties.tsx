@@ -454,6 +454,36 @@ export default function Properties() {
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const ITEMS_PER_PAGE = 30;
 
+  // Bulk selection state
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+
+  const toggleSelection = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const selectAllVisible = () => {
+    const visibleIds = paginated.map((p) => p.id);
+    const allSelected = visibleIds.every((id) => selectedIds.has(id));
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (allSelected) {
+        visibleIds.forEach((id) => next.delete(id));
+      } else {
+        visibleIds.forEach((id) => next.add(id));
+      }
+      return next;
+    });
+  };
+
+  const clearSelection = () => setSelectedIds(new Set());
+
   const openProperty = (property: Property) => navigate(`/imovel/${property.id}`);
 
   const [viewingTerm, setViewingTerm] = useState<string | null>(null);
@@ -729,6 +759,26 @@ export default function Properties() {
     setPropertyList((prev) => prev.filter((p) => p.id !== propertyId));
     setDeleteConfirmId(null);
     toast.success("Imóvel excluído com sucesso!");
+  };
+
+  const handleBulkDelete = async () => {
+    const ids = Array.from(selectedIds);
+    const uuids = ids.filter((id) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id));
+    if (uuids.length === 0) {
+      toast.error("Nenhum imóvel válido selecionado");
+      return;
+    }
+    setBulkDeleting(true);
+    const { error } = await supabase.from("imoveis").delete().in("id", uuids);
+    setBulkDeleting(false);
+    if (error) {
+      toast.error("Erro ao excluir imóveis em massa");
+      return;
+    }
+    setPropertyList((prev) => prev.filter((p) => !selectedIds.has(p.id)));
+    setSelectedIds(new Set());
+    setBulkDeleteOpen(false);
+    toast.success(`${uuids.length} imóvel(is) excluído(s) com sucesso!`);
   };
 
   const handlePriceChange = (propertyId: string, field: "price" | "priceInstallment", value: number) => {
@@ -1157,7 +1207,7 @@ export default function Properties() {
         )}
 
         {/* Category Tabs + Search + Filters */}
-        <div className="space-y-3">
+        <div className={cn("space-y-3", selectedIds.size > 0 && "pb-20")}>
 
           {/* Search + filter toggle + view */}
           <div className="flex flex-col sm:flex-row gap-3">
@@ -1400,8 +1450,8 @@ export default function Properties() {
           </button>
         </div>
 
-        {/* Results count + Favorites button */}
-        <div className="flex items-center gap-2 px-1">
+        {/* Results count + Favorites button + Bulk selection */}
+        <div className="flex flex-wrap items-center gap-2 px-1">
           <span className="text-sm font-semibold text-muted-foreground">
             {sorted.length} imóvel(is)
             {sorted.length > ITEMS_PER_PAGE && ` • Página ${currentPage} de ${totalPages}`}
@@ -1413,6 +1463,24 @@ export default function Properties() {
             >
               <Heart className="w-3.5 h-3.5 fill-current" /> Minha Lista ({favoriteIds.length})
             </button>
+          )}
+          {(isSuperAdmin || isAdminStaff) && view !== "map" && (
+            <div className="flex items-center gap-2 ml-auto">
+              <label className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-card border border-border text-sm font-medium text-foreground cursor-pointer hover:bg-muted transition-colors">
+                <input
+                  type="checkbox"
+                  checked={paginated.length > 0 && paginated.every((p) => selectedIds.has(p.id))}
+                  onChange={selectAllVisible}
+                  className="w-4 h-4 rounded border-border text-primary focus:ring-ring"
+                />
+                Selecionar todos visíveis
+              </label>
+              {selectedIds.size > 0 && (
+                <span className="text-sm font-bold text-primary">
+                  {selectedIds.size} selecionado(s)
+                </span>
+              )}
+            </div>
           )}
         </div>
 
@@ -1446,6 +1514,9 @@ export default function Properties() {
                 onFilterByOwner={(owner) => { setFilterOwner(owner); setShowFilters(true); setActiveCategory("todos"); }}
                 canManage={isSuperAdmin || isAdminStaff || property.userId === user?.id}
                 onDelete={(id) => setDeleteConfirmId(id)}
+                isSelected={selectedIds.has(property.id)}
+                onToggleSelection={toggleSelection}
+                showSelector={isSuperAdmin || isAdminStaff}
               />
             ))}
           </div>
@@ -1473,6 +1544,9 @@ export default function Properties() {
                 onDuplicate={handleDuplicate}
                 canManage={isSuperAdmin || isAdminStaff || property.userId === user?.id}
                 onDelete={(id) => setDeleteConfirmId(id)}
+                isSelected={selectedIds.has(property.id)}
+                onToggleSelection={toggleSelection}
+                showSelector={isSuperAdmin || isAdminStaff}
               />
             ))}
           </div>
@@ -1538,6 +1612,69 @@ export default function Properties() {
           </div>
         )}
       </div>
+
+      {/* Bulk actions floating bar */}
+      {selectedIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[1600] flex items-center gap-3 px-4 py-3 rounded-2xl bg-card border border-border shadow-2xl animate-in slide-in-from-bottom-4">
+          <span className="text-sm font-bold text-foreground whitespace-nowrap">
+            {selectedIds.size} selecionado(s)
+          </span>
+          <button
+            onClick={clearSelection}
+            className="px-3 py-1.5 rounded-lg text-sm font-semibold text-muted-foreground hover:bg-muted transition-colors"
+          >
+            Limpar
+          </button>
+          <button
+            onClick={() => setBulkDeleteOpen(true)}
+            className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-bold bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors shadow-sm"
+          >
+            <Trash2 className="w-4 h-4" /> Excluir selecionados
+          </button>
+        </div>
+      )}
+
+      {/* Bulk delete confirmation modal */}
+      {bulkDeleteOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[1700] flex items-center justify-center p-4" onClick={() => setBulkDeleteOpen(false)}>
+          <div className="bg-card rounded-2xl shadow-2xl w-full max-w-md overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="px-6 py-5 border-b border-border">
+              <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5 text-destructive" /> Confirmar exclusão em massa
+              </h3>
+            </div>
+            <div className="px-6 py-4 space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Você está prestes a excluir <strong className="text-foreground">{selectedIds.size} imóvel(is)</strong>.
+                Esta ação não pode ser desfeita.
+              </p>
+              <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-3 text-sm text-destructive">
+                Os registros serão removidos permanentemente do banco de dados.
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-border bg-muted/30">
+              <button
+                onClick={() => setBulkDeleteOpen(false)}
+                disabled={bulkDeleting}
+                className="px-4 py-2 rounded-lg text-sm font-semibold text-foreground hover:bg-muted transition-colors disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleBulkDelete}
+                disabled={bulkDeleting}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors disabled:opacity-70"
+              >
+                {bulkDeleting ? (
+                  <><RefreshCw className="w-4 h-4 animate-spin" /> Excluindo...</>
+                ) : (
+                  <><Trash2 className="w-4 h-4" /> Sim, excluir {selectedIds.size}</>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Favorites Modal */}
       {showFavoritesModal && (
@@ -1993,6 +2130,7 @@ function SoldCelebration() {
 // ---- PropertyCard (enhanced) ----
 function PropertyCard({
   property, onStatusChange, onSelect, onViewTerm, isFavorited, onToggleFavorite, isInRoute, onToggleRoute, onFilterByTitle, onFilterByCondition, onDelete, canManage = true,
+  isSelected, onToggleSelection, showSelector,
 }: {
   property: Property;
   onStatusChange: (id: string, status: Property["status"]) => void;
@@ -2007,6 +2145,9 @@ function PropertyCard({
   onFilterByOwner?: (owner: string) => void;
   onDelete?: (id: string) => void;
   canManage?: boolean;
+  isSelected?: boolean;
+  onToggleSelection?: (id: string) => void;
+  showSelector?: boolean;
 }) {
   const [showCelebration, setShowCelebration] = useState(false);
   const [animatePulse, setAnimatePulse] = useState(false);
@@ -2040,6 +2181,22 @@ function PropertyCard({
 
       <div className="relative cursor-pointer" onClick={() => onSelect?.(property)}>
         <ImageCarousel images={property.images} alt={property.title} />
+
+        {/* Bulk selection checkbox */}
+        {showSelector && (
+          <label
+            className="absolute top-3 left-3 z-30 flex items-center justify-center w-8 h-8 rounded-full bg-background/90 border border-border shadow-md cursor-pointer hover:bg-background transition-colors"
+            onClick={(e) => e.stopPropagation()}
+            title={isSelected ? "Desmarcar" : "Selecionar para exclusão em massa"}
+          >
+            <input
+              type="checkbox"
+              checked={!!isSelected}
+              onChange={() => onToggleSelection?.(property.id)}
+              className="w-4 h-4 rounded border-border text-primary focus:ring-ring"
+            />
+          </label>
+        )}
 
         {/* Owner type badge */}
         {property.ownerType && (() => {
@@ -2430,6 +2587,7 @@ const cleanEmpreendimentoName = (name: string) => name.replace(/^(Ed\.\s*|Cond\.
 // ---- PropertyRow (redesigned) ----
 function PropertyRow({
   property, onStatusChange, onSelect, isFavorited, onToggleFavorite, isInRoute, onToggleRoute, onFilterByTitle, onFilterByCondition, onFilterByOwner, onPriceChange, allProperties, onDealLabelChange, onNavigateToValuation, onNavigateToContract, onQuickUpdate, onDuplicate, onDelete, canManage = true,
+  isSelected, onToggleSelection, showSelector,
 }: {
   property: Property;
   onStatusChange: (id: string, status: Property["status"]) => void;
@@ -2450,6 +2608,9 @@ function PropertyRow({
   onDuplicate?: (id: string) => void;
   onDelete?: (id: string) => void;
   canManage?: boolean;
+  isSelected?: boolean;
+  onToggleSelection?: (id: string) => void;
+  showSelector?: boolean;
 }) {
   const dealScore = useMemo(() => analyzeDealScore(property, allProperties || []), [property, allProperties]);
   const [showCelebration, setShowCelebration] = useState(false);
@@ -2496,6 +2657,21 @@ function PropertyRow({
         {/* ── COL 1: Foto com carrossel ── */}
         <div className="relative w-full md:w-[220px] aspect-[4/3] flex-shrink-0">
           <RowCarousel images={property.images.length > 0 ? property.images : [property.image]} />
+          {/* Bulk selection checkbox */}
+          {showSelector && (
+            <label
+              className="absolute top-2 left-2 z-30 flex items-center justify-center w-8 h-8 rounded-full bg-background/90 border border-border shadow-md cursor-pointer hover:bg-background transition-colors"
+              onClick={(e) => e.stopPropagation()}
+              title={isSelected ? "Desmarcar" : "Selecionar para exclusão em massa"}
+            >
+              <input
+                type="checkbox"
+                checked={!!isSelected}
+                onChange={() => onToggleSelection?.(property.id)}
+                className="w-4 h-4 rounded border-border text-primary focus:ring-ring"
+              />
+            </label>
+          )}
           {ownerTypeInfo && (
             <span className={cn("absolute top-2 left-2 z-10 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wide shadow-sm", ownerTypeInfo.color)}>
               {ownerTypeInfo.label}
