@@ -283,8 +283,8 @@ function generateChavesNaMaoXml(properties: Property[]): string {
       <bairro>${escapeXml(p.neighborhood || "")}</bairro>
       <cep></cep>
       <endereco>${escapeXml(p.address)}</endereco>
-      <numero>${escapeXml(p.unitNumber || "")}</numero>
-      <complemento></complemento>
+      <numero>${escapeXml(p.addressNumber || "")}</numero>
+      <complemento>${escapeXml(getPropertyUnitParts({ tipo: p.type, unidade: p.unitNumber, quadra: p.quadra, lote: p.lote, numero: p.addressNumber }).join(" | "))}</complemento>
       <esconder_endereco_imovel>0</esconder_endereco_imovel>
       <descritivo><![CDATA[${p.description || p.title}]]></descritivo>
 ${photosCnm(p.images)}
@@ -581,6 +581,7 @@ export default function Properties() {
         edificioId: (row as any).edificio_id || "",
         condominioId: (row as any).condominio_id || "",
         empreendimentoId: (row as any).empreendimento_id || "",
+        addressNumber: (row as any).numero || "",
         unitNumber: row.unidade || "",
         boxNumber: row.box || "",
         quadra: row.quadra || "",
@@ -2163,6 +2164,7 @@ function PropertyCard({
     box: property.boxNumber,
     quadra: property.quadra,
     lote: property.lote,
+    numero: property.addressNumber,
   });
 
 
@@ -2645,6 +2647,7 @@ function PropertyRow({
     box: property.boxNumber,
     quadra: property.quadra,
     lote: property.lote,
+    numero: property.addressNumber,
   });
 
 

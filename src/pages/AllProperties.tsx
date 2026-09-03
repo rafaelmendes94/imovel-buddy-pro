@@ -46,6 +46,7 @@ interface SiteProperty {
   boxNumber?: string;
   quadra?: string;
   lote?: string;
+  addressNumber?: string;
 }
 
 const FALLBACK_AVATAR = "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=100&h=100&fit=crop&crop=face";
@@ -60,6 +61,7 @@ function PropertyCard({ property, onSelect, isFavorited, onToggleFavorite, isInR
     box: property.boxNumber,
     quadra: property.quadra,
     lote: property.lote,
+    numero: property.addressNumber,
   });
 
   const whatsappMessage = encodeURIComponent(`Olá! Tenho interesse no imóvel: ${property.title} - ${formatCurrency(property.price)}`);
@@ -322,6 +324,7 @@ export default function AllProperties() {
               edificioId: (row as any).edificio_id || '',
               condominioId: (row as any).condominio_id || '',
               empreendimentoId: (row as any).empreendimento_id || '',
+              addressNumber: (row as any).numero || '',
               unitNumber: row.unidade || '',
               boxNumber: row.box || '',
               quadra: row.quadra || '',

@@ -16,6 +16,8 @@ export interface PropertyIdentityInput {
   box?: string | null;
   quadra?: string | null;
   lote?: string | null;
+  /** Número do endereço (imoveis.numero) — usado como unidade em imóveis de bairro. */
+  numero?: string | null;
 }
 
 const clean = (value?: string | null): string => {
@@ -33,14 +35,22 @@ const normalizeTipo = (tipo?: string | null) =>
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "");
 
-export type IdentityKind = "unidade" | "quadra-lote";
+export type IdentityKind = "unidade" | "quadra-lote" | "comercial";
 
 export function identityKind(tipo?: string | null): IdentityKind {
   const t = normalizeTipo(tipo);
+  // Comercial: usa unidade (sala/loja) e, na falta, o número do endereço.
+  if (
+    t.includes("sala") || t.includes("loja") || t.includes("comerc") ||
+    t.includes("conjunto") || t.includes("galpao") || t.includes("pavilhao") ||
+    t.includes("escritorio")
+  ) {
+    return "comercial";
+  }
   if (t.includes("apart") || t.includes("edific") || t.includes("flat") || t.includes("cobertura") || t.includes("studio")) {
     return "unidade";
   }
-  if (t.includes("terreno") || t.includes("lote") || t.includes("casa") || t.includes("condomin") || t.includes("sobrado")) {
+  if (t.includes("terreno") || t.includes("lote") || t.includes("casa") || t.includes("condomin") || t.includes("sobrado") || t.includes("chacara") || t.includes("sitio")) {
     return "quadra-lote";
   }
   return "unidade";
@@ -53,25 +63,33 @@ export function getPropertyIdentityParts(p: PropertyIdentityInput): string[] {
   const box = clean(p.box);
   const quadra = clean(p.quadra);
   const lote = clean(p.lote);
+  const numero = clean(p.numero);
 
   const parts: string[] = [];
   if (empreendimento) parts.push(empreendimento);
 
-  if (identityKind(p.tipo) === "unidade") {
+  const kind = identityKind(p.tipo);
+
+  if (kind === "unidade") {
+    // Apartamento / edifício → sempre a unidade (nunca quadra/lote).
     if (unidade) parts.push(`Unidade ${unidade}`);
     if (box) parts.push(`Box ${box}`);
-    // fallback: se não houver unidade mas houver quadra/lote, ainda exibe
-    if (!unidade && !box) {
+  } else if (kind === "comercial") {
+    if (unidade) parts.push(`Unidade ${unidade}`);
+    else if (numero) parts.push(`Unidade ${numero}`);
+    if (box) parts.push(`Box ${box}`);
+  } else {
+    // Casa / sobrado / lote / terreno.
+    if (quadra || lote) {
       if (quadra) parts.push(`Quadra ${quadra}`);
       if (lote) parts.push(`Lote ${lote}`);
+    } else if (unidade) {
+      parts.push(`Unidade ${unidade}`);
+    } else if (numero) {
+      // Imóvel de bairro → número do endereço.
+      parts.push(`Unidade ${numero}`);
     }
-  } else {
-    if (quadra) parts.push(`Quadra ${quadra}`);
-    if (lote) parts.push(`Lote ${lote}`);
-    if (!quadra && !lote) {
-      if (unidade) parts.push(`Unidade ${unidade}`);
-      if (box) parts.push(`Box ${box}`);
-    }
+    if (box) parts.push(`Box ${box}`);
   }
 
   return parts;
@@ -85,4 +103,11 @@ export function getPropertyIdentity(p: PropertyIdentityInput): string {
 /** Partes sem o nome do empreendimento (útil quando ele já é exibido como link). */
 export function getPropertyUnitParts(p: PropertyIdentityInput): string[] {
   return getPropertyIdentityParts({ ...p, empreendimento: "" });
+}
+
+/** Rótulo curto da unidade (sem empreendimento). "—" quando não há dado. */
+export function getPropertyUnitLabel(p: PropertyIdentityInput): string {
+  const parts = getPropertyUnitParts(p).filter((x) => !x.startsWith("Box "));
+  if (parts.length === 0) return "—";
+  return parts.join(" | ").replace(/^Unidade /, "Unidade ");
 }
