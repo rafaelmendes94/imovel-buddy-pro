@@ -448,7 +448,7 @@ export function ImportImoveisWizard({ open, onClose, onImported }: Props) {
                               type="checkbox"
                               checked={r.selected && importable(r)}
                               disabled={!importable(r)}
-                              title={importable(r) ? "" : "Corrija a linha na revisão para poder importar"}
+                              title={importable(r) ? "" : "Corrija a linha (lápis) ou marque “Importar mesmo com dados incompletos”"}
                               onChange={(e) => patchRow(r.line, { selected: e.target.checked })}
                               className="accent-primary disabled:opacity-40"
                             />
