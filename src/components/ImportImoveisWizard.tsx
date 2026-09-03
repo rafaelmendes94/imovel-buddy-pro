@@ -90,7 +90,9 @@ export function ImportImoveisWizard({ open, onClose, onImported }: Props) {
   const [rows, setRows] = useState<RowState[]>([]);
   const [editing, setEditing] = useState<number | null>(null);
   const [progress, setProgress] = useState({ done: 0, total: 0 });
+  const [allowPending, setAllowPending] = useState(false);
   const [result, setResult] = useState<{ created: number; updated: number; ignored: number; fail: number } | null>(null);
+
 
   const columnMap = mvLayout ? MV_COLUMN_MAP : LEGACY_COLUMN_MAP;
 
