@@ -308,8 +308,14 @@ export const mapMvRow = (row: any, userId: string, estado = DEFAULT_IMPORT_ESTAD
   const emp = normalizeEmpreendimento(row);
   const ref = txt(row.unit_reference);
   const lote = isQuadraLoteType(tipo);
-  const split = lote ? splitQuadraLote(ref) : { quadra: "", lote: "", ok: false };
-  const unidade = lote && split.ok ? "" : cleanUnidade(ref);
+  // Colunas explícitas do dicionário têm prioridade sobre a leitura de unit_reference.
+  const quadraCol = txt(row.quadra) || txt(row.block);
+  const loteCol = txt(row.lote) || txt(row.lot);
+  const parsed = lote ? splitQuadraLote(ref) : { quadra: "", lote: "", ok: false };
+  const split = quadraCol || loteCol
+    ? { quadra: quadraCol.toUpperCase(), lote: loteCol, ok: true }
+    : parsed;
+  const unidade = split.ok ? "" : cleanUnidade(ref);
   const exclusividade = deaccent(`${txt(row.contact_extra_raw)} ${txt(row.keys_access)}`).toUpperCase();
   const createdAt = parseExcelDate(row.included_at);
   const updatedAt = parseExcelDate(row.updated_at);
