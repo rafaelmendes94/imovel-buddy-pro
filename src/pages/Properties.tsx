@@ -27,6 +27,7 @@ import { generatePropertyPdf } from "@/utils/generatePropertyPdf";
 import { useAuth } from "@/hooks/useAuth";
 import { ImportImoveisWizard } from "@/components/ImportImoveisWizard";
 import { getPropertyUnitParts } from "@/lib/propertyIdentity";
+import { exportImoveisXls } from "@/lib/exportImoveisXls";
 
 // Broker info
 const brokerInfo: Record<string, { photo: string; whatsapp: string }> = {
@@ -638,6 +639,19 @@ export default function Properties() {
     setShowXmlMenu(false);
   };
 
+  const [exportingXls, setExportingXls] = useState(false);
+  const handleExportXls = async () => {
+    try {
+      setExportingXls(true);
+      const total = await exportImoveisXls();
+      toast.success(`Planilha gerada com ${total} imóve${total === 1 ? "l" : "is"}.`);
+    } catch (e: any) {
+      toast.error(e?.message || "Erro ao exportar imóveis.");
+    } finally {
+      setExportingXls(false);
+    }
+  };
+
   const [pendingSold, setPendingSold] = useState<Property | null>(null);
 
   const persistStatus = async (
@@ -956,6 +970,14 @@ export default function Properties() {
                     <FolderDown className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Importar</span> Excel
                   </button>
                 )}
+                <button
+                  onClick={handleExportXls}
+                  disabled={exportingXls}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-secondary text-secondary-foreground hover:bg-muted transition-colors mb-1 disabled:opacity-50"
+                  title="Exportar imóveis em Excel (formato de importação MV)"
+                >
+                  <Download className="w-3.5 h-3.5" /> <span className="hidden sm:inline">{exportingXls ? "Gerando..." : "Exportar"}</span> XLS
+                </button>
                 <button
                   onClick={() => {
                     if (limitReached) {
