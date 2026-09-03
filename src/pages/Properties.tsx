@@ -2116,6 +2116,22 @@ function PropertyCard({
       <div className="relative cursor-pointer" onClick={() => onSelect?.(property)}>
         <ImageCarousel images={property.images} alt={property.title} />
 
+        {/* Bulk selection checkbox */}
+        {showSelector && (
+          <label
+            className="absolute top-3 left-3 z-30 flex items-center justify-center w-8 h-8 rounded-full bg-background/90 border border-border shadow-md cursor-pointer hover:bg-background transition-colors"
+            onClick={(e) => e.stopPropagation()}
+            title={isSelected ? "Desmarcar" : "Selecionar para exclusão em massa"}
+          >
+            <input
+              type="checkbox"
+              checked={!!isSelected}
+              onChange={() => onToggleSelection?.(property.id)}
+              className="w-4 h-4 rounded border-border text-primary focus:ring-ring"
+            />
+          </label>
+        )}
+
         {/* Owner type badge */}
         {property.ownerType && (() => {
           const ownerColors: Record<string, string> = {
