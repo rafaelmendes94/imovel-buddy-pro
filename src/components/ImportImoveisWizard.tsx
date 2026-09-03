@@ -247,7 +247,7 @@ export function ImportImoveisWizard({ open, onClose, onImported }: Props) {
         const reasons = v.ok ? [] : ["revisar campos obrigatórios (cidade, preço, título, tipo)"];
         const status: RowStatus =
           r.status === "duplicate" || r.status === "possible" ? r.status : v.ok ? "ready" : "review";
-        return { ...r, mapped, reasons, status, selected: v.ok ? r.selected : false };
+        return { ...r, mapped, reasons, status, selected: v.ok || allowPending ? r.selected : false };
       }),
     );
     setEditing(null);
