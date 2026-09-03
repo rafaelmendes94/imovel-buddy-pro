@@ -2591,6 +2591,21 @@ function PropertyRow({
         {/* ── COL 1: Foto com carrossel ── */}
         <div className="relative w-full md:w-[220px] aspect-[4/3] flex-shrink-0">
           <RowCarousel images={property.images.length > 0 ? property.images : [property.image]} />
+          {/* Bulk selection checkbox */}
+          {showSelector && (
+            <label
+              className="absolute top-2 left-2 z-30 flex items-center justify-center w-8 h-8 rounded-full bg-background/90 border border-border shadow-md cursor-pointer hover:bg-background transition-colors"
+              onClick={(e) => e.stopPropagation()}
+              title={isSelected ? "Desmarcar" : "Selecionar para exclusão em massa"}
+            >
+              <input
+                type="checkbox"
+                checked={!!isSelected}
+                onChange={() => onToggleSelection?.(property.id)}
+                className="w-4 h-4 rounded border-border text-primary focus:ring-ring"
+              />
+            </label>
+          )}
           {ownerTypeInfo && (
             <span className={cn("absolute top-2 left-2 z-10 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wide shadow-sm", ownerTypeInfo.color)}>
               {ownerTypeInfo.label}
