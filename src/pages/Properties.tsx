@@ -1450,8 +1450,8 @@ export default function Properties() {
           </button>
         </div>
 
-        {/* Results count + Favorites button */}
-        <div className="flex items-center gap-2 px-1">
+        {/* Results count + Favorites button + Bulk selection */}
+        <div className="flex flex-wrap items-center gap-2 px-1">
           <span className="text-sm font-semibold text-muted-foreground">
             {sorted.length} imóvel(is)
             {sorted.length > ITEMS_PER_PAGE && ` • Página ${currentPage} de ${totalPages}`}
@@ -1463,6 +1463,24 @@ export default function Properties() {
             >
               <Heart className="w-3.5 h-3.5 fill-current" /> Minha Lista ({favoriteIds.length})
             </button>
+          )}
+          {(isSuperAdmin || isAdminStaff) && view !== "map" && (
+            <div className="flex items-center gap-2 ml-auto">
+              <label className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-card border border-border text-sm font-medium text-foreground cursor-pointer hover:bg-muted transition-colors">
+                <input
+                  type="checkbox"
+                  checked={paginated.length > 0 && paginated.every((p) => selectedIds.has(p.id))}
+                  onChange={selectAllVisible}
+                  className="w-4 h-4 rounded border-border text-primary focus:ring-ring"
+                />
+                Selecionar todos visíveis
+              </label>
+              {selectedIds.size > 0 && (
+                <span className="text-sm font-bold text-primary">
+                  {selectedIds.size} selecionado(s)
+                </span>
+              )}
+            </div>
           )}
         </div>
 
