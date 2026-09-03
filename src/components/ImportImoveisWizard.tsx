@@ -256,7 +256,7 @@ export function ImportImoveisWizard({ open, onClose, onImported }: Props) {
           imovelId = r.existingId;
           updated++;
         } else {
-          const { data, error: e } = await supabase.from("imoveis").insert(r.mapped as any).select("id").single();
+          const { data, error: e } = await supabase.from("imoveis").insert(withRequiredDefaults(r.mapped) as any).select("id").single();
           if (e) throw e;
           imovelId = data.id;
           created++;
