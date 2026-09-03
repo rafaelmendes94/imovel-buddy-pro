@@ -37,6 +37,27 @@ type Step = "upload" | "review" | "importing" | "result";
 const money = (v: number) =>
   v ? v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }) : "—";
 
+/** Preenche apenas os campos obrigatórios do banco para permitir importar registros incompletos. */
+const withRequiredDefaults = (mapped: any) => {
+  const n = (v: any) => (Number.isFinite(Number(v)) && Number(v) > 0 ? Number(v) : 0);
+  return {
+    ...mapped,
+    titulo: String(mapped.titulo ?? "").trim() || "Imóvel importado (revisar)",
+    tipo: String(mapped.tipo ?? "").trim() || "Apartamento",
+    cidade: String(mapped.cidade ?? "").trim() || "A definir",
+    endereco: String(mapped.endereco ?? "").trim() || "A definir",
+    status: String(mapped.status ?? "").trim() || "Disponível",
+    preco: n(mapped.preco),
+    quartos: n(mapped.quartos),
+    banheiros: n(mapped.banheiros),
+    area: n(mapped.area),
+    vagas: n(mapped.vagas),
+    area_privativa: n(mapped.area_privativa),
+    lavabo: n(mapped.lavabo),
+  };
+};
+
+
 const STATUS_LABEL: Record<RowStatus, string> = {
   ready: "Pronto",
   review: "Revisar",
@@ -90,7 +111,9 @@ export function ImportImoveisWizard({ open, onClose, onImported }: Props) {
   const [rows, setRows] = useState<RowState[]>([]);
   const [editing, setEditing] = useState<number | null>(null);
   const [progress, setProgress] = useState({ done: 0, total: 0 });
+  const [allowPending, setAllowPending] = useState(false);
   const [result, setResult] = useState<{ created: number; updated: number; ignored: number; fail: number } | null>(null);
+
 
   const columnMap = mvLayout ? MV_COLUMN_MAP : LEGACY_COLUMN_MAP;
 
@@ -105,9 +128,10 @@ export function ImportImoveisWizard({ open, onClose, onImported }: Props) {
     return c;
   }, [rows]);
 
-  // Regra CRÍTICA: registros em revisão/erro nunca são importados direto.
-  const importable = (r: RowState) => r.status !== "review" && r.status !== "error";
+  // Por padrão registros em revisão/erro não importam; com "allowPending" o usuário força a importação.
+  const importable = (r: RowState) => allowPending || (r.status !== "review" && r.status !== "error");
   const selectedRows = rows.filter((r) => r.selected && importable(r));
+
 
 
   const reset = () => {
@@ -223,7 +247,7 @@ export function ImportImoveisWizard({ open, onClose, onImported }: Props) {
         const reasons = v.ok ? [] : ["revisar campos obrigatórios (cidade, preço, título, tipo)"];
         const status: RowStatus =
           r.status === "duplicate" || r.status === "possible" ? r.status : v.ok ? "ready" : "review";
-        return { ...r, mapped, reasons, status, selected: v.ok ? r.selected : false };
+        return { ...r, mapped, reasons, status, selected: v.ok || allowPending ? r.selected : false };
       }),
     );
     setEditing(null);
@@ -253,7 +277,7 @@ export function ImportImoveisWizard({ open, onClose, onImported }: Props) {
           imovelId = r.existingId;
           updated++;
         } else {
-          const { data, error: e } = await supabase.from("imoveis").insert(r.mapped as any).select("id").single();
+          const { data, error: e } = await supabase.from("imoveis").insert(withRequiredDefaults(r.mapped) as any).select("id").single();
           if (e) throw e;
           imovelId = data.id;
           created++;
@@ -379,7 +403,32 @@ export function ImportImoveisWizard({ open, onClose, onImported }: Props) {
                 >
                   Limpar seleção
                 </button>
+                {allowPending && (
+                  <button
+                    onClick={() => setRows((p) => p.map((r) => ({ ...r, selected: r.status !== "duplicate" && r.status !== "possible" })))}
+                    className="px-2 py-1 rounded-md bg-amber-500/15 text-amber-700 font-medium"
+                  >
+                    Selecionar tudo (inclusive pendentes)
+                  </button>
+                )}
               </div>
+
+              <label className="flex items-start gap-2 text-xs rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={allowPending}
+                  onChange={(e) => setAllowPending(e.target.checked)}
+                  className="mt-0.5 accent-amber-600"
+                />
+                <span>
+                  <span className="font-semibold text-foreground">Importar mesmo com dados incompletos ou incorretos</span>
+                  <span className="block text-muted-foreground">
+                    Libera a seleção de linhas em revisão/erro. Campos obrigatórios vazios recebem valores provisórios
+                    (“A definir”, 0) e você ajusta depois — pelo lápis aqui na prévia ou no cadastro do imóvel.
+                  </span>
+                </span>
+              </label>
+
 
               <div className="border border-border rounded-lg overflow-hidden">
                 <div className="overflow-auto max-h-[45vh]">
@@ -399,7 +448,7 @@ export function ImportImoveisWizard({ open, onClose, onImported }: Props) {
                               type="checkbox"
                               checked={r.selected && importable(r)}
                               disabled={!importable(r)}
-                              title={importable(r) ? "" : "Corrija a linha na revisão para poder importar"}
+                              title={importable(r) ? "" : "Corrija a linha (lápis) ou marque “Importar mesmo com dados incompletos”"}
                               onChange={(e) => patchRow(r.line, { selected: e.target.checked })}
                               className="accent-primary disabled:opacity-40"
                             />
