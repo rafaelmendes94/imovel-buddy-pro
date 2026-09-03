@@ -27,6 +27,7 @@ import { generatePropertyPdf } from "@/utils/generatePropertyPdf";
 import { useAuth } from "@/hooks/useAuth";
 import { ImportImoveisWizard } from "@/components/ImportImoveisWizard";
 import { getPropertyUnitParts } from "@/lib/propertyIdentity";
+import { exportImoveisXls } from "@/lib/exportImoveisXls";
 
 // Broker info
 const brokerInfo: Record<string, { photo: string; whatsapp: string }> = {
