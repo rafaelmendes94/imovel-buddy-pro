@@ -638,6 +638,19 @@ export default function Properties() {
     setShowXmlMenu(false);
   };
 
+  const [exportingXls, setExportingXls] = useState(false);
+  const handleExportXls = async () => {
+    try {
+      setExportingXls(true);
+      const total = await exportImoveisXls();
+      toast.success(`Planilha gerada com ${total} imóve${total === 1 ? "l" : "is"}.`);
+    } catch (e: any) {
+      toast.error(e?.message || "Erro ao exportar imóveis.");
+    } finally {
+      setExportingXls(false);
+    }
+  };
+
   const [pendingSold, setPendingSold] = useState<Property | null>(null);
 
   const persistStatus = async (
