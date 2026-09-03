@@ -761,6 +761,26 @@ export default function Properties() {
     toast.success("Imóvel excluído com sucesso!");
   };
 
+  const handleBulkDelete = async () => {
+    const ids = Array.from(selectedIds);
+    const uuids = ids.filter((id) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id));
+    if (uuids.length === 0) {
+      toast.error("Nenhum imóvel válido selecionado");
+      return;
+    }
+    setBulkDeleting(true);
+    const { error } = await supabase.from("imoveis").delete().in("id", uuids);
+    setBulkDeleting(false);
+    if (error) {
+      toast.error("Erro ao excluir imóveis em massa");
+      return;
+    }
+    setPropertyList((prev) => prev.filter((p) => !selectedIds.has(p.id)));
+    setSelectedIds(new Set());
+    setBulkDeleteOpen(false);
+    toast.success(`${uuids.length} imóvel(is) excluído(s) com sucesso!`);
+  };
+
   const handlePriceChange = (propertyId: string, field: "price" | "priceInstallment", value: number) => {
     setPropertyList((prev) => prev.map((p) => (p.id === propertyId ? { ...p, [field]: value } : p)));
     toast.success("Valor atualizado!");
