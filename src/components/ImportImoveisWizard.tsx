@@ -37,6 +37,27 @@ type Step = "upload" | "review" | "importing" | "result";
 const money = (v: number) =>
   v ? v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }) : "—";
 
+/** Preenche apenas os campos obrigatórios do banco para permitir importar registros incompletos. */
+const withRequiredDefaults = (mapped: any) => {
+  const n = (v: any) => (Number.isFinite(Number(v)) && Number(v) > 0 ? Number(v) : 0);
+  return {
+    ...mapped,
+    titulo: String(mapped.titulo ?? "").trim() || "Imóvel importado (revisar)",
+    tipo: String(mapped.tipo ?? "").trim() || "Apartamento",
+    cidade: String(mapped.cidade ?? "").trim() || "A definir",
+    endereco: String(mapped.endereco ?? "").trim() || "A definir",
+    status: String(mapped.status ?? "").trim() || "Disponível",
+    preco: n(mapped.preco),
+    quartos: n(mapped.quartos),
+    banheiros: n(mapped.banheiros),
+    area: n(mapped.area),
+    vagas: n(mapped.vagas),
+    area_privativa: n(mapped.area_privativa),
+    lavabo: n(mapped.lavabo),
+  };
+};
+
+
 const STATUS_LABEL: Record<RowStatus, string> = {
   ready: "Pronto",
   review: "Revisar",
