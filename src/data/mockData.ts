@@ -33,6 +33,7 @@ export interface Property {
   plataformaVenda?: string;
   dataVenda?: string;
   unitNumber?: string;
+  addressNumber?: string;
   boxNumber?: string;
   quadra?: string;
   lote?: string;

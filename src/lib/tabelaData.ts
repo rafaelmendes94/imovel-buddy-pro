@@ -142,20 +142,18 @@ export async function fetchTabelaImoveis(): Promise<TabelaImovel[]> {
 export function identityLines(p: TabelaImovel): string[] {
   const lines: string[] = [];
   if (p.empreendimento) lines.push(p.empreendimento.toUpperCase());
-  if (identityKind(p.tipo) === "unidade") {
-    if (p.unidade) lines.push(`Apto ${p.unidade}`);
-    if (p.box) lines.push(`Box ${p.box}`);
-    if (!p.unidade && !p.box) {
+  const kind = identityKind(p.tipo);
+  if (kind === "quadra-lote") {
+    if (p.quadra || p.lote) {
       if (p.quadra) lines.push(`Q: ${p.quadra}`);
       if (p.lote) lines.push(`L: ${p.lote}`);
+    } else if (p.unidade) {
+      lines.push(`Apto ${p.unidade}`);
     }
+    if (p.box) lines.push(`Box ${p.box}`);
   } else {
-    if (p.quadra) lines.push(`Q: ${p.quadra}`);
-    if (p.lote) lines.push(`L: ${p.lote}`);
-    if (!p.quadra && !p.lote) {
-      if (p.unidade) lines.push(`Apto ${p.unidade}`);
-      if (p.box) lines.push(`Box ${p.box}`);
-    }
+    if (p.unidade) lines.push(`Apto ${p.unidade}`);
+    if (p.box) lines.push(`Box ${p.box}`);
   }
   return lines;
 }

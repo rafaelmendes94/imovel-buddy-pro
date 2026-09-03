@@ -131,6 +131,8 @@ export const normalizeMvTipo = (row: any) => {
 };
 
 const isLoteType = (tipo: string) => tipo === "Lote" || tipo === "Terreno" || tipo === "Condomínio";
+/** Tipos cuja referência pode ser "Quadra/Lote" (inclui casas de condomínio). */
+const isQuadraLoteType = (tipo: string) => isLoteType(tipo) || tipo === "Casa" || tipo === "Sobrado";
 
 /** AP:1304 / APTO 1304 / UNIDADE 1304 → 1304 · preserva sufixos reais (309 A). */
 export const cleanUnidade = (ref: string) => {
@@ -305,7 +307,7 @@ export const mapMvRow = (row: any, userId: string, estado = DEFAULT_IMPORT_ESTAD
   const tipo = normalizeMvTipo(row) || "Apartamento";
   const emp = normalizeEmpreendimento(row);
   const ref = txt(row.unit_reference);
-  const lote = isLoteType(tipo);
+  const lote = isQuadraLoteType(tipo);
   const split = lote ? splitQuadraLote(ref) : { quadra: "", lote: "", ok: false };
   const unidade = lote && split.ok ? "" : cleanUnidade(ref);
   const exclusividade = deaccent(`${txt(row.contact_extra_raw)} ${txt(row.keys_access)}`).toUpperCase();
@@ -331,6 +333,7 @@ export const mapMvRow = (row: any, userId: string, estado = DEFAULT_IMPORT_ESTAD
     cidade: titleCase(row.city),
     bairro,
     endereco,
+    numero,
     estado,
     preco: normalizePreco(row),
     quartos: int(row.bedrooms),
