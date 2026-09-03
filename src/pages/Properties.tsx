@@ -957,6 +957,14 @@ export default function Properties() {
                   </button>
                 )}
                 <button
+                  onClick={handleExportXls}
+                  disabled={exportingXls}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-secondary text-secondary-foreground hover:bg-muted transition-colors mb-1 disabled:opacity-50"
+                  title="Exportar imóveis em Excel (formato de importação MV)"
+                >
+                  <Download className="w-3.5 h-3.5" /> <span className="hidden sm:inline">{exportingXls ? "Gerando..." : "Exportar"}</span> XLS
+                </button>
+                <button
                   onClick={() => {
                     if (limitReached) {
                       toast.error(`Limite de ${maxImoveis} imóveis atingido. Faça upgrade do plano.`);
