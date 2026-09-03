@@ -1514,6 +1514,9 @@ export default function Properties() {
                 onFilterByOwner={(owner) => { setFilterOwner(owner); setShowFilters(true); setActiveCategory("todos"); }}
                 canManage={isSuperAdmin || isAdminStaff || property.userId === user?.id}
                 onDelete={(id) => setDeleteConfirmId(id)}
+                isSelected={selectedIds.has(property.id)}
+                onToggleSelection={toggleSelection}
+                showSelector={isSuperAdmin || isAdminStaff}
               />
             ))}
           </div>
