@@ -1207,7 +1207,7 @@ export default function Properties() {
         )}
 
         {/* Category Tabs + Search + Filters */}
-        <div className="space-y-3">
+        <div className={cn("space-y-3", selectedIds.size > 0 && "pb-20")}>
 
           {/* Search + filter toggle + view */}
           <div className="flex flex-col sm:flex-row gap-3">
