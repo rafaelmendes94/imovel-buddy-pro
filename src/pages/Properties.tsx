@@ -1544,6 +1544,9 @@ export default function Properties() {
                 onDuplicate={handleDuplicate}
                 canManage={isSuperAdmin || isAdminStaff || property.userId === user?.id}
                 onDelete={(id) => setDeleteConfirmId(id)}
+                isSelected={selectedIds.has(property.id)}
+                onToggleSelection={toggleSelection}
+                showSelector={isSuperAdmin || isAdminStaff}
               />
             ))}
           </div>
