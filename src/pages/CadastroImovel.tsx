@@ -462,6 +462,81 @@ export function ImovelForm({ editId }: { editId?: string }) {
   type PhotoRef = { kind: 'existing' | 'new'; idx: number };
   const [photoOrder, setPhotoOrder] = useState<PhotoRef[]>([]);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [pdfGen, setPdfGen] = useState(false);
+  const [pdfInfo, setPdfInfo] = useState('');
+
+  /** Gera a apresentação em PDF com TODAS as fotos e grava a URL no campo Fotos PDF. */
+  const generateFotosPdf = async () => {
+    if (!user) return;
+    const orderedImages = photoOrder
+      .map((p) => (p.kind === 'existing' ? existingImages[p.idx] : imagePreviews[p.idx]))
+      .filter(Boolean) as string[];
+    if (orderedImages.length === 0) {
+      toast({ title: 'Sem fotos', description: 'Adicione pelo menos uma foto ao imóvel antes de gerar o PDF.', variant: 'destructive' });
+      return;
+    }
+    setPdfGen(true);
+    setPdfInfo('');
+    try {
+      const { generatePropertyPresentationPdf } = await import('@/utils/generatePropertyPresentationPdf');
+      const res = await generatePropertyPresentationPdf({
+        id: editId,
+        title: form.titulo,
+        tipo: undefined as any,
+        type: form.tipo,
+        status: form.status,
+        empreendimento: form.empreendimento,
+        unit: form.unidade,
+        quadra: form.quadra,
+        lote: form.lote,
+        price: form.preco ? Number(form.preco) : null,
+        city: form.cidade,
+        neighborhood: form.bairro,
+        address: form.endereco,
+        number: form.numero,
+        state: form.estado,
+        area: form.area ? Number(form.area) : null,
+        privateArea: form.areaPrivativa ? Number(form.areaPrivativa) : null,
+        bedrooms: form.quartos,
+        suites: form.suites,
+        bathrooms: form.banheiros,
+        lavabo: form.lavabo,
+        parking: form.vagas,
+        posicaoSolar: form.posicaoSolar,
+        condicao: form.condicao,
+        decorado: form.decorado,
+        vistaMar: form.vistaMar,
+        vista: form.vista,
+        padrao: form.padrao,
+        description: form.descricao,
+        features: [...(form.infraestrutura || []), ...(form.outrasCaracteristicas || [])],
+        images: orderedImages,
+        pageUrl: editId ? `${window.location.origin}/imovel/${editId}` : null,
+      } as any);
+
+      const path = `${user.id}/fotos-pdf/${editId || 'novo'}-apresentacao.pdf`;
+      const { error: upErr } = await supabase.storage
+        .from('site-assets')
+        .upload(path, res.blob, { upsert: true, contentType: 'application/pdf' });
+      if (upErr) throw upErr;
+      const { data: urlData } = supabase.storage.from('site-assets').getPublicUrl(path);
+      const url = `${urlData.publicUrl}?v=${Date.now()}`;
+      set('fotosPdfUrl', url);
+      if (editId) await supabase.from('imoveis').update({ fotos_pdf_url: url } as any).eq('id', editId);
+
+      const mb = (res.bytes / 1048576).toFixed(1).replace('.', ',');
+      setPdfInfo(
+        `PDF gerado com sucesso\n${res.photos} foto${res.photos === 1 ? '' : 's'} adicionada${res.photos === 1 ? '' : 's'}` +
+        (res.failed ? ` (${res.failed} não pôde ser carregada)` : '') +
+        `\n${res.pages} páginas\n${mb} MB`
+      );
+      toast({ title: 'PDF gerado', description: `${res.photos} fotos • ${res.pages} páginas` });
+    } catch (err: any) {
+      toast({ title: 'Erro ao gerar PDF', description: err.message, variant: 'destructive' });
+    } finally {
+      setPdfGen(false);
+    }
+  };
   const { values: infraOptions } = useSystemOptions("infraestrutura");
   const { values: posicaoPredioOptions } = useSystemOptions("posicao_predio");
   const { values: posicaoSolarOptions } = useSystemOptions("posicao_solar");
