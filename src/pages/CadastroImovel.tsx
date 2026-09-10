@@ -1373,6 +1373,9 @@ export function ImovelForm({ editId }: { editId?: string }) {
                   <Button type="button" variant="outline" size="sm" onClick={() => window.open(form.fotosPdfUrl, '_blank')}>
                     <Eye className="w-3.5 h-3.5 mr-1" /> Ver
                   </Button>
+                  <Button type="button" variant="outline" size="sm" onClick={() => window.open(form.fotosPdfUrl, '_blank')}>
+                    <Download className="w-3.5 h-3.5 mr-1" /> Baixar
+                  </Button>
                   <Button type="button" variant="outline" size="sm" onClick={() => set('fotosPdfUrl', '')}>
                     <X className="w-3.5 h-3.5 mr-1" /> Remover
                   </Button>
@@ -1384,6 +1387,18 @@ export function ImovelForm({ editId }: { editId?: string }) {
               value={form.fotosPdfUrl}
               onChange={e => set('fotosPdfUrl', e.target.value)}
             />
+            <Button
+              type="button"
+              size="sm"
+              disabled={pdfGen}
+              onClick={generateFotosPdf}
+              className="w-full sm:w-auto"
+            >
+              {pdfGen
+                ? <><Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> Gerando apresentação…</>
+                : <><FileText className="w-3.5 h-3.5 mr-1" /> {form.fotosPdfUrl ? 'ATUALIZAR PDF' : 'GERAR PDF DAS FOTOS'}</>}
+            </Button>
+            {pdfInfo && <p className="text-xs text-muted-foreground whitespace-pre-line">{pdfInfo}</p>}
           </div>
           <div className="space-y-1.5 sm:col-span-2">
             <Label className="text-xs flex items-center gap-1"><Eye className="w-3.5 h-3.5" /> Tour 360° (embed ou link)</Label>
