@@ -482,7 +482,6 @@ export function ImovelForm({ editId }: { editId?: string }) {
       const res = await generatePropertyPresentationPdf({
         id: editId,
         title: form.titulo,
-        tipo: undefined as any,
         type: form.tipo,
         status: form.status,
         empreendimento: form.empreendimento,
