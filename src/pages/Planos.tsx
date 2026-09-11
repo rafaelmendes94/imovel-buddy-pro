@@ -78,7 +78,14 @@ export default function Planos() {
           <nav className="hidden md:flex items-center gap-5 text-sm font-medium text-gray-600">
             <Link to="/" className="hover:text-primary transition-colors">Início</Link>
             <Link to="/planos" className="text-primary font-semibold">Planos</Link>
-            <a href="/#contato" className="hover:text-primary transition-colors">Contato</a>
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new CustomEvent("mv:open-shark-ai"))}
+              className="flex items-center gap-1.5 hover:text-primary transition-colors"
+            >
+              <img src={sharkFriendlyIcon} alt="" className="w-5 h-5 object-contain" />
+              IA
+            </button>
           </nav>
 
           <div className="flex items-center gap-2">
