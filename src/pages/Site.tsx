@@ -1,3 +1,5 @@
+import { PublicMobileNav } from "@/components/PublicMobileNav";
+import { MobileQuickActions } from "@/components/MobileQuickActions";
 import { PLACEHOLDER_IMAGE } from "@/lib/placeholderImage";
 import { getPropertyUnitParts } from "@/lib/propertyIdentity";
 import { PUBLIC_IMOVEL_COLUMNS } from "@/lib/publicImovelColumns";
@@ -985,7 +987,8 @@ export default function Site() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans" onScroll={handleScroll}>
+    <div className="min-h-screen bg-gray-50 font-sans pb-[74px] md:pb-0" onScroll={handleScroll}>
+      <PublicMobileNav />
       <div id="site-top" />
 
       {/* Navbar */}
@@ -1126,6 +1129,9 @@ export default function Site() {
           </div>
         </div>
       </header>
+
+      <MobileQuickActions />
+
 
       {/* Hero */}
       <section className="relative overflow-hidden">
