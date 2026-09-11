@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
+  Flame,
   LayoutDashboard, Users, UserCog, CreditCard, LogOut, Crown,
   Building2, Building, Fence, Camera, ClipboardCheck, Wallet,
   Table2, FileSignature, Clapperboard, Globe, Landmark, Settings,
@@ -31,6 +32,7 @@ const operationalItems = [
   { icon: Trophy, label: "Ranking", path: "/ranking", moduleKey: "relatorios" },
   { icon: Globe, label: "Site", path: "/site-editor", moduleKey: "site_editor" },
   { icon: Building2, label: "Imóveis", path: "/imoveis", moduleKey: "imoveis" },
+  { icon: Flame, label: "Feed de Imóveis", path: "/feed", moduleKey: "imoveis" },
   { icon: Building, label: "Edifícios", path: "/edificios", moduleKey: "edificios" },
   { icon: Fence, label: "Condomínios", path: "/condominios", moduleKey: "condominios" },
   { icon: Map, label: "Mapas Condomínio", path: "/mapas-condominio", moduleKey: "condominios" },

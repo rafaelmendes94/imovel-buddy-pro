@@ -1574,6 +1574,44 @@ export type Database = {
         }
         Relationships: []
       }
+      property_events: {
+        Row: {
+          corretor_que_clicou_id: string | null
+          corretor_responsavel_id: string | null
+          created_at: string
+          event_type: string
+          id: string
+          imovel_id: string
+          origem: string
+        }
+        Insert: {
+          corretor_que_clicou_id?: string | null
+          corretor_responsavel_id?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          imovel_id: string
+          origem?: string
+        }
+        Update: {
+          corretor_que_clicou_id?: string | null
+          corretor_responsavel_id?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          imovel_id?: string
+          origem?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_events_imovel_id_fkey"
+            columns: ["imovel_id"]
+            isOneToOne: false
+            referencedRelation: "imoveis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       site_config: {
         Row: {
           accent_color: string
@@ -2010,6 +2048,42 @@ export type Database = {
           status: Database["public"]["Enums"]["subscription_status"]
           trial_ends_at: string
           user_id: string
+        }[]
+      }
+      get_imovel_contact: {
+        Args: { _imovel_id: string }
+        Returns: {
+          creci: string
+          imobiliaria: string
+          nome: string
+          whatsapp: string
+        }[]
+      }
+      get_my_property_engagement: {
+        Args: never
+        Returns: {
+          aberturas: number
+          contatos_whatsapp: number
+          favoritos: number
+          visualizacoes: number
+        }[]
+      }
+      get_top_whatsapp_corretores: {
+        Args: { _limit?: number }
+        Returns: {
+          contatos: number
+          corretor_id: string
+          nome: string
+        }[]
+      }
+      get_top_whatsapp_imoveis: {
+        Args: { _limit?: number }
+        Returns: {
+          contatos: number
+          favoritos: number
+          imovel_id: string
+          titulo: string
+          visualizacoes: number
         }[]
       }
       has_role: {
