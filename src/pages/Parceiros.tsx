@@ -288,48 +288,6 @@ export default function Parceiros() {
     doc.setTextColor(148, 163, 184);
     doc.text(new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" }).toUpperCase(), 60, pageH - 60);
 
-    // ============ SUMMARY ============
-    doc.addPage();
-    doc.setFillColor(255, 255, 255);
-    doc.rect(0, 0, pageW, pageH, "F");
-    doc.setFillColor(15, 27, 61);
-    doc.rect(0, 0, pageW, 90, "F");
-    doc.setFillColor(251, 191, 36);
-    doc.rect(40, 30, 4, 40, "F");
-    doc.setTextColor(255, 255, 255);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(22);
-    doc.text("Sumário", 56, 60);
-    doc.setTextColor(30, 30, 30);
-    doc.setFontSize(11);
-    doc.setFont("helvetica", "normal");
-    let sy = 130;
-    allGrouped.forEach(([cat, list], i) => {
-      const [p1, , acc] = colorsFor(cat);
-      doc.setFillColor(p1[0], p1[1], p1[2]);
-      doc.circle(56, sy - 4, 10, "F");
-      doc.setTextColor(255, 255, 255);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(9);
-      doc.text(String(i + 1).padStart(2, "0"), 56, sy - 1, { align: "center" });
-      doc.setTextColor(30, 30, 30);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(12);
-      doc.text(cat, 78, sy);
-      // dots
-      doc.setDrawColor(200, 200, 200);
-      doc.setLineDashPattern([1, 3], 0);
-      doc.line(78 + doc.getTextWidth(cat) + 10, sy - 3, pageW - 110, sy - 3);
-      doc.setLineDashPattern([], 0);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(10);
-      doc.setTextColor(100, 100, 100);
-      doc.text(`${list.length} ${list.length === 1 ? "profissional" : "profissionais"}`, pageW - 50, sy, { align: "right" });
-      doc.setFillColor(acc[0], acc[1], acc[2]);
-      doc.rect(pageW - 50, sy + 2, 10, 2, "F");
-      sy += 26;
-    });
-
     // ============ CATEGORY COVER + LIST ============
     allGrouped.forEach(([cat, list], idx) => {
       const [p1, p2, acc] = colorsFor(cat);
