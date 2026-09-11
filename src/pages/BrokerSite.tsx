@@ -358,7 +358,7 @@ export default function BrokerSite() {
     const load = async () => {
       if (!slug) { setLoading(false); return; }
 
-      setLoading(true);
+      if (reloadKey === 0) setLoading(true);
 
       const { data: { session } } = await supabase.auth.getSession();
       const uid = session?.user?.id || null;
@@ -406,7 +406,9 @@ export default function BrokerSite() {
     };
 
     load();
-  }, [slug]);
+  }, [slug, reloadKey]);
+
+  const reloadProperties = () => setReloadKey((k) => k + 1);
 
   const filteredProperties = useMemo(() => {
     const term = searchTerm.toLowerCase();
@@ -500,7 +502,41 @@ export default function BrokerSite() {
     );
   }
 
-  const isOwner = !!currentUserId && !!brokerId && currentUserId === brokerId;
+  const isOwner = !!currentUserId && ((!!brokerId && currentUserId === brokerId) || isSuperAdmin);
+  const manageOwnerId = brokerId || currentUserId || "";
+
+  const openNewProperty = () => { setEditing(null); setFormOpen(true); };
+
+  const openEditProperty = async (p: DBProperty) => {
+    const { data, error } = await supabase.from("imoveis").select("*").eq("id", p.id).maybeSingle();
+    if (error || !data) {
+      toast.error("Não foi possível carregar os dados do imóvel." + (error ? ` (${error.message})` : ""));
+      return;
+    }
+    setEditing(data);
+    setFormOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    const { error } = await supabase.from("imoveis").delete().eq("id", deleteTarget.id);
+    setDeleting(false);
+    if (error) {
+      const msg = error.message || "";
+      if (/foreign key|violates/i.test(msg)) {
+        toast.error("Este imóvel possui registros vinculados e não pode ser excluído.");
+      } else if (/row-level security|permission/i.test(msg)) {
+        toast.error("Você não tem permissão para excluir este imóvel.");
+      } else {
+        toast.error("Erro ao excluir imóvel: " + msg);
+      }
+      return;
+    }
+    toast.success("Imóvel excluído com sucesso");
+    setDeleteTarget(null);
+    reloadProperties();
+  };
 
   const handlePropertyUpdated = (id: string, patch: Partial<DBProperty>) => {
     const apply = (list: DBProperty[]) => list.map((p) => (p.id === id ? { ...p, ...patch } : p));
@@ -703,10 +739,10 @@ export default function BrokerSite() {
                   </button>
                   {isOwner && (
                     <button
-                      onClick={() => setQuickOpen(true)}
+                      onClick={openNewProperty}
                       className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-indigo-600 px-5 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-105"
                     >
-                      <Zap className="h-4 w-4" /> Cadastro rápido de imóvel
+                      <Plus className="h-4 w-4" /> Adicionar imóvel
                     </button>
                   )}
                 </div>
@@ -841,7 +877,7 @@ export default function BrokerSite() {
               <p className="text-muted-foreground">Os imóveis mais estratégicos publicados por {brokerName}.</p>
             </div>
             <div className="grid gap-6 lg:grid-cols-3">
-              {featuredProperties.map((property) => <PropertyCard key={property.id} p={property} brokerName={brokerName} whatsapp={whatsapp} onOpen={setSelectedProperty} isOwner={isOwner} onUpdated={handlePropertyUpdated} />)}
+              {featuredProperties.map((property) => <PropertyCard key={property.id} p={property} brokerName={brokerName} whatsapp={whatsapp} onOpen={setSelectedProperty} isOwner={isOwner} onUpdated={handlePropertyUpdated} onEdit={openEditProperty} onDelete={setDeleteTarget} />)}
             </div>
           </section>
         )}
@@ -868,7 +904,7 @@ export default function BrokerSite() {
                   </div>
                 </div>
                 <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                  {items.map((property) => <PropertyCard key={property.id} p={property} brokerName={brokerName} whatsapp={whatsapp} onOpen={setSelectedProperty} isOwner={isOwner} onUpdated={handlePropertyUpdated} />)}
+                  {items.map((property) => <PropertyCard key={property.id} p={property} brokerName={brokerName} whatsapp={whatsapp} onOpen={setSelectedProperty} isOwner={isOwner} onUpdated={handlePropertyUpdated} onEdit={openEditProperty} onDelete={setDeleteTarget} />)}
                 </div>
               </section>
             ))
@@ -941,20 +977,37 @@ export default function BrokerSite() {
           </DialogContent>
         </Dialog>
 
-        <Dialog open={quickOpen} onOpenChange={setQuickOpen}>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-xl font-black">
-                <Zap className="h-5 w-5 text-accent" /> Cadastro rápido de imóvel
-              </DialogTitle>
-            </DialogHeader>
-            <QuickImovelForm
-              onSaved={() => { setQuickOpen(false); window.location.reload(); }}
-              onCancel={() => setQuickOpen(false)}
-              cancelLabel="Fechar"
-            />
-          </DialogContent>
-        </Dialog>
+        {isOwner && (
+          <BrokerImovelDialog
+            open={formOpen}
+            onOpenChange={(v) => { setFormOpen(v); if (!v) setEditing(null); }}
+            imovel={editing}
+            ownerId={manageOwnerId}
+            ownerName={brokerName}
+            onSaved={reloadProperties}
+          />
+        )}
+
+        <AlertDialog open={!!deleteTarget} onOpenChange={(v) => { if (!v && !deleting) setDeleteTarget(null); }}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Excluir imóvel</AlertDialogTitle>
+              <AlertDialogDescription>
+                Tem certeza que deseja excluir <strong>{deleteTarget?.titulo}</strong>? Esta ação não pode ser desfeita.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={(e) => { e.preventDefault(); confirmDelete(); }}
+                disabled={deleting}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {deleting ? "Excluindo..." : "Excluir"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
 
 
