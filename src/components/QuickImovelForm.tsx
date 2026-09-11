@@ -119,6 +119,12 @@ export function QuickImovelForm({ onSaved, onCancel, defaultCidade = "", cancelL
       drive_fotos_url: driveUrl.trim() || null,
       corretor_nome: profile?.full_name || null,
       ativo_site: true,
+      empreendimento: emp?.nome || null,
+      edificio_id: emp?.tipo === "edificio" ? emp.id : null,
+      condominio_id: emp?.tipo === "condominio" ? emp.id : null,
+      empreendimento_id: emp?.tipo === "loteamento" ? emp.id : null,
+      latitude: emp?.latitude != null ? Number(emp.latitude) : null,
+      longitude: emp?.longitude != null ? Number(emp.longitude) : null,
     }]);
     setSaving(false);
 
