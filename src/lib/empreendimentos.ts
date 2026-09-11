@@ -182,17 +182,16 @@ export async function saveEmpreendimento(
   if (!user) throw new Error("Faça login para cadastrar um empreendimento.");
 
   const payload = buildPayload(tipo, input);
-  const table = TIPO_TABLE[tipo];
+  const table = supabase.from(TIPO_TABLE[tipo]) as any;
 
   if (editId) {
-    const { data, error } = await supabase.from(table).update(payload).eq("id", editId).select("*").maybeSingle();
+    const { data, error } = await table.update(payload).eq("id", editId).select("*").maybeSingle();
     if (error) throw new Error(friendlyError(error.message));
     if (!data) throw new Error("Empreendimento não encontrado ou sem permissão para editar.");
     return mapRow(data, tipo);
   }
 
-  const { data, error } = await supabase
-    .from(table)
+  const { data, error } = await table
     .insert([{ ...payload, user_id: user.id }])
     .select("*")
     .maybeSingle();
