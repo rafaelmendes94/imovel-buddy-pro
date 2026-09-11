@@ -99,7 +99,7 @@ function youtubeEmbed(url: string) {
 
 export default function ImovelPublico() {
   const { id } = useParams<{ id: string }>();
-  const { user, isSuperAdmin, isAdminStaff } = useAuth();
+  const { user, loading: authLoading, isSuperAdmin, isAdminStaff } = useAuth();
   const [imovel, setImovel] = useState<ImovelRow | null>(null);
   const [brokerProfile, setBrokerProfile] = useState<PublicBrokerProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -110,19 +110,25 @@ export default function ImovelPublico() {
   const touchX = useRef<number | null>(null);
 
   useEffect(() => {
-    if (!id) return;
+    if (!id || authLoading) return;
     (async () => {
       setLoading(true);
-      const { data, error } = await supabase
+      let query = supabase
         .from("imoveis")
         .select(`${PUBLIC_IMOVEL_COLUMNS}, edificios(nome, endereco, numero, complemento, bairro, cidade, estado, cep, latitude, longitude), condominios(nome, endereco, numero, complemento, bairro, cidade, estado, cep, latitude, longitude, mapa_pdf_url, implantacao_url), empreendimentos(nome, endereco, numero, complemento, bairro, cidade, estado, cep, latitude, longitude)`)
-        .eq("id", id)
-        .eq("ativo_site", true)
-        .maybeSingle();
+        .eq("id", id);
+      if (!user) query = query.eq("ativo_site", true);
+      const { data, error } = await query.maybeSingle();
       if (error || !data) {
         setNotFound(true);
       } else {
         const row = data as unknown as ImovelRow;
+        const mayViewHidden = !!user?.id && (row.user_id === user.id || isSuperAdmin || isAdminStaff);
+        if (!row.ativo_site && !mayViewHidden) {
+          setNotFound(true);
+          setLoading(false);
+          return;
+        }
         const linked = row.edificios || row.condominios || row.empreendimentos;
         setImovel({
           ...row,
@@ -152,7 +158,7 @@ export default function ImovelPublico() {
       }
       setLoading(false);
     })();
-  }, [id]);
+  }, [id, user, authLoading, isSuperAdmin, isAdminStaff]);
 
   useEffect(() => {
     if (!imovel) return;
