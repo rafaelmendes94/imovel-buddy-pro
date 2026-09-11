@@ -250,6 +250,7 @@ export default function Feed() {
         <div className="h-full overflow-y-auto snap-y snap-mandatory no-scrollbar">
           {cards.map((imovel) => {
             const img = imovel.imagens?.[0] || PLACEHOLDER_IMAGE;
+            const broker = brokerOf(imovel);
             const isFav = favorites.includes(imovel.id);
             const boxes = countBoxes(imovel.box);
             const specs = [
