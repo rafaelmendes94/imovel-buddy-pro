@@ -980,7 +980,7 @@ export default function Site() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans pb-[74px] md:pb-0" onScroll={handleScroll}>
+    <div className="min-h-screen bg-gray-50 font-sans pb-[74px] md:pb-0">
       <PublicMobileNav />
       <div id="site-top" />
 
