@@ -1752,16 +1752,6 @@ export default function Site() {
         </div>
       </footer>
 
-      {/* Scroll to top */}
-      <button
-        onClick={scrollToTop}
-        className={cn(
-          "fixed bottom-6 right-6 w-12 h-12 rounded-full bg-blue-500 text-white shadow-lg flex items-center justify-center hover:bg-blue-600 transition-all z-50",
-          "opacity-100 scale-100"
-        )}
-      >
-        <ArrowUp className="w-5 h-5" />
-      </button>
       <RoutePlanner properties={routeProperties as any} />
       <SharkAI properties={siteProperties as any} onSelectProperty={setSelectedProperty as any} />
       <PropertyDetailModal
