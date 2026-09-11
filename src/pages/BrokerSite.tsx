@@ -438,7 +438,7 @@ export default function BrokerSite() {
       .map(([city, items]) => ({ city, items }));
   }, [filteredProperties]);
 
-  const featuredProperties = useMemo(() => properties.slice(0, 3), [properties]);
+  
   const apartments = useMemo(() => properties.filter((property) => property.tipo === "Apartamento").length, [properties]);
   const houses = useMemo(() => properties.filter((property) => property.tipo === "Casa").length, [properties]);
   const lots = useMemo(() => properties.filter((property) => property.tipo === "Terreno" || property.tipo === "Lote").length, [properties]);
@@ -868,19 +868,6 @@ export default function BrokerSite() {
             ))}
           </div>
         </section>
-
-        {!searchTerm && !tipoFilter && !statusFilter && featuredProperties.length > 0 && (
-          <section className="container pb-6">
-            <div className="mb-6 space-y-2">
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">Seleção especial</p>
-              <h2 className="text-3xl font-black text-foreground">Destaques do portfólio</h2>
-              <p className="text-muted-foreground">Os imóveis mais estratégicos publicados por {brokerName}.</p>
-            </div>
-            <div className="grid gap-6 lg:grid-cols-3">
-              {featuredProperties.map((property) => <PropertyCard key={property.id} p={property} brokerName={brokerName} whatsapp={whatsapp} onOpen={setSelectedProperty} isOwner={isOwner} onUpdated={handlePropertyUpdated} onEdit={openEditProperty} onDelete={setDeleteTarget} />)}
-            </div>
-          </section>
-        )}
 
         <section className="container py-8 space-y-10">
           <div className="space-y-2">
