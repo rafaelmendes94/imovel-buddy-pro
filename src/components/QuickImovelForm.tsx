@@ -180,6 +180,12 @@ export function QuickImovelForm({ onSaved, onCancel, defaultCidade = "", cancelL
             <Label className="text-xs">Endereço</Label>
             <Input value={endereco} onChange={(e) => setEndereco(e.target.value)} />
           </div>
+          <div className="sm:col-span-2">
+            <EmpreendimentoPicker
+              value={emp ? { tipo: emp.tipo, id: emp.id } : null}
+              onChange={selectEmpreendimento}
+            />
+          </div>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
