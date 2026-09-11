@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
+  Flame,
   LayoutDashboard, Users, UserCog, CreditCard, LogOut, Crown,
   Building2, Building, Fence, Camera, ClipboardCheck, Wallet,
   Table2, FileSignature, Clapperboard, Globe, Landmark, Settings,
