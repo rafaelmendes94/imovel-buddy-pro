@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, Building2, Search, Trophy, Handshake } from "lucide-react";
+import { Home, Building2, Map, Trophy, Handshake } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Item = {
@@ -14,7 +14,7 @@ export function PublicMobileNav() {
   const items: Item[] = [
     { label: "Início", icon: Home, path: "/" },
     { label: "Imóveis", icon: Building2, path: "/todos-imoveis" },
-    { label: "Buscar", icon: Search, path: "/todos-imoveis?busca=1" },
+    { label: "Mapa", icon: Map, path: "/mapa" },
     { label: "Ranking", icon: Trophy, path: "/ranking" },
     { label: "Parceiros", icon: Handshake, path: "/parceiros" },
   ];
