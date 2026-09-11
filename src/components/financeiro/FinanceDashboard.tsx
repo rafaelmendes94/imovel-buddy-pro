@@ -10,7 +10,13 @@ import {
 } from "@/lib/finance";
 import { differenceInDays, endOfMonth, isSameMonth, isSameYear, startOfMonth, startOfWeek, subMonths } from "date-fns";
 
-const PALETTE = ["hsl(215 60% 35%)", "hsl(43 74% 49%)", "hsl(160 60% 40%)", "hsl(0 70% 55%)", "hsl(260 50% 55%)"];
+const PALETTE = [
+  "hsl(var(--fin-blue))",
+  "hsl(var(--fin-navy))",
+  "hsl(var(--fin-ink))",
+  "hsl(var(--fin-slate))",
+  "hsl(210 45% 62%)",
+];
 
 interface Props {
   subscribers: FinSubscriber[];
