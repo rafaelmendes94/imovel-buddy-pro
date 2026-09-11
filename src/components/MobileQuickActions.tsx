@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { Building2, Search, Map, Images, Users, Handshake, CreditCard, Phone } from "lucide-react";
+import { Building2, Search, Map, Images, Users, Handshake, CreditCard } from "lucide-react";
+import sharkFriendlyIcon from "@/assets/shark-friendly.png";
 
 const shortcuts = [
   { label: "Imóveis", icon: Building2, to: "/todos-imoveis" },
