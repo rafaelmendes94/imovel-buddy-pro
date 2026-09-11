@@ -1,6 +1,9 @@
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Home, Building2, Map, LayoutGrid, Flame } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, toSlug } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+
 
 type Item = {
   label: string;
@@ -12,9 +15,54 @@ export const MV_MOBILE_NAV_INTENT = "mv_mobile_nav_intent";
 
 export function PublicMobileNav() {
   const location = useLocation();
+  const [myBrokerPath, setMyBrokerPath] = useState<string>("/parceiros");
 
-  const brokerSlugMatch = location.pathname.match(/^\/corretor\/([^/]+)/);
-  const brokerPath = brokerSlugMatch ? `/corretor/${brokerSlugMatch[1]}` : "/parceiros";
+  useEffect(() => {
+    let cancelled = false;
+
+    const resolvePath = async (user: any) => {
+      if (!user) {
+        setMyBrokerPath("/parceiros");
+        return;
+      }
+      const { data: profile } = await (supabase as any)
+        .from("public_broker_profiles")
+        .select("full_name")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (cancelled) return;
+      const name = profile?.full_name || user.user_metadata?.full_name || user.email;
+      if (name) {
+        setMyBrokerPath(`/corretor/${toSlug(String(name))}`);
+      } else {
+        setMyBrokerPath("/parceiros");
+      }
+    };
+
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await resolvePath(user);
+      } else {
+        // aguarda hidratação da sessão caso o token ainda esteja sendo carregado
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+          async (event, session) => {
+            if (event === "INITIAL_SESSION" || event === "SIGNED_IN") {
+              await resolvePath(session?.user ?? null);
+            }
+            if (event === "SIGNED_OUT") {
+              setMyBrokerPath("/parceiros");
+            }
+          }
+        );
+        return () => subscription.unsubscribe();
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, []);
+
+
 
   const left: Item[] = [
     { label: "Início", icon: Home, path: "/" },
@@ -25,7 +73,7 @@ export function PublicMobileNav() {
 
   const right: Item[] = [
     { label: "Mapa", icon: Map, path: "/mapa" },
-    { label: "Meus Imóveis", icon: LayoutGrid, path: brokerPath },
+    { label: "Meus Imóveis", icon: LayoutGrid, path: myBrokerPath },
   ];
 
   const isActive = (item: Item) => {
