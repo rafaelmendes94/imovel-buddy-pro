@@ -11,4 +11,4 @@
 ## Current request
 - [x] Unify internal, broker-public, and portal-public property detail presentation using one shared route and renderer.
 - [x] Preserve public privacy and authorized editing.
-- [ ] Validate typecheck and desktop/mobile preview interactions.
+- [x] Validate typecheck, production build, and desktop/mobile preview interactions.

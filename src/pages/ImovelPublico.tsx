@@ -371,7 +371,7 @@ export default function ImovelPublico() {
       {/* ===== Barra superior ===== */}
       <header className="bg-card border-b border-border sticky top-0 z-30">
         <div className="max-w-6xl mx-auto px-3 sm:px-6 py-3 flex items-center justify-between gap-2">
-          <Link to="/imoveis" onClick={(e) => { if (window.history.length > 1) { e.preventDefault(); window.history.back(); } }} className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-foreground hover:text-primary transition-colors min-w-0">
+          <Link to="/todos-imoveis" onClick={(e) => { if (window.history.length > 1) { e.preventDefault(); window.history.back(); } }} className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-foreground hover:text-primary transition-colors min-w-0">
             <ArrowLeft className="w-4 h-4 flex-shrink-0" /> <span className="truncate">Voltar para Imóveis</span>
           </Link>
           <div className="flex items-center gap-2 flex-shrink-0">
@@ -499,7 +499,7 @@ export default function ImovelPublico() {
           <nav className="text-[11px] sm:text-xs text-muted-foreground flex items-center gap-1.5 flex-wrap">
             <Link to="/" className="hover:text-primary">Início</Link>
             <span>›</span>
-            <Link to="/imoveis" className="hover:text-primary">Imóveis</Link>
+            <Link to="/todos-imoveis" className="hover:text-primary">Imóveis</Link>
             <span>›</span>
             <span>{imovel.tipo}</span>
             {imovel.empreendimento && (<><span>›</span><span className="text-foreground font-medium">{imovel.empreendimento}</span></>)}
