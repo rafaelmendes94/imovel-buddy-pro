@@ -751,7 +751,7 @@ export default function Site() {
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<Category>("todos");
   const [searchTerm, setSearchTerm] = useState("");
-  const [showScrollTop, setShowScrollTop] = useState(false);
+  
   const [showFilters, setShowFilters] = useState(false);
   const [filterCity, setFilterCity] = useState(initialCidade);
   const [filterBedrooms, setFilterBedrooms] = useState("");
