@@ -172,3 +172,7 @@
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+/* Utilitário: esconder barra de rolagem (carrossel do mapa) */
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
