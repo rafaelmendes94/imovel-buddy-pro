@@ -305,8 +305,8 @@ export default function Financeiro() {
             ) : (
               <>
                 {/* Desktop */}
-                <Card className="hidden md:block overflow-hidden">
-                  <Table>
+                <Card className="hidden md:block overflow-x-auto">
+                  <Table className="min-w-[1180px]">
                     <TableHeader>
                       <TableRow>
                         <TableHead className="w-8" />
@@ -353,7 +353,7 @@ export default function Financeiro() {
                                 </Badge>
                               </TableCell>
                               <TableCell className="text-xs">
-                                <p className="font-medium">{fin.planOf(sub)?.name || "—"}</p>
+                                <p className="font-medium">{fin.planOf(sub)?.name || "Sem plano"}</p>
                                 <p className="text-muted-foreground">{cycleLabel(sub)}</p>
                               </TableCell>
                               <TableCell className="font-semibold tabular-nums">{formatCurrency(amountOf(sub))}</TableCell>
