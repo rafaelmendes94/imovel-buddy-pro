@@ -230,6 +230,40 @@ export default function Feed() {
 
   const cards = useMemo(() => items, [items]);
 
+  // Detecta qual card está predominante na viewport para tocar só um vídeo
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (loading || cards.length === 0) return;
+    const root = scrollRef.current;
+    if (!root) return;
+
+    const ratios = new Map<string, number>();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const id = (entry.target as HTMLElement).dataset.feedId;
+          if (id) ratios.set(id, entry.isIntersecting ? entry.intersectionRatio : 0);
+        });
+        let best: string | null = null;
+        let bestRatio = 0;
+        ratios.forEach((ratio, id) => {
+          if (ratio > bestRatio) {
+            bestRatio = ratio;
+            best = id;
+          }
+        });
+        setActiveId(bestRatio >= 0.6 ? best : null);
+      },
+      { root, threshold: [0, 0.25, 0.5, 0.6, 0.75, 0.9, 1] }
+    );
+
+    const sections = Array.from(root.querySelectorAll<HTMLElement>("[data-feed-id]"));
+    sections.forEach((s) => observer.observe(s));
+    return () => observer.disconnect();
+  }, [loading, cards]);
+
   return (
     <div className="fixed inset-0 bg-black text-white">
       <header className="absolute top-0 left-0 right-0 z-30 flex items-center gap-3 px-4 pt-[max(12px,env(safe-area-inset-top))] pb-3 bg-gradient-to-b from-black/70 to-transparent">
