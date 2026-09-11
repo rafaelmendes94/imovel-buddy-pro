@@ -282,6 +282,8 @@ export default function Planos() {
           <ArrowRight className="w-4 h-4" />
         </Link>
       </section>
+
+      <SharkAI properties={[]} />
     </div>
   );
 }
