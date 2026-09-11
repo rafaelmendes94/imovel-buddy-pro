@@ -125,6 +125,9 @@ export default function AdminPlanos() {
       modules: Array.isArray(plan.modules) ? plan.modules : [],
       plan_type: plan.plan_type || "corretor",
       is_free: !!plan.is_free,
+      description: plan.description || "",
+      discount_percent: String(plan.discount_percent ?? 0),
+      notes: plan.notes || "",
     });
     setDialogOpen(true);
   };
