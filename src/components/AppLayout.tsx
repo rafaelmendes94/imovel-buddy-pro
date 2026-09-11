@@ -2,8 +2,9 @@ import { useState } from "react";
 import { AppSidebar } from "./AppSidebar";
 import { AdminSidebar } from "./AdminSidebar";
 import { useAuth } from "@/hooks/useAuth";
-import { Menu, X } from "lucide-react";
+import { Menu, Home, Building2, Search, Users, MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { MobileBottomNav } from "./MobileBottomNav";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
