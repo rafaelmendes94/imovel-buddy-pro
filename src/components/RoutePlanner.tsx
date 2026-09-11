@@ -120,13 +120,30 @@ export function RoutePlanner({ properties }: RoutePlannerProps) {
     setShowAppChoice(false);
   };
 
+  useEffect(() => {
+    const onOpen = (e: Event) => {
+      e.preventDefault();
+      setIsOpen(true);
+    };
+    window.addEventListener("mv:open-route-planner", onOpen);
+    try {
+      if (sessionStorage.getItem("mv_mobile_nav_intent") === "rota") {
+        sessionStorage.removeItem("mv_mobile_nav_intent");
+        setIsOpen(true);
+      }
+    } catch {
+      /* ignore */
+    }
+    return () => window.removeEventListener("mv:open-route-planner", onOpen);
+  }, []);
+
   return (
     <>
-      {/* Floating button */}
+      {/* Floating button (desktop only — no mobile bar duplicate) */}
       <button
         onClick={() => setIsOpen(true)}
         className={cn(
-          "fixed bottom-6 left-6 z-50 flex items-center gap-2 px-5 py-3 rounded-full shadow-2xl font-bold text-sm transition-all hover:scale-105",
+          "hidden md:flex fixed bottom-6 left-6 z-50 items-center gap-2 px-5 py-3 rounded-full shadow-2xl font-bold text-sm transition-all hover:scale-105",
           properties.length > 0
             ? "bg-gradient-to-r from-blue-600 to-sky-500 text-white"
             : "bg-white text-gray-800 border border-gray-200 hover:border-blue-300"

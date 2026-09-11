@@ -117,9 +117,26 @@ export function SharkAI({ properties, onSelectProperty }: SharkAIProps) {
     }
   };
 
+  useEffect(() => {
+    const onOpen = (e: Event) => {
+      e.preventDefault();
+      setIsOpen(true);
+    };
+    window.addEventListener("mv:open-shark-ai", onOpen);
+    try {
+      if (sessionStorage.getItem("mv_mobile_nav_intent") === "ia") {
+        sessionStorage.removeItem("mv_mobile_nav_intent");
+        setIsOpen(true);
+      }
+    } catch {
+      /* ignore */
+    }
+    return () => window.removeEventListener("mv:open-shark-ai", onOpen);
+  }, []);
+
   return (
     <>
-      {/* Floating Shark Button */}
+      {/* Floating Shark Button (desktop only) */}
       <AnimatePresence>
         {!isOpen && (
           <motion.button
