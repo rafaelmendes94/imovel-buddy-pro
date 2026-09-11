@@ -8,3 +8,7 @@
 - [x] Integração no cadastro rápido público (`QuickImovelForm`)
 - [x] Integração no cadastro completo (`CadastroImovel`)
 - [x] Testes no preview (buscar, criar, vincular, mobile) e limpeza dos dados de teste
+## Current request
+- [ ] Unify internal, broker-public, and portal-public property detail presentation using one shared component.
+- [ ] Preserve public privacy and authorized editing.
+- [ ] Validate typecheck and desktop/mobile preview interactions.
