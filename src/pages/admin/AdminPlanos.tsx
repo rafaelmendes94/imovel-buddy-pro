@@ -263,7 +263,8 @@ export default function AdminPlanos() {
                 </div>
                 <p className="text-2xl font-bold text-accent">R$ {plan.price}</p>
                 <p className="text-xs text-muted-foreground">
-                  {plan.billing_cycle === "monthly" ? "Mensal" : plan.billing_cycle === "quarterly" ? "Trimestral" : "Anual"}
+                  {CYCLE_LABELS[plan.billing_cycle] || plan.billing_cycle}
+                  {Number(plan.discount_percent) > 0 ? ` · ${plan.discount_percent}% desc.` : ""}
                   {" · "}{plan.trial_days} dias trial · {plan.max_properties} imóveis · {plan.max_brokers} corretores
                 </p>
                 <div className="flex flex-wrap gap-1">
