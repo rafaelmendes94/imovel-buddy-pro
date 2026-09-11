@@ -40,10 +40,13 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Main content */}
       <main className="flex-1 overflow-auto min-w-0">
         {/* Mobile header */}
-        <div className="lg:hidden sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b border-border px-4 py-3 flex items-center gap-3">
+        <div
+          className="lg:hidden sticky top-0 z-30 bg-background/90 backdrop-blur-xl border-b border-border px-4 py-3 flex items-center gap-3"
+          style={{ paddingTop: "calc(0.75rem + env(safe-area-inset-top))" }}
+        >
           <button
             onClick={() => setMobileOpen(true)}
-            className="p-2 rounded-lg hover:bg-muted transition-colors -ml-2"
+            className="p-2 rounded-xl active:bg-muted transition-colors -ml-2"
           >
             <Menu className="w-5 h-5 text-foreground" />
           </button>
