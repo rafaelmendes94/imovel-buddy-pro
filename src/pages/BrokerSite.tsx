@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import {
   ArrowLeft,
@@ -886,6 +886,20 @@ export default function BrokerSite() {
           <div className="space-y-2">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">Portfólio atual</p>
             <h2 className="text-3xl font-black text-foreground">Imóveis em carteira</h2>
+            {isOwner && (
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-dashed border-accent/50 bg-accent/5 p-4">
+                <div>
+                  <p className="text-sm font-bold text-foreground">Gerenciar imóveis</p>
+                  <p className="text-xs text-muted-foreground">Você é o dono deste perfil: cadastre, edite ou exclua imóveis do seu portfólio.</p>
+                </div>
+                <button
+                  onClick={openNewProperty}
+                  className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"
+                >
+                  <Plus className="h-4 w-4" /> Adicionar imóvel
+                </button>
+              </div>
+            )}
             <p className="text-muted-foreground">
               {filteredProperties.length} resultado{filteredProperties.length === 1 ? "" : "s"} encontrado{filteredProperties.length === 1 ? "" : "s"} para este corretor.
             </p>
