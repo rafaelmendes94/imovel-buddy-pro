@@ -47,6 +47,7 @@ import BuildingDetail from "./pages/BuildingDetail";
 import Condominiums from "./pages/Condominiums";
 import CondominiumDetail from "./pages/CondominiumDetail";
 import Maps from "./pages/Maps";
+import ExplorarMapa from "./pages/ExplorarMapa";
 import CityPhotos from "./pages/CityPhotos";
 import Brokers from "./pages/Brokers";
 import CadastroCorretores from "./pages/CadastroCorretores";
@@ -101,6 +102,8 @@ const App = () => (
             <Route path="/planos" element={<Planos />} />
             <Route path="/galeria-cidade" element={<PublicCityPhotos />} />
             <Route path="/imovel/:id" element={<ImovelPublico />} />
+            <Route path="/mapa" element={<ExplorarMapa />} />
+            <Route path="/explorar-mapa" element={<ExplorarMapa />} />
 
             {/* Admin routes */}
             
