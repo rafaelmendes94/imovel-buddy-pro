@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { PLACEHOLDER_IMAGE } from "@/lib/placeholderImage";
+import { FeedVideo } from "@/components/FeedVideo";
 import { toSlug } from "@/lib/utils";
 import {
   buildWhatsappMessage,
