@@ -80,7 +80,7 @@ export function FeedVideo({ link, poster, alt, active, onClick }: FeedVideoProps
           loop
           playsInline
           autoPlay={active}
-          preload={active ? "auto" : "none"}
+          preload={active ? "auto" : "metadata"}
           disablePictureInPicture
           controls={false}
           onCanPlay={() => setReady(true)}
