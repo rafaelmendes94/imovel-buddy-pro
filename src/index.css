@@ -102,6 +102,30 @@
     @apply bg-background text-foreground antialiased;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
+
+  /* App-like behaviour on touch devices */
+  @media (max-width: 1023px) {
+    html {
+      -webkit-text-size-adjust: 100%;
+    }
+    body {
+      overscroll-behavior-y: contain;
+      -webkit-tap-highlight-color: transparent;
+    }
+    /* comfortable touch targets */
+    button,
+    a[role="button"],
+    [role="tab"],
+    summary {
+      touch-action: manipulation;
+    }
+    /* avoid iOS zoom on focus */
+    input,
+    select,
+    textarea {
+      font-size: 16px;
+    }
+  }
 }
 
 @layer utilities {
