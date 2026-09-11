@@ -58,6 +58,15 @@ export function QuickImovelForm({ onSaved, onCancel, defaultCidade = "", cancelL
     setImagens([]);
     setLinkVideo("");
     setDriveUrl("");
+    setEmp(null);
+  };
+
+  const selectEmpreendimento = (rec: EmpreendimentoRecord | null) => {
+    setEmp(rec);
+    if (!rec) return;
+    if (rec.endereco) setEndereco(rec.endereco);
+    if (rec.bairro) setBairro(rec.bairro);
+    if (rec.cidade) setCidade(rec.cidade);
   };
 
   const applyAI = (u: Record<string, any>) => {
