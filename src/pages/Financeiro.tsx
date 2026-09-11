@@ -168,7 +168,7 @@ export default function Financeiro() {
       <Button
         size="sm"
         variant="ghost"
-        className={sub.status === "blocked" ? "text-emerald-600" : "text-destructive"}
+        className={sub.status === "blocked" ? "text-[hsl(var(--fin-emerald))]" : "text-[hsl(var(--fin-rose))]"}
         onClick={(e) => { e.stopPropagation(); setBlockSub({ sub, block: sub.status !== "blocked" }); }}
       >
         <Ban className="w-3.5 h-3.5" />
