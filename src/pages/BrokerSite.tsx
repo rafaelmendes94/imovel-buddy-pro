@@ -243,11 +243,11 @@ function PropertyCard({ p, brokerName, whatsapp, onOpen, isOwner = false, onUpda
           </button>
         </div>
         {isOwner && (
-          <div className="grid grid-cols-3 gap-2 rounded-2xl border border-dashed border-accent/50 bg-accent/5 p-2">
+          <div className="grid grid-cols-2 gap-2 rounded-2xl border border-dashed border-accent/50 bg-accent/5 p-2">
             <button
               type="button"
               disabled={saving}
-              onClick={(e) => { e.stopPropagation(); navigate(`/editar-imovel/${p.id}`); }}
+              onClick={(e) => { e.stopPropagation(); onEdit?.(p); }}
               className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-primary px-2 py-2 text-[11px] font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
             >
               <Pencil className="h-3.5 w-3.5" /> Editar
@@ -269,6 +269,14 @@ function PropertyCard({ p, brokerName, whatsapp, onOpen, isOwner = false, onUpda
               className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-muted px-2 py-2 text-[11px] font-bold text-foreground transition-colors hover:bg-muted/70 disabled:opacity-50"
             >
               {p.ativo_site ? <><EyeOff className="h-3.5 w-3.5" /> Ocultar</> : <><Eye className="h-3.5 w-3.5" /> Ativar</>}
+            </button>
+            <button
+              type="button"
+              disabled={saving}
+              onClick={(e) => { e.stopPropagation(); onDelete?.(p); }}
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-destructive/10 px-2 py-2 text-[11px] font-bold text-destructive transition-colors hover:bg-destructive/20 disabled:opacity-50"
+            >
+              <Trash2 className="h-3.5 w-3.5" /> Excluir
             </button>
           </div>
         )}
