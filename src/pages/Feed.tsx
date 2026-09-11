@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { PLACEHOLDER_IMAGE } from "@/lib/placeholderImage";
+import { FeedVideo } from "@/components/FeedVideo";
 import { toSlug } from "@/lib/utils";
 import {
   buildWhatsappMessage,
@@ -40,6 +41,7 @@ interface FeedImovel {
   empreendimento: string | null;
   condicao: string | null;
   imagens: string[] | null;
+  link_video: string | null;
   corretor_nome: string | null;
   corretor_id: string | null;
   corretor_cadastro_id: string | null;
@@ -94,7 +96,7 @@ export default function Feed() {
         supabase
           .from("imoveis")
           .select(
-            "id, titulo, tipo, preco, quartos, suites, box, vagas, area, cidade, bairro, empreendimento, condicao, imagens, corretor_nome, corretor_id, corretor_cadastro_id, imobiliaria_nome"
+            "id, titulo, tipo, preco, quartos, suites, box, vagas, area, cidade, bairro, empreendimento, condicao, imagens, link_video, corretor_nome, corretor_id, corretor_cadastro_id, imobiliaria_nome"
           )
           .eq("ativo_site", true)
           .eq("status", "Disponível")
@@ -229,6 +231,40 @@ export default function Feed() {
 
   const cards = useMemo(() => items, [items]);
 
+  // Detecta qual card está predominante na viewport para tocar só um vídeo
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (loading || cards.length === 0) return;
+    const root = scrollRef.current;
+    if (!root) return;
+
+    const ratios = new Map<string, number>();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const id = (entry.target as HTMLElement).dataset.feedId;
+          if (id) ratios.set(id, entry.isIntersecting ? entry.intersectionRatio : 0);
+        });
+        let best: string | null = null;
+        let bestRatio = 0;
+        ratios.forEach((ratio, id) => {
+          if (ratio > bestRatio) {
+            bestRatio = ratio;
+            best = id;
+          }
+        });
+        setActiveId(bestRatio >= 0.6 ? best : null);
+      },
+      { root, threshold: [0, 0.25, 0.5, 0.6, 0.75, 0.9, 1] }
+    );
+
+    const sections = Array.from(root.querySelectorAll<HTMLElement>("[data-feed-id]"));
+    sections.forEach((s) => observer.observe(s));
+    return () => observer.disconnect();
+  }, [loading, cards]);
+
   return (
     <div className="fixed inset-0 bg-black text-white">
       <header className="absolute top-0 left-0 right-0 z-30 flex items-center gap-3 px-4 pt-[max(12px,env(safe-area-inset-top))] pb-3 bg-gradient-to-b from-black/70 to-transparent">
@@ -247,7 +283,7 @@ export default function Feed() {
           <p className="text-white/80 text-sm">Nenhum imóvel publicado no feed ainda.</p>
         </div>
       ) : (
-        <div className="h-full overflow-y-auto snap-y snap-mandatory no-scrollbar">
+        <div ref={scrollRef} className="h-full overflow-y-auto snap-y snap-mandatory no-scrollbar">
           {cards.map((imovel) => {
             const img = imovel.imagens?.[0] || PLACEHOLDER_IMAGE;
             const broker = brokerOf(imovel);
@@ -263,15 +299,16 @@ export default function Feed() {
             return (
               <section
                 key={imovel.id}
+                data-feed-id={imovel.id}
                 className="relative h-full w-full snap-start snap-always overflow-hidden"
                 onPointerEnter={() => registerOpen(imovel.id)}
               >
                 <div className="absolute inset-0 mx-auto max-w-lg md:max-w-xl">
-                  <img
-                    src={img}
+                  <FeedVideo
+                    link={imovel.link_video}
+                    poster={img}
                     alt={imovel.titulo}
-                    loading="lazy"
-                    className="w-full h-full object-cover"
+                    active={activeId === imovel.id}
                     onClick={() => openDetails(imovel)}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-black/40 pointer-events-none" />
