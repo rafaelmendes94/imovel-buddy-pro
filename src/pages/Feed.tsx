@@ -275,6 +275,27 @@ export default function Feed() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-black/40 pointer-events-none" />
 
+                  {/* Corretor responsável */}
+                  <button
+                    onClick={() => openProfile(imovel)}
+                    className="absolute left-4 top-[calc(max(12px,env(safe-area-inset-top))+40px)] flex items-center gap-2.5 text-left active:opacity-70"
+                    aria-label="Ver perfil do corretor responsável"
+                  >
+                    <img
+                      src={broker.avatar || avatarFallback(broker.nome)}
+                      alt={broker.nome}
+                      className="w-10 h-10 rounded-full object-cover ring-2 ring-white/80 shadow-md"
+                    />
+                    <span className="leading-tight drop-shadow">
+                      <span className="block text-sm font-semibold">{broker.nome}</span>
+                      {broker.imobiliaria && (
+                        <span className="block text-[11px] text-white/75">{broker.imobiliaria}</span>
+                      )}
+                    </span>
+                  </button>
+
+
+
                   {/* Barra vertical de ações */}
                   <div className="absolute right-3 bottom-32 flex flex-col items-center gap-5">
                     <button
