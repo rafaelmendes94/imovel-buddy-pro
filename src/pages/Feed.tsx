@@ -78,6 +78,10 @@ export default function Feed() {
   const [contact, setContact] = useState<ImovelContact | null>(null);
   const [contactLoading, setContactLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [corretores, setCorretores] = useState<Record<string, BrokerProfile>>({});
+  const [brokerProfiles, setBrokerProfiles] = useState<Record<string, BrokerProfile>>({});
+  const [profileFor, setProfileFor] = useState<FeedImovel | null>(null);
+  const [profileCount, setProfileCount] = useState<number | null>(null);
   const openedRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
@@ -86,19 +90,62 @@ export default function Feed() {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase
-        .from("imoveis")
-        .select(
-          "id, titulo, tipo, preco, quartos, suites, box, vagas, area, cidade, bairro, empreendimento, condicao, imagens, corretor_nome"
-        )
-        .eq("ativo_site", true)
-        .eq("status", "Disponível")
-        .order("created_at", { ascending: false })
-        .limit(60);
+      const [{ data }, { data: cor }, { data: profs }] = await Promise.all([
+        supabase
+          .from("imoveis")
+          .select(
+            "id, titulo, tipo, preco, quartos, suites, box, vagas, area, cidade, bairro, empreendimento, condicao, imagens, corretor_nome, corretor_id, corretor_cadastro_id, imobiliaria_nome"
+          )
+          .eq("ativo_site", true)
+          .eq("status", "Disponível")
+          .order("created_at", { ascending: false })
+          .limit(60),
+        (supabase as any).from("corretores").select("id, nome, foto_url, creci").eq("ativo", true),
+        (supabase as any).from("public_broker_profiles").select("user_id, full_name, avatar_url"),
+      ]);
       setItems(((data as any[]) || []) as FeedImovel[]);
+      const corMap: Record<string, BrokerProfile> = {};
+      ((cor as any[]) || []).forEach((c) => {
+        corMap[c.id] = { nome: c.nome, avatar: c.foto_url || null, imobiliaria: null, creci: c.creci || null };
+      });
+      setCorretores(corMap);
+      const profMap: Record<string, BrokerProfile> = {};
+      ((profs as any[]) || []).forEach((p) => {
+        profMap[p.user_id] = { nome: p.full_name, avatar: p.avatar_url || null, imobiliaria: null, creci: null };
+      });
+      setBrokerProfiles(profMap);
       setLoading(false);
     })();
   }, []);
+
+  /** Perfil do corretor responsável pelo imóvel (mesmo destino do WhatsApp). */
+  const brokerOf = (imovel: FeedImovel): BrokerProfile => {
+    const cad = imovel.corretor_cadastro_id ? corretores[imovel.corretor_cadastro_id] : undefined;
+    const prof = imovel.corretor_id ? brokerProfiles[imovel.corretor_id] : undefined;
+    return {
+      nome: cad?.nome || imovel.corretor_nome || prof?.nome || "Corretor responsável",
+      avatar: cad?.avatar || prof?.avatar || null,
+      imobiliaria: imovel.imobiliaria_nome || null,
+      creci: cad?.creci || null,
+    };
+  };
+
+  const openProfile = async (imovel: FeedImovel) => {
+    setProfileFor(imovel);
+    setProfileCount(null);
+    const nome = brokerOf(imovel).nome;
+    let query = (supabase as any)
+      .from("imoveis")
+      .select("id", { count: "exact", head: true })
+      .eq("ativo_site", true)
+      .eq("status", "Disponível");
+    query = imovel.corretor_cadastro_id
+      ? query.eq("corretor_cadastro_id", imovel.corretor_cadastro_id)
+      : query.eq("corretor_nome", nome);
+    const { count } = await query;
+    setProfileCount(count ?? 0);
+  };
+
 
   useEffect(() => {
     if (!user) return;
