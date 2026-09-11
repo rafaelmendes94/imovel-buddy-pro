@@ -176,6 +176,9 @@ export default function BrokerDashboard() {
           />
         </div>
 
+        <EngagementPanel />
+
+
         {/* VGV / Plano */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="elevated-card rounded-xl p-5">

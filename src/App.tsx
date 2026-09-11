@@ -103,6 +103,7 @@ const App = () => (
             <Route path="/planos" element={<Planos />} />
             <Route path="/galeria-cidade" element={<PublicCityPhotos />} />
             <Route path="/imovel/:id" element={<ImovelPublico />} />
+            <Route path="/feed" element={<AuthGuard><Feed /></AuthGuard>} />
             <Route path="/mapa" element={<ExplorarMapa />} />
             <Route path="/explorar-mapa" element={<ExplorarMapa />} />
 
