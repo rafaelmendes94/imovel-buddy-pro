@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import {
   ArrowLeft,
@@ -33,13 +33,25 @@ import {
   CheckCircle2,
   RotateCcw,
   EyeOff,
+  Trash2,
+  Plus,
 } from "lucide-react";
 import { cn, toSlug } from "@/lib/utils";
 import { trackPropertyView } from "@/lib/trackPropertyView";
 import { BrokerRatings } from "@/components/BrokerRatings";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PropertyDetailModal } from "@/components/PropertyDetailModal";
-import { QuickImovelForm } from "@/components/QuickImovelForm";
+import { BrokerImovelDialog } from "@/components/BrokerImovelDialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { PublicMobileNav } from "@/components/PublicMobileNav";
 import { toast } from "sonner";
 import { generateBrokerCatalogPdf } from "@/utils/generateBrokerCatalogPdf";
@@ -107,11 +119,10 @@ interface DBProperty {
   ativo_site?: boolean | null;
 }
 
-function PropertyCard({ p, brokerName, whatsapp, onOpen, isOwner = false, onUpdated }: { p: DBProperty; brokerName: string; whatsapp: string; onOpen: (p: DBProperty) => void; isOwner?: boolean; onUpdated?: (id: string, patch: Partial<DBProperty>) => void }) {
-  const navigate = useNavigate();
+function PropertyCard({ p, brokerName, whatsapp, onOpen, isOwner = false, onUpdated, onEdit, onDelete }: { p: DBProperty; brokerName: string; whatsapp: string; onOpen: (p: DBProperty) => void; isOwner?: boolean; onUpdated?: (id: string, patch: Partial<DBProperty>) => void; onEdit?: (p: DBProperty) => void; onDelete?: (p: DBProperty) => void }) {
   const [saving, setSaving] = useState(false);
   const isSold = p.status === "Vendido";
-  const img = p.imagens?.[0] || "/placeholder.svg";
+  const img = (p.imagens || []).find((u) => !!u && u.trim() !== "") || "/placeholder.svg";
   const msg = encodeURIComponent(`Olá ${brokerName}! Tenho interesse no imóvel: ${p.titulo} - ${formatCurrency(p.preco)}`);
 
   const patchImovel = async (e: React.MouseEvent, patch: Partial<DBProperty>, successMsg: string) => {
@@ -123,6 +134,7 @@ function PropertyCard({ p, brokerName, whatsapp, onOpen, isOwner = false, onUpda
     toast.success(successMsg);
     onUpdated?.(p.id, patch);
   };
+
 
 
   const handleExclusividade = (e: React.MouseEvent) => {
@@ -243,11 +255,11 @@ function PropertyCard({ p, brokerName, whatsapp, onOpen, isOwner = false, onUpda
           </button>
         </div>
         {isOwner && (
-          <div className="grid grid-cols-3 gap-2 rounded-2xl border border-dashed border-accent/50 bg-accent/5 p-2">
+          <div className="grid grid-cols-2 gap-2 rounded-2xl border border-dashed border-accent/50 bg-accent/5 p-2">
             <button
               type="button"
               disabled={saving}
-              onClick={(e) => { e.stopPropagation(); navigate(`/editar-imovel/${p.id}`); }}
+              onClick={(e) => { e.stopPropagation(); onEdit?.(p); }}
               className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-primary px-2 py-2 text-[11px] font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
             >
               <Pencil className="h-3.5 w-3.5" /> Editar
@@ -269,6 +281,14 @@ function PropertyCard({ p, brokerName, whatsapp, onOpen, isOwner = false, onUpda
               className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-muted px-2 py-2 text-[11px] font-bold text-foreground transition-colors hover:bg-muted/70 disabled:opacity-50"
             >
               {p.ativo_site ? <><EyeOff className="h-3.5 w-3.5" /> Ocultar</> : <><Eye className="h-3.5 w-3.5" /> Ativar</>}
+            </button>
+            <button
+              type="button"
+              disabled={saving}
+              onClick={(e) => { e.stopPropagation(); onDelete?.(p); }}
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-destructive/10 px-2 py-2 text-[11px] font-bold text-destructive transition-colors hover:bg-destructive/20 disabled:opacity-50"
+            >
+              <Trash2 className="h-3.5 w-3.5" /> Excluir
             </button>
           </div>
         )}
@@ -308,11 +328,21 @@ export default function BrokerSite() {
   const [selectedProperty, setSelectedProperty] = useState<any>(null);
   useEffect(() => { trackPropertyView(selectedProperty?.id); }, [selectedProperty?.id]);
   const [profileAvatar, setProfileAvatar] = useState<string | null>(null);
-  const [quickOpen, setQuickOpen] = useState(false);
-
+  const [formOpen, setFormOpen] = useState(false);
+  const [editing, setEditing] = useState<any | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<DBProperty | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setCurrentUserId(data.user?.id || null));
+    supabase.auth.getUser().then(async ({ data }) => {
+      const uid = data.user?.id || null;
+      setCurrentUserId(uid);
+      if (!uid) { setIsSuperAdmin(false); return; }
+      const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", uid);
+      setIsSuperAdmin(((roles as any[]) || []).some((r) => r.role === "super_admin"));
+    });
   }, []);
 
   useEffect(() => {
@@ -328,7 +358,7 @@ export default function BrokerSite() {
     const load = async () => {
       if (!slug) { setLoading(false); return; }
 
-      setLoading(true);
+      if (reloadKey === 0) setLoading(true);
 
       const { data: { session } } = await supabase.auth.getSession();
       const uid = session?.user?.id || null;
@@ -376,7 +406,9 @@ export default function BrokerSite() {
     };
 
     load();
-  }, [slug]);
+  }, [slug, reloadKey]);
+
+  const reloadProperties = () => setReloadKey((k) => k + 1);
 
   const filteredProperties = useMemo(() => {
     const term = searchTerm.toLowerCase();
@@ -470,7 +502,41 @@ export default function BrokerSite() {
     );
   }
 
-  const isOwner = !!currentUserId && !!brokerId && currentUserId === brokerId;
+  const isOwner = !!currentUserId && ((!!brokerId && currentUserId === brokerId) || isSuperAdmin);
+  const manageOwnerId = brokerId || currentUserId || "";
+
+  const openNewProperty = () => { setEditing(null); setFormOpen(true); };
+
+  const openEditProperty = async (p: DBProperty) => {
+    const { data, error } = await supabase.from("imoveis").select("*").eq("id", p.id).maybeSingle();
+    if (error || !data) {
+      toast.error("Não foi possível carregar os dados do imóvel." + (error ? ` (${error.message})` : ""));
+      return;
+    }
+    setEditing(data);
+    setFormOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    const { error } = await supabase.from("imoveis").delete().eq("id", deleteTarget.id);
+    setDeleting(false);
+    if (error) {
+      const msg = error.message || "";
+      if (/foreign key|violates/i.test(msg)) {
+        toast.error("Este imóvel possui registros vinculados e não pode ser excluído.");
+      } else if (/row-level security|permission/i.test(msg)) {
+        toast.error("Você não tem permissão para excluir este imóvel.");
+      } else {
+        toast.error("Erro ao excluir imóvel: " + msg);
+      }
+      return;
+    }
+    toast.success("Imóvel excluído com sucesso");
+    setDeleteTarget(null);
+    reloadProperties();
+  };
 
   const handlePropertyUpdated = (id: string, patch: Partial<DBProperty>) => {
     const apply = (list: DBProperty[]) => list.map((p) => (p.id === id ? { ...p, ...patch } : p));
@@ -673,10 +739,10 @@ export default function BrokerSite() {
                   </button>
                   {isOwner && (
                     <button
-                      onClick={() => setQuickOpen(true)}
+                      onClick={openNewProperty}
                       className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-indigo-600 px-5 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-105"
                     >
-                      <Zap className="h-4 w-4" /> Cadastro rápido de imóvel
+                      <Plus className="h-4 w-4" /> Adicionar imóvel
                     </button>
                   )}
                 </div>
@@ -811,7 +877,7 @@ export default function BrokerSite() {
               <p className="text-muted-foreground">Os imóveis mais estratégicos publicados por {brokerName}.</p>
             </div>
             <div className="grid gap-6 lg:grid-cols-3">
-              {featuredProperties.map((property) => <PropertyCard key={property.id} p={property} brokerName={brokerName} whatsapp={whatsapp} onOpen={setSelectedProperty} isOwner={isOwner} onUpdated={handlePropertyUpdated} />)}
+              {featuredProperties.map((property) => <PropertyCard key={property.id} p={property} brokerName={brokerName} whatsapp={whatsapp} onOpen={setSelectedProperty} isOwner={isOwner} onUpdated={handlePropertyUpdated} onEdit={openEditProperty} onDelete={setDeleteTarget} />)}
             </div>
           </section>
         )}
@@ -820,6 +886,20 @@ export default function BrokerSite() {
           <div className="space-y-2">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">Portfólio atual</p>
             <h2 className="text-3xl font-black text-foreground">Imóveis em carteira</h2>
+            {isOwner && (
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-dashed border-accent/50 bg-accent/5 p-4">
+                <div>
+                  <p className="text-sm font-bold text-foreground">Gerenciar imóveis</p>
+                  <p className="text-xs text-muted-foreground">Você é o dono deste perfil: cadastre, edite ou exclua imóveis do seu portfólio.</p>
+                </div>
+                <button
+                  onClick={openNewProperty}
+                  className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"
+                >
+                  <Plus className="h-4 w-4" /> Adicionar imóvel
+                </button>
+              </div>
+            )}
             <p className="text-muted-foreground">
               {filteredProperties.length} resultado{filteredProperties.length === 1 ? "" : "s"} encontrado{filteredProperties.length === 1 ? "" : "s"} para este corretor.
             </p>
@@ -838,7 +918,7 @@ export default function BrokerSite() {
                   </div>
                 </div>
                 <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                  {items.map((property) => <PropertyCard key={property.id} p={property} brokerName={brokerName} whatsapp={whatsapp} onOpen={setSelectedProperty} isOwner={isOwner} onUpdated={handlePropertyUpdated} />)}
+                  {items.map((property) => <PropertyCard key={property.id} p={property} brokerName={brokerName} whatsapp={whatsapp} onOpen={setSelectedProperty} isOwner={isOwner} onUpdated={handlePropertyUpdated} onEdit={openEditProperty} onDelete={setDeleteTarget} />)}
                 </div>
               </section>
             ))
@@ -911,20 +991,37 @@ export default function BrokerSite() {
           </DialogContent>
         </Dialog>
 
-        <Dialog open={quickOpen} onOpenChange={setQuickOpen}>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-xl font-black">
-                <Zap className="h-5 w-5 text-accent" /> Cadastro rápido de imóvel
-              </DialogTitle>
-            </DialogHeader>
-            <QuickImovelForm
-              onSaved={() => { setQuickOpen(false); window.location.reload(); }}
-              onCancel={() => setQuickOpen(false)}
-              cancelLabel="Fechar"
-            />
-          </DialogContent>
-        </Dialog>
+        {isOwner && (
+          <BrokerImovelDialog
+            open={formOpen}
+            onOpenChange={(v) => { setFormOpen(v); if (!v) setEditing(null); }}
+            imovel={editing}
+            ownerId={manageOwnerId}
+            ownerName={brokerName}
+            onSaved={reloadProperties}
+          />
+        )}
+
+        <AlertDialog open={!!deleteTarget} onOpenChange={(v) => { if (!v && !deleting) setDeleteTarget(null); }}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Excluir imóvel</AlertDialogTitle>
+              <AlertDialogDescription>
+                Tem certeza que deseja excluir <strong>{deleteTarget?.titulo}</strong>? Esta ação não pode ser desfeita.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={(e) => { e.preventDefault(); confirmDelete(); }}
+                disabled={deleting}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {deleting ? "Excluindo..." : "Excluir"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
 
 
