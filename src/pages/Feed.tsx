@@ -403,6 +403,65 @@ export default function Feed() {
           </div>
         </div>
       )}
+
+      {/* Mini perfil do corretor */}
+      {profileFor && (() => {
+        const b = brokerOf(profileFor);
+        return (
+          <div
+            className="fixed inset-0 z-50 bg-black/70 flex items-end sm:items-center justify-center p-0 sm:p-4"
+            onClick={() => setProfileFor(null)}
+          >
+            <div
+              className="w-full sm:max-w-sm bg-card text-foreground rounded-t-2xl sm:rounded-2xl p-5 space-y-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-start gap-3">
+                <img
+                  src={b.avatar || avatarFallback(b.nome)}
+                  alt={b.nome}
+                  className="w-16 h-16 rounded-full object-cover ring-2 ring-border"
+                />
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-base font-bold truncate">{b.nome}</h3>
+                  {b.imobiliaria && (
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Building2 className="w-3.5 h-3.5" /> {b.imobiliaria}
+                    </p>
+                  )}
+                  {b.creci && <p className="text-xs text-muted-foreground">CRECI {b.creci}</p>}
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {profileCount === null ? "Contando imóveis..." : `${profileCount} imóvel(is) ativo(s)`}
+                  </p>
+                </div>
+                <button onClick={() => setProfileFor(null)} aria-label="Fechar" className="p-1">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => navigate(`/corretor/${toSlug(b.nome)}`)}
+                  className="h-11 rounded-xl border border-border font-semibold text-sm"
+                >
+                  Ver imóveis
+                </button>
+                <button
+                  onClick={() => {
+                    const imovel = profileFor;
+                    setProfileFor(null);
+                    openContact(imovel);
+                  }}
+                  className="h-11 rounded-xl bg-emerald-500 text-white font-semibold text-sm flex items-center justify-center gap-2"
+                >
+                  <MessageCircle className="w-4 h-4" /> WhatsApp
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
+
   );
 }
