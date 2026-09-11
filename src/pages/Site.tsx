@@ -58,6 +58,7 @@ import { trackPropertyView } from "@/lib/trackPropertyView";
 import logoImg from "@/assets/logo.png";
 import { RoutePlanner } from "@/components/RoutePlanner";
 import { SharkAI } from "@/components/SharkAI";
+import sharkFriendlyIcon from "@/assets/shark-friendly.png";
 import { useAuth } from "@/hooks/useAuth";
 import { useGoogleMapsLoader } from "@/hooks/useGoogleMapsLoader";
 import { PartnersCarouselHome } from "@/components/PartnersCarouselHome";
@@ -1043,7 +1044,14 @@ export default function Site() {
             <Link to="/mapas-condominio" className="hover:text-primary transition-colors">Mapa Condomínio</Link>
             <Link to="/galeria-cidade" className="hover:text-primary transition-colors">Fotos da Cidade</Link>
             <Link to="/planos" className="hover:text-primary transition-colors">Planos</Link>
-            <a href="#contato" className="hover:text-primary transition-colors">Contato</a>
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new CustomEvent("mv:open-shark-ai"))}
+              className="flex items-center gap-1.5 hover:text-primary transition-colors"
+            >
+              <img src={sharkFriendlyIcon} alt="" className="w-5 h-5 object-contain" />
+              IA
+            </button>
           </nav>
 
           {/* Right side */}
