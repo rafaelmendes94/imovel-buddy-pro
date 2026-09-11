@@ -40,6 +40,7 @@ import { BrokerRatings } from "@/components/BrokerRatings";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PropertyDetailModal } from "@/components/PropertyDetailModal";
 import { QuickImovelForm } from "@/components/QuickImovelForm";
+import { PublicMobileNav } from "@/components/PublicMobileNav";
 import { toast } from "sonner";
 import { generateBrokerCatalogPdf } from "@/utils/generateBrokerCatalogPdf";
 
@@ -563,7 +564,7 @@ export default function BrokerSite() {
         </div>
       </header>
 
-      <main>
+      <main className="pb-[76px] md:pb-0">
         <section className="relative overflow-hidden border-b border-border">
           {coverUrl ? (
             <img src={coverUrl} alt={`Capa de ${brokerName}`} className="absolute inset-0 h-full w-full object-cover" />
@@ -985,6 +986,8 @@ export default function BrokerSite() {
           </div>
         </div>
       </footer>
+
+      <PublicMobileNav />
     </div>
   );
 }

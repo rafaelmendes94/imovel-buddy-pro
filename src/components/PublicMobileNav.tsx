@@ -13,6 +13,9 @@ export const MV_MOBILE_NAV_INTENT = "mv_mobile_nav_intent";
 export function PublicMobileNav() {
   const location = useLocation();
 
+  const brokerSlugMatch = location.pathname.match(/^\/corretor\/([^/]+)/);
+  const brokerPath = brokerSlugMatch ? `/corretor/${brokerSlugMatch[1]}` : "/parceiros";
+
   const left: Item[] = [
     { label: "Início", icon: Home, path: "/" },
     { label: "Imóveis", icon: Building2, path: "/todos-imoveis" },
@@ -22,7 +25,7 @@ export function PublicMobileNav() {
 
   const right: Item[] = [
     { label: "Mapa", icon: Map, path: "/mapa" },
-    { label: "Meus Imóveis", icon: LayoutGrid, path: "/imoveis" },
+    { label: "Meus Imóveis", icon: LayoutGrid, path: brokerPath },
   ];
 
   const isActive = (item: Item) => {
