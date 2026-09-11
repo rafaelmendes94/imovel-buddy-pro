@@ -40,6 +40,7 @@ interface FeedImovel {
   empreendimento: string | null;
   condicao: string | null;
   imagens: string[] | null;
+  link_video: string | null;
   corretor_nome: string | null;
   corretor_id: string | null;
   corretor_cadastro_id: string | null;
@@ -94,7 +95,7 @@ export default function Feed() {
         supabase
           .from("imoveis")
           .select(
-            "id, titulo, tipo, preco, quartos, suites, box, vagas, area, cidade, bairro, empreendimento, condicao, imagens, corretor_nome, corretor_id, corretor_cadastro_id, imobiliaria_nome"
+            "id, titulo, tipo, preco, quartos, suites, box, vagas, area, cidade, bairro, empreendimento, condicao, imagens, link_video, corretor_nome, corretor_id, corretor_cadastro_id, imobiliaria_nome"
           )
           .eq("ativo_site", true)
           .eq("status", "Disponível")
