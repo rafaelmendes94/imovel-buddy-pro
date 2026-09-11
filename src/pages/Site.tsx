@@ -25,7 +25,6 @@ import {
   Fence,
   Home,
   TreePine,
-  ArrowUp,
   Filter,
   X,
   Waves,
@@ -751,7 +750,7 @@ export default function Site() {
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<Category>("todos");
   const [searchTerm, setSearchTerm] = useState("");
-  const [showScrollTop, setShowScrollTop] = useState(false);
+  
   const [showFilters, setShowFilters] = useState(false);
   const [filterCity, setFilterCity] = useState(initialCidade);
   const [filterBedrooms, setFilterBedrooms] = useState("");
@@ -927,14 +926,6 @@ export default function Site() {
 
   // Continuous scroll uses CSS animation, no JS timer needed
   const maxIndex = Math.max(0, soldProperties.length - 4);
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    setShowScrollTop(e.currentTarget.scrollTop > 400);
-  };
-
-  const scrollToTop = () => {
-    document.getElementById("site-top")?.scrollIntoView({ behavior: "smooth" });
-  };
-
   const clearFilters = () => {
     setFilterCity("");
     setFilterBedrooms("");
@@ -988,7 +979,7 @@ export default function Site() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans pb-[74px] md:pb-0" onScroll={handleScroll}>
+    <div className="min-h-screen bg-gray-50 font-sans pb-[74px] md:pb-0">
       <PublicMobileNav />
       <div id="site-top" />
 
@@ -1760,16 +1751,6 @@ export default function Site() {
         </div>
       </footer>
 
-      {/* Scroll to top */}
-      <button
-        onClick={scrollToTop}
-        className={cn(
-          "fixed bottom-6 right-6 w-12 h-12 rounded-full bg-blue-500 text-white shadow-lg flex items-center justify-center hover:bg-blue-600 transition-all z-50",
-          "opacity-100 scale-100"
-        )}
-      >
-        <ArrowUp className="w-5 h-5" />
-      </button>
       <RoutePlanner properties={routeProperties as any} />
       <SharkAI properties={siteProperties as any} onSelectProperty={setSelectedProperty as any} />
       <PropertyDetailModal
