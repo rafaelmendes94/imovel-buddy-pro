@@ -741,15 +741,20 @@ export type Database = {
       edificios: {
         Row: {
           andares: number | null
+          andares_garagem: number | null
           ano_construcao: string | null
+          apartamentos_por_andar: number | null
           bairro: string | null
           cep: string | null
           cidade: string | null
           complemento: string | null
           construtora: string | null
           created_at: string | null
+          elevador: string | null
+          elevador_servico: string | null
           endereco: string | null
           estado: string | null
+          fontes_informacoes: string[] | null
           fotos_empreendimento: string[] | null
           fotos_infra: string[] | null
           id: string
@@ -758,25 +763,34 @@ export type Database = {
           latitude: number | null
           longitude: number | null
           material_digital: string[] | null
+          nivel_confirmacao: string | null
           nome: string
           numero: string | null
+          observacoes_pesquisa: string | null
+          qtd_elevadores: number | null
           status: string | null
           total_unidades: number | null
           unidades_por_andar: number | null
           user_id: string
           videos: string[] | null
+          zelador_portaria: string | null
         }
         Insert: {
           andares?: number | null
+          andares_garagem?: number | null
           ano_construcao?: string | null
+          apartamentos_por_andar?: number | null
           bairro?: string | null
           cep?: string | null
           cidade?: string | null
           complemento?: string | null
           construtora?: string | null
           created_at?: string | null
+          elevador?: string | null
+          elevador_servico?: string | null
           endereco?: string | null
           estado?: string | null
+          fontes_informacoes?: string[] | null
           fotos_empreendimento?: string[] | null
           fotos_infra?: string[] | null
           id?: string
@@ -785,25 +799,34 @@ export type Database = {
           latitude?: number | null
           longitude?: number | null
           material_digital?: string[] | null
+          nivel_confirmacao?: string | null
           nome: string
           numero?: string | null
+          observacoes_pesquisa?: string | null
+          qtd_elevadores?: number | null
           status?: string | null
           total_unidades?: number | null
           unidades_por_andar?: number | null
           user_id: string
           videos?: string[] | null
+          zelador_portaria?: string | null
         }
         Update: {
           andares?: number | null
+          andares_garagem?: number | null
           ano_construcao?: string | null
+          apartamentos_por_andar?: number | null
           bairro?: string | null
           cep?: string | null
           cidade?: string | null
           complemento?: string | null
           construtora?: string | null
           created_at?: string | null
+          elevador?: string | null
+          elevador_servico?: string | null
           endereco?: string | null
           estado?: string | null
+          fontes_informacoes?: string[] | null
           fotos_empreendimento?: string[] | null
           fotos_infra?: string[] | null
           id?: string
@@ -812,13 +835,17 @@ export type Database = {
           latitude?: number | null
           longitude?: number | null
           material_digital?: string[] | null
+          nivel_confirmacao?: string | null
           nome?: string
           numero?: string | null
+          observacoes_pesquisa?: string | null
+          qtd_elevadores?: number | null
           status?: string | null
           total_unidades?: number | null
           unidades_por_andar?: number | null
           user_id?: string
           videos?: string[] | null
+          zelador_portaria?: string | null
         }
         Relationships: []
       }
