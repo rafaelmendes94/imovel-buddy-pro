@@ -3,10 +3,9 @@ import { PLACEHOLDER_IMAGE } from "@/lib/placeholderImage";
 import { getPropertyUnitParts } from "@/lib/propertyIdentity";
 import { PUBLIC_IMOVEL_COLUMNS } from "@/lib/publicImovelColumns";
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { formatCurrency } from "@/data/mockData";
 import { supabase } from "@/integrations/supabase/client";
-import { PropertyDetailModal } from "@/components/PropertyDetailModal";
 import {
   Search, MapPin, BedDouble, Bath, Car, Ruler, Phone, Mail,
   ChevronLeft, ChevronRight, Star, Building2, Home, X,
@@ -15,7 +14,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toSlug } from "@/lib/utils";
-import { trackPropertyView } from "@/lib/trackPropertyView";
 
 interface SiteProperty {
   id: string;
@@ -245,6 +243,7 @@ function PropertyCard({ property, onSelect, isFavorited, onToggleFavorite, isInR
 
 
 export default function AllProperties() {
+  const navigate = useNavigate();
   const [allProperties, setAllProperties] = useState<SiteProperty[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -258,8 +257,6 @@ export default function AllProperties() {
   const [filterEmpreendimento, setFilterEmpreendimento] = useState("");
   const [filterBroker, setFilterBroker] = useState("");
   const [priceSort, setPriceSort] = useState<"" | "asc" | "desc">("");
-  const [selectedProperty, setSelectedProperty] = useState<SiteProperty | null>(null);
-  useEffect(() => { trackPropertyView(selectedProperty?.id); }, [selectedProperty?.id]);
   const sharedIds = (() => {
     const v = new URLSearchParams(window.location.search).get("ids");
     return v ? v.split(",").filter(Boolean) : null;
@@ -578,7 +575,7 @@ export default function AllProperties() {
           </div>
         ) : filtered.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {filtered.map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} />)}
+            {filtered.map((p) => <PropertyCard key={p.id} property={p} onSelect={(property) => navigate(`/imovel/${property.id}`)} />)}
           </div>
         ) : (
           <div className="text-center py-20">
@@ -636,13 +633,6 @@ export default function AllProperties() {
       </footer>
 
 
-      <PropertyDetailModal
-        property={selectedProperty as any}
-        onClose={() => setSelectedProperty(null)}
-        allProperties={allProperties as any}
-        brokerInfo={Object.fromEntries(allProperties.map((p) => [p.broker, { photo: p.brokerPhoto || FALLBACK_AVATAR, whatsapp: p.brokerWhatsapp || "" }]))}
-        onSelectSimilar={(p: any) => setSelectedProperty(p)}
-      />
     </div>
   );
 }

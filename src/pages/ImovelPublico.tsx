@@ -13,9 +13,14 @@ import { cn } from "@/lib/utils";
 import { trackPropertyView } from "@/lib/trackPropertyView";
 import { PUBLIC_IMOVEL_COLUMNS } from "@/lib/publicImovelColumns";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
+import { buildWhatsappMessage, toWhatsappNumber } from "@/lib/propertyEvents";
 
 interface ImovelRow {
   id: string;
+  user_id: string;
+  corretor_id: string | null;
+  corretor_cadastro_id: string | null;
   titulo: string;
   endereco: string;
   numero: string | null;
@@ -63,9 +68,27 @@ interface ImovelRow {
   imobiliaria_nome: string | null;
   latitude: number | null;
   longitude: number | null;
-  edificios?: { nome: string | null } | null;
-  condominios?: { nome: string | null; mapa_pdf_url: string | null; implantacao_url: string | null } | null;
-  empreendimentos?: { nome: string | null } | null;
+  edificios?: LinkedDevelopment | null;
+  condominios?: (LinkedDevelopment & { mapa_pdf_url: string | null; implantacao_url: string | null }) | null;
+  empreendimentos?: LinkedDevelopment | null;
+}
+
+interface LinkedDevelopment {
+  nome: string | null;
+  endereco: string | null;
+  numero: string | null;
+  complemento: string | null;
+  bairro: string | null;
+  cidade: string | null;
+  estado: string | null;
+  cep: string | null;
+  latitude: number | null;
+  longitude: number | null;
+}
+
+interface PublicBrokerProfile {
+  full_name: string | null;
+  phone: string | null;
 }
 
 const fmt = (v: number) =>
@@ -78,34 +101,38 @@ function youtubeEmbed(url: string) {
 
 export default function ImovelPublico() {
   const { id } = useParams<{ id: string }>();
+  const { user, loading: authLoading, isSuperAdmin, isAdminStaff } = useAuth();
   const [imovel, setImovel] = useState<ImovelRow | null>(null);
+  const [brokerProfile, setBrokerProfile] = useState<PublicBrokerProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [idx, setIdx] = useState(0);
   const [lightbox, setLightbox] = useState<number | null>(null);
-  const [canEdit, setCanEdit] = useState(false);
   const thumbsRef = useRef<HTMLDivElement>(null);
   const touchX = useRef<number | null>(null);
 
-
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setCanEdit(!!data.session));
-  }, []);
-
-  useEffect(() => {
-    if (!id) return;
+    if (!id || authLoading) return;
     (async () => {
       setLoading(true);
-      const { data, error } = await supabase
+      setNotFound(false);
+      let query = supabase
         .from("imoveis")
-        .select(`${PUBLIC_IMOVEL_COLUMNS}, edificios(nome), condominios(nome, mapa_pdf_url, implantacao_url), empreendimentos(nome)`)
-        .eq("id", id)
-        .eq("ativo_site", true)
-        .maybeSingle();
+        .select(`${PUBLIC_IMOVEL_COLUMNS}, edificios(nome, endereco, numero, complemento, bairro, cidade, estado, cep, latitude, longitude), condominios(nome, endereco, numero, complemento, bairro, cidade, estado, cep, latitude, longitude, mapa_pdf_url, implantacao_url), empreendimentos(nome, endereco, numero, complemento, bairro, cidade, estado, cep, latitude, longitude)`)
+        .eq("id", id);
+      if (!user) query = query.eq("ativo_site", true);
+      const { data, error } = await query.maybeSingle();
       if (error || !data) {
         setNotFound(true);
       } else {
         const row = data as unknown as ImovelRow;
+        const mayViewHidden = !!user?.id && (row.user_id === user.id || isSuperAdmin || isAdminStaff);
+        if (!row.ativo_site && !mayViewHidden) {
+          setNotFound(true);
+          setLoading(false);
+          return;
+        }
+        const linked = row.edificios || row.condominios || row.empreendimentos;
         setImovel({
           ...row,
           empreendimento:
@@ -114,12 +141,28 @@ export default function ImovelPublico() {
             row.condominios?.nome?.trim() ||
             row.empreendimentos?.nome?.trim() ||
             null,
+          endereco: row.endereco?.trim() || linked?.endereco?.trim() || "",
+          numero: row.numero?.trim() || linked?.numero?.trim() || null,
+          complemento: row.complemento?.trim() || linked?.complemento?.trim() || null,
+          bairro: row.bairro?.trim() || linked?.bairro?.trim() || null,
+          cidade: row.cidade?.trim() || linked?.cidade?.trim() || "",
+          estado: row.estado?.trim() || linked?.estado?.trim() || null,
+          cep: row.cep?.trim() || linked?.cep?.trim() || null,
+          latitude: row.latitude ?? linked?.latitude ?? null,
+          longitude: row.longitude ?? linked?.longitude ?? null,
         });
+        const contactUserId = row.corretor_id || row.user_id;
+        const { data: profileData } = await supabase
+          .from("public_broker_profiles")
+          .select("full_name, phone")
+          .eq("user_id", contactUserId)
+          .maybeSingle();
+        setBrokerProfile((profileData as PublicBrokerProfile | null) || null);
         trackPropertyView(id);
       }
       setLoading(false);
     })();
-  }, [id]);
+  }, [id, user, authLoading, isSuperAdmin, isAdminStaff]);
 
   useEffect(() => {
     if (!imovel) return;
@@ -143,6 +186,7 @@ export default function ImovelPublico() {
   const yt = imovel?.link_video ? youtubeEmbed(imovel.link_video) : null;
   const isMp4 = !!imovel?.link_video && !yt && /\.(mp4|webm|mov)(\?|$)/i.test(imovel.link_video);
   const hasVideo = !!imovel?.link_video;
+  const canEdit = !!imovel && !!user?.id && (user.id === imovel.user_id || isSuperAdmin || isAdminStaff);
 
   const fullAddress = imovel
     ? [
@@ -186,6 +230,20 @@ export default function ImovelPublico() {
     }
     await navigator.clipboard.writeText(url);
     toast.success("Link copiado!");
+  };
+
+  const openBrokerWhatsapp = (visit = false) => {
+    if (!imovel) return;
+    const number = toWhatsappNumber(brokerProfile?.phone);
+    if (!number) {
+      toast.info("O corretor responsável ainda não informou um WhatsApp.");
+      return;
+    }
+    const message = visit
+      ? `Olá! Gostaria de agendar uma visita ao imóvel: ${imovel.titulo}\n\n${window.location.href}`
+      : buildWhatsappMessage({ id: imovel.id, titulo: imovel.titulo, tipo: imovel.tipo, preco: Number(imovel.preco) });
+    const target = `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
+    window.open(target, "_blank", "noopener,noreferrer");
   };
 
   const handleDownloadFotos = async () => {
@@ -272,9 +330,6 @@ export default function ImovelPublico() {
     );
   }
 
-  const whatsappMsg = encodeURIComponent(`Olá! Tenho interesse no imóvel: ${imovel.titulo} - ${fmt(Number(imovel.preco))} (${window.location.href})`);
-  const visitaMsg = encodeURIComponent(`Olá! Gostaria de agendar uma visita ao imóvel: ${imovel.titulo}`);
-
   const stats = [
     { icon: BedDouble, value: imovel.suites ?? imovel.quartos, label: "Suítes" },
     { icon: Bath, value: imovel.banheiros, label: "Banheiros" },
@@ -316,16 +371,16 @@ export default function ImovelPublico() {
       {/* ===== Barra superior ===== */}
       <header className="bg-card border-b border-border sticky top-0 z-30">
         <div className="max-w-6xl mx-auto px-3 sm:px-6 py-3 flex items-center justify-between gap-2">
-          <Link to="/imoveis" onClick={(e) => { if (window.history.length > 1) { e.preventDefault(); window.history.back(); } }} className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-foreground hover:text-primary transition-colors min-w-0">
+          <Link to="/todos-imoveis" onClick={(e) => { if (window.history.length > 1) { e.preventDefault(); window.history.back(); } }} className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-foreground hover:text-primary transition-colors min-w-0">
             <ArrowLeft className="w-4 h-4 flex-shrink-0" /> <span className="truncate">Voltar para Imóveis</span>
           </Link>
           <div className="flex items-center gap-2 flex-shrink-0">
             <button onClick={handleShare} className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg border border-border text-xs sm:text-sm font-semibold text-foreground hover:bg-muted">
               <Share2 className="w-4 h-4" /> <span className="hidden sm:inline">Compartilhar</span>
             </button>
-            <a href={`https://wa.me/?text=${whatsappMsg}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg border border-border text-xs sm:text-sm font-semibold text-foreground hover:bg-muted">
+            <button type="button" onClick={() => openBrokerWhatsapp()} className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg border border-border text-xs sm:text-sm font-semibold text-foreground hover:bg-muted">
               <MessageCircle className="w-4 h-4" /> <span className="hidden sm:inline">WhatsApp</span>
-            </a>
+            </button>
             {canEdit && (
               <Link to={`/editar-imovel/${imovel.id}`} className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs sm:text-sm font-semibold hover:bg-primary/90">
                 <Pencil className="w-4 h-4" /> <span className="hidden sm:inline">Editar imóvel</span>
@@ -444,7 +499,7 @@ export default function ImovelPublico() {
           <nav className="text-[11px] sm:text-xs text-muted-foreground flex items-center gap-1.5 flex-wrap">
             <Link to="/" className="hover:text-primary">Início</Link>
             <span>›</span>
-            <Link to="/imoveis" className="hover:text-primary">Imóveis</Link>
+            <Link to="/todos-imoveis" className="hover:text-primary">Imóveis</Link>
             <span>›</span>
             <span>{imovel.tipo}</span>
             {imovel.empreendimento && (<><span>›</span><span className="text-foreground font-medium">{imovel.empreendimento}</span></>)}
@@ -490,17 +545,17 @@ export default function ImovelPublico() {
 
           {/* CTAs */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 mt-5">
-            <a href={`https://wa.me/?text=${whatsappMsg}`} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-colors">
+            <button type="button" onClick={() => openBrokerWhatsapp()} className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-colors">
               <MessageCircle className="w-4 h-4" /> Falar com Corretor
-            </a>
-            <a href={`https://wa.me/?text=${visitaMsg}`} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-primary text-primary text-sm font-bold hover:bg-primary/5 transition-colors">
+            </button>
+            <button type="button" onClick={() => openBrokerWhatsapp(true)} className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-primary text-primary text-sm font-bold hover:bg-primary/5 transition-colors">
               <CalendarDays className="w-4 h-4" /> Agendar Visita
-            </a>
+            </button>
           </div>
 
           {(imovel.corretor_nome || imovel.imobiliaria_nome) && (
             <p className="text-xs text-muted-foreground mt-4 pt-4 border-t border-border">
-              Anunciado por <strong className="text-foreground">{imovel.corretor_nome || imovel.imobiliaria_nome}</strong>
+              Anunciado por <strong className="text-foreground">{brokerProfile?.full_name || imovel.corretor_nome || imovel.imobiliaria_nome}</strong>
             </p>
           )}
         </div>
@@ -696,12 +751,12 @@ export default function ImovelPublico() {
               <p className="text-[10px] text-muted-foreground leading-tight">a partir de {fmt(Number(imovel.preco_parcelado))}/mês</p>
             ) : null}
           </div>
-          <a href={`https://wa.me/?text=${whatsappMsg}`} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold">
+          <button type="button" onClick={() => openBrokerWhatsapp()} className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold">
             <MessageCircle className="w-4 h-4" /> Falar com Corretor
-          </a>
-          <a href={`https://wa.me/?text=${visitaMsg}`} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border border-primary text-primary text-xs font-bold">
+          </button>
+          <button type="button" onClick={() => openBrokerWhatsapp(true)} className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border border-primary text-primary text-xs font-bold">
             <CalendarDays className="w-4 h-4" /> Visita
-          </a>
+          </button>
         </div>
       </div>
 
