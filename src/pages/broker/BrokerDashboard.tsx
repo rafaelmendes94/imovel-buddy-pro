@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { BrokerLayout } from "@/components/BrokerLayout";
 import { BackButton } from "@/components/BackButton";
 import { MetricCard } from "@/components/MetricCard";
+import { EngagementPanel } from "@/components/EngagementPanel";
 import { PartnersAdSlider } from "@/components/PartnersAdSlider";
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect, useMemo, useState } from "react";
