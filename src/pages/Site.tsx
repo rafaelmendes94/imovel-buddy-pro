@@ -927,14 +927,6 @@ export default function Site() {
 
   // Continuous scroll uses CSS animation, no JS timer needed
   const maxIndex = Math.max(0, soldProperties.length - 4);
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    setShowScrollTop(e.currentTarget.scrollTop > 400);
-  };
-
-  const scrollToTop = () => {
-    document.getElementById("site-top")?.scrollIntoView({ behavior: "smooth" });
-  };
-
   const clearFilters = () => {
     setFilterCity("");
     setFilterBedrooms("");
