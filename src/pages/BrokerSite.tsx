@@ -328,11 +328,21 @@ export default function BrokerSite() {
   const [selectedProperty, setSelectedProperty] = useState<any>(null);
   useEffect(() => { trackPropertyView(selectedProperty?.id); }, [selectedProperty?.id]);
   const [profileAvatar, setProfileAvatar] = useState<string | null>(null);
-  const [quickOpen, setQuickOpen] = useState(false);
-
+  const [formOpen, setFormOpen] = useState(false);
+  const [editing, setEditing] = useState<any | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<DBProperty | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setCurrentUserId(data.user?.id || null));
+    supabase.auth.getUser().then(async ({ data }) => {
+      const uid = data.user?.id || null;
+      setCurrentUserId(uid);
+      if (!uid) { setIsSuperAdmin(false); return; }
+      const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", uid);
+      setIsSuperAdmin(((roles as any[]) || []).some((r) => r.role === "super_admin"));
+    });
   }, []);
 
   useEffect(() => {
