@@ -1,956 +1,565 @@
-import React from "react";
+import { useMemo, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { AppLayout } from "@/components/AppLayout";
 import { BackButton } from "@/components/BackButton";
-import { useState, useEffect, useMemo } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { toast } from "@/hooks/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  DollarSign, Users, AlertTriangle, CheckCircle2, Plus, Search,
-  Ban, TrendingUp, Calendar, Phone, Mail, CreditCard, UserPlus, ChevronDown, ChevronRight, Trash2, MessageCircle
-} from "lucide-react";
-import { format, parseISO, isAfter, isBefore, startOfMonth, endOfMonth, addMonths, subMonths } from "date-fns";
-import { ptBR } from "date-fns/locale";
-
-interface Subscriber {
-  id: string;
-  name: string;
-  email: string | null;
-  phone: string | null;
-  creci: string | null;
-  plan: string;
-  status: string;
-  notes: string | null;
-  created_at: string;
-}
-
-interface Payment {
-  id: string;
-  subscriber_id: string;
-  amount: number;
-  due_date: string;
-  paid_at: string | null;
-  status: string;
-  reference_month: string;
-  created_at: string;
-}
-
-interface SubscriberBroker {
-  id: string;
-  subscriber_id: string;
-  name: string;
-  email: string | null;
-  phone: string | null;
-  creci: string | null;
-  status: string;
-  created_at: string;
-}
-
-const formatCurrency = (v: number) =>
-  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
-
-const MONTHS_PT = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
+  AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { toast } from "@/hooks/use-toast";
+import { FinMember, FinPayment, FinSubscriber, useFinanceData } from "@/hooks/useFinanceData";
+import { AlertKey, CardKey, FinanceCards } from "@/components/financeiro/FinanceCards";
+import { FinanceDashboard } from "@/components/financeiro/FinanceDashboard";
+import { PaymentHistory, QuickPayButton } from "@/components/financeiro/PaymentHistory";
+import { MembersPanel } from "@/components/financeiro/MembersPanel";
+import { SubscriberProfile } from "@/components/financeiro/SubscriberProfile";
+import { StatusBadge } from "@/components/financeiro/StatusBadge";
+import {
+  CancelDialog, ChargeDialog, ManualPaymentDialog, NoteDialog, SubscriberEditDialog,
+} from "@/components/financeiro/FinanceDialogs";
+import {
+  CYCLE_LABEL, buildChargeMessage, competenceLabel, daysToDue, formatCurrency, formatDate, isLate, isOpen,
+  isPaid, monthlyEquivalent, normalizeCycle, toDate, waLink,
+} from "@/lib/finance";
+import { isSameMonth } from "date-fns";
+import { Ban, ChevronDown, ChevronRight, MessageCircle, MoreHorizontal, Pencil, Plus, Search, Users } from "lucide-react";
 
 export default function Financeiro() {
   const { isSuperAdmin, hasModuleAccess, loading: authLoading } = useAuth();
   const canAccess = isSuperAdmin || hasModuleAccess("financeiro");
-  if (!authLoading && !canAccess) {
-    return <Navigate to="/dashboard" replace />;
-  }
-  const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
-  const [payments, setPayments] = useState<Payment[]>([]);
-  const [brokers, setBrokers] = useState<SubscriberBroker[]>([]);
-  const [loading, setLoading] = useState(true);
+
+  const fin = useFinanceData();
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
-  const [filterMonth, setFilterMonth] = useState("all");
-  const [showNewDialog, setShowNewDialog] = useState(false);
-  const [showBrokerDialog, setShowBrokerDialog] = useState<string | null>(null);
-  const [newSub, setNewSub] = useState({ name: "", email: "", phone: "", creci: "", plan: "monthly", notes: "" });
-  const [newBroker, setNewBroker] = useState({ name: "", email: "", phone: "", creci: "" });
-  const [expandedSub, setExpandedSub] = useState<string | null>(null);
-  const [showOverdueDialog, setShowOverdueDialog] = useState(false);
-  const [editingWhatsApp, setEditingWhatsApp] = useState<string | null>(null);
-  const [whatsAppInput, setWhatsAppInput] = useState("");
+  const [filterType, setFilterType] = useState("all");
+  const [filterPlan, setFilterPlan] = useState("all");
+  const [filterDue, setFilterDue] = useState("all");
+  const [activeCard, setActiveCard] = useState<CardKey | null>(null);
+  const [activeAlert, setActiveAlert] = useState<AlertKey | null>(null);
+  const [expanded, setExpanded] = useState<string | null>(null);
 
-  const fetchData = async () => {
-    setLoading(true);
-    const [subRes, payRes, brokerRes] = await Promise.all([
-      supabase.from("subscribers").select("*").order("name"),
-      supabase.from("payments").select("*").order("due_date", { ascending: false }),
-      supabase.from("subscriber_brokers").select("*").order("name"),
-    ]);
-    if (subRes.data) setSubscribers(subRes.data as Subscriber[]);
-    if (payRes.data) setPayments(payRes.data as Payment[]);
-    if (brokerRes.data) setBrokers(brokerRes.data as SubscriberBroker[]);
-    setLoading(false);
-  };
+  const [profileSub, setProfileSub] = useState<FinSubscriber | null>(null);
+  const [membersSub, setMembersSub] = useState<FinSubscriber | null>(null);
+  const [editSub, setEditSub] = useState<FinSubscriber | null>(null);
+  const [chargeSub, setChargeSub] = useState<FinSubscriber | null>(null);
+  const [cancelSub, setCancelSub] = useState<FinSubscriber | null>(null);
+  const [noteSub, setNoteSub] = useState<FinSubscriber | null>(null);
+  const [blockSub, setBlockSub] = useState<{ sub: FinSubscriber; block: boolean } | null>(null);
+  const [manualOpen, setManualOpen] = useState(false);
+  const [manualDefault, setManualDefault] = useState<string | undefined>();
+  const [unblockAsk, setUnblockAsk] = useState<FinSubscriber | null>(null);
 
-  useEffect(() => { fetchData(); }, []);
+  if (!authLoading && !canAccess) return <Navigate to="/dashboard" replace />;
 
-  // Auto-mark overdue payments
-  useEffect(() => {
-    const overdue = payments.filter(
-      (p) => p.status === "pending" && isBefore(parseISO(p.due_date), new Date())
-    );
-    if (overdue.length > 0) {
-      overdue.forEach(async (p) => {
-        await supabase.from("payments").update({ status: "overdue" }).eq("id", p.id);
-      });
-      const overdueBySubscriber: Record<string, number> = {};
-      payments.filter(p => p.status === "overdue" || (p.status === "pending" && isBefore(parseISO(p.due_date), new Date()))).forEach(p => {
-        overdueBySubscriber[p.subscriber_id] = (overdueBySubscriber[p.subscriber_id] || 0) + 1;
-      });
-      Object.entries(overdueBySubscriber).forEach(async ([subId, count]) => {
-        if (count >= 2) {
-          await supabase.from("subscribers").update({ status: "blocked" }).eq("id", subId);
-          // Cascade block all brokers of this subscriber
-          await supabase.from("subscriber_brokers").update({ status: "blocked" }).eq("subscriber_id", subId);
-        }
-      });
-      fetchData();
-    }
-  }, [payments.length]);
+  const paymentsOf = (id: string) => fin.payments.filter((p) => p.subscriber_id === id);
+  const membersOf = (id: string) => fin.members.filter((m) => m.subscriber_id === id);
+  const logsOf = (id: string) => fin.logs.filter((l) => l.subscriber_id === id);
 
-  const handleCreateSubscriber = async () => {
-    if (!newSub.name.trim()) {
-      toast({ title: "Nome é obrigatório", variant: "destructive" });
-      return;
-    }
-    const { data, error } = await supabase.from("subscribers").insert({
-      name: newSub.name,
-      email: newSub.email || null,
-      phone: newSub.phone || null,
-      creci: newSub.creci || null,
-      plan: newSub.plan,
-      notes: newSub.notes || null,
-    }).select().single();
+  const openPaymentOf = (id: string) =>
+    paymentsOf(id)
+      .filter(isOpen)
+      .sort((a, b) => (a.due_date > b.due_date ? 1 : -1))[0] || null;
 
-    if (error) {
-      toast({ title: "Erro ao cadastrar", description: error.message, variant: "destructive" });
-      return;
-    }
+  const lastPaidOf = (id: string) =>
+    paymentsOf(id)
+      .filter(isPaid)
+      .sort((a, b) => ((a.paid_at || a.due_date) < (b.paid_at || b.due_date) ? 1 : -1))[0] || null;
 
+  const amountOf = (sub: FinSubscriber) =>
+    fin.planOf(sub)?.price ?? Number(openPaymentOf(sub.id)?.amount ?? lastPaidOf(sub.id)?.amount ?? 0);
+
+  const metrics = useMemo(() => {
     const now = new Date();
-    if (newSub.plan === "quarterly") {
-      await supabase.from("payments").insert({
-        subscriber_id: data.id,
-        amount: 200,
-        due_date: format(now, "yyyy-MM-dd"),
-        status: "pending",
-        reference_month: `${format(now, "yyyy-MM")} a ${format(addMonths(now, 2), "yyyy-MM")}`,
-      });
-    } else {
-      await supabase.from("payments").insert({
-        subscriber_id: data.id,
-        amount: 100,
-        due_date: format(now, "yyyy-MM-dd"),
-        status: "pending",
-        reference_month: format(now, "yyyy-MM"),
-      });
-    }
+    const open = fin.payments.filter(isOpen);
+    const sum = (l: FinPayment[]) => l.reduce((s, p) => s + Number(p.amount || 0), 0);
+    const activeSubs = fin.subscribers.filter((s) => ["active", "pending_payment", "overdue"].includes(s.status));
+    return {
+      revenueMonth: sum(fin.payments.filter((p) => isPaid(p) && toDate(p.paid_at) && isSameMonth(toDate(p.paid_at)!, now))),
+      receivable: sum(open.filter((p) => !isLate(p))),
+      overdue: sum(open.filter((p) => isLate(p))),
+      activeCount: activeSubs.length,
+      defaultingCount: fin.subscribers.filter((s) => ["overdue", "defaulting"].includes(s.status)).length ||
+        new Set(open.filter((p) => isLate(p)).map((p) => p.subscriber_id)).size,
+      mrr: activeSubs.reduce((s, sub) => s + monthlyEquivalent(amountOf(sub), fin.cycleOf(sub)), 0),
+      dueToday: open.filter((p) => daysToDue(p) === 0).length,
+      due7: open.filter((p) => daysToDue(p) > 0 && daysToDue(p) <= 7).length,
+      lateCount: open.filter((p) => isLate(p)).length,
+      blockedCount: fin.subscribers.filter((s) => s.status === "blocked").length,
+    };
+  }, [fin.payments, fin.subscribers, fin.plans]);
 
-    toast({ title: "Assinante cadastrado com sucesso!" });
-    setNewSub({ name: "", email: "", phone: "", creci: "", plan: "monthly", notes: "" });
-    setShowNewDialog(false);
-    fetchData();
-  };
+  const filtered = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    return fin.subscribers.filter((s) => {
+      const members = membersOf(s.id);
+      if (term) {
+        const hay = [s.name, s.phone, s.email, s.creci, s.city, ...members.map((m) => m.name)]
+          .filter(Boolean).join(" ").toLowerCase();
+        if (!hay.includes(term)) return false;
+      }
+      if (filterStatus !== "all" && s.status !== filterStatus) return false;
+      if (filterType !== "all" && s.subscriber_type !== filterType) return false;
+      if (filterPlan !== "all" && s.plan_id !== filterPlan) return false;
 
-  const handleAddBroker = async () => {
-    if (!newBroker.name.trim() || !showBrokerDialog) {
-      toast({ title: "Nome é obrigatório", variant: "destructive" });
-      return;
-    }
-    const { error } = await supabase.from("subscriber_brokers").insert({
-      subscriber_id: showBrokerDialog,
-      name: newBroker.name,
-      email: newBroker.email || null,
-      phone: newBroker.phone || null,
-      creci: newBroker.creci || null,
+      const openP = openPaymentOf(s.id);
+      if (filterDue === "late" && !(openP && isLate(openP))) return false;
+      if (filterDue === "7" && !(openP && daysToDue(openP) >= 0 && daysToDue(openP) <= 7)) return false;
+      if (filterDue === "month" && !(openP && toDate(openP.due_date) && isSameMonth(toDate(openP.due_date)!, new Date()))) return false;
+
+      if (activeCard === "active" && !["active", "pending_payment", "overdue"].includes(s.status)) return false;
+      if (activeCard === "defaulting" && !(openP && isLate(openP))) return false;
+      if (activeCard === "overdue" && !(openP && isLate(openP))) return false;
+      if (activeCard === "receivable" && !(openP && !isLate(openP))) return false;
+      if (activeCard === "revenue_month" && !paymentsOf(s.id).some((p) => isPaid(p) && toDate(p.paid_at) && isSameMonth(toDate(p.paid_at)!, new Date()))) return false;
+
+      if (activeAlert === "due_today" && !(openP && daysToDue(openP) === 0)) return false;
+      if (activeAlert === "due_7" && !(openP && daysToDue(openP) > 0 && daysToDue(openP) <= 7)) return false;
+      if (activeAlert === "late" && !(openP && isLate(openP))) return false;
+      if (activeAlert === "blocked" && s.status !== "blocked") return false;
+      return true;
     });
-    if (error) {
-      toast({ title: "Erro ao adicionar corretor", description: error.message, variant: "destructive" });
+  }, [fin.subscribers, fin.payments, fin.members, search, filterStatus, filterType, filterPlan, filterDue, activeCard, activeAlert]);
+
+  const confirmPayment = async (sub: FinSubscriber, payment: FinPayment) => {
+    await fin.confirmPayment(payment, sub);
+    toast({ title: "Pagamento registrado", description: `${sub.name} · ${formatCurrency(payment.amount)}` });
+    if (sub.status === "blocked") setUnblockAsk(sub);
+  };
+
+  const charge = (sub: FinSubscriber) => {
+    const openP = openPaymentOf(sub.id);
+    const amount = openP ? Number(openP.amount) : amountOf(sub);
+    const due = openP?.due_date || sub.next_due_date || "";
+    const link = waLink(sub.phone, buildChargeMessage(sub.name, amount, due));
+    if (!link) {
+      toast({ title: "Sem WhatsApp cadastrado", description: "Cadastre o telefone do assinante.", variant: "destructive" });
       return;
     }
-    toast({ title: "Corretor adicionado!" });
-    setNewBroker({ name: "", email: "", phone: "", creci: "" });
-    setShowBrokerDialog(null);
-    fetchData();
+    fin.logEvent(sub.id, "charge_sent", `Cobrança enviada por WhatsApp (${formatCurrency(amount)})`);
+    window.open(link, "_blank");
   };
 
-  const handleTogglePayment = async (payment: Payment) => {
-    if (payment.status === "paid") return;
-    await supabase.from("payments").update({
-      status: "paid",
-      paid_at: new Date().toISOString(),
-    }).eq("id", payment.id);
+  const cycleLabel = (sub: FinSubscriber) => CYCLE_LABEL[normalizeCycle(fin.cycleOf(sub))];
 
-    const subPayments = payments.filter(p => p.subscriber_id === payment.subscriber_id && p.id !== payment.id);
-    const stillOverdue = subPayments.filter(p => p.status === "overdue").length;
-    if (stillOverdue === 0) {
-      await supabase.from("subscribers").update({ status: "active" }).eq("id", payment.subscriber_id);
-      await supabase.from("subscriber_brokers").update({ status: "active" }).eq("subscriber_id", payment.subscriber_id);
-    }
-
-    const sub = subscribers.find(s => s.id === payment.subscriber_id);
-    if (sub?.plan === "monthly") {
-      const nextMonth = addMonths(parseISO(payment.due_date), 1);
-      const existing = payments.find(p => p.subscriber_id === sub.id && p.reference_month === format(nextMonth, "yyyy-MM"));
-      if (!existing) {
-        await supabase.from("payments").insert({
-          subscriber_id: sub.id, amount: 100,
-          due_date: format(nextMonth, "yyyy-MM-dd"), status: "pending",
-          reference_month: format(nextMonth, "yyyy-MM"),
-        });
-      }
-    }
-
-    if (sub?.plan === "quarterly" && payment.reference_month.includes(" a ")) {
-      const lastMonthStr = payment.reference_month.split(" a ")[1];
-      const nextStart = addMonths(parseISO(lastMonthStr + "-01"), 1);
-      const nextEnd = addMonths(nextStart, 2);
-      const refMonth = `${format(nextStart, "yyyy-MM")} a ${format(nextEnd, "yyyy-MM")}`;
-      const existing = payments.find(p => p.subscriber_id === sub.id && p.reference_month === refMonth);
-      if (!existing) {
-        await supabase.from("payments").insert({
-          subscriber_id: sub.id, amount: 200,
-          due_date: format(nextStart, "yyyy-MM-dd"), status: "pending",
-          reference_month: refMonth,
-        });
-      }
-    }
-
-    toast({ title: "Pagamento confirmado!" });
-    fetchData();
-  };
-
-  const handleBlockSubscriber = async (sub: Subscriber) => {
-    const newStatus = sub.status === "blocked" ? "active" : "blocked";
-    await supabase.from("subscribers").update({ status: newStatus }).eq("id", sub.id);
-    // Cascade: block/unblock all brokers of this subscriber
-    await supabase.from("subscriber_brokers").update({ status: newStatus }).eq("subscriber_id", sub.id);
-    toast({ title: newStatus === "blocked" ? "Assinante e corretores bloqueados" : "Assinante e corretores desbloqueados" });
-    fetchData();
-  };
-
-  const handleBlockBroker = async (broker: SubscriberBroker) => {
-    const newStatus = broker.status === "blocked" ? "active" : "blocked";
-    await supabase.from("subscriber_brokers").update({ status: newStatus }).eq("id", broker.id);
-    toast({ title: newStatus === "blocked" ? "Corretor bloqueado" : "Corretor desbloqueado" });
-    fetchData();
-  };
-
-  const handleDeleteBroker = async (brokerId: string) => {
-    await supabase.from("subscriber_brokers").delete().eq("id", brokerId);
-    toast({ title: "Corretor removido" });
-    fetchData();
-  };
-
-  const handleGenerateMonthlyPayment = async (sub: Subscriber) => {
-    const now = new Date();
-    const refMonth = format(now, "yyyy-MM");
-    const existing = payments.find(p => p.subscriber_id === sub.id && p.reference_month.includes(refMonth));
-    if (existing) {
-      toast({ title: "Pagamento já existe para este mês", variant: "destructive" });
-      return;
-    }
-    if (sub.plan === "quarterly") {
-      const nextEnd = addMonths(now, 2);
-      await supabase.from("payments").insert({
-        subscriber_id: sub.id, amount: 200,
-        due_date: format(now, "yyyy-MM-dd"), status: "pending",
-        reference_month: `${refMonth} a ${format(nextEnd, "yyyy-MM")}`,
-      });
-    } else {
-      await supabase.from("payments").insert({
-        subscriber_id: sub.id, amount: 100,
-        due_date: format(now, "yyyy-MM-dd"), status: "pending",
-        reference_month: refMonth,
-      });
-    }
-    toast({ title: "Cobrança gerada!" });
-    fetchData();
-  };
-
-  const handleSaveWhatsApp = async (subId: string) => {
-    const cleaned = whatsAppInput.replace(/\D/g, "");
-    await supabase.from("subscribers").update({ phone: cleaned }).eq("id", subId);
-    toast({ title: "WhatsApp salvo!" });
-    setEditingWhatsApp(null);
-    setWhatsAppInput("");
-    fetchData();
-  };
-
-  const formatPhoneForWhatsApp = (phone: string) => {
-    let cleaned = phone.replace(/\D/g, "");
-    if (cleaned.length <= 11 && !cleaned.startsWith("55")) {
-      cleaned = "55" + cleaned;
-    }
-    return cleaned;
-  };
-
-  const buildOverdueMessage = (sub: Subscriber) => {
-    const subOverdue = overduePayments.filter(p => p.subscriber_id === sub.id);
-    const total = subOverdue.reduce((s, p) => s + Number(p.amount), 0);
-    const months = subOverdue.map(p => p.reference_month).join(", ");
-    return `Olá ${sub.name.split(" ")[0]}, tudo bem? 🏠\n\nIdentificamos que sua assinatura possui *${subOverdue.length} pagamento(s) em atraso* referente(s) a: ${months}.\n\n💰 *Valor total em aberto: ${formatCurrency(total)}*\n\n📲 Para regularizar, realize o pagamento via PIX:\n\n🔑 *Chave PIX:* [SUA CHAVE PIX]\n\n⚠️ *Atenção:* O não pagamento pode resultar no *bloqueio do acesso* ao sistema para você e seus corretores vinculados.\n\nQualquer dúvida, estamos à disposição!\nEquipe Financeiro`;
-  };
-
-  const openWhatsApp = (phone: string, message?: string) => {
-    const formattedPhone = formatPhoneForWhatsApp(phone);
-    const url = message
-      ? `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`
-      : `https://wa.me/${formattedPhone}`;
-    window.open(url, "_blank");
-  };
-
-  // Month filter options
-  const monthOptions = useMemo(() => {
-    const now = new Date();
-    const months = [];
-    for (let i = 5; i >= -1; i--) {
-      const d = subMonths(now, i);
-      months.push({ value: format(d, "yyyy-MM"), label: `${MONTHS_PT[d.getMonth()]} ${d.getFullYear()}` });
-    }
-    return months;
-  }, []);
-
-  // Filtered payments by month
-  const filteredPayments = useMemo(() => {
-    if (filterMonth === "all") return payments;
-    return payments.filter(p => p.reference_month.includes(filterMonth) || p.due_date.startsWith(filterMonth));
-  }, [payments, filterMonth]);
-
-  // Metrics (based on filtered payments)
-  const totalSubscribers = subscribers.length;
-  const activeSubscribers = subscribers.filter(s => s.status === "active").length;
-  const blockedSubscribers = subscribers.filter(s => s.status === "blocked").length;
-  const totalBrokers = brokers.length;
-
-  const totalReceived = filteredPayments
-    .filter(p => p.status === "paid")
-    .reduce((s, p) => s + Number(p.amount), 0);
-
-  const totalPending = filteredPayments
-    .filter(p => p.status === "pending" || p.status === "overdue")
-    .reduce((s, p) => s + Number(p.amount), 0);
-
-  const overduePayments = filteredPayments.filter(
-    p => p.status === "overdue" || (p.status === "pending" && isBefore(parseISO(p.due_date), new Date()))
+  const rowActions = (sub: FinSubscriber) => (
+    <div className="flex items-center gap-1.5 justify-end">
+      <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); charge(sub); }}>
+        <MessageCircle className="w-3.5 h-3.5 mr-1" />Cobrar
+      </Button>
+      <QuickPayButton payment={openPaymentOf(sub.id)} onConfirm={(p) => confirmPayment(sub, p)} />
+      <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); setEditSub(sub); }}>
+        <Pencil className="w-3.5 h-3.5" />
+      </Button>
+      <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); setMembersSub(sub); }}>
+        <Users className="w-3.5 h-3.5" />
+      </Button>
+      <Button
+        size="sm"
+        variant="ghost"
+        className={sub.status === "blocked" ? "text-emerald-600" : "text-destructive"}
+        onClick={(e) => { e.stopPropagation(); setBlockSub({ sub, block: sub.status !== "blocked" }); }}
+      >
+        <Ban className="w-3.5 h-3.5" />
+      </Button>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button size="sm" variant="ghost" onClick={(e) => e.stopPropagation()}>
+            <MoreHorizontal className="w-4 h-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={() => setProfileSub(sub)}>Ver histórico e perfil</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setEditSub(sub)}>Alterar plano / vencimento</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setChargeSub(sub)}>Gerar cobrança</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => { setManualDefault(sub.id); setManualOpen(true); }}>
+            Registrar pagamento
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => { setManualDefault(sub.id); setManualOpen(true); }}>
+            Desconto / cortesia
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setNoteSub(sub)}>Observação</DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem className="text-destructive" onClick={() => setCancelSub(sub)}>
+            Cancelar assinatura
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
 
-  const overdueTotal = overduePayments.reduce((s, p) => s + Number(p.amount), 0);
-
-  // Subscribers with overdue
-  const subscribersWithOverdue = useMemo(() => {
-    const ids = new Set(overduePayments.map(p => p.subscriber_id));
-    return subscribers.filter(s => ids.has(s.id));
-  }, [overduePayments, subscribers]);
-
-  // Filtered subscribers
-  const filtered = subscribers.filter(s => {
-    const matchSearch = s.name.toLowerCase().includes(search.toLowerCase()) ||
-      (s.email?.toLowerCase().includes(search.toLowerCase())) ||
-      (s.creci?.toLowerCase().includes(search.toLowerCase()));
-    const matchStatus = filterStatus === "all" || s.status === filterStatus;
-    return matchSearch && matchStatus;
-  });
-
-  const getSubscriberPayments = (subId: string) =>
-    filteredPayments.filter(p => p.subscriber_id === subId).sort((a, b) => b.due_date.localeCompare(a.due_date));
-
-  const getSubscriberBrokers = (subId: string) =>
-    brokers.filter(b => b.subscriber_id === subId);
-
-  const statusBadge = (status: string) => {
-    switch (status) {
-      case "active": return <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">Ativo</Badge>;
-      case "blocked": return <Badge className="bg-red-500/20 text-red-400 border-red-500/30">Bloqueado</Badge>;
-      case "cancelled": return <Badge className="bg-muted text-muted-foreground">Cancelado</Badge>;
-      default: return <Badge variant="outline">{status}</Badge>;
-    }
-  };
-
-  const paymentStatusBadge = (payment: Payment) => {
-    const isOverdue = payment.status === "overdue" || (payment.status === "pending" && isBefore(parseISO(payment.due_date), new Date()));
-    if (payment.status === "paid") {
-      return (
-        <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 cursor-default">
-          <CheckCircle2 className="w-3 h-3 mr-1" /> Pago
-        </Badge>
-      );
-    }
-    if (isOverdue) {
-      return (
-        <Badge
-          className="bg-red-500/20 text-red-400 border-red-500/30 cursor-pointer hover:bg-emerald-500/20 hover:text-emerald-400 hover:border-emerald-500/30 transition-all"
-          onClick={() => handleTogglePayment(payment)}
-        >
-          <AlertTriangle className="w-3 h-3 mr-1" /> Atrasado — Clique para pagar
-        </Badge>
-      );
-    }
-    return (
-      <Badge
-        className="bg-amber-500/20 text-amber-400 border-amber-500/30 cursor-pointer hover:bg-emerald-500/20 hover:text-emerald-400 hover:border-emerald-500/30 transition-all"
-        onClick={() => handleTogglePayment(payment)}
-      >
-        <CreditCard className="w-3 h-3 mr-1" /> Pendente — Clique para pagar
-      </Badge>
-    );
-  };
+  const expandedPanel = (sub: FinSubscriber) => (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 bg-muted/30 p-4 rounded-lg">
+      <MembersPanel
+        subscriberId={sub.id}
+        members={membersOf(sub.id)}
+        onSave={fin.upsertMember}
+        onRemove={fin.removeMember}
+        onStatus={fin.setMemberStatus}
+      />
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+          Histórico de pagamentos
+        </p>
+        <PaymentHistory subscriber={sub} payments={paymentsOf(sub.id)} onConfirm={(p) => confirmPayment(sub, p)} />
+      </div>
+    </div>
+  );
 
   return (
     <AppLayout>
-      <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
-        {/* Header */}
-        <BackButton />
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Financeiro</h1>
-            <p className="text-sm text-muted-foreground mt-1">Controle de assinaturas e pagamentos de corretores</p>
-          </div>
-          <Dialog open={showNewDialog} onOpenChange={setShowNewDialog}>
-            <DialogTrigger asChild>
-              <Button className="gap-2">
-                <Plus className="w-4 h-4" /> Novo Assinante
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle>Cadastrar Assinante</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 mt-4">
-                <div>
-                  <label className="text-sm font-medium text-foreground">Nome *</label>
-                  <Input value={newSub.name} onChange={e => setNewSub({ ...newSub, name: e.target.value })} placeholder="Nome completo" />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground">Email</label>
-                  <Input value={newSub.email} onChange={e => setNewSub({ ...newSub, email: e.target.value })} placeholder="email@exemplo.com" />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground">Telefone</label>
-                  <Input value={newSub.phone} onChange={e => setNewSub({ ...newSub, phone: e.target.value })} placeholder="(00) 00000-0000" />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground">CRECI</label>
-                  <Input value={newSub.creci} onChange={e => setNewSub({ ...newSub, creci: e.target.value })} placeholder="CRECI-RS 00000" />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground">Plano</label>
-                  <Select value={newSub.plan} onValueChange={v => setNewSub({ ...newSub, plan: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="monthly">Mensal — R$ 100,00/mês</SelectItem>
-                      <SelectItem value="quarterly">Trimestral — R$ 200,00/3 meses</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground">Observações</label>
-                  <Input value={newSub.notes} onChange={e => setNewSub({ ...newSub, notes: e.target.value })} placeholder="Notas opcionais" />
-                </div>
-                <Button onClick={handleCreateSubscriber} className="w-full">Cadastrar</Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-        </div>
-
-        {/* Alertas de atraso */}
-        {overduePayments.length > 0 && (
-          <div
-            className="flex items-center gap-3 p-4 rounded-xl border border-red-500/30 bg-red-500/10 cursor-pointer hover:bg-red-500/15 transition-colors"
-            onClick={() => setShowOverdueDialog(true)}
-          >
-            <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0" />
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-red-400">
-                {overduePayments.length} pagamento{overduePayments.length > 1 ? "s" : ""} em atraso! <span className="text-xs font-normal text-red-400/70">— Clique para ver detalhes</span>
-              </p>
-              <p className="text-xs text-red-400/70">
-                Assinantes: {subscribersWithOverdue.map(s => s.name).join(", ")}
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="text-lg font-bold text-red-400">{formatCurrency(overdueTotal)}</p>
-              <p className="text-[10px] text-red-400/70">Total em atraso</p>
+      <div className="p-4 md:p-6 space-y-5 pb-28 md:pb-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <BackButton />
+            <div>
+              <h1 className="text-xl md:text-2xl font-bold text-foreground">Financeiro</h1>
+              <p className="text-xs text-muted-foreground">Assinaturas, cobranças e recorrência</p>
             </div>
           </div>
-        )}
-
-        {/* Metrics */}
-        <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
-          <Card className="border-border">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <Users className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Assinantes</p>
-                  <p className="text-xl font-bold text-foreground">{totalSubscribers}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-border">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-accent/10">
-                  <UserPlus className="w-5 h-5 text-accent" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Corretores</p>
-                  <p className="text-xl font-bold text-foreground">{totalBrokers}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-border">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-emerald-500/10">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Ativos</p>
-                  <p className="text-xl font-bold text-emerald-400">{activeSubscribers}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-border">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-emerald-500/10">
-                  <TrendingUp className="w-5 h-5 text-emerald-400" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Receita</p>
-                  <p className="text-lg font-bold text-emerald-400">{formatCurrency(totalReceived)}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-border">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-amber-500/10">
-                  <DollarSign className="w-5 h-5 text-amber-400" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">A Receber</p>
-                  <p className="text-lg font-bold text-amber-400">{formatCurrency(totalPending)}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-border border-red-500/30 bg-red-500/5 cursor-pointer hover:bg-red-500/10 transition-colors" onClick={() => setShowOverdueDialog(true)}>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-red-500/10">
-                  <AlertTriangle className="w-5 h-5 text-red-400" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Em Atraso</p>
-                  <p className="text-lg font-bold text-red-400">{formatCurrency(overdueTotal)}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <Button onClick={() => { setManualDefault(undefined); setManualOpen(true); }}>
+            <Plus className="w-4 h-4 mr-1" /> Registrar pagamento
+          </Button>
         </div>
 
-        {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar por nome, email ou CRECI..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="pl-10"
+        <Tabs defaultValue="assinantes" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="assinantes">Assinantes</TabsTrigger>
+            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="assinantes" className="space-y-4">
+            <FinanceCards
+              metrics={metrics}
+              activeCard={activeCard}
+              activeAlert={activeAlert}
+              onCard={(k) => { setActiveCard(activeCard === k ? null : k); setActiveAlert(null); }}
+              onAlert={(k) => { setActiveAlert(activeAlert === k ? null : k); setActiveCard(null); }}
             />
-          </div>
-          <Select value={filterStatus} onValueChange={setFilterStatus}>
-            <SelectTrigger className="w-[160px]">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos Status</SelectItem>
-              <SelectItem value="active">Ativos</SelectItem>
-              <SelectItem value="blocked">Bloqueados</SelectItem>
-              <SelectItem value="cancelled">Cancelados</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={filterMonth} onValueChange={setFilterMonth}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Mês" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos os Meses</SelectItem>
-              {monthOptions.map(m => (
-                <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
 
-        {/* Subscriber Table */}
-        <Card className="border-border">
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-8"></TableHead>
-                  <TableHead>Assinante</TableHead>
-                  <TableHead>Contato</TableHead>
-                  <TableHead>CRECI</TableHead>
-                  <TableHead>Plano</TableHead>
-                  <TableHead>Corretores</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">Carregando...</TableCell>
-                  </TableRow>
-                ) : filtered.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
-                      Nenhum assinante encontrado
-                    </TableCell>
-                  </TableRow>
-                ) : filtered.map(sub => {
-                  const subPayments = getSubscriberPayments(sub.id);
-                  const subBrokers = getSubscriberBrokers(sub.id);
-                  const isExpanded = expandedSub === sub.id;
+            <Card className="p-3 md:p-4 space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
+                <div className="relative md:col-span-2">
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    className="pl-9"
+                    placeholder="Nome, telefone, CRECI, corretor..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+                </div>
+                <Select value={filterStatus} onValueChange={setFilterStatus}>
+                  <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos os status</SelectItem>
+                    <SelectItem value="active">Ativo</SelectItem>
+                    <SelectItem value="pending_payment">Pagamento pendente</SelectItem>
+                    <SelectItem value="overdue">Vencido</SelectItem>
+                    <SelectItem value="defaulting">Inadimplente</SelectItem>
+                    <SelectItem value="blocked">Bloqueado</SelectItem>
+                    <SelectItem value="cancelled">Cancelado</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={filterType} onValueChange={setFilterType}>
+                  <SelectTrigger><SelectValue placeholder="Tipo" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos os tipos</SelectItem>
+                    <SelectItem value="imobiliaria">Imobiliária</SelectItem>
+                    <SelectItem value="corretor">Corretor autônomo</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={filterPlan} onValueChange={setFilterPlan}>
+                  <SelectTrigger><SelectValue placeholder="Plano" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos os planos</SelectItem>
+                    {fin.plans.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Select value={filterDue} onValueChange={setFilterDue}>
+                <SelectTrigger className="md:w-64"><SelectValue placeholder="Vencimento" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Qualquer vencimento</SelectItem>
+                  <SelectItem value="late">Atrasados</SelectItem>
+                  <SelectItem value="7">Próximos 7 dias</SelectItem>
+                  <SelectItem value="month">Neste mês</SelectItem>
+                </SelectContent>
+              </Select>
+            </Card>
 
-                  return (
-                    <React.Fragment key={sub.id}>
-                      <TableRow
-                        className="cursor-pointer hover:bg-muted/30"
-                        onClick={() => setExpandedSub(isExpanded ? null : sub.id)}
-                      >
-                        <TableCell className="w-8 pr-0">
-                          {isExpanded ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
-                              {sub.name.split(" ").map(n => n[0]).slice(0, 2).join("")}
-                            </div>
-                            <span className="font-medium text-foreground">{sub.name}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="space-y-1">
-                            {sub.email && (
-                              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                <Mail className="w-3 h-3" /> {sub.email}
-                              </div>
-                            )}
-                            {sub.phone ? (
-                              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                <Phone className="w-3 h-3" /> {sub.phone}
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  className="h-5 w-5 p-0 ml-1"
-                                  onClick={(e) => { e.stopPropagation(); openWhatsApp(sub.phone!); }}
-                                >
-                                  <MessageCircle className="w-3.5 h-3.5 text-emerald-500" />
-                                </Button>
-                              </div>
-                            ) : (
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="text-xs h-6 gap-1 text-muted-foreground"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setEditingWhatsApp(sub.id);
-                                  setWhatsAppInput(sub.phone || "");
-                                }}
-                              >
-                                <MessageCircle className="w-3 h-3" /> Cadastrar WhatsApp
-                              </Button>
-                            )}
-                            {editingWhatsApp === sub.id && (
-                              <div className="flex items-center gap-1 mt-1" onClick={e => e.stopPropagation()}>
-                                <Input
-                                  value={whatsAppInput}
-                                  onChange={e => setWhatsAppInput(e.target.value)}
-                                  placeholder="(00) 00000-0000"
-                                  className="h-6 text-xs w-32"
-                                />
-                                <Button size="sm" className="h-6 text-xs px-2" onClick={() => handleSaveWhatsApp(sub.id)}>Salvar</Button>
-                              </div>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">{sub.creci || "—"}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className="text-xs">
-                            {sub.plan === "quarterly" ? "Trimestral R$200" : "Mensal R$100"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="secondary" className="text-xs">
-                            {subBrokers.length} corretor{subBrokers.length !== 1 ? "es" : ""}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{statusBadge(sub.status)}</TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center gap-1 justify-end" onClick={e => e.stopPropagation()}>
-                            {sub.phone && overduePayments.some(p => p.subscriber_id === sub.id) && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="text-xs h-7 text-emerald-500 border-emerald-500/30 hover:bg-emerald-500/10"
-                                onClick={() => openWhatsApp(sub.phone!, buildOverdueMessage(sub))}
-                              >
-                                <MessageCircle className="w-3 h-3 mr-1" /> Cobrar
-                              </Button>
-                            )}
-                            <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => setShowBrokerDialog(sub.id)}>
-                              <UserPlus className="w-3 h-3 mr-1" /> Corretor
-                            </Button>
-                            <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => handleGenerateMonthlyPayment(sub)}>
-                              <Calendar className="w-3 h-3 mr-1" /> Cobrança
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant={sub.status === "blocked" ? "default" : "destructive"}
-                              className="text-xs h-7"
-                              onClick={() => handleBlockSubscriber(sub)}
-                            >
-                              {sub.status === "blocked" ? (
-                                <><CheckCircle2 className="w-3 h-3 mr-1" /> Desbloquear</>
-                              ) : (
-                                <><Ban className="w-3 h-3 mr-1" /> Bloquear</>
-                              )}
-                            </Button>
-                          </div>
-                        </TableCell>
+            {fin.loading ? (
+              <div className="space-y-2">{[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-16 w-full" />)}</div>
+            ) : filtered.length === 0 ? (
+              <Card className="p-8 text-center text-muted-foreground">Nenhum assinante encontrado.</Card>
+            ) : (
+              <>
+                {/* Desktop */}
+                <Card className="hidden md:block overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-8" />
+                        <TableHead>Assinante</TableHead>
+                        <TableHead>Contato</TableHead>
+                        <TableHead>Tipo</TableHead>
+                        <TableHead>Plano</TableHead>
+                        <TableHead>Valor</TableHead>
+                        <TableHead>Vencimento</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Último pgto.</TableHead>
+                        <TableHead>Próximo</TableHead>
+                        <TableHead className="text-right">Ações</TableHead>
                       </TableRow>
-                      {isExpanded && (
-                        <TableRow>
-                          <TableCell colSpan={8} className="bg-muted/20 p-4">
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                              {/* Corretores vinculados */}
-                              <div>
-                                <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-                                  <Users className="w-4 h-4" /> Corretores Vinculados
-                                </h4>
-                                {subBrokers.length === 0 ? (
-                                  <p className="text-xs text-muted-foreground">Nenhum corretor vinculado</p>
-                                ) : (
-                                  <div className="space-y-2">
-                                    {subBrokers.map(b => (
-                                      <div key={b.id} className="flex items-center justify-between p-3 rounded-lg bg-card border border-border">
-                                        <div className="flex items-center gap-3">
-                                          <div className="w-7 h-7 rounded-full bg-accent/10 flex items-center justify-center text-[10px] font-bold text-accent">
-                                            {b.name.split(" ").map(n => n[0]).slice(0, 2).join("")}
-                                          </div>
-                                          <div>
-                                            <p className="text-sm font-medium text-foreground">{b.name}</p>
-                                            <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
-                                              {b.creci && <span>CRECI: {b.creci}</span>}
-                                              {b.email && <span>{b.email}</span>}
-                                              {b.phone && <span>{b.phone}</span>}
-                                            </div>
-                                          </div>
-                                        </div>
-                                        <div className="flex items-center gap-1">
-                                          {statusBadge(b.status)}
-                                          <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleBlockBroker(b)}>
-                                            {b.status === "blocked" ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> : <Ban className="w-3.5 h-3.5 text-destructive" />}
-                                          </Button>
-                                          <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleDeleteBroker(b.id)}>
-                                            <Trash2 className="w-3.5 h-3.5 text-destructive" />
-                                          </Button>
-                                        </div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
+                    </TableHeader>
+                    <TableBody>
+                      {filtered.map((sub) => {
+                        const openP = openPaymentOf(sub.id);
+                        const lastP = lastPaidOf(sub.id);
+                        const isOpenRow = expanded === sub.id;
+                        return (
+                          <>
+                            <TableRow
+                              key={sub.id}
+                              className="cursor-pointer"
+                              onClick={() => setExpanded(isOpenRow ? null : sub.id)}
+                            >
+                              <TableCell>{isOpenRow ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}</TableCell>
+                              <TableCell>
+                                <button className="text-left" onClick={(e) => { e.stopPropagation(); setProfileSub(sub); }}>
+                                  <p className="font-semibold text-foreground hover:underline">{sub.name}</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {membersOf(sub.id).length} usuário(s) · {sub.city || "—"}
+                                  </p>
+                                </button>
+                              </TableCell>
+                              <TableCell className="text-xs">
+                                <p>{sub.phone || "—"}</p>
+                                <p className="text-muted-foreground">{sub.email || "—"}</p>
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="outline" className="text-[11px]">
+                                  {sub.subscriber_type === "imobiliaria" ? "Imobiliária" : "Corretor"}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="text-xs">
+                                <p className="font-medium">{fin.planOf(sub)?.name || "—"}</p>
+                                <p className="text-muted-foreground">{cycleLabel(sub)}</p>
+                              </TableCell>
+                              <TableCell className="font-semibold tabular-nums">{formatCurrency(amountOf(sub))}</TableCell>
+                              <TableCell className="text-xs">{formatDate(openP?.due_date || sub.next_due_date)}</TableCell>
+                              <TableCell><StatusBadge status={sub.status} /></TableCell>
+                              <TableCell className="text-xs">{lastP ? formatDate(lastP.paid_at || lastP.due_date) : "—"}</TableCell>
+                              <TableCell className="text-xs">{competenceLabel(openP?.competence, openP?.due_date)}</TableCell>
+                              <TableCell>{rowActions(sub)}</TableCell>
+                            </TableRow>
+                            {isOpenRow && (
+                              <TableRow key={`${sub.id}-exp`}>
+                                <TableCell colSpan={11} className="p-3">{expandedPanel(sub)}</TableCell>
+                              </TableRow>
+                            )}
+                          </>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </Card>
 
-                              {/* Pagamentos */}
-                              <div>
-                                <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-                                  <CreditCard className="w-4 h-4" /> Histórico de Pagamentos
-                                </h4>
-                                {subPayments.length === 0 ? (
-                                  <p className="text-xs text-muted-foreground">Nenhum pagamento registrado</p>
-                                ) : (
-                                  <div className="space-y-2">
-                                    {subPayments.map(p => (
-                                      <div key={p.id} className="flex items-center justify-between p-3 rounded-lg bg-card border border-border">
-                                        <div className="flex items-center gap-4">
-                                          <span className="text-sm font-medium text-foreground">{p.reference_month}</span>
-                                          <span className="text-sm font-bold text-foreground">{formatCurrency(Number(p.amount))}</span>
-                                          <span className="text-xs text-muted-foreground">Venc: {format(parseISO(p.due_date), "dd/MM/yyyy")}</span>
-                                        </div>
-                                        {paymentStatusBadge(p)}
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </React.Fragment>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-
-        {/* Add Broker Dialog */}
-        <Dialog open={!!showBrokerDialog} onOpenChange={() => setShowBrokerDialog(null)}>
-          <DialogContent className="max-w-sm">
-            <DialogHeader>
-              <DialogTitle>Adicionar Corretor</DialogTitle>
-            </DialogHeader>
-            <p className="text-xs text-muted-foreground">
-              Este corretor terá acesso ao sistema vinculado à assinatura do cliente. Não gera nova cobrança.
-            </p>
-            <div className="space-y-3 mt-2">
-              <div>
-                <label className="text-sm font-medium text-foreground">Nome *</label>
-                <Input value={newBroker.name} onChange={e => setNewBroker({ ...newBroker, name: e.target.value })} placeholder="Nome do corretor" />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-foreground">Email</label>
-                <Input value={newBroker.email} onChange={e => setNewBroker({ ...newBroker, email: e.target.value })} placeholder="email@exemplo.com" />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-foreground">Telefone</label>
-                <Input value={newBroker.phone} onChange={e => setNewBroker({ ...newBroker, phone: e.target.value })} placeholder="(00) 00000-0000" />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-foreground">CRECI</label>
-                <Input value={newBroker.creci} onChange={e => setNewBroker({ ...newBroker, creci: e.target.value })} placeholder="CRECI-RS 00000" />
-              </div>
-              <Button onClick={handleAddBroker} className="w-full">Adicionar Corretor</Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        {/* Overdue Details Dialog */}
-        <Dialog open={showOverdueDialog} onOpenChange={setShowOverdueDialog}>
-          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-red-400">
-                <AlertTriangle className="w-5 h-5" /> Pagamentos em Atraso — {formatCurrency(overdueTotal)}
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 mt-4">
-              {subscribersWithOverdue.map(sub => {
-                const subOverdue = overduePayments.filter(p => p.subscriber_id === sub.id);
-                const subTotal = subOverdue.reduce((s, p) => s + Number(p.amount), 0);
-                return (
-                  <div key={sub.id} className="border border-border rounded-lg p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-red-500/10 flex items-center justify-center text-xs font-bold text-red-400">
-                          {sub.name.split(" ").map(n => n[0]).slice(0, 2).join("")}
+                {/* Mobile */}
+                <div className="md:hidden space-y-3">
+                  {filtered.map((sub) => {
+                    const openP = openPaymentOf(sub.id);
+                    return (
+                      <Card key={sub.id} className="p-4 space-y-3">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="font-semibold text-foreground truncate">{sub.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {fin.planOf(sub)?.name || cycleLabel(sub)} · {formatCurrency(amountOf(sub))}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Vence {formatDate(openP?.due_date || sub.next_due_date)}
+                            </p>
+                          </div>
+                          <StatusBadge status={sub.status} />
                         </div>
-                        <div>
-                          <p className="font-medium text-foreground">{sub.name}</p>
-                          <p className="text-xs text-muted-foreground">{sub.email || "Sem email"} • {sub.phone || "Sem telefone"}</p>
+                        <div className="grid grid-cols-3 gap-2">
+                          <Button size="lg" variant="outline" className="h-11" onClick={() => charge(sub)}>Cobrar</Button>
+                          {openP ? (
+                            <QuickPayButton payment={openP} onConfirm={(p) => confirmPayment(sub, p)} className="h-11 w-full" />
+                          ) : (
+                            <Button size="lg" variant="outline" className="h-11" disabled>Pago</Button>
+                          )}
+                          <Button size="lg" className="h-11" onClick={() => setProfileSub(sub)}>Abrir</Button>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-red-400">{formatCurrency(subTotal)}</span>
-                        {sub.phone ? (
-                          <Button
-                            size="sm"
-                            className="h-8 gap-1 bg-emerald-600 hover:bg-emerald-700 text-white"
-                            onClick={() => openWhatsApp(sub.phone!, buildOverdueMessage(sub))}
-                          >
-                            <MessageCircle className="w-4 h-4" /> Cobrar via WhatsApp
-                          </Button>
-                        ) : (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-8 gap-1 text-xs"
-                            onClick={() => {
-                              setEditingWhatsApp(sub.id);
-                              setWhatsAppInput("");
-                            }}
-                          >
-                            <MessageCircle className="w-3.5 h-3.5" /> Cadastrar WhatsApp
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                    {editingWhatsApp === sub.id && (
-                      <div className="flex items-center gap-2">
-                        <Input
-                          value={whatsAppInput}
-                          onChange={e => setWhatsAppInput(e.target.value)}
-                          placeholder="(00) 00000-0000"
-                          className="h-8 text-sm max-w-[200px]"
-                        />
-                        <Button size="sm" className="h-8" onClick={() => handleSaveWhatsApp(sub.id)}>Salvar</Button>
-                      </div>
-                    )}
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="text-xs">Referência</TableHead>
-                          <TableHead className="text-xs">Vencimento</TableHead>
-                          <TableHead className="text-xs">Valor</TableHead>
-                          <TableHead className="text-xs text-right">Ação</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {subOverdue.map(p => (
-                          <TableRow key={p.id}>
-                            <TableCell className="text-sm">{p.reference_month}</TableCell>
-                            <TableCell className="text-sm">{format(parseISO(p.due_date), "dd/MM/yyyy")}</TableCell>
-                            <TableCell className="text-sm font-medium">{formatCurrency(Number(p.amount))}</TableCell>
-                            <TableCell className="text-right">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="h-7 text-xs text-emerald-500 border-emerald-500/30 hover:bg-emerald-500/10"
-                                onClick={() => handleTogglePayment(p)}
-                              >
-                                <CheckCircle2 className="w-3 h-3 mr-1" /> Confirmar Pgto
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                );
-              })}
-              {subscribersWithOverdue.length === 0 && (
-                <p className="text-center text-muted-foreground py-8">Nenhum pagamento em atraso 🎉</p>
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </TabsContent>
+
+          <TabsContent value="dashboard">
+            <FinanceDashboard
+              subscribers={fin.subscribers}
+              payments={fin.payments}
+              plans={fin.plans}
+              cycleOf={fin.cycleOf}
+              planOf={fin.planOf}
+            />
+          </TabsContent>
+        </Tabs>
       </div>
+
+      <SubscriberProfile
+        open={!!profileSub}
+        onOpenChange={(v) => !v && setProfileSub(null)}
+        subscriber={profileSub}
+        plan={profileSub ? fin.planOf(profileSub) : null}
+        payments={profileSub ? paymentsOf(profileSub.id) : []}
+        members={profileSub ? membersOf(profileSub.id) : []}
+        logs={profileSub ? logsOf(profileSub.id) : []}
+        onConfirmPayment={(p) => confirmPayment(profileSub!, p)}
+        onSaveMember={fin.upsertMember}
+        onRemoveMember={fin.removeMember}
+        onMemberStatus={fin.setMemberStatus}
+      />
+
+      <SubscriberProfile
+        open={!!membersSub}
+        onOpenChange={(v) => !v && setMembersSub(null)}
+        subscriber={membersSub}
+        plan={membersSub ? fin.planOf(membersSub) : null}
+        payments={membersSub ? paymentsOf(membersSub.id) : []}
+        members={membersSub ? membersOf(membersSub.id) : []}
+        logs={membersSub ? logsOf(membersSub.id) : []}
+        onConfirmPayment={(p) => confirmPayment(membersSub!, p)}
+        onSaveMember={fin.upsertMember}
+        onRemoveMember={fin.removeMember}
+        onMemberStatus={fin.setMemberStatus}
+      />
+
+      <SubscriberEditDialog
+        open={!!editSub}
+        onOpenChange={(v) => !v && setEditSub(null)}
+        subscriber={editSub}
+        plans={fin.plans}
+        onSubmit={async (patch) => {
+          if (!editSub) return;
+          await fin.updateSubscriber(editSub, patch, "Plano/cadastro atualizado", "plan_changed");
+          toast({ title: "Assinante atualizado" });
+        }}
+      />
+
+      <ChargeDialog
+        open={!!chargeSub}
+        onOpenChange={(v) => !v && setChargeSub(null)}
+        subscriber={chargeSub}
+        defaultAmount={chargeSub ? amountOf(chargeSub) : 0}
+        onSubmit={async (amount, dueDate) => {
+          if (!chargeSub) return;
+          await fin.createCharge(chargeSub, amount, dueDate);
+          toast({ title: "Cobrança criada" });
+        }}
+      />
+
+      <ManualPaymentDialog
+        open={manualOpen}
+        onOpenChange={setManualOpen}
+        subscribers={fin.subscribers}
+        defaultSubscriberId={manualDefault}
+        onSubmit={async (input) => {
+          await fin.registerManualPayment(input);
+          toast({ title: "Lançamento registrado" });
+        }}
+      />
+
+      <CancelDialog
+        open={!!cancelSub}
+        onOpenChange={(v) => !v && setCancelSub(null)}
+        subscriber={cancelSub}
+        onSubmit={async (reason, note) => {
+          if (!cancelSub) return;
+          await fin.cancelSubscription(cancelSub, reason, note);
+          toast({ title: "Assinatura cancelada" });
+        }}
+      />
+
+      <NoteDialog
+        open={!!noteSub}
+        onOpenChange={(v) => !v && setNoteSub(null)}
+        subscriber={noteSub}
+        onSubmit={async (notes) => {
+          if (!noteSub) return;
+          await fin.updateSubscriber(noteSub, { notes }, "Observação registrada", "note");
+          toast({ title: "Observação salva" });
+        }}
+      />
+
+      <AlertDialog open={!!blockSub} onOpenChange={(v) => !v && setBlockSub(null)}>
+        <AlertDialogContent className="max-w-sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {blockSub?.block ? "Bloquear acesso do grupo?" : "Liberar acesso do grupo?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {blockSub?.block
+                ? "O titular e todos os usuários vinculados perdem o acesso. Nenhum dado é apagado."
+                : "Os acessos que estavam ativos antes do bloqueio serão restaurados."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async (e) => {
+                e.preventDefault();
+                if (!blockSub) return;
+                await fin.setGroupBlocked(blockSub.sub, blockSub.block);
+                toast({ title: blockSub.block ? "Acesso bloqueado" : "Acesso liberado" });
+                setBlockSub(null);
+              }}
+            >
+              Confirmar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!unblockAsk} onOpenChange={(v) => !v && setUnblockAsk(null)}>
+        <AlertDialogContent className="max-w-sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Liberar o acesso agora?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {unblockAsk?.name} está bloqueado. Deseja liberar o acesso do titular e dos vinculados?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Manter bloqueado</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async (e) => {
+                e.preventDefault();
+                if (!unblockAsk) return;
+                await fin.setGroupBlocked(unblockAsk, false);
+                toast({ title: "Acesso liberado" });
+                setUnblockAsk(null);
+              }}
+            >
+              Liberar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppLayout>
   );
 }
