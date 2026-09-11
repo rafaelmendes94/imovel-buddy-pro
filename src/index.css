@@ -176,3 +176,72 @@
 /* Utilitário: esconder barra de rolagem (carrossel do mapa) */
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* ===== Financeiro: tons, degradês e animações ===== */
+:root {
+  --fin-emerald: 158 64% 40%;
+  --fin-sky: 199 89% 45%;
+  --fin-amber: 38 92% 50%;
+  --fin-rose: 350 78% 55%;
+  --fin-violet: 262 60% 56%;
+  --fin-slate: 215 25% 45%;
+}
+
+.fin-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1rem;
+  background:
+    linear-gradient(160deg, hsl(var(--fin-tone) / 0.10) 0%, hsl(var(--fin-tone) / 0.02) 45%, transparent 100%),
+    hsl(var(--card));
+  box-shadow: 0 1px 2px hsl(var(--fin-tone) / 0.08), 0 8px 24px -18px hsl(var(--fin-tone) / 0.45);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.fin-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: linear-gradient(90deg, hsl(var(--fin-tone) / 0.9), hsl(var(--fin-tone) / 0.15));
+  opacity: 0.85;
+}
+.fin-card::after {
+  content: "";
+  position: absolute;
+  width: 8rem;
+  height: 8rem;
+  right: -3rem;
+  bottom: -4rem;
+  border-radius: 999px;
+  background: radial-gradient(circle, hsl(var(--fin-tone) / 0.18), transparent 70%);
+  transition: transform 0.4s ease, opacity 0.3s ease;
+}
+.fin-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 2px 4px hsl(var(--fin-tone) / 0.1), 0 18px 38px -22px hsl(var(--fin-tone) / 0.55);
+}
+.fin-card:hover::after { transform: scale(1.15); opacity: 0.9; }
+
+.fin-icon {
+  color: hsl(var(--fin-tone));
+  background: linear-gradient(140deg, hsl(var(--fin-tone) / 0.18), hsl(var(--fin-tone) / 0.06));
+}
+
+.fin-pill {
+  color: hsl(var(--fin-tone));
+  border-color: hsl(var(--fin-tone) / 0.28);
+  background: linear-gradient(135deg, hsl(var(--fin-tone) / 0.14), hsl(var(--fin-tone) / 0.04));
+}
+.fin-pill:hover { background: linear-gradient(135deg, hsl(var(--fin-tone) / 0.22), hsl(var(--fin-tone) / 0.08)); }
+
+@keyframes fin-rise {
+  from { opacity: 0; transform: translateY(10px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.fin-rise { animation: fin-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fin-rise { animation: none !important; }
+  .fin-card, .fin-card::after { transition: none !important; }
+  .fin-card:hover { transform: none; }
+}
