@@ -93,6 +93,9 @@ export default function AdminPlanos() {
       modules: form.modules,
       plan_type: form.plan_type,
       is_free: form.is_free,
+      description: form.description || null,
+      discount_percent: parseFloat(form.discount_percent || "0") || 0,
+      notes: form.notes || null,
     };
 
     if (editId) {
