@@ -389,7 +389,10 @@ export default function AllProperties() {
             <span className="text-xl font-extrabold text-gray-900">MV <span className="text-amber-500">Broker</span> <span className="text-gray-500 text-sm font-bold">Conect</span></span>
           </Link>
           <div className="flex items-center gap-3">
-            <Link to="/" className="text-sm font-semibold text-gray-600 hover:text-amber-600 transition-colors">
+            <Link to="/mapa" className="px-4 py-2 rounded-xl bg-gray-900 text-white text-sm font-bold hover:bg-gray-800 transition-colors shadow-sm">
+              Explorar no mapa
+            </Link>
+            <Link to="/" className="hidden sm:block text-sm font-semibold text-gray-600 hover:text-amber-600 transition-colors">
               ← Voltar ao Site
             </Link>
             <a href="https://wa.me/5511999999999" target="_blank" rel="noopener noreferrer"
