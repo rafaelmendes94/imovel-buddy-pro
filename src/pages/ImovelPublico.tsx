@@ -19,6 +19,8 @@ import { buildWhatsappMessage, toWhatsappNumber } from "@/lib/propertyEvents";
 interface ImovelRow {
   id: string;
   user_id: string;
+  corretor_id: string | null;
+  corretor_cadastro_id: string | null;
   titulo: string;
   endereco: string;
   numero: string | null;
@@ -113,6 +115,7 @@ export default function ImovelPublico() {
     if (!id || authLoading) return;
     (async () => {
       setLoading(true);
+      setNotFound(false);
       let query = supabase
         .from("imoveis")
         .select(`${PUBLIC_IMOVEL_COLUMNS}, edificios(nome, endereco, numero, complemento, bairro, cidade, estado, cep, latitude, longitude), condominios(nome, endereco, numero, complemento, bairro, cidade, estado, cep, latitude, longitude, mapa_pdf_url, implantacao_url), empreendimentos(nome, endereco, numero, complemento, bairro, cidade, estado, cep, latitude, longitude)`)
@@ -148,10 +151,11 @@ export default function ImovelPublico() {
           latitude: row.latitude ?? linked?.latitude ?? null,
           longitude: row.longitude ?? linked?.longitude ?? null,
         });
-        const { data: profileData } = await (supabase as any)
+        const contactUserId = row.corretor_id || row.user_id;
+        const { data: profileData } = await supabase
           .from("public_broker_profiles")
           .select("full_name, phone")
-          .eq("user_id", row.user_id)
+          .eq("user_id", contactUserId)
           .maybeSingle();
         setBrokerProfile((profileData as PublicBrokerProfile | null) || null);
         trackPropertyView(id);
@@ -231,10 +235,14 @@ export default function ImovelPublico() {
   const openBrokerWhatsapp = (visit = false) => {
     if (!imovel) return;
     const number = toWhatsappNumber(brokerProfile?.phone);
+    if (!number) {
+      toast.info("O corretor responsável ainda não informou um WhatsApp.");
+      return;
+    }
     const message = visit
       ? `Olá! Gostaria de agendar uma visita ao imóvel: ${imovel.titulo}\n\n${window.location.href}`
       : buildWhatsappMessage({ id: imovel.id, titulo: imovel.titulo, tipo: imovel.tipo, preco: Number(imovel.preco) });
-    const target = number ? `https://wa.me/${number}?text=${encodeURIComponent(message)}` : `https://wa.me/?text=${encodeURIComponent(message)}`;
+    const target = `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
     window.open(target, "_blank", "noopener,noreferrer");
   };
 
