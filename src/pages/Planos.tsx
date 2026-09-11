@@ -11,6 +11,7 @@ import {
   CreditCard, LogOut, Heart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SharkAI } from "@/components/SharkAI";
 
 interface Plan {
   id: string;
