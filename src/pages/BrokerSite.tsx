@@ -107,11 +107,10 @@ interface DBProperty {
   ativo_site?: boolean | null;
 }
 
-function PropertyCard({ p, brokerName, whatsapp, onOpen, isOwner = false, onUpdated }: { p: DBProperty; brokerName: string; whatsapp: string; onOpen: (p: DBProperty) => void; isOwner?: boolean; onUpdated?: (id: string, patch: Partial<DBProperty>) => void }) {
-  const navigate = useNavigate();
+function PropertyCard({ p, brokerName, whatsapp, onOpen, isOwner = false, onUpdated, onEdit, onDelete }: { p: DBProperty; brokerName: string; whatsapp: string; onOpen: (p: DBProperty) => void; isOwner?: boolean; onUpdated?: (id: string, patch: Partial<DBProperty>) => void; onEdit?: (p: DBProperty) => void; onDelete?: (p: DBProperty) => void }) {
   const [saving, setSaving] = useState(false);
   const isSold = p.status === "Vendido";
-  const img = p.imagens?.[0] || "/placeholder.svg";
+  const img = (p.imagens || []).find((u) => !!u && u.trim() !== "") || "/placeholder.svg";
   const msg = encodeURIComponent(`Olá ${brokerName}! Tenho interesse no imóvel: ${p.titulo} - ${formatCurrency(p.preco)}`);
 
   const patchImovel = async (e: React.MouseEvent, patch: Partial<DBProperty>, successMsg: string) => {
@@ -123,6 +122,7 @@ function PropertyCard({ p, brokerName, whatsapp, onOpen, isOwner = false, onUpda
     toast.success(successMsg);
     onUpdated?.(p.id, patch);
   };
+
 
 
   const handleExclusividade = (e: React.MouseEvent) => {
