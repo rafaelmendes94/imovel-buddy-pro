@@ -210,6 +210,11 @@ export default function AdminPlanos() {
                   <Input type="number" placeholder="Dias trial" value={form.trial_days} disabled={form.is_free} onChange={e => setForm(p => ({ ...p, trial_days: e.target.value }))} />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
+                  <Input type="number" placeholder="Desconto (%)" value={form.discount_percent} onChange={e => setForm(p => ({ ...p, discount_percent: e.target.value }))} />
+                  <Input placeholder="Descrição / público" value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} />
+                </div>
+                <Input placeholder="Observações internas" value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} />
+                <div className="grid grid-cols-2 gap-3">
                   <Input type="number" placeholder="Máx imóveis" value={form.max_properties} onChange={e => setForm(p => ({ ...p, max_properties: e.target.value }))} />
                   {form.plan_type === "imobiliaria" && (
                     <Input type="number" placeholder="Máx corretores" value={form.max_brokers} onChange={e => setForm(p => ({ ...p, max_brokers: e.target.value }))} />
