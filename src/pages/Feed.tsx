@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { PLACEHOLDER_IMAGE } from "@/lib/placeholderImage";
+import { toSlug } from "@/lib/utils";
 import {
   buildWhatsappMessage,
   fetchImovelContact,
@@ -21,6 +22,7 @@ import {
   Loader2,
   X,
   BadgeCheck,
+  Building2,
 } from "lucide-react";
 
 interface FeedImovel {
@@ -39,6 +41,16 @@ interface FeedImovel {
   condicao: string | null;
   imagens: string[] | null;
   corretor_nome: string | null;
+  corretor_id: string | null;
+  corretor_cadastro_id: string | null;
+  imobiliaria_nome: string | null;
+}
+
+interface BrokerProfile {
+  nome: string;
+  avatar: string | null;
+  imobiliaria: string | null;
+  creci: string | null;
 }
 
 const brl = (v: number) =>
@@ -46,10 +58,14 @@ const brl = (v: number) =>
     ? v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })
     : "Valor a combinar";
 
+const avatarFallback = (name: string) =>
+  `https://ui-avatars.com/api/?name=${encodeURIComponent(name || "Corretor")}&background=0f4c81&color=fff&size=160`;
+
 function countBoxes(box?: string | null) {
   if (!box) return 0;
   return box.split(",").map((b) => b.trim()).filter(Boolean).length;
 }
+
 
 export default function Feed() {
   const { user } = useAuth();
