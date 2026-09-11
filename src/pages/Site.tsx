@@ -58,6 +58,7 @@ import { trackPropertyView } from "@/lib/trackPropertyView";
 import logoImg from "@/assets/logo.png";
 import { RoutePlanner } from "@/components/RoutePlanner";
 import { SharkAI } from "@/components/SharkAI";
+import sharkFriendlyIcon from "@/assets/shark-friendly.png";
 import { useAuth } from "@/hooks/useAuth";
 import { useGoogleMapsLoader } from "@/hooks/useGoogleMapsLoader";
 import { PartnersCarouselHome } from "@/components/PartnersCarouselHome";
