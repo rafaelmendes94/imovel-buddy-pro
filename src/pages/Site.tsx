@@ -1,3 +1,5 @@
+import { PublicMobileNav } from "@/components/PublicMobileNav";
+import { MobileQuickActions } from "@/components/MobileQuickActions";
 import { PLACEHOLDER_IMAGE } from "@/lib/placeholderImage";
 import { getPropertyUnitParts } from "@/lib/propertyIdentity";
 import { PUBLIC_IMOVEL_COLUMNS } from "@/lib/publicImovelColumns";
