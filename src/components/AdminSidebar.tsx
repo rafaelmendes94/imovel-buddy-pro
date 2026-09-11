@@ -31,6 +31,7 @@ const operationalItems = [
   { icon: Trophy, label: "Ranking", path: "/ranking", moduleKey: "relatorios" },
   { icon: Globe, label: "Site", path: "/site-editor", moduleKey: "site_editor" },
   { icon: Building2, label: "Imóveis", path: "/imoveis", moduleKey: "imoveis" },
+  { icon: Flame, label: "Feed de Imóveis", path: "/feed", moduleKey: "imoveis" },
   { icon: Building, label: "Edifícios", path: "/edificios", moduleKey: "edificios" },
   { icon: Fence, label: "Condomínios", path: "/condominios", moduleKey: "condominios" },
   { icon: Map, label: "Mapas Condomínio", path: "/mapas-condominio", moduleKey: "condominios" },

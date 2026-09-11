@@ -34,6 +34,7 @@ interface NavItem {
 const allNavItems: NavItem[] = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard", group: "GESTÃO", always: true },
   { icon: Building2, label: "Imóveis", path: "/imoveis", group: "GESTÃO", module: "imoveis" },
+  { icon: Flame, label: "Feed de Imóveis", path: "/feed", group: "GESTÃO", always: true },
   { icon: Map, label: "Mapas Condomínio", path: "/mapas-condominio", group: "GESTÃO", module: "condominios" },
   { icon: Globe, label: "Site", path: "/site-editor", group: "GESTÃO", module: "site" },
 

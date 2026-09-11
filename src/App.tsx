@@ -19,6 +19,7 @@ import ConstrutoraSite from "./pages/ConstrutoraSite";
 import Planos from "./pages/Planos";
 import PublicCityPhotos from "./pages/PublicCityPhotos";
 import ImovelPublico from "./pages/ImovelPublico";
+import Feed from "./pages/Feed";
 
 // Admin pages
 // AdminDashboard removed - using unified Dashboard
