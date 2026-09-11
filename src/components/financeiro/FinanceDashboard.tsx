@@ -222,8 +222,8 @@ export function FinanceDashboard({ subscribers, payments, plans, cycleOf, planOf
             <BarChart data={revenueSeries} margin={{ top: 8, right: 8, left: 0, bottom: 0 }} barGap={6}>
               <defs>
                 <linearGradient id="finBarPrev" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(var(--fin-sky))" stopOpacity={0.95} />
-                  <stop offset="100%" stopColor="hsl(var(--fin-sky))" stopOpacity={0.45} />
+                  <stop offset="0%" stopColor="hsl(var(--fin-amber))" stopOpacity={0.9} />
+                  <stop offset="100%" stopColor="hsl(var(--fin-amber))" stopOpacity={0.4} />
                 </linearGradient>
                 <linearGradient id="finBarRec" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="hsl(var(--fin-emerald))" stopOpacity={0.95} />
