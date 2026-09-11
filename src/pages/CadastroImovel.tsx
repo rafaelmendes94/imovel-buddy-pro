@@ -13,6 +13,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { AppLayout } from '@/components/AppLayout';
 import { BackButton } from '@/components/BackButton';
 import { CorretorSelect } from '@/components/CorretorSelect';
+import { EmpreendimentoPicker } from '@/components/EmpreendimentoPicker';
+import { tipoFromImovel } from '@/lib/empreendimentos';
 import { QuickPick } from '@/components/QuickPick';
 import { QuickPickWithConfirm } from '@/components/QuickPickWithConfirm';
 import { CepAutoFill, type AddressData } from '@/components/CepAutoFill';
