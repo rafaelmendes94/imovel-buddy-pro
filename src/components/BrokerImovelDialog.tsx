@@ -174,7 +174,7 @@ export function BrokerImovelDialog({ open, onOpenChange, imovel, ownerId, ownerN
         latitude: s(imovel.latitude),
         longitude: s(imovel.longitude),
       });
-      setEmpLink(tipoFromImovel(imovel));
+      setEmpLink(tipoFromImovel(imovel as any));
     } else {
       setForm(EMPTY);
       setEmpLink(null);
