@@ -1,6 +1,9 @@
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Home, Building2, Map, LayoutGrid, Flame } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, toSlug } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+
 
 type Item = {
   label: string;
