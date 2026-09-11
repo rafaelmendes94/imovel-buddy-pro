@@ -10,6 +10,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Zap, Video, FolderOpen } from "lucide-react";
+import { EmpreendimentoPicker } from "@/components/EmpreendimentoPicker";
+import type { EmpreendimentoRecord } from "@/lib/empreendimentos";
 
 const tipos = ["Apartamento", "Casa", "Comercial", "Terreno", "Lote", "Condomínio"];
 
@@ -40,6 +42,7 @@ export function QuickImovelForm({ onSaved, onCancel, defaultCidade = "", cancelL
   const [imagens, setImagens] = useState<string[]>([]);
   const [linkVideo, setLinkVideo] = useState("");
   const [driveUrl, setDriveUrl] = useState("");
+  const [emp, setEmp] = useState<EmpreendimentoRecord | null>(null);
 
   const reset = () => {
     setTitulo("");
@@ -55,6 +58,15 @@ export function QuickImovelForm({ onSaved, onCancel, defaultCidade = "", cancelL
     setImagens([]);
     setLinkVideo("");
     setDriveUrl("");
+    setEmp(null);
+  };
+
+  const selectEmpreendimento = (rec: EmpreendimentoRecord | null) => {
+    setEmp(rec);
+    if (!rec) return;
+    if (rec.endereco) setEndereco(rec.endereco);
+    if (rec.bairro) setBairro(rec.bairro);
+    if (rec.cidade) setCidade(rec.cidade);
   };
 
   const applyAI = (u: Record<string, any>) => {
@@ -107,6 +119,12 @@ export function QuickImovelForm({ onSaved, onCancel, defaultCidade = "", cancelL
       drive_fotos_url: driveUrl.trim() || null,
       corretor_nome: profile?.full_name || null,
       ativo_site: true,
+      empreendimento: emp?.nome || null,
+      edificio_id: emp?.tipo === "edificio" ? emp.id : null,
+      condominio_id: emp?.tipo === "condominio" ? emp.id : null,
+      empreendimento_id: emp?.tipo === "loteamento" ? emp.id : null,
+      latitude: emp?.latitude != null ? Number(emp.latitude) : null,
+      longitude: emp?.longitude != null ? Number(emp.longitude) : null,
     }]);
     setSaving(false);
 
@@ -161,6 +179,12 @@ export function QuickImovelForm({ onSaved, onCancel, defaultCidade = "", cancelL
           <div className="sm:col-span-2 space-y-1.5">
             <Label className="text-xs">Endereço</Label>
             <Input value={endereco} onChange={(e) => setEndereco(e.target.value)} />
+          </div>
+          <div className="sm:col-span-2">
+            <EmpreendimentoPicker
+              value={emp ? { tipo: emp.tipo, id: emp.id } : null}
+              onChange={selectEmpreendimento}
+            />
           </div>
         </div>
 

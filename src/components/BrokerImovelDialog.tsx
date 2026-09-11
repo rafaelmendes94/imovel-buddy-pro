@@ -11,6 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2, Save, Building2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { EmpreendimentoPicker } from "@/components/EmpreendimentoPicker";
+import { tipoFromImovel, type EmpreendimentoRecord, type EmpreendimentoTipo } from "@/lib/empreendimentos";
 
 const TIPOS = ["Apartamento", "Casa", "Comercial", "Terreno", "Lote", "Cobertura", "Sala", "Condomínio"];
 const FINALIDADES = ["Venda", "Aluguel", "Venda e Aluguel"];
@@ -75,6 +77,8 @@ type Form = {
   destaque_home: boolean;
   condicoes_pagamento: string[];
   imagens: string[];
+  latitude: string;
+  longitude: string;
 };
 
 const EMPTY: Form = {
@@ -88,6 +92,7 @@ const EMPTY: Form = {
   mobiliado: false, decorado: false, vista_mar: false, aceita_permuta: false,
   exclusividade: false, ativo_site: true, destaque_home: false,
   condicoes_pagamento: [], imagens: [],
+  latitude: "", longitude: "",
 };
 
 /** Converte digitação brasileira ("1.900.000,00" / "120,5") em número */
@@ -115,6 +120,7 @@ export function BrokerImovelDialog({ open, onOpenChange, imovel, ownerId, ownerN
   const [form, setForm] = useState<Form>(EMPTY);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [empLink, setEmpLink] = useState<{ tipo: EmpreendimentoTipo; id: string } | null>(null);
 
   const set = <K extends keyof Form>(key: K, value: Form[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -165,12 +171,38 @@ export function BrokerImovelDialog({ open, onOpenChange, imovel, ownerId, ownerN
         destaque_home: !!imovel.destaque_home,
         condicoes_pagamento: Array.isArray(imovel.condicoes_pagamento) ? imovel.condicoes_pagamento : [],
         imagens: Array.isArray(imovel.imagens) ? imovel.imagens : [],
+        latitude: s(imovel.latitude),
+        longitude: s(imovel.longitude),
       });
+      setEmpLink(tipoFromImovel(imovel as any));
     } else {
       setForm(EMPTY);
+      setEmpLink(null);
     }
     setErrors({});
   }, [open, imovel?.id]);
+
+  /** Vínculo real por ID + preenchimento automático do endereço e coordenadas. */
+  const handleEmpreendimento = (rec: EmpreendimentoRecord | null) => {
+    if (!rec) {
+      setEmpLink(null);
+      set("empreendimento", "");
+      return;
+    }
+    setEmpLink({ tipo: rec.tipo, id: rec.id });
+    setForm((prev) => ({
+      ...prev,
+      empreendimento: rec.nome,
+      endereco: rec.endereco || prev.endereco,
+      numero: rec.numero || prev.numero,
+      bairro: rec.bairro || prev.bairro,
+      cidade: rec.cidade || prev.cidade,
+      estado: rec.estado || prev.estado,
+      cep: rec.cep || prev.cep,
+      latitude: rec.latitude != null ? String(rec.latitude) : prev.latitude,
+      longitude: rec.longitude != null ? String(rec.longitude) : prev.longitude,
+    }));
+  };
 
   const applyAI = (u: Record<string, any>) => {
     const str = (v: any) => (v === undefined || v === null ? "" : String(v));
@@ -234,6 +266,11 @@ export function BrokerImovelDialog({ open, onOpenChange, imovel, ownerId, ownerN
     lote: form.lote.trim(),
     unidade: form.unidade.trim(),
     empreendimento: form.empreendimento.trim(),
+    edificio_id: empLink?.tipo === "edificio" ? empLink.id : null,
+    condominio_id: empLink?.tipo === "condominio" ? empLink.id : null,
+    empreendimento_id: empLink?.tipo === "loteamento" ? empLink.id : null,
+    latitude: form.latitude ? parseBrNumber(form.latitude) : null,
+    longitude: form.longitude ? parseBrNumber(form.longitude) : null,
     box: form.box.trim(),
     quartos: Math.trunc(parseBrNumber(form.quartos)),
     suites: Math.trunc(parseBrNumber(form.suites)),
@@ -361,10 +398,7 @@ export function BrokerImovelDialog({ open, onOpenChange, imovel, ownerId, ownerN
                   </div>
                 </div>
               </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">Empreendimento / Edifício</Label>
-                <Input value={form.empreendimento} onChange={(e) => set("empreendimento", e.target.value)} />
-              </div>
+              <EmpreendimentoPicker value={empLink} onChange={handleEmpreendimento} />
               <div className="space-y-1.5">
                 <Label className="text-xs">Unidade / Referência</Label>
                 <Input value={form.unidade} onChange={(e) => set("unidade", e.target.value)} placeholder="Ex: 1203" />

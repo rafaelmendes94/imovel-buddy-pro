@@ -13,6 +13,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { AppLayout } from '@/components/AppLayout';
 import { BackButton } from '@/components/BackButton';
 import { CorretorSelect } from '@/components/CorretorSelect';
+import { EmpreendimentoPicker } from '@/components/EmpreendimentoPicker';
+import { tipoFromImovel } from '@/lib/empreendimentos';
 import { QuickPick } from '@/components/QuickPick';
 import { QuickPickWithConfirm } from '@/components/QuickPickWithConfirm';
 import { CepAutoFill, type AddressData } from '@/components/CepAutoFill';
@@ -167,157 +169,32 @@ interface EntityOption {
   estado?: string;
 }
 
-function EntitySelector({ label, icon, table, value, onChange, onSelect, openId, setOpenId, id, createHref }: {
-  label: string;
-  icon: React.ReactNode;
-  table: 'edificios' | 'condominios' | 'empreendimentos';
-  value: string;
-  onChange: (id: string) => void;
-  onSelect: (entity: EntityOption) => void;
-  openId: string | null;
-  setOpenId: (id: string | null) => void;
-  id: string;
-  createHref?: string;
-}) {
-  const [options, setOptions] = useState<EntityOption[]>([]);
-  const [search, setSearch] = useState('');
-  const containerRef = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
-  const open = openId === id;
-
-  useEffect(() => {
-    const load = async () => {
-      const { data } = await supabase.from(table).select('*').order('nome');
-      if (data) setOptions(data as any);
-    };
-    load();
-  }, [table]);
-
-  useEffect(() => {
-    if (!open) return;
-    const handleClick = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setOpenId(null);
-        setSearch('');
-      }
-    };
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, [open, setOpenId]);
-
-  const filtered = options.filter(o => o.nome.toLowerCase().includes(search.toLowerCase()));
-  const selectedName = options.find(o => o.id === value)?.nome || '';
-
-  return (
-    <div className="space-y-1.5 relative" ref={containerRef}>
-      <Label className="text-xs flex items-center gap-1">{icon} {label}</Label>
-      <div className="relative flex items-center gap-2">
-        <Input
-          placeholder={`Buscar ${label.toLowerCase()}...`}
-          value={open ? search : selectedName}
-          onChange={(e) => { setSearch(e.target.value); setOpenId(id); }}
-          onFocus={() => setOpenId(id)}
-          className="flex-1"
-        />
-        {createHref && (
-          <button
-            type="button"
-            title={`Novo ${label}`}
-            onClick={() => navigate(createHref)}
-            className="shrink-0 flex items-center justify-center w-9 h-9 rounded-lg bg-secondary text-secondary-foreground hover:bg-muted transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-          </button>
-        )}
-        {value && (
-          <button type="button" onClick={() => { onChange(''); setSearch(''); }} className="absolute right-12 top-1/2 -translate-y-1/2">
-            <X className="w-3.5 h-3.5 text-muted-foreground" />
-          </button>
-        )}
-      </div>
-      {open && filtered.length > 0 && (
-        <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
-          {filtered.map(o => (
-            <button
-              key={o.id}
-              type="button"
-              onClick={() => {
-                onChange(o.id);
-                onSelect(o);
-                setSearch('');
-                setOpenId(null);
-              }}
-              className="w-full text-left px-3 py-2 text-sm hover:bg-accent transition-colors"
-            >
-              <span className="font-medium">{o.nome}</span>
-              {o.cidade && <span className="text-muted-foreground ml-2 text-xs">• {o.cidade}</span>}
-            </button>
-          ))}
-        </div>
-      )}
-      {open && filtered.length === 0 && search && (
-        <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-lg shadow-lg p-3 text-sm text-muted-foreground">
-          Nenhum encontrado
-        </div>
-      )}
-    </div>
-  );
-}
-
+/**
+ * Seletor único de empreendimento (edifício / condomínio horizontal / loteamento),
+ * compartilhado com o cadastro rápido da página do corretor.
+ */
 function EntitySelectorsGroup({ form, set, handleEntitySelect }: {
   form: any;
   set: (k: any, v: any) => void;
   handleEntitySelect: (entity: EntityOption) => void;
 }) {
-  const [openId, setOpenId] = useState<string | null>(null);
+  const link = tipoFromImovel({
+    edificio_id: form.edificio_id || null,
+    condominio_id: form.condominio_id || null,
+    empreendimento_id: form.empreendimento_id || null,
+  });
+
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-      <EntitySelector
-        id="edificio"
-        openId={openId}
-        setOpenId={setOpenId}
-        label="Edifício"
-        icon={<Building className="w-3.5 h-3.5" />}
-        table="edificios"
-        value={form.edificio_id}
-        onChange={(id) => {
-          set('edificio_id', id);
-          if (id) { set('condominio_id', ''); set('empreendimento_id', ''); }
-        }}
-        onSelect={handleEntitySelect}
-        createHref="/cadastro-edificio"
-      />
-      <EntitySelector
-        id="condominio"
-        openId={openId}
-        setOpenId={setOpenId}
-        label="Condomínio"
-        icon={<Fence className="w-3.5 h-3.5" />}
-        table="condominios"
-        value={form.condominio_id}
-        onChange={(id) => {
-          set('condominio_id', id);
-          if (id) { set('edificio_id', ''); set('empreendimento_id', ''); }
-        }}
-        onSelect={handleEntitySelect}
-        createHref="/cadastro-condominio"
-      />
-      <EntitySelector
-        id="loteamento"
-        openId={openId}
-        setOpenId={setOpenId}
-        label="Loteamento"
-        icon={<Landmark className="w-3.5 h-3.5" />}
-        table="empreendimentos"
-        value={form.empreendimento_id}
-        onChange={(id) => {
-          set('empreendimento_id', id);
-          if (id) { set('edificio_id', ''); set('condominio_id', ''); }
-        }}
-        onSelect={handleEntitySelect}
-        createHref="/cadastro-empreendimento"
-      />
-    </div>
+    <EmpreendimentoPicker
+      value={link}
+      onChange={(rec) => {
+        set('edificio_id', rec?.tipo === 'edificio' ? rec.id : '');
+        set('condominio_id', rec?.tipo === 'condominio' ? rec.id : '');
+        set('empreendimento_id', rec?.tipo === 'loteamento' ? rec.id : '');
+        set('empreendimento', rec?.nome || '');
+        if (rec) handleEntitySelect(rec as unknown as EntityOption);
+      }}
+    />
   );
 }
 
