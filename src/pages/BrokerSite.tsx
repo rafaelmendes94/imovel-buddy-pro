@@ -564,7 +564,7 @@ export default function BrokerSite() {
         </div>
       </header>
 
-      <main>
+      <main className="pb-[76px] md:pb-0">
         <section className="relative overflow-hidden border-b border-border">
           {coverUrl ? (
             <img src={coverUrl} alt={`Capa de ${brokerName}`} className="absolute inset-0 h-full w-full object-cover" />
