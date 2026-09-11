@@ -39,7 +39,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
 
       <MobileBottomNav
         items={[
-          { label: "Painel", icon: LayoutDashboard, path: "/admin" },
+          { label: "Painel", icon: LayoutDashboard, path: "/dashboard" },
           { label: "Imóveis", icon: Building2, path: "/imoveis" },
           { label: "Clientes", icon: Users, path: "/admin/clientes" },
           { label: "Planos", icon: CreditCard, path: "/admin/planos" },
