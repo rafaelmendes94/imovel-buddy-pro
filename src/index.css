@@ -197,9 +197,7 @@
   position: relative;
   overflow: hidden;
   border-radius: 1rem;
-  background:
-    linear-gradient(160deg, hsl(var(--fin-tone) / 0.10) 0%, hsl(var(--fin-tone) / 0.02) 45%, transparent 100%),
-    hsl(var(--card));
+  background-color: hsl(var(--card));
   box-shadow: 0 1px 2px hsl(var(--fin-tone) / 0.08), 0 8px 24px -18px hsl(var(--fin-tone) / 0.45);
   transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 }
@@ -208,37 +206,25 @@
   position: absolute;
   inset: 0 0 auto 0;
   height: 3px;
-  background: linear-gradient(90deg, hsl(var(--fin-tone) / 0.9), hsl(var(--fin-tone) / 0.15));
+  background: hsl(var(--fin-tone) / 0.9);
   opacity: 0.85;
-}
-.fin-card::after {
-  content: "";
-  position: absolute;
-  width: 8rem;
-  height: 8rem;
-  right: -3rem;
-  bottom: -4rem;
-  border-radius: 999px;
-  background: radial-gradient(circle, hsl(var(--fin-tone) / 0.18), transparent 70%);
-  transition: transform 0.4s ease, opacity 0.3s ease;
 }
 .fin-card:hover {
   transform: translateY(-3px);
   box-shadow: 0 2px 4px hsl(var(--fin-tone) / 0.1), 0 18px 38px -22px hsl(var(--fin-tone) / 0.55);
 }
-.fin-card:hover::after { transform: scale(1.15); opacity: 0.9; }
 
 .fin-icon {
   color: hsl(var(--fin-tone));
-  background: linear-gradient(140deg, hsl(var(--fin-tone) / 0.18), hsl(var(--fin-tone) / 0.06));
+  background: hsl(var(--fin-tone) / 0.12);
 }
 
 .fin-pill {
   color: hsl(var(--fin-tone));
   border-color: hsl(var(--fin-tone) / 0.28);
-  background: linear-gradient(135deg, hsl(var(--fin-tone) / 0.14), hsl(var(--fin-tone) / 0.04));
+  background: hsl(var(--fin-tone) / 0.08);
 }
-.fin-pill:hover { background: linear-gradient(135deg, hsl(var(--fin-tone) / 0.22), hsl(var(--fin-tone) / 0.08)); }
+.fin-pill:hover { background: hsl(var(--fin-tone) / 0.14); }
 
 @keyframes fin-rise {
   from { opacity: 0; transform: translateY(10px) scale(0.985); }
