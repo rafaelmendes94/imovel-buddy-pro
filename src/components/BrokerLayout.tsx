@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { BrokerSidebar } from "./BrokerSidebar";
-import { Menu } from "lucide-react";
+import { Menu, Home, Building2, Zap, Users, MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SubscriptionBanner } from "./SubscriptionBanner";
+import { MobileBottomNav } from "./MobileBottomNav";
 
 export function BrokerLayout({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -21,7 +22,7 @@ export function BrokerLayout({ children }: { children: React.ReactNode }) {
         "fixed inset-y-0 left-0 z-50 lg:hidden transition-transform duration-300",
         mobileOpen ? "translate-x-0" : "-translate-x-full"
       )}>
-        <BrokerSidebar />
+        <BrokerSidebar onNavigate={() => setMobileOpen(false)} />
       </div>
 
       <main className="flex-1 overflow-auto min-w-0">
@@ -32,8 +33,18 @@ export function BrokerLayout({ children }: { children: React.ReactNode }) {
           <span className="text-sm font-bold text-foreground">MV BROKER CONNECT</span>
         </div>
         <SubscriptionBanner />
-        {children}
+        <div className="pb-[76px] lg:pb-0">{children}</div>
       </main>
+
+      <MobileBottomNav
+        items={[
+          { label: "Início", icon: Home, path: "/painel" },
+          { label: "Imóveis", icon: Building2, path: "/painel/imoveis" },
+          { label: "Cadastrar", icon: Zap, path: "/painel/cadastro-rapido" },
+          { label: "Corretores", icon: Users, path: "/painel/corretores" },
+          { label: "Menu", icon: MoreHorizontal, action: () => setMobileOpen(true) },
+        ]}
+      />
     </div>
   );
 }

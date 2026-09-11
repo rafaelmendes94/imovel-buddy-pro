@@ -2,8 +2,9 @@ import { useState } from "react";
 import { AppSidebar } from "./AppSidebar";
 import { AdminSidebar } from "./AdminSidebar";
 import { useAuth } from "@/hooks/useAuth";
-import { Menu, X } from "lucide-react";
+import { Menu, Home, Building2, Search, Users, MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { MobileBottomNav } from "./MobileBottomNav";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -48,8 +49,18 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           </button>
           <span className="text-sm font-bold text-foreground">MV BROKER CONNECT</span>
         </div>
-        {children}
+        <div className="pb-[76px] lg:pb-0">{children}</div>
       </main>
+
+      <MobileBottomNav
+        items={[
+          { label: "Início", icon: Home, path: "/dashboard" },
+          { label: "Imóveis", icon: Building2, path: "/imoveis", matchPaths: ["/imoveis", "/cadastro-imovel"] },
+          { label: "Buscar", icon: Search, path: "/todos-imoveis" },
+          { label: "Corretores", icon: Users, path: "/corretores" },
+          { label: "Menu", icon: MoreHorizontal, action: () => setMobileOpen(true) },
+        ]}
+      />
     </div>
   );
 }
