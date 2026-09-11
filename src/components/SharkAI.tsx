@@ -146,7 +146,7 @@ export function SharkAI({ properties, onSelectProperty }: SharkAIProps) {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-24 left-6 z-50 w-16 h-16 rounded-full bg-gradient-to-br from-sky-500 to-blue-600 shadow-2xl flex items-center justify-center hover:shadow-sky-400/40 transition-shadow overflow-hidden border-2 border-sky-300/60"
+            className="hidden md:flex fixed bottom-24 left-6 z-50 w-16 h-16 rounded-full bg-gradient-to-br from-sky-500 to-blue-600 shadow-2xl items-center justify-center hover:shadow-sky-400/40 transition-shadow overflow-hidden border-2 border-sky-300/60"
           >
             <motion.img
               src={sharkFriendlyIcon}
