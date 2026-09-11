@@ -40,6 +40,7 @@ import { BrokerRatings } from "@/components/BrokerRatings";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PropertyDetailModal } from "@/components/PropertyDetailModal";
 import { QuickImovelForm } from "@/components/QuickImovelForm";
+import { PublicMobileNav } from "@/components/PublicMobileNav";
 import { toast } from "sonner";
 import { generateBrokerCatalogPdf } from "@/utils/generateBrokerCatalogPdf";
 
