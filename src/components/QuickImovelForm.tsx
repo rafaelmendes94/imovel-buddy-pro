@@ -10,6 +10,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Zap, Video, FolderOpen } from "lucide-react";
+import { EmpreendimentoPicker } from "@/components/EmpreendimentoPicker";
+import type { EmpreendimentoRecord } from "@/lib/empreendimentos";
 
 const tipos = ["Apartamento", "Casa", "Comercial", "Terreno", "Lote", "Condomínio"];
 
@@ -40,6 +42,7 @@ export function QuickImovelForm({ onSaved, onCancel, defaultCidade = "", cancelL
   const [imagens, setImagens] = useState<string[]>([]);
   const [linkVideo, setLinkVideo] = useState("");
   const [driveUrl, setDriveUrl] = useState("");
+  const [emp, setEmp] = useState<EmpreendimentoRecord | null>(null);
 
   const reset = () => {
     setTitulo("");
