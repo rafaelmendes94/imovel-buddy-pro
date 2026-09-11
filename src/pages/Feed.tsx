@@ -282,7 +282,7 @@ export default function Feed() {
           <p className="text-white/80 text-sm">Nenhum imóvel publicado no feed ainda.</p>
         </div>
       ) : (
-        <div className="h-full overflow-y-auto snap-y snap-mandatory no-scrollbar">
+        <div ref={scrollRef} className="h-full overflow-y-auto snap-y snap-mandatory no-scrollbar">
           {cards.map((imovel) => {
             const img = imovel.imagens?.[0] || PLACEHOLDER_IMAGE;
             const broker = brokerOf(imovel);
@@ -298,15 +298,16 @@ export default function Feed() {
             return (
               <section
                 key={imovel.id}
+                data-feed-id={imovel.id}
                 className="relative h-full w-full snap-start snap-always overflow-hidden"
                 onPointerEnter={() => registerOpen(imovel.id)}
               >
                 <div className="absolute inset-0 mx-auto max-w-lg md:max-w-xl">
-                  <img
-                    src={img}
+                  <FeedVideo
+                    link={imovel.link_video}
+                    poster={img}
                     alt={imovel.titulo}
-                    loading="lazy"
-                    className="w-full h-full object-cover"
+                    active={activeId === imovel.id}
                     onClick={() => openDetails(imovel)}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-black/40 pointer-events-none" />
