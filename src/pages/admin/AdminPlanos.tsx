@@ -34,11 +34,22 @@ interface PlanForm {
   modules: string[];
   plan_type: string;
   is_free: boolean;
+  description: string;
+  discount_percent: string;
+  notes: string;
 }
 
 const emptyForm: PlanForm = {
   name: "", price: "", billing_cycle: "monthly", trial_days: "7",
   max_properties: "50", max_brokers: "5", modules: [], plan_type: "corretor", is_free: false,
+  description: "", discount_percent: "0", notes: "",
+};
+
+const CYCLE_LABELS: Record<string, string> = {
+  monthly: "Mensal",
+  quarterly: "Trimestral",
+  semiannual: "Semestral",
+  annual: "Anual",
 };
 
 export default function AdminPlanos() {
