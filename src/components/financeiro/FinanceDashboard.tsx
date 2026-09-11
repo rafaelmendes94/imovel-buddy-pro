@@ -10,7 +10,13 @@ import {
 } from "@/lib/finance";
 import { differenceInDays, endOfMonth, isSameMonth, isSameYear, startOfMonth, startOfWeek, subMonths } from "date-fns";
 
-const PALETTE = ["hsl(215 60% 35%)", "hsl(43 74% 49%)", "hsl(160 60% 40%)", "hsl(0 70% 55%)", "hsl(260 50% 55%)"];
+const PALETTE = [
+  "hsl(var(--fin-blue))",
+  "hsl(var(--fin-navy))",
+  "hsl(var(--fin-ink))",
+  "hsl(var(--fin-slate))",
+  "hsl(210 45% 62%)",
+];
 
 interface Props {
   subscribers: FinSubscriber[];
@@ -103,11 +109,11 @@ export function FinanceDashboard({ subscribers, payments, plans, cycleOf, planOf
     { label: "Receita do ano", value: formatCurrency(stats.year), tone: "var(--fin-emerald)" },
     { label: "A receber no mês", value: formatCurrency(stats.receivable), tone: "var(--fin-amber)" },
     { label: "Em atraso", value: formatCurrency(stats.late), tone: "var(--fin-rose)" },
-    { label: "MRR", value: formatCurrency(stats.mrr), tone: "var(--fin-sky)" },
-    { label: "Ticket médio", value: formatCurrency(stats.ticket), tone: "var(--fin-sky)" },
-    { label: "Assinantes ativos", value: String(stats.activeCount), tone: "var(--fin-violet)" },
-    { label: "Novos no mês", value: String(stats.newCount), tone: "var(--fin-violet)" },
-    { label: "Cancelamentos", value: String(stats.cancelled), tone: "var(--fin-slate)" },
+    { label: "MRR", value: formatCurrency(stats.mrr), tone: "var(--fin-blue)" },
+    { label: "Ticket médio", value: formatCurrency(stats.ticket), tone: "var(--fin-blue)" },
+    { label: "Assinantes ativos", value: String(stats.activeCount), tone: "var(--fin-navy)" },
+    { label: "Novos no mês", value: String(stats.newCount), tone: "var(--fin-blue)" },
+    { label: "Cancelamentos", value: String(stats.cancelled), tone: "var(--fin-ink)" },
     { label: "Inadimplência", value: `${stats.defaultRate.toFixed(1)}%`, tone: "var(--fin-rose)" },
   ];
 
@@ -216,8 +222,8 @@ export function FinanceDashboard({ subscribers, payments, plans, cycleOf, planOf
             <BarChart data={revenueSeries} margin={{ top: 8, right: 8, left: 0, bottom: 0 }} barGap={6}>
               <defs>
                 <linearGradient id="finBarPrev" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(var(--fin-sky))" stopOpacity={0.95} />
-                  <stop offset="100%" stopColor="hsl(var(--fin-sky))" stopOpacity={0.45} />
+                  <stop offset="0%" stopColor="hsl(var(--fin-amber))" stopOpacity={0.9} />
+                  <stop offset="100%" stopColor="hsl(var(--fin-amber))" stopOpacity={0.4} />
                 </linearGradient>
                 <linearGradient id="finBarRec" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="hsl(var(--fin-emerald))" stopOpacity={0.95} />
@@ -275,8 +281,8 @@ export function FinanceDashboard({ subscribers, payments, plans, cycleOf, planOf
               <BarChart data={byPlan} layout="vertical" margin={{ left: 4, right: 16, top: 4, bottom: 4 }}>
                 <defs>
                   <linearGradient id="finBarPlan" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="hsl(var(--fin-violet))" stopOpacity={0.9} />
-                    <stop offset="100%" stopColor="hsl(var(--fin-sky))" stopOpacity={0.7} />
+                    <stop offset="0%" stopColor="hsl(var(--fin-navy))" stopOpacity={0.95} />
+                    <stop offset="100%" stopColor="hsl(var(--fin-blue))" stopOpacity={0.7} />
                   </linearGradient>
                 </defs>
                 <XAxis type="number" hide />

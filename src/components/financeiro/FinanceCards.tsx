@@ -32,16 +32,16 @@ export function FinanceCards({ metrics, activeCard, activeAlert, onCard, onAlert
     { key: "revenue_month", label: "Receita do mês", value: formatCurrency(metrics.revenueMonth), icon: DollarSign, tone: "var(--fin-emerald)" },
     { key: "receivable", label: "A receber", value: formatCurrency(metrics.receivable), icon: CalendarClock, tone: "var(--fin-amber)" },
     { key: "overdue", label: "Em atraso", value: formatCurrency(metrics.overdue), icon: AlertTriangle, tone: "var(--fin-rose)" },
-    { key: "active", label: "Assinantes ativos", value: String(metrics.activeCount), icon: Users, tone: "var(--fin-sky)" },
+    { key: "active", label: "Assinantes ativos", value: String(metrics.activeCount), icon: Users, tone: "var(--fin-blue)" },
     { key: "defaulting", label: "Inadimplentes", value: String(metrics.defaultingCount), icon: Ban, tone: "var(--fin-rose)" },
-    { key: "mrr", label: "MRR", value: formatCurrency(metrics.mrr), icon: Repeat, tone: "var(--fin-violet)" },
+    { key: "mrr", label: "MRR", value: formatCurrency(metrics.mrr), icon: Repeat, tone: "var(--fin-navy)" },
   ];
 
   const alerts: { key: AlertKey; label: string; count: number; icon: any; tone: string }[] = [
     { key: "due_today", label: "Vencem hoje", count: metrics.dueToday, icon: CalendarDays, tone: "var(--fin-amber)" },
-    { key: "due_7", label: "Próximos 7 dias", count: metrics.due7, icon: TrendingUp, tone: "var(--fin-sky)" },
+    { key: "due_7", label: "Próximos 7 dias", count: metrics.due7, icon: TrendingUp, tone: "var(--fin-blue)" },
     { key: "late", label: "Atrasados", count: metrics.lateCount, icon: AlertTriangle, tone: "var(--fin-rose)" },
-    { key: "blocked", label: "Clientes bloqueados", count: metrics.blockedCount, icon: Ban, tone: "var(--fin-slate)" },
+    { key: "blocked", label: "Clientes bloqueados", count: metrics.blockedCount, icon: Ban, tone: "var(--fin-rose)" },
   ];
 
   return (
