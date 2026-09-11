@@ -56,6 +56,13 @@ Deno.serve(async (req) => {
     });
 
     if (createErr || !created.user) {
+      const msg = (createErr?.message || "").toLowerCase();
+      if (msg.includes("already been registered") || msg.includes("already registered") || msg.includes("already exists")) {
+        return new Response(
+          JSON.stringify({ error: "Este e-mail já possui uma conta no sistema. Use outro e-mail ou vincule o corretor existente." }),
+          { status: 409, headers: corsHeaders },
+        );
+      }
       return new Response(JSON.stringify({ error: createErr?.message || "Erro ao criar usuário" }), { status: 400, headers: corsHeaders });
     }
 

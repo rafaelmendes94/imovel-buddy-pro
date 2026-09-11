@@ -164,7 +164,15 @@ export default function Brokers() {
     const { data, error } = await supabase.functions.invoke("admin-create-broker", { body: form });
     setCreating(false);
     if (error || (data as any)?.error) {
-      toast({ title: "Erro ao cadastrar", description: error?.message || (data as any)?.error, variant: "destructive" });
+      let description = (data as any)?.error || error?.message || "Erro ao cadastrar";
+      const ctx = (error as any)?.context;
+      if (ctx && typeof ctx.json === "function") {
+        try {
+          const body = await ctx.json();
+          if (body?.error) description = body.error;
+        } catch { /* mantém mensagem padrão */ }
+      }
+      toast({ title: "Erro ao cadastrar", description, variant: "destructive" });
       return;
     }
     if ((data as any)?.warning) {
