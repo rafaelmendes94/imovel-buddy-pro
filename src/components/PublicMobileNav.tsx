@@ -51,7 +51,7 @@ export function PublicMobileNav() {
 
   const right: Item[] = [
     { label: "Mapa", icon: Map, path: "/mapa" },
-    { label: "Meus Imóveis", icon: LayoutGrid, path: brokerPath },
+    { label: "Meus Imóveis", icon: LayoutGrid, path: myBrokerPath },
   ];
 
   const isActive = (item: Item) => {
