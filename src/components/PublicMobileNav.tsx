@@ -15,9 +15,32 @@ export const MV_MOBILE_NAV_INTENT = "mv_mobile_nav_intent";
 
 export function PublicMobileNav() {
   const location = useLocation();
+  const [myBrokerPath, setMyBrokerPath] = useState<string>("/parceiros");
 
-  const brokerSlugMatch = location.pathname.match(/^\/corretor\/([^/]+)/);
-  const brokerPath = brokerSlugMatch ? `/corretor/${brokerSlugMatch[1]}` : "/parceiros";
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setMyBrokerPath("/parceiros");
+        return;
+      }
+      const { data: profile } = await (supabase as any)
+        .from("public_broker_profiles")
+        .select("full_name")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (cancelled) return;
+      const name = profile?.full_name || user.user_metadata?.full_name || user.email;
+      if (name) {
+        setMyBrokerPath(`/corretor/${toSlug(String(name))}`);
+      } else {
+        setMyBrokerPath("/parceiros");
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
 
   const left: Item[] = [
     { label: "Início", icon: Home, path: "/" },
