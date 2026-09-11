@@ -1029,6 +1029,7 @@ export type Database = {
           empreendimento_id: string | null
           endereco: string
           estado: string | null
+          finalidade: string
           fotos_pdf_url: string | null
           id: string
           imagens: string[] | null
@@ -1042,6 +1043,7 @@ export type Database = {
           local_chaves: string | null
           longitude: number | null
           lote: string | null
+          mobiliado: boolean
           numero: string | null
           outras_caracteristicas: string[] | null
           padrao: string | null
@@ -1066,6 +1068,8 @@ export type Database = {
           updated_at: string
           user_id: string
           vagas: number
+          valor_condominio: number
+          valor_iptu: number
           views: number
           vista: string | null
           vista_mar: boolean
@@ -1103,6 +1107,7 @@ export type Database = {
           empreendimento_id?: string | null
           endereco?: string
           estado?: string | null
+          finalidade?: string
           fotos_pdf_url?: string | null
           id?: string
           imagens?: string[] | null
@@ -1116,6 +1121,7 @@ export type Database = {
           local_chaves?: string | null
           longitude?: number | null
           lote?: string | null
+          mobiliado?: boolean
           numero?: string | null
           outras_caracteristicas?: string[] | null
           padrao?: string | null
@@ -1140,6 +1146,8 @@ export type Database = {
           updated_at?: string
           user_id: string
           vagas?: number
+          valor_condominio?: number
+          valor_iptu?: number
           views?: number
           vista?: string | null
           vista_mar?: boolean
@@ -1177,6 +1185,7 @@ export type Database = {
           empreendimento_id?: string | null
           endereco?: string
           estado?: string | null
+          finalidade?: string
           fotos_pdf_url?: string | null
           id?: string
           imagens?: string[] | null
@@ -1190,6 +1199,7 @@ export type Database = {
           local_chaves?: string | null
           longitude?: number | null
           lote?: string | null
+          mobiliado?: boolean
           numero?: string | null
           outras_caracteristicas?: string[] | null
           padrao?: string | null
@@ -1214,6 +1224,8 @@ export type Database = {
           updated_at?: string
           user_id?: string
           vagas?: number
+          valor_condominio?: number
+          valor_iptu?: number
           views?: number
           vista?: string | null
           vista_mar?: boolean
