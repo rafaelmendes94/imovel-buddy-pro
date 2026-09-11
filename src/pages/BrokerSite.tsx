@@ -33,13 +33,25 @@ import {
   CheckCircle2,
   RotateCcw,
   EyeOff,
+  Trash2,
+  Plus,
 } from "lucide-react";
 import { cn, toSlug } from "@/lib/utils";
 import { trackPropertyView } from "@/lib/trackPropertyView";
 import { BrokerRatings } from "@/components/BrokerRatings";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PropertyDetailModal } from "@/components/PropertyDetailModal";
-import { QuickImovelForm } from "@/components/QuickImovelForm";
+import { BrokerImovelDialog } from "@/components/BrokerImovelDialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { PublicMobileNav } from "@/components/PublicMobileNav";
 import { toast } from "sonner";
 import { generateBrokerCatalogPdf } from "@/utils/generateBrokerCatalogPdf";
