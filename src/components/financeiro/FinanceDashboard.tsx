@@ -103,11 +103,11 @@ export function FinanceDashboard({ subscribers, payments, plans, cycleOf, planOf
     { label: "Receita do ano", value: formatCurrency(stats.year), tone: "var(--fin-emerald)" },
     { label: "A receber no mês", value: formatCurrency(stats.receivable), tone: "var(--fin-amber)" },
     { label: "Em atraso", value: formatCurrency(stats.late), tone: "var(--fin-rose)" },
-    { label: "MRR", value: formatCurrency(stats.mrr), tone: "var(--fin-sky)" },
-    { label: "Ticket médio", value: formatCurrency(stats.ticket), tone: "var(--fin-sky)" },
-    { label: "Assinantes ativos", value: String(stats.activeCount), tone: "var(--fin-violet)" },
-    { label: "Novos no mês", value: String(stats.newCount), tone: "var(--fin-violet)" },
-    { label: "Cancelamentos", value: String(stats.cancelled), tone: "var(--fin-slate)" },
+    { label: "MRR", value: formatCurrency(stats.mrr), tone: "var(--fin-blue)" },
+    { label: "Ticket médio", value: formatCurrency(stats.ticket), tone: "var(--fin-blue)" },
+    { label: "Assinantes ativos", value: String(stats.activeCount), tone: "var(--fin-navy)" },
+    { label: "Novos no mês", value: String(stats.newCount), tone: "var(--fin-blue)" },
+    { label: "Cancelamentos", value: String(stats.cancelled), tone: "var(--fin-ink)" },
     { label: "Inadimplência", value: `${stats.defaultRate.toFixed(1)}%`, tone: "var(--fin-rose)" },
   ];
 
