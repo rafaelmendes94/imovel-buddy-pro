@@ -19,8 +19,8 @@ export function PublicMobileNav() {
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+
+    const resolvePath = async (user: any) => {
       if (!user) {
         setMyBrokerPath("/parceiros");
         return;
@@ -37,9 +37,31 @@ export function PublicMobileNav() {
       } else {
         setMyBrokerPath("/parceiros");
       }
+    };
+
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await resolvePath(user);
+      } else {
+        // aguarda hidratação da sessão caso o token ainda esteja sendo carregado
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+          async (event, session) => {
+            if (event === "INITIAL_SESSION" || event === "SIGNED_IN") {
+              await resolvePath(session?.user ?? null);
+            }
+            if (event === "SIGNED_OUT") {
+              setMyBrokerPath("/parceiros");
+            }
+          }
+        );
+        return () => subscription.unsubscribe();
+      }
     })();
+
     return () => { cancelled = true; };
   }, []);
+
 
 
   const left: Item[] = [
