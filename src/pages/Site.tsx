@@ -25,7 +25,6 @@ import {
   Fence,
   Home,
   TreePine,
-  ArrowUp,
   Filter,
   X,
   Waves,
