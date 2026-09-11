@@ -8,7 +8,6 @@ import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { formatCurrency } from "@/data/mockData";
 import { supabase } from "@/integrations/supabase/client";
-import { PropertyDetailModal } from "@/components/PropertyDetailModal";
 import {
   Search,
   MapPin,
@@ -764,8 +763,7 @@ export default function Site() {
   const [filterNeighborhood, setFilterNeighborhood] = useState("");
   const [filterCaracteristica, setFilterCaracteristica] = useState("");
   const [filterBroker, setFilterBroker] = useState("");
-  const [selectedProperty, setSelectedProperty] = useState<SiteProperty | null>(null);
-  useEffect(() => { trackPropertyView(selectedProperty?.id); }, [selectedProperty?.id]);
+  const openProperty = useCallback((property: SiteProperty) => navigate(`/imovel/${property.id}`), [navigate]);
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [priceSort, setPriceSort] = useState<"" | "asc" | "desc">("");
   const [showFullRanking, setShowFullRanking] = useState(false);
@@ -1426,7 +1424,7 @@ export default function Site() {
             />
             {filteredAll.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {filteredAll.map((p) => <PropertyCard key={p.id} property={p} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} isFavorited={favoriteIds.includes(p.id)} onToggleFavorite={toggleFavorite} isInRoute={routeIds.includes(p.id)} onToggleRoute={toggleRoute} />)}
+                {filteredAll.map((p) => <PropertyCard key={p.id} property={p} onSelect={openProperty} onViewTerm={setViewingTerm} isFavorited={favoriteIds.includes(p.id)} onToggleFavorite={toggleFavorite} isInRoute={routeIds.includes(p.id)} onToggleRoute={toggleRoute} />)}
               </div>
             ) : (
               <p className="text-center py-12 text-gray-400">Nenhum imóvel encontrado com os filtros selecionados.</p>
@@ -1460,7 +1458,7 @@ export default function Site() {
                         className="flex-shrink-0 px-3 w-[85vw] sm:w-[45vw] md:w-[33.333vw] lg:w-[25vw]"
                         aria-hidden={idx >= soldProperties.length ? "true" : undefined}
                       >
-                        <PropertyCard property={{ ...p, status: "Vendido" as const }} onSelect={setSelectedProperty} onViewTerm={setViewingTerm} hideStamp isFavorited={favoriteIds.includes(p.id)} onToggleFavorite={toggleFavorite} isInRoute={routeIds.includes(p.id)} onToggleRoute={toggleRoute} />
+                        <PropertyCard property={{ ...p, status: "Vendido" as const }} onSelect={openProperty} onViewTerm={setViewingTerm} hideStamp isFavorited={favoriteIds.includes(p.id)} onToggleFavorite={toggleFavorite} isInRoute={routeIds.includes(p.id)} onToggleRoute={toggleRoute} />
                       </div>
                     ))}
                   </div>
@@ -1752,14 +1750,7 @@ export default function Site() {
       </footer>
 
       <RoutePlanner properties={routeProperties as any} />
-      <SharkAI properties={siteProperties as any} onSelectProperty={setSelectedProperty as any} />
-      <PropertyDetailModal
-        property={selectedProperty as any}
-        onClose={() => setSelectedProperty(null)}
-        allProperties={siteProperties as any}
-        brokerInfo={brokerInfo}
-        onSelectSimilar={(p: any) => setSelectedProperty(p)}
-      />
+      <SharkAI properties={siteProperties as any} onSelectProperty={openProperty as any} />
 
       {/* Term Viewer Modal */}
       {viewingTerm && (
@@ -1801,7 +1792,7 @@ export default function Site() {
           allProperties={siteProperties}
           favoriteIds={favoriteIds}
           onToggleFavorite={toggleFavorite}
-          onSelectProperty={setSelectedProperty}
+          onSelectProperty={openProperty}
           onClose={() => setShowFavorites(false)}
           routeIds={routeIds}
           onToggleRoute={toggleRoute}

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import {
   ArrowLeft,
@@ -40,7 +40,6 @@ import { cn, toSlug } from "@/lib/utils";
 import { trackPropertyView } from "@/lib/trackPropertyView";
 import { BrokerRatings } from "@/components/BrokerRatings";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { PropertyDetailModal } from "@/components/PropertyDetailModal";
 import { BrokerImovelDialog } from "@/components/BrokerImovelDialog";
 import {
   AlertDialog,
@@ -308,6 +307,7 @@ function PropertyCard({ p, brokerName, whatsapp, onOpen, isOwner = false, onUpda
 
 export default function BrokerSite() {
   const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
 
   const [brokerName, setBrokerName] = useState("");
   const [properties, setProperties] = useState<DBProperty[]>([]);
@@ -325,8 +325,6 @@ export default function BrokerSite() {
   const [ratingModalOpen, setRatingModalOpen] = useState(false);
   const [avgRating, setAvgRating] = useState<number | null>(null);
   const [ratingsCount, setRatingsCount] = useState(0);
-  const [selectedProperty, setSelectedProperty] = useState<any>(null);
-  useEffect(() => { trackPropertyView(selectedProperty?.id); }, [selectedProperty?.id]);
   const [profileAvatar, setProfileAvatar] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<any | null>(null);
@@ -905,7 +903,7 @@ export default function BrokerSite() {
                   </div>
                 </div>
                 <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                  {items.map((property) => <PropertyCard key={property.id} p={property} brokerName={brokerName} whatsapp={whatsapp} onOpen={setSelectedProperty} isOwner={isOwner} onUpdated={handlePropertyUpdated} onEdit={openEditProperty} onDelete={setDeleteTarget} />)}
+                  {items.map((property) => <PropertyCard key={property.id} p={property} brokerName={brokerName} whatsapp={whatsapp} onOpen={(selected) => navigate(`/imovel/${selected.id}`)} isOwner={isOwner} onUpdated={handlePropertyUpdated} onEdit={openEditProperty} onDelete={setDeleteTarget} />)}
                 </div>
               </section>
             ))
@@ -1012,40 +1010,6 @@ export default function BrokerSite() {
 
 
 
-        <PropertyDetailModal
-          property={selectedProperty}
-          onClose={() => setSelectedProperty(null)}
-          allProperties={properties.map((row) => ({
-            id: row.id,
-            title: row.titulo,
-            address: row.endereco,
-            city: row.cidade,
-            type: row.tipo,
-            status: row.status,
-            price: Number(row.preco),
-            area: Number(row.area),
-            bedrooms: row.quartos,
-            bathrooms: row.banheiros,
-            parking: row.vagas,
-            broker: brokerName,
-            image: row.imagens?.[0] || "/placeholder.svg",
-            images: row.imagens || [],
-            createdAt: row.created_at,
-            decorated: row.decorado,
-            seaView: row.vista_mar,
-            acceptsExchange: row.aceita_permuta,
-            paymentConditions: row.condicoes_pagamento || [],
-            empreendimento: row.empreendimento || "",
-            unitNumber: row.unidade || "",
-            boxNumber: row.box || "",
-            quadra: row.quadra || "",
-            lote: row.lote || "",
-            exclusivityTermUrl: row.termo_exclusividade_url || "",
-            neighborhood: row.bairro || "",
-          })) as any}
-          brokerInfo={{ [brokerName]: { photo: avatarUrl, whatsapp } }}
-          onSelectSimilar={(p: any) => setSelectedProperty(p)}
-        />
       </main>
 
 
