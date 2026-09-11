@@ -49,8 +49,18 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           </button>
           <span className="text-sm font-bold text-foreground">MV BROKER CONNECT</span>
         </div>
-        {children}
+        <div className="pb-[76px] lg:pb-0">{children}</div>
       </main>
+
+      <MobileBottomNav
+        items={[
+          { label: "Início", icon: Home, path: "/dashboard" },
+          { label: "Imóveis", icon: Building2, path: "/imoveis", matchPaths: ["/imoveis", "/cadastro-imovel"] },
+          { label: "Buscar", icon: Search, path: "/todos-imoveis" },
+          { label: "Corretores", icon: Users, path: "/corretores" },
+          { label: "Menu", icon: MoreHorizontal, action: () => setMobileOpen(true) },
+        ]}
+      />
     </div>
   );
 }
