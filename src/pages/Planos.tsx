@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { formatCurrency } from "@/data/mockData";
 import logoImg from "@/assets/logo.png";
+import sharkFriendlyIcon from "@/assets/shark-friendly.png";
 import {
   Check, Star, Zap, Crown, Rocket, ArrowRight, Building2,
   Users, ChevronDown, User, LayoutDashboard, Settings,
