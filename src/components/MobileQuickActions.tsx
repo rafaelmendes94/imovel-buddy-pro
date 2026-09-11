@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { Building2, Search, Map, Images, Users, Handshake, CreditCard, Phone } from "lucide-react";
+import { Building2, Search, Map, Images, Users, Handshake, CreditCard } from "lucide-react";
+import sharkFriendlyIcon from "@/assets/shark-friendly.png";
 
 const shortcuts = [
   { label: "Imóveis", icon: Building2, to: "/todos-imoveis" },
@@ -28,15 +29,16 @@ export function MobileQuickActions() {
             <span className="text-[10.5px] font-semibold text-foreground text-center leading-tight">{s.label}</span>
           </Link>
         ))}
-        <a
-          href="#contato"
+        <button
+          type="button"
+          onClick={() => window.dispatchEvent(new CustomEvent("mv:open-shark-ai"))}
           className="flex flex-col items-center justify-center gap-2 rounded-2xl bg-card border border-border shadow-sm px-1 py-3.5 active:scale-95 transition-transform"
         >
           <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10">
-            <Phone className="w-5 h-5 text-primary" />
+            <img src={sharkFriendlyIcon} alt="IA" className="w-6 h-6 object-contain" />
           </span>
-          <span className="text-[10.5px] font-semibold text-foreground text-center leading-tight">Contato</span>
-        </a>
+          <span className="text-[10.5px] font-semibold text-foreground text-center leading-tight">IA</span>
+        </button>
       </div>
     </section>
   );
