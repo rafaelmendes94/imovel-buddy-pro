@@ -1,0 +1,1 @@
+CREATE POLICY "Authenticated can view active corretores" ON public.corretores FOR SELECT TO authenticated USING (ativo = true);

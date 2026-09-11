@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { PLACEHOLDER_IMAGE } from "@/lib/placeholderImage";
+import { toSlug } from "@/lib/utils";
 import {
   buildWhatsappMessage,
   fetchImovelContact,
@@ -21,6 +22,7 @@ import {
   Loader2,
   X,
   BadgeCheck,
+  Building2,
 } from "lucide-react";
 
 interface FeedImovel {
@@ -39,6 +41,16 @@ interface FeedImovel {
   condicao: string | null;
   imagens: string[] | null;
   corretor_nome: string | null;
+  corretor_id: string | null;
+  corretor_cadastro_id: string | null;
+  imobiliaria_nome: string | null;
+}
+
+interface BrokerProfile {
+  nome: string;
+  avatar: string | null;
+  imobiliaria: string | null;
+  creci: string | null;
 }
 
 const brl = (v: number) =>
@@ -46,10 +58,14 @@ const brl = (v: number) =>
     ? v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })
     : "Valor a combinar";
 
+const avatarFallback = (name: string) =>
+  `https://ui-avatars.com/api/?name=${encodeURIComponent(name || "Corretor")}&background=0f4c81&color=fff&size=160`;
+
 function countBoxes(box?: string | null) {
   if (!box) return 0;
   return box.split(",").map((b) => b.trim()).filter(Boolean).length;
 }
+
 
 export default function Feed() {
   const { user } = useAuth();
@@ -62,6 +78,10 @@ export default function Feed() {
   const [contact, setContact] = useState<ImovelContact | null>(null);
   const [contactLoading, setContactLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [corretores, setCorretores] = useState<Record<string, BrokerProfile>>({});
+  const [brokerProfiles, setBrokerProfiles] = useState<Record<string, BrokerProfile>>({});
+  const [profileFor, setProfileFor] = useState<FeedImovel | null>(null);
+  const [profileCount, setProfileCount] = useState<number | null>(null);
   const openedRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
@@ -70,19 +90,62 @@ export default function Feed() {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase
-        .from("imoveis")
-        .select(
-          "id, titulo, tipo, preco, quartos, suites, box, vagas, area, cidade, bairro, empreendimento, condicao, imagens, corretor_nome"
-        )
-        .eq("ativo_site", true)
-        .eq("status", "Disponível")
-        .order("created_at", { ascending: false })
-        .limit(60);
+      const [{ data }, { data: cor }, { data: profs }] = await Promise.all([
+        supabase
+          .from("imoveis")
+          .select(
+            "id, titulo, tipo, preco, quartos, suites, box, vagas, area, cidade, bairro, empreendimento, condicao, imagens, corretor_nome, corretor_id, corretor_cadastro_id, imobiliaria_nome"
+          )
+          .eq("ativo_site", true)
+          .eq("status", "Disponível")
+          .order("created_at", { ascending: false })
+          .limit(60),
+        (supabase as any).from("corretores").select("id, nome, foto_url, creci").eq("ativo", true),
+        (supabase as any).from("public_broker_profiles").select("user_id, full_name, avatar_url"),
+      ]);
       setItems(((data as any[]) || []) as FeedImovel[]);
+      const corMap: Record<string, BrokerProfile> = {};
+      ((cor as any[]) || []).forEach((c) => {
+        corMap[c.id] = { nome: c.nome, avatar: c.foto_url || null, imobiliaria: null, creci: c.creci || null };
+      });
+      setCorretores(corMap);
+      const profMap: Record<string, BrokerProfile> = {};
+      ((profs as any[]) || []).forEach((p) => {
+        profMap[p.user_id] = { nome: p.full_name, avatar: p.avatar_url || null, imobiliaria: null, creci: null };
+      });
+      setBrokerProfiles(profMap);
       setLoading(false);
     })();
   }, []);
+
+  /** Perfil do corretor responsável pelo imóvel (mesmo destino do WhatsApp). */
+  const brokerOf = (imovel: FeedImovel): BrokerProfile => {
+    const cad = imovel.corretor_cadastro_id ? corretores[imovel.corretor_cadastro_id] : undefined;
+    const prof = imovel.corretor_id ? brokerProfiles[imovel.corretor_id] : undefined;
+    return {
+      nome: cad?.nome || imovel.corretor_nome || prof?.nome || "Corretor responsável",
+      avatar: cad?.avatar || prof?.avatar || null,
+      imobiliaria: imovel.imobiliaria_nome || null,
+      creci: cad?.creci || null,
+    };
+  };
+
+  const openProfile = async (imovel: FeedImovel) => {
+    setProfileFor(imovel);
+    setProfileCount(null);
+    const nome = brokerOf(imovel).nome;
+    let query = (supabase as any)
+      .from("imoveis")
+      .select("id", { count: "exact", head: true })
+      .eq("ativo_site", true)
+      .eq("status", "Disponível");
+    query = imovel.corretor_cadastro_id
+      ? query.eq("corretor_cadastro_id", imovel.corretor_cadastro_id)
+      : query.eq("corretor_nome", nome);
+    const { count } = await query;
+    setProfileCount(count ?? 0);
+  };
+
 
   useEffect(() => {
     if (!user) return;
@@ -187,6 +250,7 @@ export default function Feed() {
         <div className="h-full overflow-y-auto snap-y snap-mandatory no-scrollbar">
           {cards.map((imovel) => {
             const img = imovel.imagens?.[0] || PLACEHOLDER_IMAGE;
+            const broker = brokerOf(imovel);
             const isFav = favorites.includes(imovel.id);
             const boxes = countBoxes(imovel.box);
             const specs = [
@@ -211,6 +275,27 @@ export default function Feed() {
                     onClick={() => openDetails(imovel)}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-black/40 pointer-events-none" />
+
+                  {/* Corretor responsável */}
+                  <button
+                    onClick={() => openProfile(imovel)}
+                    className="absolute left-4 top-[calc(max(12px,env(safe-area-inset-top))+40px)] flex items-center gap-2.5 text-left active:opacity-70"
+                    aria-label="Ver perfil do corretor responsável"
+                  >
+                    <img
+                      src={broker.avatar || avatarFallback(broker.nome)}
+                      alt={broker.nome}
+                      className="w-10 h-10 rounded-full object-cover ring-2 ring-white/80 shadow-md"
+                    />
+                    <span className="leading-tight drop-shadow">
+                      <span className="block text-sm font-semibold">{broker.nome}</span>
+                      {broker.imobiliaria && (
+                        <span className="block text-[11px] text-white/75">{broker.imobiliaria}</span>
+                      )}
+                    </span>
+                  </button>
+
+
 
                   {/* Barra vertical de ações */}
                   <div className="absolute right-3 bottom-32 flex flex-col items-center gap-5">
@@ -318,6 +403,65 @@ export default function Feed() {
           </div>
         </div>
       )}
+
+      {/* Mini perfil do corretor */}
+      {profileFor && (() => {
+        const b = brokerOf(profileFor);
+        return (
+          <div
+            className="fixed inset-0 z-50 bg-black/70 flex items-end sm:items-center justify-center p-0 sm:p-4"
+            onClick={() => setProfileFor(null)}
+          >
+            <div
+              className="w-full sm:max-w-sm bg-card text-foreground rounded-t-2xl sm:rounded-2xl p-5 space-y-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-start gap-3">
+                <img
+                  src={b.avatar || avatarFallback(b.nome)}
+                  alt={b.nome}
+                  className="w-16 h-16 rounded-full object-cover ring-2 ring-border"
+                />
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-base font-bold truncate">{b.nome}</h3>
+                  {b.imobiliaria && (
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Building2 className="w-3.5 h-3.5" /> {b.imobiliaria}
+                    </p>
+                  )}
+                  {b.creci && <p className="text-xs text-muted-foreground">CRECI {b.creci}</p>}
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {profileCount === null ? "Contando imóveis..." : `${profileCount} imóvel(is) ativo(s)`}
+                  </p>
+                </div>
+                <button onClick={() => setProfileFor(null)} aria-label="Fechar" className="p-1">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => navigate(`/corretor/${toSlug(b.nome)}`)}
+                  className="h-11 rounded-xl border border-border font-semibold text-sm"
+                >
+                  Ver imóveis
+                </button>
+                <button
+                  onClick={() => {
+                    const imovel = profileFor;
+                    setProfileFor(null);
+                    openContact(imovel);
+                  }}
+                  className="h-11 rounded-xl bg-emerald-500 text-white font-semibold text-sm flex items-center justify-center gap-2"
+                >
+                  <MessageCircle className="w-4 h-4" /> WhatsApp
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
+
   );
 }
