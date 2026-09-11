@@ -96,43 +96,82 @@ export function FinanceDashboard({ subscribers, payments, plans, cycleOf, planOf
     return Object.entries(grouped).map(([name, value]) => ({ name, value }));
   }, [subscribers, planOf]);
 
-  const kpis = [
-    { label: "Receita hoje", value: formatCurrency(stats.today) },
-    { label: "Receita da semana", value: formatCurrency(stats.week) },
-    { label: "Receita do mês", value: formatCurrency(stats.month) },
-    { label: "Receita do ano", value: formatCurrency(stats.year) },
-    { label: "A receber no mês", value: formatCurrency(stats.receivable) },
-    { label: "Em atraso", value: formatCurrency(stats.late) },
-    { label: "MRR", value: formatCurrency(stats.mrr) },
-    { label: "Ticket médio", value: formatCurrency(stats.ticket) },
-    { label: "Assinantes ativos", value: String(stats.activeCount) },
-    { label: "Novos no mês", value: String(stats.newCount) },
-    { label: "Cancelamentos", value: String(stats.cancelled) },
-    { label: "Inadimplência", value: `${stats.defaultRate.toFixed(1)}%` },
+  const kpis: { label: string; value: string; tone: string }[] = [
+    { label: "Receita hoje", value: formatCurrency(stats.today), tone: "var(--fin-emerald)" },
+    { label: "Receita da semana", value: formatCurrency(stats.week), tone: "var(--fin-emerald)" },
+    { label: "Receita do mês", value: formatCurrency(stats.month), tone: "var(--fin-emerald)" },
+    { label: "Receita do ano", value: formatCurrency(stats.year), tone: "var(--fin-emerald)" },
+    { label: "A receber no mês", value: formatCurrency(stats.receivable), tone: "var(--fin-amber)" },
+    { label: "Em atraso", value: formatCurrency(stats.late), tone: "var(--fin-rose)" },
+    { label: "MRR", value: formatCurrency(stats.mrr), tone: "var(--fin-sky)" },
+    { label: "Ticket médio", value: formatCurrency(stats.ticket), tone: "var(--fin-sky)" },
+    { label: "Assinantes ativos", value: String(stats.activeCount), tone: "var(--fin-violet)" },
+    { label: "Novos no mês", value: String(stats.newCount), tone: "var(--fin-violet)" },
+    { label: "Cancelamentos", value: String(stats.cancelled), tone: "var(--fin-slate)" },
+    { label: "Inadimplência", value: `${stats.defaultRate.toFixed(1)}%`, tone: "var(--fin-rose)" },
   ];
+
+  const totalByType = byType.reduce((s, d) => s + d.value, 0);
+
+  const axis = {
+    tick: { fontSize: 11, fill: "hsl(var(--muted-foreground))" },
+    stroke: "hsl(var(--border))",
+    tickLine: false,
+    axisLine: false,
+  } as const;
+
+  const ChartTooltip = ({ active, payload, label, money = true }: any) => {
+    if (!active || !payload?.length) return null;
+    return (
+      <div className="rounded-xl border border-border/40 bg-foreground/90 backdrop-blur px-3 py-2 shadow-lg">
+        {label && <p className="text-[11px] font-medium text-background/70 mb-1">{label}</p>}
+        {payload.map((p: any) => (
+          <div key={p.dataKey ?? p.name} className="flex items-center gap-2 text-xs text-background">
+            <span className="w-2 h-2 rounded-full" style={{ background: p.color || p.payload?.fill }} />
+            <span className="text-background/80">{p.name}</span>
+            <span className="font-semibold tabular-nums ml-auto">
+              {money ? formatCurrency(Number(p.value)) : String(p.value)}
+            </span>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const legend = (
+    <Legend
+      iconType="circle"
+      iconSize={8}
+      wrapperStyle={{ fontSize: 12, paddingTop: 8, color: "hsl(var(--muted-foreground))" }}
+    />
+  );
 
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-3">
-        {kpis.map((k) => (
-          <Card key={k.label} className="p-3.5">
-            <p className="text-[11px] text-muted-foreground leading-tight">{k.label}</p>
-            <p className="text-lg font-bold text-foreground mt-1 tabular-nums">{k.value}</p>
+        {kpis.map((k, i) => (
+          <Card
+            key={k.label}
+            style={{ ["--fin-tone" as any]: k.tone, animationDelay: `${i * 40}ms` }}
+            className="fin-card fin-rise p-3.5 border border-border/60"
+          >
+            <p className="relative text-[10px] font-medium uppercase tracking-wide text-muted-foreground leading-tight">{k.label}</p>
+            <p className="relative text-xl font-bold text-foreground mt-1.5 tabular-nums tracking-tight">{k.value}</p>
           </Card>
         ))}
       </div>
 
-      <Card className="p-4">
-        <div className="flex items-center justify-between gap-3 mb-4">
+      <Card className="fin-rise p-4 md:p-5 rounded-2xl border-border/60 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
           <div>
-            <h3 className="font-semibold text-foreground">Recebido x previsto</h3>
-            <p className="text-xs text-muted-foreground">
+            <h3 className="font-semibold text-foreground text-base">Receita por período</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
               Previsão do mês: {formatCurrency(stats.month)} recebido + {formatCurrency(stats.receivable)} previsto ={" "}
               <span className="font-semibold text-foreground">{formatCurrency(stats.forecast)}</span>
             </p>
           </div>
           <Select value={range} onValueChange={setRange}>
-            <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-full sm:w-44 rounded-xl"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="30">Últimos 6 meses</SelectItem>
               <SelectItem value="90">Últimos 3 meses</SelectItem>
@@ -140,61 +179,143 @@ export function FinanceDashboard({ subscribers, payments, plans, cycleOf, planOf
             </SelectContent>
           </Select>
         </div>
-        <div className="h-72">
+        <div className="h-64 md:h-72">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={revenueSeries}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-              <XAxis dataKey="mes" tick={{ fontSize: 12 }} />
-              <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
-              <Tooltip formatter={(v: any) => formatCurrency(Number(v))} />
-              <Legend />
-              <Bar dataKey="previsto" name="Previsto" fill={PALETTE[0]} radius={[4, 4, 0, 0]} />
-              <Bar dataKey="recebido" name="Recebido" fill={PALETTE[2]} radius={[4, 4, 0, 0]} />
+            <AreaChart data={revenueSeries} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id="finArea" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="hsl(var(--fin-emerald))" stopOpacity={0.38} />
+                  <stop offset="100%" stopColor="hsl(var(--fin-emerald))" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="4 6" vertical={false} stroke="hsl(var(--border))" strokeOpacity={0.7} />
+              <XAxis dataKey="mes" {...axis} />
+              <YAxis {...axis} width={48} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+              <Tooltip content={<ChartTooltip />} cursor={{ stroke: "hsl(var(--border))" }} />
+              <Area
+                type="monotone"
+                dataKey="recebido"
+                name="Recebido"
+                stroke="hsl(var(--fin-emerald))"
+                strokeWidth={2.5}
+                fill="url(#finArea)"
+                dot={{ r: 2.5, strokeWidth: 0, fill: "hsl(var(--fin-emerald))" }}
+                activeDot={{ r: 5, strokeWidth: 2, stroke: "hsl(var(--card))" }}
+                animationDuration={900}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </Card>
+
+      <Card className="fin-rise p-4 md:p-5 rounded-2xl border-border/60 shadow-sm">
+        <h3 className="font-semibold text-foreground text-base">Recebido x previsto</h3>
+        <p className="text-xs text-muted-foreground mt-0.5 mb-5">Comparativo mensal de valores previstos e efetivamente recebidos</p>
+        <div className="h-64 md:h-72">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={revenueSeries} margin={{ top: 8, right: 8, left: 0, bottom: 0 }} barGap={6}>
+              <defs>
+                <linearGradient id="finBarPrev" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="hsl(var(--fin-sky))" stopOpacity={0.95} />
+                  <stop offset="100%" stopColor="hsl(var(--fin-sky))" stopOpacity={0.45} />
+                </linearGradient>
+                <linearGradient id="finBarRec" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="hsl(var(--fin-emerald))" stopOpacity={0.95} />
+                  <stop offset="100%" stopColor="hsl(var(--fin-emerald))" stopOpacity={0.45} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="4 6" vertical={false} stroke="hsl(var(--border))" strokeOpacity={0.7} />
+              <XAxis dataKey="mes" {...axis} />
+              <YAxis {...axis} width={48} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+              <Tooltip content={<ChartTooltip />} cursor={{ fill: "hsl(var(--muted))", fillOpacity: 0.5 }} />
+              {legend}
+              <Bar dataKey="previsto" name="Previsto" fill="url(#finBarPrev)" radius={[8, 8, 0, 0]} maxBarSize={38} animationDuration={800} />
+              <Bar dataKey="recebido" name="Recebido" fill="url(#finBarRec)" radius={[8, 8, 0, 0]} maxBarSize={38} animationDuration={900} />
             </BarChart>
           </ResponsiveContainer>
         </div>
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <Card className="p-4">
-          <h3 className="font-semibold text-foreground mb-3">Receita por tipo de cliente</h3>
-          <div className="h-56">
+        <Card className="fin-rise p-4 md:p-5 rounded-2xl border-border/60 shadow-sm">
+          <h3 className="font-semibold text-foreground">Receita por tipo de cliente</h3>
+          <p className="text-xs text-muted-foreground mt-0.5">Imobiliárias x corretores autônomos</p>
+          <div className="h-56 relative mt-2">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={byType} dataKey="value" nameKey="name" outerRadius={80} label>
+                <Pie
+                  data={byType}
+                  dataKey="value"
+                  nameKey="name"
+                  innerRadius={58}
+                  outerRadius={82}
+                  paddingAngle={3}
+                  stroke="hsl(var(--card))"
+                  strokeWidth={2}
+                  animationDuration={900}
+                >
                   {byType.map((_, i) => <Cell key={i} fill={PALETTE[i % PALETTE.length]} />)}
                 </Pie>
-                <Tooltip formatter={(v: any) => formatCurrency(Number(v))} />
+                <Tooltip content={<ChartTooltip />} />
+                {legend}
               </PieChart>
             </ResponsiveContainer>
+            <div className="absolute inset-x-0 top-[38%] -translate-y-1/2 text-center pointer-events-none">
+              <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Total</p>
+              <p className="text-base font-bold text-foreground tabular-nums">{formatCurrency(totalByType)}</p>
+            </div>
           </div>
         </Card>
 
-        <Card className="p-4">
-          <h3 className="font-semibold text-foreground mb-3">Assinaturas por plano</h3>
+        <Card className="fin-rise p-4 md:p-5 rounded-2xl border-border/60 shadow-sm">
+          <h3 className="font-semibold text-foreground">Assinaturas por plano</h3>
+          <p className="text-xs text-muted-foreground mt-0.5 mb-2">Distribuição de assinantes</p>
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={byPlan} layout="vertical" margin={{ left: 10 }}>
+              <BarChart data={byPlan} layout="vertical" margin={{ left: 4, right: 16, top: 4, bottom: 4 }}>
+                <defs>
+                  <linearGradient id="finBarPlan" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="hsl(var(--fin-violet))" stopOpacity={0.9} />
+                    <stop offset="100%" stopColor="hsl(var(--fin-sky))" stopOpacity={0.7} />
+                  </linearGradient>
+                </defs>
                 <XAxis type="number" hide />
-                <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 11 }} />
-                <Tooltip />
-                <Bar dataKey="value" name="Assinantes" fill={PALETTE[1]} radius={[0, 4, 4, 0]} />
+                <YAxis type="category" dataKey="name" width={120} {...axis} />
+                <Tooltip content={<ChartTooltip money={false} />} cursor={{ fill: "hsl(var(--muted))", fillOpacity: 0.5 }} />
+                <Bar dataKey="value" name="Assinantes" fill="url(#finBarPlan)" radius={[0, 8, 8, 0]} maxBarSize={22} animationDuration={800} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </Card>
 
-        <Card className="p-4">
-          <h3 className="font-semibold text-foreground mb-3">Evolução da inadimplência</h3>
+        <Card className="fin-rise p-4 md:p-5 rounded-2xl border-border/60 shadow-sm">
+          <h3 className="font-semibold text-foreground">Evolução da inadimplência</h3>
+          <p className="text-xs text-muted-foreground mt-0.5 mb-2">Valores em atraso por mês</p>
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={revenueSeries}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                <XAxis dataKey="mes" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
-                <Tooltip formatter={(v: any) => formatCurrency(Number(v))} />
-                <Line type="monotone" dataKey="atraso" name="Em atraso" stroke={PALETTE[3]} strokeWidth={2} dot={false} />
-              </LineChart>
+              <AreaChart data={revenueSeries} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="finAreaLate" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="hsl(var(--fin-rose))" stopOpacity={0.32} />
+                    <stop offset="100%" stopColor="hsl(var(--fin-rose))" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="4 6" vertical={false} stroke="hsl(var(--border))" strokeOpacity={0.7} />
+                <XAxis dataKey="mes" {...axis} />
+                <YAxis {...axis} width={44} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+                <Tooltip content={<ChartTooltip />} cursor={{ stroke: "hsl(var(--border))" }} />
+                <Area
+                  type="monotone"
+                  dataKey="atraso"
+                  name="Em atraso"
+                  stroke="hsl(var(--fin-rose))"
+                  strokeWidth={2.5}
+                  fill="url(#finAreaLate)"
+                  dot={false}
+                  activeDot={{ r: 5, strokeWidth: 2, stroke: "hsl(var(--card))" }}
+                  animationDuration={900}
+                />
+              </AreaChart>
             </ResponsiveContainer>
           </div>
         </Card>
