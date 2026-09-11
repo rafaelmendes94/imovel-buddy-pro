@@ -34,11 +34,22 @@ interface PlanForm {
   modules: string[];
   plan_type: string;
   is_free: boolean;
+  description: string;
+  discount_percent: string;
+  notes: string;
 }
 
 const emptyForm: PlanForm = {
   name: "", price: "", billing_cycle: "monthly", trial_days: "7",
   max_properties: "50", max_brokers: "5", modules: [], plan_type: "corretor", is_free: false,
+  description: "", discount_percent: "0", notes: "",
+};
+
+const CYCLE_LABELS: Record<string, string> = {
+  monthly: "Mensal",
+  quarterly: "Trimestral",
+  semiannual: "Semestral",
+  annual: "Anual",
 };
 
 export default function AdminPlanos() {
@@ -82,6 +93,9 @@ export default function AdminPlanos() {
       modules: form.modules,
       plan_type: form.plan_type,
       is_free: form.is_free,
+      description: form.description || null,
+      discount_percent: parseFloat(form.discount_percent || "0") || 0,
+      notes: form.notes || null,
     };
 
     if (editId) {
@@ -111,6 +125,9 @@ export default function AdminPlanos() {
       modules: Array.isArray(plan.modules) ? plan.modules : [],
       plan_type: plan.plan_type || "corretor",
       is_free: !!plan.is_free,
+      description: plan.description || "",
+      discount_percent: String(plan.discount_percent ?? 0),
+      notes: plan.notes || "",
     });
     setDialogOpen(true);
   };
@@ -176,6 +193,7 @@ export default function AdminPlanos() {
                     <SelectContent>
                       <SelectItem value="monthly">Mensal</SelectItem>
                       <SelectItem value="quarterly">Trimestral</SelectItem>
+                      <SelectItem value="semiannual">Semestral</SelectItem>
                       <SelectItem value="annual">Anual</SelectItem>
                     </SelectContent>
                   </Select>
@@ -191,6 +209,11 @@ export default function AdminPlanos() {
                   <Input type="number" placeholder="Preço (R$)" value={form.price} disabled={form.is_free} onChange={e => setForm(p => ({ ...p, price: e.target.value }))} />
                   <Input type="number" placeholder="Dias trial" value={form.trial_days} disabled={form.is_free} onChange={e => setForm(p => ({ ...p, trial_days: e.target.value }))} />
                 </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <Input type="number" placeholder="Desconto (%)" value={form.discount_percent} onChange={e => setForm(p => ({ ...p, discount_percent: e.target.value }))} />
+                  <Input placeholder="Descrição / público" value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} />
+                </div>
+                <Input placeholder="Observações internas" value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} />
                 <div className="grid grid-cols-2 gap-3">
                   <Input type="number" placeholder="Máx imóveis" value={form.max_properties} onChange={e => setForm(p => ({ ...p, max_properties: e.target.value }))} />
                   {form.plan_type === "imobiliaria" && (
@@ -240,7 +263,8 @@ export default function AdminPlanos() {
                 </div>
                 <p className="text-2xl font-bold text-accent">R$ {plan.price}</p>
                 <p className="text-xs text-muted-foreground">
-                  {plan.billing_cycle === "monthly" ? "Mensal" : plan.billing_cycle === "quarterly" ? "Trimestral" : "Anual"}
+                  {CYCLE_LABELS[plan.billing_cycle] || plan.billing_cycle}
+                  {Number(plan.discount_percent) > 0 ? ` · ${plan.discount_percent}% desc.` : ""}
                   {" · "}{plan.trial_days} dias trial · {plan.max_properties} imóveis · {plan.max_brokers} corretores
                 </p>
                 <div className="flex flex-wrap gap-1">

@@ -944,6 +944,57 @@ export type Database = {
           },
         ]
       }
+      financial_activity_logs: {
+        Row: {
+          actor_id: string | null
+          actor_name: string | null
+          created_at: string
+          description: string
+          event_type: string
+          id: string
+          metadata: Json
+          payment_id: string | null
+          subscriber_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          actor_name?: string | null
+          created_at?: string
+          description: string
+          event_type: string
+          id?: string
+          metadata?: Json
+          payment_id?: string | null
+          subscriber_id: string
+        }
+        Update: {
+          actor_id?: string | null
+          actor_name?: string | null
+          created_at?: string
+          description?: string
+          event_type?: string
+          id?: string
+          metadata?: Json
+          payment_id?: string | null
+          subscriber_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_activity_logs_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_activity_logs_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: false
+            referencedRelation: "subscribers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       imoveis: {
         Row: {
           aceita_permuta: boolean
@@ -1452,30 +1503,51 @@ export type Database = {
       payments: {
         Row: {
           amount: number
+          competence: string | null
           created_at: string
+          discount_amount: number
           due_date: string
           id: string
+          is_courtesy: boolean
+          method: string | null
+          notes: string | null
           paid_at: string | null
+          paid_by: string | null
+          paid_by_name: string | null
           reference_month: string
           status: string
           subscriber_id: string
         }
         Insert: {
           amount: number
+          competence?: string | null
           created_at?: string
+          discount_amount?: number
           due_date: string
           id?: string
+          is_courtesy?: boolean
+          method?: string | null
+          notes?: string | null
           paid_at?: string | null
+          paid_by?: string | null
+          paid_by_name?: string | null
           reference_month: string
           status?: string
           subscriber_id: string
         }
         Update: {
           amount?: number
+          competence?: string | null
           created_at?: string
+          discount_amount?: number
           due_date?: string
           id?: string
+          is_courtesy?: boolean
+          method?: string | null
+          notes?: string | null
           paid_at?: string | null
+          paid_by?: string | null
+          paid_by_name?: string | null
           reference_month?: string
           status?: string
           subscriber_id?: string
@@ -1494,6 +1566,8 @@ export type Database = {
         Row: {
           billing_cycle: Database["public"]["Enums"]["billing_cycle"]
           created_at: string
+          description: string | null
+          discount_percent: number
           id: string
           is_active: boolean
           is_free: boolean
@@ -1501,6 +1575,7 @@ export type Database = {
           max_properties: number
           modules: Json
           name: string
+          notes: string | null
           plan_type: string
           price: number
           trial_days: number
@@ -1508,6 +1583,8 @@ export type Database = {
         Insert: {
           billing_cycle?: Database["public"]["Enums"]["billing_cycle"]
           created_at?: string
+          description?: string | null
+          discount_percent?: number
           id?: string
           is_active?: boolean
           is_free?: boolean
@@ -1515,6 +1592,7 @@ export type Database = {
           max_properties?: number
           modules?: Json
           name: string
+          notes?: string | null
           plan_type?: string
           price?: number
           trial_days?: number
@@ -1522,6 +1600,8 @@ export type Database = {
         Update: {
           billing_cycle?: Database["public"]["Enums"]["billing_cycle"]
           created_at?: string
+          description?: string | null
+          discount_percent?: number
           id?: string
           is_active?: boolean
           is_free?: boolean
@@ -1529,6 +1609,7 @@ export type Database = {
           max_properties?: number
           modules?: Json
           name?: string
+          notes?: string | null
           plan_type?: string
           price?: number
           trial_days?: number
@@ -1725,34 +1806,49 @@ export type Database = {
       }
       subscriber_brokers: {
         Row: {
+          avatar_url: string | null
           created_at: string
           creci: string | null
           email: string | null
           id: string
+          last_access_at: string | null
+          member_role: string
           name: string
           phone: string | null
+          previous_status: string | null
           status: string
           subscriber_id: string
+          user_id: string | null
         }
         Insert: {
+          avatar_url?: string | null
           created_at?: string
           creci?: string | null
           email?: string | null
           id?: string
+          last_access_at?: string | null
+          member_role?: string
           name: string
           phone?: string | null
+          previous_status?: string | null
           status?: string
           subscriber_id: string
+          user_id?: string | null
         }
         Update: {
+          avatar_url?: string | null
           created_at?: string
           creci?: string | null
           email?: string | null
           id?: string
+          last_access_at?: string | null
+          member_role?: string
           name?: string
           phone?: string | null
+          previous_status?: string | null
           status?: string
           subscriber_id?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -1766,42 +1862,83 @@ export type Database = {
       }
       subscribers: {
         Row: {
+          blocked_at: string | null
+          cancel_reason: string | null
+          cancelled_at: string | null
+          city: string | null
           created_at: string
           creci: string | null
+          document: string | null
+          due_day: number | null
           email: string | null
           id: string
           name: string
+          next_due_date: string | null
           notes: string | null
+          owner_user_id: string | null
           phone: string | null
           plan: string
+          plan_id: string | null
+          start_date: string | null
           status: string
+          subscriber_type: string
           updated_at: string
         }
         Insert: {
+          blocked_at?: string | null
+          cancel_reason?: string | null
+          cancelled_at?: string | null
+          city?: string | null
           created_at?: string
           creci?: string | null
+          document?: string | null
+          due_day?: number | null
           email?: string | null
           id?: string
           name: string
+          next_due_date?: string | null
           notes?: string | null
+          owner_user_id?: string | null
           phone?: string | null
           plan?: string
+          plan_id?: string | null
+          start_date?: string | null
           status?: string
+          subscriber_type?: string
           updated_at?: string
         }
         Update: {
+          blocked_at?: string | null
+          cancel_reason?: string | null
+          cancelled_at?: string | null
+          city?: string | null
           created_at?: string
           creci?: string | null
+          document?: string | null
+          due_day?: number | null
           email?: string | null
           id?: string
           name?: string
+          next_due_date?: string | null
           notes?: string | null
+          owner_user_id?: string | null
           phone?: string | null
           plan?: string
+          plan_id?: string | null
+          start_date?: string | null
           status?: string
+          subscriber_type?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "subscribers_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       subscription_payments: {
         Row: {
@@ -2137,7 +2274,7 @@ export type Database = {
     }
     Enums: {
       app_role: "super_admin" | "admin_staff" | "broker" | "partner"
-      billing_cycle: "monthly" | "quarterly" | "annual"
+      billing_cycle: "monthly" | "quarterly" | "annual" | "semiannual"
       subscription_status:
         | "trial"
         | "active"
@@ -2273,7 +2410,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["super_admin", "admin_staff", "broker", "partner"],
-      billing_cycle: ["monthly", "quarterly", "annual"],
+      billing_cycle: ["monthly", "quarterly", "annual", "semiannual"],
       subscription_status: [
         "trial",
         "active",
