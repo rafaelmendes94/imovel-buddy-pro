@@ -21,7 +21,7 @@ const allModules: Record<string, { icon: React.ComponentType<{ className?: strin
   corretores: { icon: Users, label: "Corretores", path: "/painel/corretores" },
 };
 
-export function BrokerSidebar() {
+export function BrokerSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
   const location = useLocation();
   const { signOut, profile, subscription } = useAuth();
 
