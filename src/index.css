@@ -179,12 +179,18 @@
 
 /* ===== Financeiro: tons, degradês e animações ===== */
 :root {
-  --fin-emerald: 158 64% 40%;
-  --fin-sky: 199 89% 45%;
-  --fin-amber: 38 92% 50%;
-  --fin-rose: 350 78% 55%;
-  --fin-violet: 262 60% 56%;
-  --fin-slate: 215 25% 45%;
+  /* Base institucional: azul, preto e neutros */
+  --fin-blue: 210 80% 34%;
+  --fin-navy: 213 60% 18%;
+  --fin-ink: 213 25% 26%;
+  --fin-slate: 215 18% 42%;
+  /* Cores semânticas (uso restrito) */
+  --fin-emerald: 156 52% 36%;
+  --fin-amber: 38 82% 46%;
+  --fin-rose: 356 66% 48%;
+  /* aliases legados */
+  --fin-sky: var(--fin-blue);
+  --fin-violet: var(--fin-navy);
 }
 
 .fin-card {
