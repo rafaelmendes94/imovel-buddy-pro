@@ -230,7 +230,7 @@ export function normalizeAiImovel(ai: AiImovel): NormalizedImovel {
   let lote = txt(ai.lote);
 
   // Quadra/lote nunca podem virar unidade.
-  if (!quadra && !lote && unidade && /^[A-Za-z]{1,3}\s*[-/]\s*\d{1,4}$/.test(unidade)) {
+  if (!quadra && !lote && unidade && looksLikeQuadraLote(unidade)) {
     const q = parseQuadraLote(unidade);
     if (q.quadra) {
       quadra = q.quadra;
@@ -249,9 +249,12 @@ export function normalizeAiImovel(ai: AiImovel): NormalizedImovel {
     }
   }
 
-  const box = cleanBox(txt(ai.box));
-  const boxCount = box ? box.split(/\s*(?:,|\/|\be\b|\+)\s*/i).filter(Boolean).length : 0;
-  const vagas = int(ai.vagas) || boxCount;
+  const boxNums = cleanBox(txt(ai.box))
+    .split(/\s*(?:,|\/|\be\b|\+|&)\s*/i)
+    .map((b) => b.trim())
+    .filter((b) => /^\d{1,4}[A-Za-z]?$/.test(b));
+  const box = boxNums.join(" e ");
+  const vagas = int(ai.vagas) || boxNums.length;
 
   const cidade = titleCase(txt(ai.cidade));
   const bairro = titleCase(txt(ai.bairro));
