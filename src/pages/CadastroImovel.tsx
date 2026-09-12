@@ -891,7 +891,21 @@ export function ImovelForm({ editId }: { editId?: string }) {
 
       {!isEdit && (
         <AIImovelImport
-          onApply={updates => setForm(prev => ({ ...prev, ...updates }))}
+          onApply={updates => {
+            const { _empreendimento: rec, ...rest } = updates as any;
+            setForm(prev => ({
+              ...prev,
+              ...rest,
+              ...(rec
+                ? {
+                    empreendimento: rec.nome,
+                    edificio_id: rec.tipo === 'edificio' ? rec.id : '',
+                    condominio_id: rec.tipo === 'condominio' ? rec.id : '',
+                    empreendimento_id: rec.tipo === 'loteamento' ? rec.id : '',
+                  }
+                : {}),
+            }));
+          }}
           currentArrays={{
             condicoesPagemento: form.condicoesPagemento,
             infraestrutura: form.infraestrutura,
