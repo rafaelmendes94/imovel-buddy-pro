@@ -1035,6 +1035,14 @@ export default function Properties() {
                   <Download className="w-3.5 h-3.5" /> <span className="hidden sm:inline">{exportingXls ? "Gerando..." : "Exportar"}</span> XLS
                 </button>
                 <button
+                  onClick={() => setPdfImportOpen(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-card border border-input text-muted-foreground hover:bg-muted hover:text-foreground transition-colors mb-1"
+                  title="Importar imóveis de uma tabela em PDF (BETA)"
+                >
+                  <FlaskConical className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Importar tabela</span> PDF
+                  <span className="text-[9px] font-bold px-1 py-0.5 rounded bg-primary/10 text-primary">BETA</span>
+                </button>
+                <button
                   onClick={() => {
                     if (limitReached) {
                       toast.error(`Limite de ${maxImoveis} imóveis atingido. Faça upgrade do plano.`);
