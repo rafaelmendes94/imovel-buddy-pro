@@ -1,6 +1,7 @@
 // Normalização de UNIDADE e BOX extraídos pela IA (ou do texto bruto) no cadastro de imóveis.
 
-const UNIT_PREFIX = /^(?:ap(?:to?|artamento)?|unid(?:ade)?s?|un|sala|conj(?:unto)?)\s*\.?\s*n?[ºo°]?\s*/i;
+const UNIT_PREFIX =
+  /^(?:ap(?:to?s?|artamento)?|unid(?:ade)?s?|un|sala|conj(?:unto)?)\s*[.:\-–]?\s*n?[ºo°]?\s*[.:\-–]?\s*/i;
 
 const HOUSE_TYPES = /(casa|sobrado|terreno|lote|loteamento|chácara|chacara|sítio|sitio)/i;
 
@@ -53,7 +54,7 @@ export function extractUnitBoxFromText(text: string, tipo?: string): UnitBoxExtr
   const t = text || '';
 
   const unitMatch = t.match(
-    /\b(?:ap(?:to?|artamento)?|unid(?:ade)?|un)\s*\.?\s*n?[ºo°]?\s*(\d{1,5}[A-Za-z]?)\b/i,
+    /\b(?:ap(?:to?s?|artamento)?|unid(?:ade)?s?|un)\s*[.:\-–]?\s*n?[ºo°]?\s*[.:\-–]?\s*(\d{1,5}[A-Za-z]?)\b/i,
   );
   if (unitMatch) {
     const u = normalizeUnidade(unitMatch[1], tipo);

@@ -206,8 +206,20 @@ export function BrokerImovelDialog({ open, onOpenChange, imovel, ownerId, ownerN
 
   const applyAI = (u: Record<string, any>) => {
     const str = (v: any) => (v === undefined || v === null ? "" : String(v));
+    const rec = u._empreendimento as EmpreendimentoRecord | undefined;
+    if (rec) setEmpLink({ tipo: rec.tipo, id: rec.id });
     setForm((prev) => ({
       ...prev,
+      empreendimento: u.empreendimento ? str(u.empreendimento) : prev.empreendimento,
+      unidade: u.unidade ? str(u.unidade) : prev.unidade,
+      box: u.box ? str(u.box) : prev.box,
+      quadra: u.quadra ? str(u.quadra) : prev.quadra,
+      lote: u.lote ? str(u.lote) : prev.lote,
+      numero: u.numero ? str(u.numero) : prev.numero,
+      cep: u.cep ? str(u.cep) : prev.cep,
+      estado: u.estado ? str(u.estado) : prev.estado,
+      latitude: u.latitude ? str(u.latitude) : prev.latitude,
+      longitude: u.longitude ? str(u.longitude) : prev.longitude,
       titulo: u.titulo ? str(u.titulo) : prev.titulo,
       tipo: u.tipo && TIPOS.includes(str(u.tipo)) ? str(u.tipo) : prev.tipo,
       cidade: u.cidade ? str(u.cidade) : prev.cidade,
