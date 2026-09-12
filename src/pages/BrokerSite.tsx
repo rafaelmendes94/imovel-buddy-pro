@@ -343,6 +343,7 @@ export default function BrokerSite() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<any | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<DBProperty | null>(null);
+  const [reactivatingId, setReactivatingId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
