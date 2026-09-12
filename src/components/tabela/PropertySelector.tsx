@@ -4,7 +4,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, ImageOff, SlidersHorizontal, X } from "lucide-react";
+import { Search, ImageOff, SlidersHorizontal, X, ChevronDown, ChevronUp } from "lucide-react";
 import { identityLines, money, type TabelaImovel, type TabelaCorretor } from "@/lib/tabelaData";
 import { cn } from "@/lib/utils";
 
@@ -33,6 +33,7 @@ export function PropertySelector({ imoveis, corretores, selectedIds, onToggle, o
   const [proprietario, setProprietario] = useState(ALL);
   const [precoMin, setPrecoMin] = useState("");
   const [precoMax, setPrecoMax] = useState("");
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
   const uniq = (vals: (string | null | undefined)[]) =>
     Array.from(new Set(vals.filter((v): v is string => !!v && v.trim() !== ""))).sort((a, b) => a.localeCompare(b));
