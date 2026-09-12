@@ -39,7 +39,7 @@ export default function MapasCondominio() {
 
   return (
     <AppLayout>
-      <div className="p-6 space-y-6">
+      <div className="p-4 sm:p-6 space-y-5 sm:space-y-6">
         <div className="flex items-center gap-3">
           <Map className="w-7 h-7 text-primary" />
           <div>

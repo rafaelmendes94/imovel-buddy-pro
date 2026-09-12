@@ -43,7 +43,7 @@ export default function BrokerXmlFeeds() {
 
   return (
     <BrokerLayout>
-      <div className="p-6 space-y-6 max-w-4xl">
+      <div className="p-4 sm:p-6 space-y-5 sm:space-y-6 max-w-4xl">
         <BackButton />
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">

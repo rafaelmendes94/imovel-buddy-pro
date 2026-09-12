@@ -80,7 +80,7 @@ export const templates: ContractTemplate[] = [
     title: "Nota Promissória",
     description: "Nota promissória conforme padrão legal brasileiro",
     icon: CreditCard,
-    color: "text-purple-500 bg-purple-500/10",
+    color: "text-slate-600 bg-slate-500/10",
     fields: [
       { key: "Número da Nota", label: "Nº da Nota Promissória", placeholder: "001/012" },
       { key: "Valor", label: "Valor (R$)", placeholder: "19.791,67" },
@@ -136,7 +136,7 @@ export const templates: ContractTemplate[] = [
     title: "Exclusividade Simplificada",
     description: "Modelo enxuto de exclusividade que libera a divulgação do imóvel para mais de 2.000 corretores da rede",
     icon: Sparkles,
-    color: "text-indigo-500 bg-indigo-500/10",
+    color: "text-blue-600 bg-blue-500/10",
     fields: [
       { key: "Nome do Proprietário", label: "Proprietário (Nome completo)", placeholder: "João da Silva" },
       { key: "CPF do Proprietário", label: "CPF do Proprietário", placeholder: "000.000.000-00" },
@@ -156,7 +156,7 @@ export const templates: ContractTemplate[] = [
     title: "Exclusividade Completa (Detalhada)",
     description: "Modelo detalhado de exclusividade com cláusulas estendidas e divulgação para +2.000 corretores da rede",
     icon: ShieldCheck,
-    color: "text-fuchsia-500 bg-fuchsia-500/10",
+    color: "text-slate-600 bg-slate-500/10",
     fields: [
       { key: "Nome do Proprietário", label: "Proprietário (Nome completo)", placeholder: "João da Silva" },
       { key: "CPF do Proprietário", label: "CPF do Proprietário", placeholder: "000.000.000-00" },

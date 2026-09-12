@@ -983,11 +983,12 @@ export default function Properties() {
         <div className="flex flex-col gap-3">
           <BackButton />
           {/* Action buttons row */}
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <h1 className="text-lg sm:text-xl font-bold text-foreground flex items-center gap-2">
               <Building2 className="w-5 h-5 text-accent" /> Imóveis
             </h1>
-            <div className="flex gap-2 flex-wrap flex-shrink-0">
+            <div className="flex flex-wrap gap-2 w-full sm:w-auto sm:flex-shrink-0">
+
               <button
                 onClick={() => navigate("/relatorios")}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-colors"
@@ -1013,7 +1014,7 @@ export default function Properties() {
                   </div>
                 )}
               </div>
-              <div className="flex flex-col items-end gap-0.5">
+              <div className="flex flex-row flex-wrap sm:flex-col items-center sm:items-end gap-2 sm:gap-0.5">
                 {(isSuperAdmin || isAdminStaff) && (
                   <button
                     onClick={() => setImportOpen(true)}
@@ -1107,11 +1108,12 @@ export default function Properties() {
               return (
                 <button
                   onClick={() => setShowSoldThisMonth(true)}
-                  className="col-span-2 sm:col-span-1 flex items-center gap-2.5 px-3 sm:px-4 py-3 rounded-xl bg-purple-500/10 border border-purple-500/20 hover:bg-purple-500/20 transition-colors cursor-pointer text-left"
+                  className="col-span-2 sm:col-span-1 flex items-center gap-2.5 px-3 sm:px-4 py-3 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-colors cursor-pointer text-left"
                 >
-                  <CalendarCheck className="w-5 h-5 text-purple-600 shrink-0" />
+                  <CalendarCheck className="w-5 h-5 text-primary shrink-0" />
                   <div className="min-w-0">
-                    <p className="text-[9px] sm:text-[10px] font-bold uppercase text-purple-600 leading-none truncate">Vendidos do Mês <span className="text-muted-foreground font-medium">({soldThisMonth.length})</span></p>
+                    <p className="text-[9px] sm:text-[10px] font-bold uppercase text-primary leading-none truncate">Vendidos do Mês <span className="text-muted-foreground font-medium">({soldThisMonth.length})</span></p>
+
                     <p className="text-sm sm:text-base font-black text-foreground leading-tight truncate">
                       {formatCurrency(soldThisMonth.reduce((sum, p) => sum + p.price, 0))}
                     </p>

@@ -81,7 +81,7 @@ function MiniPropertyCard({ property: p }: { property: SiteProperty }) {
           <p className="text-base font-bold text-white drop-shadow-lg">{formatCurrency(p.preco)}</p>
           <div className="flex gap-1">
             {p.vista_mar && <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-info/90 text-white"><Waves className="w-2.5 h-2.5 inline" /></span>}
-            {p.decorado && <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-purple-500/90 text-white"><Paintbrush className="w-2.5 h-2.5 inline" /></span>}
+            {p.decorado && <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-slate-700/90 text-white"><Paintbrush className="w-2.5 h-2.5 inline" /></span>}
           </div>
         </div>
       </div>
@@ -265,7 +265,7 @@ export default function Home() {
           title="Casas no Bairro"
           icon={HomeIcon}
           properties={casasBairro}
-          color="bg-gradient-to-br from-violet-500 to-violet-400"
+          color="bg-gradient-to-br from-slate-700 to-slate-500"
           linkTo="/site?tipo=Casa"
         />
 

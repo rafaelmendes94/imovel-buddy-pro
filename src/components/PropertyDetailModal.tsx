@@ -485,7 +485,7 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
               {materialUrl && (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <button onClick={handleMaterialDownload} className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-purple-600">
+                    <button onClick={handleMaterialDownload} className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-primary">
                       <Download className="w-4.5 h-4.5" />
                     </button>
                   </TooltipTrigger>
@@ -534,7 +534,7 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
               </span>
             )}
             {property.decorated && (
-              <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-purple-500/90 text-white flex items-center gap-1 backdrop-blur-sm">
+              <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-700/90 text-white flex items-center gap-1 backdrop-blur-sm">
                 <Paintbrush className="w-3 h-3" /> Decorado
               </span>
             )}
@@ -1061,7 +1061,7 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
                   <div className="flex items-center justify-between mb-4">
                     <p className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
                       <span className="cursor-grab active:cursor-grabbing mr-1 text-muted-foreground/50 hover:text-muted-foreground">⠿</span>
-                      <span className="w-7 h-7 rounded-lg bg-purple-500/10 flex items-center justify-center"><Building2 className="w-3.5 h-3.5 text-purple-600" /></span> <span className="text-foreground">Características do Imóvel</span>
+                      <span className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center"><Building2 className="w-3.5 h-3.5 text-primary" /></span> <span className="text-foreground">Características do Imóvel</span>
                     </p>
                     <button onClick={() => setEditingBlock(isEditingCaract ? null : "caracteristicas")} className={cn("p-1.5 rounded-lg transition-colors", isEditingCaract ? "bg-primary/20 text-primary" : "hover:bg-muted text-muted-foreground")}>
                       <Pencil className="w-3.5 h-3.5" />

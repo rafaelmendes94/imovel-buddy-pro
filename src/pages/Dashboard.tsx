@@ -141,7 +141,7 @@ export default function Dashboard() {
         </div>
 
         {/* Metrics */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <MetricCard
             title="Total de Imóveis"
             value={totalProperties.toString()}
@@ -172,7 +172,7 @@ export default function Dashboard() {
         </div>
 
         {/* Real DB Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
           <MetricCard
             title="Corretores Ativos"
             value={dbStats.corretores.toString()}
@@ -196,7 +196,7 @@ export default function Dashboard() {
         <EngagementPanel />
 
         {/* VGV Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
           <div className="elevated-card rounded-xl p-5">
             <div className="flex items-center gap-3">
               <div className="p-2.5 rounded-lg bg-primary/10">
