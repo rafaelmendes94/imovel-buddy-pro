@@ -169,9 +169,9 @@ export default function AdminPlanos() {
 
   return (
     <AdminLayout>
-      <div className="p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-foreground">Planos</h1>
+      <div className="p-4 sm:p-6 space-y-5 sm:space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Planos</h1>
           <Dialog open={dialogOpen} onOpenChange={v => { setDialogOpen(v); if (!v) { setEditId(null); setForm(emptyForm); } }}>
             <DialogTrigger asChild>
               <Button><Plus className="w-4 h-4 mr-2" />Novo Plano</Button>
