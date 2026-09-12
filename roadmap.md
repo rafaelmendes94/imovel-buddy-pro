@@ -19,3 +19,4 @@
 - [ ] Criar experiência móvel em tela útil com bottom sheet e safe-area.
 - [ ] Reutilizar bloco responsivo de localização nos detalhes.
 - [ ] Validar typecheck, build e preview desktop/mobile.
+- [ ] Reportar resumo final e commit SHA disponível no ambiente.
