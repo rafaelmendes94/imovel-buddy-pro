@@ -462,7 +462,7 @@ export default function RankingPage() {
                     <div
                       onClick={() => setSelectedBroker(broker)}
                       className={cn(
-                        "flex items-center gap-4 p-5 rounded-2xl transition-all group cursor-pointer hover:scale-[1.02]",
+                        "flex items-center gap-2.5 sm:gap-4 p-3 sm:p-5 rounded-2xl transition-all group cursor-pointer hover:scale-[1.02]",
                         i === 0 ? "bg-gradient-to-r from-amber-500/20 to-amber-500/5 border border-amber-500/30" :
                         i === 1 ? "bg-gradient-to-r from-gray-500/10 to-gray-500/5 border border-gray-500/20" :
                         i === 2 ? "bg-gradient-to-r from-orange-500/10 to-orange-500/5 border border-orange-500/20" :
@@ -471,13 +471,13 @@ export default function RankingPage() {
                     >
                       {/* Position */}
                       <div className={cn(
-                        "w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg",
+                        "w-10 h-10 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg",
                         i < 3 ? `bg-gradient-to-br ${medalColors[i]}` : "bg-gray-800"
                       )}>
                         {i < 3 ? (
-                          <MIcon className={cn("w-7 h-7", i < 3 ? "text-gray-900" : "text-gray-400")} />
+                          <MIcon className={cn("w-5 h-5 sm:w-7 sm:h-7", i < 3 ? "text-gray-900" : "text-gray-400")} />
                         ) : (
-                          <span className="text-xl font-black text-gray-400">{i + 1}º</span>
+                          <span className="text-base sm:text-xl font-black text-gray-400">{i + 1}º</span>
                         )}
                       </div>
 
@@ -487,7 +487,7 @@ export default function RankingPage() {
                           src={broker.photo || defaultAvatar}
                           alt={broker.name}
                           className={cn(
-                            "w-14 h-14 rounded-full object-cover border-2",
+                            "w-10 h-10 sm:w-14 sm:h-14 rounded-full object-cover border-2",
                             i < 3 ? medalBorders[i] : "border-gray-700"
                           )}
                         />
@@ -504,9 +504,9 @@ export default function RankingPage() {
 
                       {/* Info */}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                           <p className={cn(
-                            "text-base font-bold",
+                            "text-sm sm:text-base font-bold break-words",
                             i === 0 ? "text-amber-400" : "text-white"
                           )}>
                             {broker.name}
@@ -533,7 +533,7 @@ export default function RankingPage() {
 
                       {/* Mobile stats */}
                       <div className="sm:hidden text-right flex-shrink-0">
-                        <p className="text-base font-extrabold text-emerald-400">{formatCurrency(broker.value)}</p>
+                        <p className="text-sm font-extrabold text-emerald-400 whitespace-nowrap">{formatCurrency(broker.value)}</p>
                         <p className="text-[10px] text-gray-500">{broker.count} vendas</p>
                       </div>
                     </div>
