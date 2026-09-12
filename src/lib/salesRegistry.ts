@@ -70,8 +70,14 @@ export async function markPropertySold(
   if (opts.brokerName) patch.corretor_nome = opts.brokerName;
   if (opts.brokerId) patch.corretor_id = opts.brokerId;
 
-  const { error } = await supabase.from("imoveis").update(patch as any).eq("id", imovelId);
+  const { data: updated, error } = await supabase
+    .from("imoveis")
+    .update(patch as any)
+    .eq("id", imovelId)
+    .select("id")
+    .maybeSingle();
   if (error) return { ok: false, error: error.message };
+  if (!updated) return { ok: false, error: "Sem permissão para alterar este imóvel." };
 
   notifySalesChanged();
   return { ok: true, patch };
@@ -96,8 +102,14 @@ export async function reactivateProperty(
     data_venda: null,
     plataforma_venda: "",
   };
-  const { error } = await supabase.from("imoveis").update(patch as any).eq("id", imovelId);
+  const { data: updated, error } = await supabase
+    .from("imoveis")
+    .update(patch as any)
+    .eq("id", imovelId)
+    .select("id")
+    .maybeSingle();
   if (error) return { ok: false, error: error.message };
+  if (!updated) return { ok: false, error: "Sem permissão para alterar este imóvel." };
 
   notifySalesChanged();
   return { ok: true, patch };

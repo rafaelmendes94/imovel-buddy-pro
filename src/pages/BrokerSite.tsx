@@ -343,6 +343,7 @@ export default function BrokerSite() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<any | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<DBProperty | null>(null);
+  const [reactivatingId, setReactivatingId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
@@ -548,6 +549,18 @@ export default function BrokerSite() {
     toast.success("Imóvel excluído com sucesso");
     setDeleteTarget(null);
     reloadProperties();
+  };
+
+  const handleReactivate = async (property: DBProperty) => {
+    setReactivatingId(property.id);
+    const res = await reactivateProperty(property.id);
+    setReactivatingId(null);
+    if (!res.ok) {
+      toast.error("Não foi possível reativar: " + (res.error || ""));
+      return;
+    }
+    handlePropertyUpdated(property.id, (res.patch || { status: "Disponível", data_venda: null, plataforma_venda: "" }) as Partial<DBProperty>);
+    toast.success("Imóvel reativado — venda removida do ranking");
   };
 
   const handlePropertyUpdated = (id: string, patch: Partial<DBProperty>) => {
@@ -931,7 +944,7 @@ export default function BrokerSite() {
 
 
 
-        {soldProperties.length > 0 && !searchTerm && (
+        {soldProperties.length > 0 && (!searchTerm || isOwner) && (
           <section className="border-y border-border bg-muted/40">
             <div className="container py-14">
               <div className="mb-6 space-y-2">
@@ -941,7 +954,7 @@ export default function BrokerSite() {
               </div>
 
               <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                {soldProperties.slice(0, 6).map((property) => (
+                {(isOwner ? soldProperties : soldProperties.slice(0, 6)).map((property) => (
                   <article key={property.id} className="overflow-hidden rounded-3xl border border-border bg-card shadow-[var(--shadow-card)]">
                     <div className="relative h-56 overflow-hidden">
                       <img src={property.imagens?.[0] || "/placeholder.svg"} alt={property.titulo} loading="lazy" className="h-full w-full object-cover" />
@@ -957,6 +970,17 @@ export default function BrokerSite() {
                         {property.quartos > 0 && <span className="flex items-center gap-1"><BedDouble className="h-4 w-4" />{property.quartos}</span>}
                         {property.vagas > 0 && <span className="flex items-center gap-1"><Car className="h-4 w-4" />{property.vagas}</span>}
                       </div>
+                      {isOwner && (
+                        <button
+                          type="button"
+                          disabled={reactivatingId === property.id}
+                          onClick={() => handleReactivate(property)}
+                          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-3 py-2.5 text-xs font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
+                        >
+                          <RotateCcw className="h-4 w-4" />
+                          {reactivatingId === property.id ? "Reativando..." : "Reativar imóvel"}
+                        </button>
+                      )}
                     </div>
                   </article>
                 ))}
