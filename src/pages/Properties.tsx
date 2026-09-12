@@ -19,7 +19,7 @@ import {
   Phone, Heart, FileCheck, Eye, Repeat, CreditCard, DollarSign, Ban,
   Share2, CalendarCheck, CalendarClock, AlertTriangle, Pencil, Image,
   FolderDown, User, ShieldCheck, Percent, Gift, BarChart3, FileSignature,
-  TrendingUp, Wallet, RefreshCw, ArrowUp, ArrowDown, Banknote, Copy, Maximize2, Scan, Route, Globe, Trash2,
+  TrendingUp, Wallet, RefreshCw, ArrowUp, ArrowDown, Banknote, Copy, Maximize2, Scan, Route, Globe, Trash2, FlaskConical,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import { generatePropertyPdf } from "@/utils/generatePropertyPdf";
 import { useAuth } from "@/hooks/useAuth";
 import { ImportImoveisWizard } from "@/components/ImportImoveisWizard";
+import { ImportPdfTabelaBeta } from "@/components/ImportPdfTabelaBeta";
 import { getPropertyUnitParts } from "@/lib/propertyIdentity";
 import { exportImoveisXls } from "@/lib/exportImoveisXls";
 
@@ -421,6 +422,7 @@ export default function Properties() {
   const { user, subscription, isSuperAdmin, isAdminStaff } = useAuth();
   const [currentImoveis, setCurrentImoveis] = useState(0);
   const [importOpen, setImportOpen] = useState(false);
+  const [pdfImportOpen, setPdfImportOpen] = useState(false);
   const maxImoveis = subscription?.plan?.max_properties ?? 0;
   const limitReached = !isSuperAdmin && !isAdminStaff && maxImoveis > 0 && currentImoveis >= maxImoveis;
 
@@ -1031,6 +1033,14 @@ export default function Properties() {
                   title="Exportar imóveis em Excel (formato de importação MV)"
                 >
                   <Download className="w-3.5 h-3.5" /> <span className="hidden sm:inline">{exportingXls ? "Gerando..." : "Exportar"}</span> XLS
+                </button>
+                <button
+                  onClick={() => setPdfImportOpen(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-card border border-input text-muted-foreground hover:bg-muted hover:text-foreground transition-colors mb-1"
+                  title="Importar imóveis de uma tabela em PDF (BETA)"
+                >
+                  <FlaskConical className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Importar tabela</span> PDF
+                  <span className="text-[9px] font-bold px-1 py-0.5 rounded bg-primary/10 text-primary">BETA</span>
                 </button>
                 <button
                   onClick={() => {
@@ -1892,6 +1902,12 @@ export default function Properties() {
       <ImportImoveisWizard
         open={importOpen}
         onClose={() => setImportOpen(false)}
+        onImported={() => window.location.reload()}
+      />
+
+      <ImportPdfTabelaBeta
+        open={pdfImportOpen}
+        onClose={() => setPdfImportOpen(false)}
         onImported={() => window.location.reload()}
       />
 
