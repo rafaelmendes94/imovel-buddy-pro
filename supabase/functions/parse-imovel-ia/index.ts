@@ -18,8 +18,17 @@ const FIELDS = {
   cidade: { type: "string" },
   estado: { type: "string", description: "Sigla UF, ex: RS" },
   empreendimento: { type: "string", description: "Nome do edifício/condomínio/loteamento" },
-  unidade: { type: "string" },
-  box: { type: "string", description: "Box/garagem" },
+  unidade: {
+    type: "string",
+    description:
+      "Identificador da unidade/apartamento SOMENTE com o número, sem prefixos. 'AP 1006' => '1006'; 'Apto 402' => '402'. Preserve letra apenas se fizer parte real do identificador (ex: '402B'). NUNCA use quadra/lote como unidade, nem o número do endereço da rua.",
+  },
+  box: {
+    type: "string",
+    description:
+      "Número(s) do box/vaga/garagem identificados: 'box 76' => '76'; 'boxes 31 e 32' => '31 e 32'. Somente quando houver número específico do box. Quantidade de vagas ('2 vagas', '1 box') NÃO é box — deixe vazio e informe em 'vagas'.",
+  },
+
   quadra: { type: "string" },
   lote: { type: "string" },
   preco: { type: "number", description: "Valor de venda em reais, apenas número" },
