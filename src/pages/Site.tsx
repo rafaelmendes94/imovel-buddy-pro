@@ -239,7 +239,7 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, 
           <p className="text-xl font-bold text-white drop-shadow-lg">{formatCurrency(property.price)}</p>
           <div className="flex gap-1">
             {property.seaView && <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-blue-500/90 text-white backdrop-blur-sm flex items-center gap-0.5"><Waves className="w-2.5 h-2.5" /> Mar</span>}
-            {property.decorated && <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-purple-500/90 text-white backdrop-blur-sm flex items-center gap-0.5"><Paintbrush className="w-2.5 h-2.5" /> Dec.</span>}
+            {property.decorated && <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-slate-700/90 text-white backdrop-blur-sm flex items-center gap-0.5"><Paintbrush className="w-2.5 h-2.5" /> Dec.</span>}
           </div>
         </div>
       </div>
@@ -651,7 +651,7 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
             <div className="flex items-center gap-1.5 text-xs font-medium text-gray-700"><span className="w-4 h-4 rounded bg-blue-600 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/></svg></span> Apartamento</div>
             <div className="flex items-center gap-1.5 text-xs font-medium text-gray-700"><span className="w-4 h-4 rounded bg-blue-500 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span> Casa</div>
             <div className="flex items-center gap-1.5 text-xs font-medium text-gray-700"><span className="w-4 h-4 rounded bg-emerald-500 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M10 20.777a6.942 6.942 0 0 1-2.5-12.026"/><path d="M2 21h20"/></svg></span> Terreno</div>
-            <div className="flex items-center gap-1.5 text-xs font-medium text-gray-700"><span className="w-4 h-4 rounded bg-violet-500 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/></svg></span> Comercial</div>
+            <div className="flex items-center gap-1.5 text-xs font-medium text-gray-700"><span className="w-4 h-4 rounded bg-slate-600 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/></svg></span> Comercial</div>
           </div>
         </div>
 
@@ -1202,13 +1202,13 @@ export default function Site() {
 
               <button
                 onClick={() => { setFilterCity("Xangri-lá"); setActiveCategory("todos"); }}
-                className="group bg-white/10 hover:bg-violet-500/90 backdrop-blur-md rounded-2xl p-4 border border-white/20 hover:border-violet-400 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-violet-500/20 text-left"
+                className="group bg-white/10 hover:bg-primary/90 backdrop-blur-md rounded-2xl p-4 border border-white/20 hover:border-primary transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-primary/20 text-left"
               >
-                <div className="w-10 h-10 rounded-xl bg-violet-400/20 group-hover:bg-white/20 flex items-center justify-center mb-3 transition-colors">
-                  <MapPin className="w-5 h-5 text-violet-400 group-hover:text-white transition-colors" />
+                <div className="w-10 h-10 rounded-xl bg-primary/20 group-hover:bg-white/20 flex items-center justify-center mb-3 transition-colors">
+                  <MapPin className="w-5 h-5 text-blue-300 group-hover:text-white transition-colors" />
                 </div>
                 <p className="text-2xl font-black text-white">{available.filter((p) => p.city.toLowerCase().includes("xangri")).length}</p>
-                <p className="text-[11px] font-semibold text-gray-300 group-hover:text-violet-100 uppercase tracking-wider">Xangri-lá</p>
+                <p className="text-[11px] font-semibold text-gray-300 group-hover:text-blue-100 uppercase tracking-wider">Xangri-lá</p>
               </button>
 
               <div className="bg-gradient-to-br from-blue-500/30 to-blue-600/30 backdrop-blur-md rounded-2xl p-4 border border-blue-400/40">
