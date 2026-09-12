@@ -107,6 +107,53 @@ export async function searchEmpreendimentos(term: string, limit = 12): Promise<E
   return results.flat().sort((a, b) => a.nome.localeCompare(b.nome)).slice(0, limit * 2);
 }
 
+const normName = (v: string) =>
+  clean(v)
+    .toLowerCase()
+    .replace(/^(?:ed(?:if[ií]cio)?|res(?:idencial)?|cond(?:om[ií]nio)?|lot(?:eamento)?)\s*\.?\s*/i, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+
+/**
+ * Encontra um empreendimento já cadastrado pelo nome (usado pelo cadastro por IA),
+ * para herdar o endereço oficial em vez do endereço vindo do texto.
+ */
+export async function findEmpreendimentoByName(name: string): Promise<EmpreendimentoRecord | null> {
+  const target = normName(name);
+  if (target.length < 3) return null;
+
+  const candidates = await searchEmpreendimentos(clean(name), 12);
+  if (!candidates.length) return null;
+
+  const exact = candidates.find((c) => normName(c.nome) === target);
+  if (exact) return exact;
+
+  const partial = candidates.find((c) => {
+    const n = normName(c.nome);
+    return n.length >= 3 && (n.includes(target) || target.includes(n));
+  });
+  return partial ?? null;
+}
+
+/** Campos de endereço do empreendimento que devem ter prioridade no imóvel. */
+export function empreendimentoAddressFields(rec: EmpreendimentoRecord) {
+  const out: Record<string, string> = {};
+  const put = (k: string, v?: string | number | null) => {
+    const val = v === null || v === undefined ? "" : String(v).trim();
+    if (val) out[k] = val;
+  };
+  put("endereco", rec.endereco);
+  put("numero", rec.numero);
+  put("complemento", rec.complemento);
+  put("bairro", rec.bairro);
+  put("cidade", rec.cidade);
+  put("estado", rec.estado);
+  put("cep", rec.cep);
+  put("latitude", rec.latitude as any);
+  put("longitude", rec.longitude as any);
+  return out;
+}
+
 export async function getEmpreendimentoById(
   tipo: EmpreendimentoTipo,
   id: string
