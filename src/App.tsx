@@ -112,7 +112,7 @@ const App = () => (
             <Route path="/planos" element={<Planos />} />
             <Route path="/galeria-cidade" element={<PublicCityPhotos />} />
             <Route path="/imovel/:id" element={<ImovelPublico />} />
-            <Route path="/feed" element={<AuthGuard><Feed /></AuthGuard>} />
+            <Route path="/feed" element={protectedRoute(<Feed />, { adminModule: "imoveis" })} />
             <Route path="/mapa" element={<ExplorarMapa />} />
             <Route path="/explorar-mapa" element={<ExplorarMapa />} />
 
@@ -136,7 +136,7 @@ const App = () => (
             <Route path="/painel-parceiro" element={<AuthGuard requiredRoles={["partner"]}><PainelParceiro /></AuthGuard>} />
 
             {/* Legacy routes - now require auth */}
-            <Route path="/dashboard" element={<AuthGuard><Dashboard /></AuthGuard>} />
+            <Route path="/dashboard" element={protectedRoute(<Dashboard />, { adminModule: "dashboard_admin" })} />
             <Route path="/imoveis" element={protectedRoute(<Properties />, { adminModule: "imoveis", brokerModule: "imoveis" })} />
             <Route path="/edificios" element={protectedRoute(<Buildings />, { adminModule: "edificios", brokerModule: "edificios" })} />
             <Route path="/edificios/:id" element={protectedRoute(<BuildingDetail />, { adminModule: "edificios", brokerModule: "edificios" })} />
@@ -145,17 +145,17 @@ const App = () => (
             <Route path="/mapas-condominio" element={protectedRoute(<MapasCondominio />, { adminModule: "condominios", brokerModule: "condominios" })} />
             <Route path="/mapas" element={<AuthGuard><Maps /></AuthGuard>} />
             <Route path="/fotos-cidade" element={protectedRoute(<CityPhotos />, { adminModule: "fotos_cidade", brokerModule: "fotos" })} />
-            <Route path="/corretores" element={<AuthGuard><Brokers /></AuthGuard>} />
+            <Route path="/corretores" element={protectedRoute(<Brokers />, { adminModule: "corretores", adminOnly: true })} />
             <Route path="/cadastro-corretores" element={<AuthGuard><CadastroCorretores /></AuthGuard>} />
             <Route path="/relatorios" element={protectedRoute(<Reports />, { adminModule: "relatorios", adminOnly: true })} />
             <Route path="/configuracoes" element={<AuthGuard><Settings /></AuthGuard>} />
             <Route path="/site-editor" element={protectedRoute(<Site />, { adminModule: "site_editor", brokerModule: "site" })} />
             <Route path="/todos-imoveis" element={<AllProperties />} />
-            <Route path="/ranking" element={<AuthGuard><RankingPage /></AuthGuard>} />
+            <Route path="/ranking" element={protectedRoute(<RankingPage />, { adminModule: "relatorios" })} />
             <Route path="/avaliacoes" element={protectedRoute(<Avaliacoes />, { adminModule: "avaliacoes", brokerModule: "avaliacoes" })} />
             <Route path="/financeiro" element={protectedRoute(<Financeiro />, { adminModule: "financeiro", adminOnly: true })} />
             <Route path="/tabelas" element={protectedRoute(<Tabelas />, { adminModule: "tabelas", brokerModule: "tabelas" })} />
-            <Route path="/ferramentas/gerador-tabela" element={<AuthGuard><GeradorTabela /></AuthGuard>} />
+            <Route path="/ferramentas/gerador-tabela" element={protectedRoute(<GeradorTabela />, { adminModule: "tabelas" })} />
             <Route path="/contratos" element={protectedRoute(<Contratos />, { adminModule: "contratos", brokerModule: "contratos" })} />
             <Route path="/videomaker" element={protectedRoute(<VideoMaker />, { adminModule: "material_extra", brokerModule: "videomaker" })} />
             <Route path="/imobiliarias" element={protectedRoute(<Imobiliarias />, { adminModule: "imobiliarias", adminOnly: true })} />
