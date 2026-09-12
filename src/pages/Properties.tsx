@@ -19,7 +19,7 @@ import {
   Phone, Heart, FileCheck, Eye, Repeat, CreditCard, DollarSign, Ban,
   Share2, CalendarCheck, CalendarClock, AlertTriangle, Pencil, Image,
   FolderDown, User, ShieldCheck, Percent, Gift, BarChart3, FileSignature,
-  TrendingUp, Wallet, RefreshCw, ArrowUp, ArrowDown, Banknote, Copy, Maximize2, Scan, Route, Globe, Trash2,
+  TrendingUp, Wallet, RefreshCw, ArrowUp, ArrowDown, Banknote, Copy, Maximize2, Scan, Route, Globe, Trash2, FlaskConical,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
