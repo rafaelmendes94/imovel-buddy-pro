@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { handler as propertyFeed } from "../property-feed/index.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -9,6 +10,19 @@ const corsHeaders = {
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: corsHeaders });
+
+const getServiceKey = () => {
+  const secretKeys = Deno.env.get("SUPABASE_SECRET_KEYS");
+  if (secretKeys) {
+    try {
+      const parsed = JSON.parse(secretKeys);
+      if (parsed?.default) return parsed.default as string;
+    } catch {
+      // Fallback below.
+    }
+  }
+  return Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+};
 
 const getFunctionName = (req: Request) => {
   const url = new URL(req.url);
@@ -45,7 +59,7 @@ async function asaasCheckout(req: Request) {
   const { plan_id } = await req.json();
   if (!plan_id) return json({ error: "plan_id required" }, 400);
 
-  const supabase = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+  const supabase = createClient(supabaseUrl, getServiceKey());
   const settings = await loadSettings(supabase, ["asaas_api_key", "asaas_environment"]);
   const apiKey = settings.asaas_api_key;
   const environment = settings.asaas_environment || "sandbox";
@@ -155,7 +169,7 @@ async function asaasWebhook(req: Request) {
   if (!paymentEvents.includes(event)) return json({ ok: true });
   if (!payment?.externalReference && !payment?.subscription) return json({ ok: true });
 
-  const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+  const supabase = createClient(Deno.env.get("SUPABASE_URL")!, getServiceKey());
   let externalRef: { user_id: string; plan_id: string } | null = null;
 
   if (payment.externalReference) {
@@ -258,7 +272,7 @@ async function adminCreateBroker(req: Request) {
   const callerId = await authedUserId(req, supabaseUrl, anonKey);
   if (!callerId) return json({ error: "Unauthorized" }, 401);
 
-  const supabaseAdmin = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+  const supabaseAdmin = createClient(supabaseUrl, getServiceKey());
   const { data: roleData } = await supabaseAdmin
     .from("user_roles")
     .select("role")
@@ -310,7 +324,7 @@ async function resetPassword(req: Request) {
   const { target_user_id, new_password } = await req.json();
   if (!new_password || new_password.length < 6) return json({ error: "A senha deve ter pelo menos 6 caracteres" }, 400);
 
-  const supabaseAdmin = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+  const supabaseAdmin = createClient(supabaseUrl, getServiceKey());
   if (callerId !== target_user_id) {
     const { data: roleData } = await supabaseAdmin
       .from("user_roles")
@@ -335,6 +349,21 @@ serve(async (req: Request) => {
     if (fn === "asaas-webhook") return await asaasWebhook(req);
     if (fn === "admin-create-broker") return await adminCreateBroker(req);
     if (fn === "reset-password") return await resetPassword(req);
+    if (fn === "property-feed") return await propertyFeed(req);
+    if (
+      [
+        "generate-description",
+        "property-valuation",
+        "generate-contract",
+        "shark-ai",
+        "parse-imovel-ia",
+        "parse-tabela-pdf-ia",
+        "mercado-pago-checkout",
+        "mercado-pago-webhook",
+      ].includes(fn)
+    ) {
+      return json({ error: `Function ${fn} is not routed in the self-hosted edge runtime` }, 501);
+    }
     return json({ message: "MV Broker Connect Edge Functions OK", function: fn });
   } catch (error) {
     console.error("Edge function router error:", error);

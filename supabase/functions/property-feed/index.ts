@@ -8,6 +8,19 @@ const CORS = {
   "Access-Control-Allow-Methods": "GET, OPTIONS",
 };
 
+function getServiceKey() {
+  const secretKeys = Deno.env.get("SUPABASE_SECRET_KEYS");
+  if (secretKeys) {
+    try {
+      const parsed = JSON.parse(secretKeys);
+      if (parsed?.default) return parsed.default as string;
+    } catch {
+      // Fallback below.
+    }
+  }
+  return Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+}
+
 function toSlug(v: string) {
   return (v || "")
     .toLowerCase()
@@ -178,7 +191,7 @@ function buildImovelweb(properties: any[], contact: { name: string; email: strin
 </Carga>`;
 }
 
-Deno.serve(async (req) => {
+export async function handler(req: Request) {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
 
   try {
@@ -192,13 +205,19 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+      getServiceKey(),
     );
 
     // Resolve slug → profile (broker or agency owner)
-    const { data: profiles } = await supabase
+    const { data: profiles, error: profilesError } = await supabase
       .from("profiles")
-      .select("user_id, full_name, email, account_type");
+      .select("user_id, full_name, email, phone, account_type")
+      .not("full_name", "is", null)
+      .range(0, 9999);
+    if (profilesError) {
+      console.error("property-feed profiles query error", profilesError);
+      return new Response("Profiles query error", { status: 500, headers: CORS });
+    }
 
     const match = (profiles || []).find((p: any) => p.full_name && toSlug(p.full_name) === slugParam);
     if (!match) {
@@ -231,7 +250,7 @@ Deno.serve(async (req) => {
     const contact = {
       name: match.full_name || "",
       email: match.email || "",
-      phone: normalizePhone(properties[0]?.proprietario_telefone || ""),
+      phone: normalizePhone(match.phone || ""),
     };
 
     const xml = format === "imovelweb"
@@ -256,4 +275,8 @@ Deno.serve(async (req) => {
     console.error("property-feed error", e);
     return new Response(`Error: ${(e as Error).message}`, { status: 500, headers: CORS });
   }
-});
+}
+
+if (import.meta.main) {
+  Deno.serve(handler);
+}
