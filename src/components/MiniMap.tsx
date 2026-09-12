@@ -23,6 +23,7 @@ export function MiniMap({ lat, lng, name, height = "250px", zoom = 15 }: MiniMap
 
     let cancelled = false;
     let markerInstance: any = null;
+    let detach: (() => void) | undefined;
 
     (async () => {
       const MapCtor =
