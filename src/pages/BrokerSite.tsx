@@ -976,6 +976,18 @@ export default function BrokerSite() {
         </Dialog>
 
         {isOwner && (
+          <button
+            type="button"
+            onClick={openNewProperty}
+            aria-label="Cadastrar imóvel"
+            className="lg:hidden fixed bottom-24 right-4 z-40 inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3.5 text-sm font-bold text-primary-foreground shadow-xl transition-transform active:scale-95"
+            style={{ bottom: "calc(84px + env(safe-area-inset-bottom))" }}
+          >
+            <Plus className="h-5 w-5" /> Cadastrar imóvel
+          </button>
+        )}
+
+        {isOwner && (
           <BrokerImovelDialog
             open={formOpen}
             onOpenChange={(v) => { setFormOpen(v); if (!v) setEditing(null); }}
