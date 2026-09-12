@@ -31,6 +31,8 @@ export function normalizeBox(raw: unknown): string {
   if (raw === null || raw === undefined) return '';
   let v = String(raw).trim();
   if (!v) return '';
+  // "2 vagas" / "1 box" = quantidade, não identificação do box
+  if (/^\d{1,2}\s*(?:box(?:es)?|vaga(?:s)?|garagem|garagens)\b/i.test(v)) return '';
   v = v.replace(/\b(?:box(?:es)?|vaga(?:s)?|garagem|garagens)\b/gi, ' ')
        .replace(/n?[ºo°]/gi, ' ')
        .trim();
