@@ -55,10 +55,12 @@ export function MiniMap({ lat, lng, name, height = "250px", zoom = 15 }: MiniMap
 
       const infoWindow = new maps.InfoWindow({ content: `<b>${name}</b>` });
       infoWindow.open(map, markerInstance);
+      detach = attachMapRefresh(map, mapRef.current);
     })();
 
     return () => {
       cancelled = true;
+      detach?.();
       if (markerInstance) {
         if ("map" in markerInstance) markerInstance.map = null;
         else if (typeof markerInstance.setMap === "function") markerInstance.setMap(null);
