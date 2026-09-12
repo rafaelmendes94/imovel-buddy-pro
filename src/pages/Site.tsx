@@ -1,6 +1,7 @@
 import { PublicMobileNav } from "@/components/PublicMobileNav";
 import { MobileQuickActions } from "@/components/MobileQuickActions";
 import { PLACEHOLDER_IMAGE } from "@/lib/placeholderImage";
+import { RASTER_RENDERING } from "@/lib/mapUtils";
 import { getPropertyUnitParts } from "@/lib/propertyIdentity";
 import { PUBLIC_IMOVEL_COLUMNS } from "@/lib/publicImovelColumns";
 import { useState, useEffect, useRef, useCallback } from "react";
