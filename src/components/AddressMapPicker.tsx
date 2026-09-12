@@ -140,6 +140,7 @@ export function AddressMapPicker({ latitude, longitude, onChange }: AddressMapPi
 
     let cancelled = false;
     let clickListener: any = null;
+    let detach: (() => void) | undefined;
 
     (async () => {
       const MapCtor =
