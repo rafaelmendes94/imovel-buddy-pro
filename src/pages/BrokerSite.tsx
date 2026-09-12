@@ -970,6 +970,17 @@ export default function BrokerSite() {
                         {property.quartos > 0 && <span className="flex items-center gap-1"><BedDouble className="h-4 w-4" />{property.quartos}</span>}
                         {property.vagas > 0 && <span className="flex items-center gap-1"><Car className="h-4 w-4" />{property.vagas}</span>}
                       </div>
+                      {isOwner && (
+                        <button
+                          type="button"
+                          disabled={reactivatingId === property.id}
+                          onClick={() => handleReactivate(property)}
+                          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-3 py-2.5 text-xs font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
+                        >
+                          <RotateCcw className="h-4 w-4" />
+                          {reactivatingId === property.id ? "Reativando..." : "Reativar imóvel"}
+                        </button>
+                      )}
                     </div>
                   </article>
                 ))}
