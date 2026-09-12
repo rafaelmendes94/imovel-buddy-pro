@@ -1,3 +1,5 @@
+export const RASTER_RENDERING = { renderingType: "RASTER" as any };
+
 export type MapPoint = { lat: number; lng: number };
 
 export function hasValidCoordinates(lat: unknown, lng: unknown): boolean {
@@ -31,4 +33,47 @@ export function mapMarkerSvg(label: string, selected = false): { svg: string; wi
     <defs><filter id="shadow" x="-20%" y="-20%" width="140%" height="180%"><feDropShadow dx="0" dy="1.5" stdDeviation="1.6" flood-color="#0f1b3d" flood-opacity="0.25"/></filter></defs>
   </svg>`;
   return { svg, width, height };
+}
+/**
+ * Força os tiles do Google Maps a renderizarem quando o container muda de
+ * tamanho ou entra em tela (evita mapa em branco/cinza, comum no mobile).
+ * Retorna uma função de cleanup.
+ */
+export function attachMapRefresh(map: any, node: HTMLElement | null): () => void {
+  const google = (window as any).google;
+  if (!map || !google?.maps) return () => {};
+
+  const refresh = () => {
+    try {
+      const center = map.getCenter?.();
+      google.maps.event.trigger(map, "resize");
+      if (center) map.setCenter(center);
+    } catch {
+      /* noop */
+    }
+  };
+
+  const timers = [setTimeout(refresh, 60), setTimeout(refresh, 350), setTimeout(refresh, 1200)];
+  let ro: ResizeObserver | undefined;
+  let io: IntersectionObserver | undefined;
+
+  if (node && "ResizeObserver" in window) {
+    ro = new ResizeObserver(() => refresh());
+    ro.observe(node);
+  }
+  if (node && "IntersectionObserver" in window) {
+    io = new IntersectionObserver(
+      (entries) => entries.forEach((entry) => { if (entry.isIntersecting) refresh(); }),
+      { threshold: 0.05 }
+    );
+    io.observe(node);
+  }
+  window.addEventListener("orientationchange", refresh);
+
+  return () => {
+    timers.forEach(clearTimeout);
+    ro?.disconnect();
+    io?.disconnect();
+    window.removeEventListener("orientationchange", refresh);
+  };
 }

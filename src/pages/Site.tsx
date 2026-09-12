@@ -1,6 +1,7 @@
 import { PublicMobileNav } from "@/components/PublicMobileNav";
 import { MobileQuickActions } from "@/components/MobileQuickActions";
 import { PLACEHOLDER_IMAGE } from "@/lib/placeholderImage";
+import { RASTER_RENDERING } from "@/lib/mapUtils";
 import { getPropertyUnitParts } from "@/lib/propertyIdentity";
 import { PUBLIC_IMOVEL_COLUMNS } from "@/lib/publicImovelColumns";
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -435,6 +436,7 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
       }
 
       const map = new MapCtor(mapRef.current, {
+        ...RASTER_RENDERING,
         center: { lat: -29.77, lng: -50.08 },
         zoom: 12,
         mapTypeId: mapStyleConfig[mapStyle].mapTypeId,

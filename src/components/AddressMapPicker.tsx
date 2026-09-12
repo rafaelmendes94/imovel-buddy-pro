@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback } from "react";
 import { useGoogleMapsLoader } from "@/hooks/useGoogleMapsLoader";
+import { RASTER_RENDERING, attachMapRefresh } from "@/lib/mapUtils";
 import { Loader2 } from "lucide-react";
 
 interface AddressMapPickerProps {
@@ -139,6 +140,7 @@ export function AddressMapPicker({ latitude, longitude, onChange }: AddressMapPi
 
     let cancelled = false;
     let clickListener: any = null;
+    let detach: (() => void) | undefined;
 
     (async () => {
       const MapCtor =
@@ -156,6 +158,7 @@ export function AddressMapPicker({ latitude, longitude, onChange }: AddressMapPi
       const zoom = center === DEFAULT_CENTER ? DEFAULT_ZOOM : PIN_ZOOM;
 
       const map = new MapCtor(mapRef.current, {
+        ...RASTER_RENDERING,
         center,
         zoom,
         mapTypeControl: false,
@@ -164,6 +167,7 @@ export function AddressMapPicker({ latitude, longitude, onChange }: AddressMapPi
       });
 
       mapInstanceRef.current = map;
+      detach = attachMapRefresh(map, mapRef.current);
 
       if (center !== DEFAULT_CENTER) {
         markerRef.current = createDraggableMarker(maps, map, center);
@@ -187,6 +191,7 @@ export function AddressMapPicker({ latitude, longitude, onChange }: AddressMapPi
 
     return () => {
       cancelled = true;
+      detach?.();
       clickListener?.remove?.();
       removeMarker(markerRef.current);
       markerRef.current = null;

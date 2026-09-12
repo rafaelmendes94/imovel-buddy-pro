@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useGoogleMapsLoader } from "@/hooks/useGoogleMapsLoader";
+import { RASTER_RENDERING, attachMapRefresh } from "@/lib/mapUtils";
 import { Loader2 } from "lucide-react";
 
 interface MiniMapProps {
@@ -22,6 +23,7 @@ export function MiniMap({ lat, lng, name, height = "250px", zoom = 15 }: MiniMap
 
     let cancelled = false;
     let markerInstance: any = null;
+    let detach: (() => void) | undefined;
 
     (async () => {
       const MapCtor =
@@ -38,6 +40,7 @@ export function MiniMap({ lat, lng, name, height = "250px", zoom = 15 }: MiniMap
           : null);
 
       const map = new MapCtor(mapRef.current, {
+        ...RASTER_RENDERING,
         center: { lat, lng },
         zoom,
         mapTypeId: "hybrid",
@@ -54,10 +57,12 @@ export function MiniMap({ lat, lng, name, height = "250px", zoom = 15 }: MiniMap
 
       const infoWindow = new maps.InfoWindow({ content: `<b>${name}</b>` });
       infoWindow.open(map, markerInstance);
+      detach = attachMapRefresh(map, mapRef.current);
     })();
 
     return () => {
       cancelled = true;
+      detach?.();
       if (markerInstance) {
         if ("map" in markerInstance) markerInstance.map = null;
         else if (typeof markerInstance.setMap === "function") markerInstance.setMap(null);
