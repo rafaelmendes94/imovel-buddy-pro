@@ -8,6 +8,13 @@ interface AuthGuardProps {
   allowNoSubscription?: boolean;
 }
 
+interface ModuleGuardProps {
+  children: React.ReactNode;
+  adminModule?: string;
+  brokerModule?: string;
+  adminOnly?: boolean;
+}
+
 export function AuthGuard({ children, requiredRoles, allowBlocked = false, allowNoSubscription = false }: AuthGuardProps) {
   const { user, loading, roles, isBlocked, subscription, isSuperAdmin, isAdminStaff, isPartner } = useAuth();
   const location = useLocation();
@@ -61,6 +68,27 @@ export function AuthGuard({ children, requiredRoles, allowBlocked = false, allow
 
   if (!isStaff && needsPayment && !allowBlocked && !allowNoSubscription) {
     return <Navigate to="/painel/assinatura" replace />;
+  }
+
+  return <>{children}</>;
+}
+
+export function ModuleGuard({ children, adminModule, brokerModule, adminOnly = false }: ModuleGuardProps) {
+  const { isSuperAdmin, isAdminStaff, isBroker, subscription, hasModuleAccess } = useAuth();
+
+  if (isSuperAdmin) return <>{children}</>;
+
+  if (isAdminStaff) {
+    if (!adminModule) return <Navigate to="/dashboard" replace />;
+    return hasModuleAccess(adminModule) ? <>{children}</> : <Navigate to="/dashboard" replace />;
+  }
+
+  if (adminOnly) return <Navigate to={isBroker ? "/painel" : "/dashboard"} replace />;
+
+  if (isBroker) {
+    if (!brokerModule) return <>{children}</>;
+    const enabledModules = subscription?.plan?.modules || [];
+    return enabledModules.includes(brokerModule) ? <>{children}</> : <Navigate to="/painel" replace />;
   }
 
   return <>{children}</>;

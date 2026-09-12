@@ -4,7 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
-import { AuthGuard } from "@/components/AuthGuard";
+import { AuthGuard, ModuleGuard } from "@/components/AuthGuard";
 
 // Public pages
 import Login from "./pages/Login";
@@ -80,6 +80,15 @@ import CadastroEmpreendimento from "./pages/CadastroEmpreendimento";
 
 const queryClient = new QueryClient();
 
+const protectedRoute = (
+  element: React.ReactNode,
+  opts?: { adminModule?: string; brokerModule?: string; adminOnly?: boolean },
+) => (
+  <AuthGuard>
+    <ModuleGuard {...opts}>{element}</ModuleGuard>
+  </AuthGuard>
+);
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -111,9 +120,9 @@ const App = () => (
             
             <Route path="/admin/funcionarios" element={<AuthGuard requiredRoles={["super_admin"]}><AdminFuncionarios /></AuthGuard>} />
             <Route path="/admin/cargos" element={<AuthGuard requiredRoles={["super_admin"]}><AdminCargos /></AuthGuard>} />
-            <Route path="/admin/clientes" element={<AuthGuard requiredRoles={["super_admin", "admin_staff"]}><AdminClientes /></AuthGuard>} />
-            <Route path="/admin/planos" element={<AuthGuard requiredRoles={["super_admin", "admin_staff"]}><AdminPlanos /></AuthGuard>} />
-            <Route path="/admin/brick" element={<AuthGuard requiredRoles={["super_admin", "admin_staff"]}><AdminBrick /></AuthGuard>} />
+            <Route path="/admin/clientes" element={<AuthGuard requiredRoles={["super_admin", "admin_staff"]}><ModuleGuard adminModule="clientes" adminOnly><AdminClientes /></ModuleGuard></AuthGuard>} />
+            <Route path="/admin/planos" element={<AuthGuard requiredRoles={["super_admin", "admin_staff"]}><ModuleGuard adminModule="planos" adminOnly><AdminPlanos /></ModuleGuard></AuthGuard>} />
+            <Route path="/admin/brick" element={<AuthGuard requiredRoles={["super_admin", "admin_staff"]}><ModuleGuard adminModule="brick" adminOnly><AdminBrick /></ModuleGuard></AuthGuard>} />
             <Route path="/admin/opcoes" element={<AuthGuard requiredRoles={["super_admin"]}><AdminOpcoes /></AuthGuard>} />
             <Route path="/admin/ia" element={<AuthGuard requiredRoles={["super_admin"]}><AdminIA /></AuthGuard>} />
             <Route path="/admin/asaas" element={<AuthGuard requiredRoles={["super_admin"]}><AdminAsaas /></AuthGuard>} />
@@ -128,42 +137,42 @@ const App = () => (
 
             {/* Legacy routes - now require auth */}
             <Route path="/dashboard" element={<AuthGuard><Dashboard /></AuthGuard>} />
-            <Route path="/imoveis" element={<AuthGuard><Properties /></AuthGuard>} />
-            <Route path="/edificios" element={<AuthGuard><Buildings /></AuthGuard>} />
-            <Route path="/edificios/:id" element={<AuthGuard><BuildingDetail /></AuthGuard>} />
-            <Route path="/condominios" element={<AuthGuard><Condominiums /></AuthGuard>} />
-            <Route path="/condominios/:id" element={<AuthGuard><CondominiumDetail /></AuthGuard>} />
-            <Route path="/mapas-condominio" element={<AuthGuard><MapasCondominio /></AuthGuard>} />
+            <Route path="/imoveis" element={protectedRoute(<Properties />, { adminModule: "imoveis", brokerModule: "imoveis" })} />
+            <Route path="/edificios" element={protectedRoute(<Buildings />, { adminModule: "edificios", brokerModule: "edificios" })} />
+            <Route path="/edificios/:id" element={protectedRoute(<BuildingDetail />, { adminModule: "edificios", brokerModule: "edificios" })} />
+            <Route path="/condominios" element={protectedRoute(<Condominiums />, { adminModule: "condominios", brokerModule: "condominios" })} />
+            <Route path="/condominios/:id" element={protectedRoute(<CondominiumDetail />, { adminModule: "condominios", brokerModule: "condominios" })} />
+            <Route path="/mapas-condominio" element={protectedRoute(<MapasCondominio />, { adminModule: "condominios", brokerModule: "condominios" })} />
             <Route path="/mapas" element={<AuthGuard><Maps /></AuthGuard>} />
-            <Route path="/fotos-cidade" element={<AuthGuard><CityPhotos /></AuthGuard>} />
+            <Route path="/fotos-cidade" element={protectedRoute(<CityPhotos />, { adminModule: "fotos_cidade", brokerModule: "fotos" })} />
             <Route path="/corretores" element={<AuthGuard><Brokers /></AuthGuard>} />
             <Route path="/cadastro-corretores" element={<AuthGuard><CadastroCorretores /></AuthGuard>} />
-            <Route path="/relatorios" element={<AuthGuard><Reports /></AuthGuard>} />
+            <Route path="/relatorios" element={protectedRoute(<Reports />, { adminModule: "relatorios", adminOnly: true })} />
             <Route path="/configuracoes" element={<AuthGuard><Settings /></AuthGuard>} />
-            <Route path="/site-editor" element={<AuthGuard><Site /></AuthGuard>} />
+            <Route path="/site-editor" element={protectedRoute(<Site />, { adminModule: "site_editor", brokerModule: "site" })} />
             <Route path="/todos-imoveis" element={<AllProperties />} />
             <Route path="/ranking" element={<AuthGuard><RankingPage /></AuthGuard>} />
-            <Route path="/avaliacoes" element={<AuthGuard><Avaliacoes /></AuthGuard>} />
-            <Route path="/financeiro" element={<AuthGuard><Financeiro /></AuthGuard>} />
-            <Route path="/tabelas" element={<AuthGuard><Tabelas /></AuthGuard>} />
+            <Route path="/avaliacoes" element={protectedRoute(<Avaliacoes />, { adminModule: "avaliacoes", brokerModule: "avaliacoes" })} />
+            <Route path="/financeiro" element={protectedRoute(<Financeiro />, { adminModule: "financeiro", adminOnly: true })} />
+            <Route path="/tabelas" element={protectedRoute(<Tabelas />, { adminModule: "tabelas", brokerModule: "tabelas" })} />
             <Route path="/ferramentas/gerador-tabela" element={<AuthGuard><GeradorTabela /></AuthGuard>} />
-            <Route path="/contratos" element={<AuthGuard><Contratos /></AuthGuard>} />
-            <Route path="/videomaker" element={<AuthGuard><VideoMaker /></AuthGuard>} />
-            <Route path="/imobiliarias" element={<AuthGuard><Imobiliarias /></AuthGuard>} />
-            <Route path="/cadastro-imovel" element={<AuthGuard><CadastroImovel /></AuthGuard>} />
-            <Route path="/editar-imovel/:id" element={<AuthGuard><EditarImovel /></AuthGuard>} />
+            <Route path="/contratos" element={protectedRoute(<Contratos />, { adminModule: "contratos", brokerModule: "contratos" })} />
+            <Route path="/videomaker" element={protectedRoute(<VideoMaker />, { adminModule: "material_extra", brokerModule: "videomaker" })} />
+            <Route path="/imobiliarias" element={protectedRoute(<Imobiliarias />, { adminModule: "imobiliarias", adminOnly: true })} />
+            <Route path="/cadastro-imovel" element={protectedRoute(<CadastroImovel />, { adminModule: "imoveis", brokerModule: "imoveis" })} />
+            <Route path="/editar-imovel/:id" element={protectedRoute(<EditarImovel />, { adminModule: "imoveis", brokerModule: "imoveis" })} />
             <Route path="/construtoras" element={<AuthGuard><Construtoras /></AuthGuard>} />
             <Route path="/construtoras/:id" element={<AuthGuard><ConstrutoraDetail /></AuthGuard>} />
             <Route path="/construtoras/:id/avaliacoes" element={<AuthGuard><ConstrutoraAvaliacoes /></AuthGuard>} />
             <Route path="/brick" element={<AuthGuard><Brick /></AuthGuard>} />
-            <Route path="/empreendimentos" element={<AuthGuard><Empreendimentos /></AuthGuard>} />
-            <Route path="/empreendimentos/:id" element={<AuthGuard><EmpreendimentoDetail /></AuthGuard>} />
-            <Route path="/cadastro-edificio" element={<AuthGuard><CadastroEdificio /></AuthGuard>} />
-            <Route path="/editar-edificio/:id" element={<AuthGuard><CadastroEdificio /></AuthGuard>} />
-            <Route path="/cadastro-condominio" element={<AuthGuard><CadastroCondominio /></AuthGuard>} />
-            <Route path="/editar-condominio/:id" element={<AuthGuard><CadastroCondominio /></AuthGuard>} />
-            <Route path="/cadastro-empreendimento" element={<AuthGuard><CadastroEmpreendimento /></AuthGuard>} />
-            <Route path="/editar-empreendimento/:id" element={<AuthGuard><CadastroEmpreendimento /></AuthGuard>} />
+            <Route path="/empreendimentos" element={protectedRoute(<Empreendimentos />, { adminModule: "edificios", brokerModule: "edificios" })} />
+            <Route path="/empreendimentos/:id" element={protectedRoute(<EmpreendimentoDetail />, { adminModule: "edificios", brokerModule: "edificios" })} />
+            <Route path="/cadastro-edificio" element={protectedRoute(<CadastroEdificio />, { adminModule: "edificios", brokerModule: "edificios" })} />
+            <Route path="/editar-edificio/:id" element={protectedRoute(<CadastroEdificio />, { adminModule: "edificios", brokerModule: "edificios" })} />
+            <Route path="/cadastro-condominio" element={protectedRoute(<CadastroCondominio />, { adminModule: "condominios", brokerModule: "condominios" })} />
+            <Route path="/editar-condominio/:id" element={protectedRoute(<CadastroCondominio />, { adminModule: "condominios", brokerModule: "condominios" })} />
+            <Route path="/cadastro-empreendimento" element={protectedRoute(<CadastroEmpreendimento />, { adminModule: "edificios", brokerModule: "edificios" })} />
+            <Route path="/editar-empreendimento/:id" element={protectedRoute(<CadastroEmpreendimento />, { adminModule: "edificios", brokerModule: "edificios" })} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>
