@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useGoogleMapsLoader } from "@/hooks/useGoogleMapsLoader";
+import { attachMapRefresh } from "@/lib/mapUtils";
 import { Loader2 } from "lucide-react";
 
 interface MiniMapProps {
