@@ -87,6 +87,7 @@ export function QuickImovelForm({ onSaved, onCancel, defaultCidade = "", cancelL
     if (u.linkVideo) setLinkVideo(str(u.linkVideo));
     if (u.driveUrl || u.drive_fotos_url) setDriveUrl(str(u.driveUrl || u.drive_fotos_url));
     if (u.imagens && Array.isArray(u.imagens) && u.imagens.length > 0) setImagens(u.imagens.map(String));
+    if (u._empreendimento) setEmp(u._empreendimento as EmpreendimentoRecord);
   };
 
   const submit = async () => {
