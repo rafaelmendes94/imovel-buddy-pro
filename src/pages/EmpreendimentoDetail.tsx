@@ -1,7 +1,7 @@
 import { PLACEHOLDER_IMAGE } from "@/lib/placeholderImage";
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { MiniMap } from "@/components/MiniMap";
+import { LocationMapCard } from "@/components/LocationMapCard";
 import { AppLayout } from "@/components/AppLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency } from "@/data/mockData";
@@ -284,26 +284,7 @@ export default function EmpreendimentoDetail() {
           </TabsContent>
 
           <TabsContent value="localizacao" className="space-y-3">
-            {Number(emp.latitude) !== 0 && Number(emp.longitude) !== 0 ? (
-              <>
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-accent" /> Localização
-                  </h3>
-                  <a href={`https://www.google.com/maps?q=${emp.latitude},${emp.longitude}`} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-info/10 text-info text-xs font-semibold hover:bg-info/20 transition-colors border border-info/20">
-                    <ExternalLink className="w-3 h-3" /> Google Maps
-                  </a>
-                </div>
-                <MiniMap lat={Number(emp.latitude)} lng={Number(emp.longitude)} name={emp.nome} height="400px" />
-                <p className="text-xs text-muted-foreground text-center">{fullAddress}</p>
-              </>
-            ) : (
-              <div className="text-center py-12 text-muted-foreground">
-                <MapPin className="w-12 h-12 mx-auto mb-3 opacity-40" />
-                <p>Coordenadas não cadastradas</p>
-              </div>
-            )}
+            <LocationMapCard lat={emp.latitude} lng={emp.longitude} name={emp.nome} address={fullAddress} height="400px" />
           </TabsContent>
         </Tabs>
 

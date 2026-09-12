@@ -15,6 +15,7 @@ import { PUBLIC_IMOVEL_COLUMNS } from "@/lib/publicImovelColumns";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { buildWhatsappMessage, toWhatsappNumber } from "@/lib/propertyEvents";
+import { LocationMapCard } from "@/components/LocationMapCard";
 
 interface ImovelRow {
   id: string;
@@ -215,13 +216,6 @@ export default function ImovelPublico() {
       })
     : [];
 
-
-  const mapsSearchUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`;
-  const mapEmbedUrl = imovel?.latitude && imovel?.longitude
-    ? `https://maps.google.com/maps?q=${imovel.latitude},${imovel.longitude}&z=15&output=embed`
-    : fullAddress
-      ? `https://maps.google.com/maps?q=${encodeURIComponent(fullAddress)}&z=15&output=embed`
-      : null;
 
   const handleShare = async () => {
     const url = window.location.href;
@@ -670,20 +664,10 @@ export default function ImovelPublico() {
         )}
 
         {/* ===== Localização ===== */}
-        {mapEmbedUrl && (
+        {(fullAddress || (imovel.latitude != null && imovel.longitude != null)) && (
           <div id="localizacao" className="bg-card border border-border rounded-xl sm:rounded-2xl p-4 sm:p-6 mt-4 sm:mt-6 scroll-mt-20">
             <h2 className="text-base font-bold text-foreground mb-3">Localização</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-              <div className="aspect-[4/3] md:aspect-[16/9] rounded-xl overflow-hidden border border-border">
-                <iframe src={mapEmbedUrl} title="Mapa do imóvel" className="w-full h-full border-0" loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
-              </div>
-              <div>
-                <p className="text-sm text-foreground font-medium">{fullAddress}</p>
-                <a href={mapsSearchUrl} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-border text-sm font-semibold text-foreground hover:bg-muted">
-                  <MapIcon className="w-4 h-4 text-primary" /> Ver no Google Maps
-                </a>
-              </div>
-            </div>
+            <LocationMapCard lat={imovel.latitude} lng={imovel.longitude} name={imovel.titulo} address={fullAddress} height="320px" />
           </div>
         )}
 

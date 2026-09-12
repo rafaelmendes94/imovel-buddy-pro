@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { MarkerClusterer } from "@googlemaps/markerclusterer";
 import {
-  Search, SlidersHorizontal, Loader2, MapPin, LocateFixed, List, Map as MapIcon,
+  Search, SlidersHorizontal, Loader2, MapPin, LocateFixed,
   BedDouble, Bath, Car, Ruler, X, ArrowLeft, RefreshCw, Navigation, ChevronUp, ChevronDown,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -92,7 +92,6 @@ export default function ExplorarMapa() {
   const markersRef = useRef<Record<string, any>>({});
   const clustererRef = useRef<any>(null);
   const listRef = useRef<HTMLDivElement>(null);
-  const carouselRef = useRef<HTMLDivElement>(null);
 
   const [imoveis, setImoveis] = useState<Imovel[]>([]);
   const [loading, setLoading] = useState(true);
@@ -100,7 +99,6 @@ export default function ExplorarMapa() {
   const [hoverId, setHoverId] = useState<string | null>(null);
   const [visibleIds, setVisibleIds] = useState<string[] | null>(null);
   const [showSearchArea, setShowSearchArea] = useState(false);
-  const [mobileView, setMobileView] = useState<"map" | "list">("map");
   const [moreOpen, setMoreOpen] = useState(false);
   const [myPos, setMyPos] = useState<{ lat: number; lng: number } | null>(null);
   const [sheetExpanded, setSheetExpanded] = useState(false);
@@ -462,7 +460,6 @@ export default function ExplorarMapa() {
           className={cn(
             "relative lg:w-[65%] w-full",
             "h-[calc(100dvh-190px-env(safe-area-inset-bottom))] min-h-[430px] lg:h-[calc(100vh-124px)]",
-            mobileView === "list" && "hidden lg:block"
           )}
         >
           <div ref={mapDivRef} className="w-full h-full" />
@@ -557,7 +554,7 @@ export default function ExplorarMapa() {
           className={cn(
             "lg:w-[35%] w-full border-l border-border bg-muted/30 overflow-y-auto",
             "h-[calc(100dvh-190px-env(safe-area-inset-bottom))] lg:h-[calc(100vh-124px)]",
-            mobileView === "map" && "hidden lg:block"
+            "hidden lg:block"
           )}
           ref={listRef}
         >
@@ -578,8 +575,6 @@ export default function ExplorarMapa() {
           </div>
         </aside>
       </div>
-
-      {mobileView === "list" && <Button onClick={() => setMobileView("map")} className="lg:hidden fixed left-1/2 -translate-x-1/2 bottom-[calc(86px+env(safe-area-inset-bottom))] z-40 h-11 rounded-full px-5 shadow-xl"><MapIcon className="mr-2 h-4 w-4" /> Mapa</Button>}
 
       {/* Mais filtros */}
       <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
