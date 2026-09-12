@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Sparkles, Loader2, Wand2, ChevronDown, ChevronUp } from 'lucide-react';
 import { normalizeUnidade, normalizeBox, extractUnitBoxFromText } from '@/lib/aiImovelFields';
+import { findEmpreendimentoByName, empreendimentoAddressFields } from '@/lib/empreendimentos';
 
 const NUMBER_FIELDS = ['preco', 'precoParcelado', 'comissao', 'bonus', 'area', 'areaPrivativa'];
 const INT_FIELDS = ['quartos', 'suites', 'banheiros', 'lavabo', 'vagas', 'elevadores'];
@@ -88,6 +89,25 @@ export function AIImovelImport({ onApply, currentArrays = {} }: AIImovelImportPr
         count++;
       }
 
+
+      // ===== EMPREENDIMENTO JÁ CADASTRADO: endereço oficial tem prioridade =====
+      const nomeEmp = String(fields.empreendimento ?? updates.empreendimento ?? '').trim();
+      if (nomeEmp) {
+        try {
+          const rec = await findEmpreendimentoByName(nomeEmp);
+          if (rec) {
+            const addr = empreendimentoAddressFields(rec);
+            for (const [k, v] of Object.entries(addr)) {
+              if (updates[k] !== v) count++;
+              updates[k] = v;
+            }
+            updates.empreendimento = rec.nome;
+            updates._empreendimento = rec;
+          }
+        } catch (err) {
+          console.warn('lookup empreendimento falhou', err);
+        }
+      }
 
       if (count === 0) {
         toast({ title: 'Nada identificado', description: 'A IA não encontrou informações reconhecíveis no texto.' });
