@@ -63,6 +63,32 @@ export function AIImovelImport({ onApply, currentArrays = {} }: AIImovelImportPr
         count++;
       }
 
+      // ===== UNIDADE / BOX: padronização + fallback pelo texto =====
+      const tipo = String(updates.tipo ?? fields.tipo ?? '');
+      const fallback = extractUnitBoxFromText(text, tipo);
+
+      const unidade = normalizeUnidade(fields.unidade, tipo) || fallback.unidade || '';
+      if (unidade) {
+        if (updates.unidade !== unidade) count += updates.unidade ? 0 : 1;
+        updates.unidade = unidade;
+      } else {
+        delete updates.unidade;
+      }
+
+      const box = normalizeBox(fields.box) || fallback.box || '';
+      if (box) {
+        if (!updates.box) count += 1;
+        updates.box = box;
+      } else {
+        delete updates.box;
+      }
+
+      if (updates.vagas === undefined && fallback.vagas !== undefined) {
+        updates.vagas = Math.min(fallback.vagas, 10);
+        count++;
+      }
+
+
       if (count === 0) {
         toast({ title: 'Nada identificado', description: 'A IA não encontrou informações reconhecíveis no texto.' });
         return;
