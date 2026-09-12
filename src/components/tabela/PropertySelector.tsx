@@ -4,7 +4,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, ImageOff, SlidersHorizontal, X } from "lucide-react";
+import { Search, ImageOff, SlidersHorizontal, X, ChevronDown, ChevronUp } from "lucide-react";
 import { identityLines, money, type TabelaImovel, type TabelaCorretor } from "@/lib/tabelaData";
 import { cn } from "@/lib/utils";
 
@@ -33,6 +33,7 @@ export function PropertySelector({ imoveis, corretores, selectedIds, onToggle, o
   const [proprietario, setProprietario] = useState(ALL);
   const [precoMin, setPrecoMin] = useState("");
   const [precoMax, setPrecoMax] = useState("");
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
   const uniq = (vals: (string | null | undefined)[]) =>
     Array.from(new Set(vals.filter((v): v is string => !!v && v.trim() !== ""))).sort((a, b) => a.localeCompare(b));
@@ -153,41 +154,70 @@ export function PropertySelector({ imoveis, corretores, selectedIds, onToggle, o
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[520px] overflow-y-auto pr-1">
           {filtered.map(p => {
             const selected = selectedIds.includes(p.id);
+            const expanded = expandedIds.has(p.id);
             const lines = identityLines(p);
+            const toggleExpanded = (e: React.MouseEvent) => {
+              e.stopPropagation();
+              setExpandedIds(prev => {
+                const next = new Set(prev);
+                if (next.has(p.id)) next.delete(p.id);
+                else next.add(p.id);
+                return next;
+              });
+            };
             return (
-              <button
+              <div
                 key={p.id}
-                type="button"
-                onClick={() => onToggle(p.id)}
                 className={cn(
-                  "flex gap-3 p-2 rounded-xl border text-left transition-all",
+                  "rounded-xl border text-left transition-all overflow-hidden",
                   selected ? "border-primary bg-primary/5 ring-1 ring-primary/40" : "border-border bg-card hover:bg-accent/40"
                 )}
               >
-                <div className="w-24 h-20 rounded-lg overflow-hidden bg-muted flex items-center justify-center flex-shrink-0">
-                  {p.capa ? (
-                    <img src={p.capa} alt={p.titulo} loading="lazy" className="w-full h-full object-cover" />
-                  ) : (
-                    <ImageOff className="w-5 h-5 text-muted-foreground/50" />
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-start gap-2">
-                    <p className="text-sm font-semibold text-foreground truncate flex-1">{p.titulo}</p>
-                    <Checkbox checked={selected} className="mt-0.5 pointer-events-none" />
+                <button
+                  type="button"
+                  onClick={() => onToggle(p.id)}
+                  className="flex gap-3 p-2 w-full text-left items-center"
+                >
+                  <div className="w-16 h-16 rounded-lg overflow-hidden bg-muted flex items-center justify-center flex-shrink-0">
+                    {p.capa ? (
+                      <img src={p.capa} alt={p.titulo} loading="lazy" className="w-full h-full object-cover" />
+                    ) : (
+                      <ImageOff className="w-5 h-5 text-muted-foreground/50" />
+                    )}
                   </div>
-                  {lines.length > 0 && (
-                    <p className="text-[11px] text-muted-foreground truncate">{lines.join(" • ")}</p>
-                  )}
-                  <p className="text-[11px] text-muted-foreground truncate">
-                    {[p.bairro, p.cidade].filter(Boolean).join(", ")}
-                  </p>
-                  <div className="flex items-center gap-2 mt-1 min-w-0">
-                    <span className="text-sm font-bold text-primary truncate">{money(p.preco)}</span>
-                    <span className="text-[10px] text-muted-foreground truncate">{p.code}</span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start gap-2">
+                      <p className="text-sm font-semibold text-foreground truncate flex-1">{p.titulo}</p>
+                      <Checkbox checked={selected} className="mt-0.5 pointer-events-none" />
+                    </div>
+                    <div className="flex items-center gap-2 mt-1 min-w-0">
+                      <span className="text-sm font-bold text-primary truncate">{money(p.preco)}</span>
+                      <span className="text-[10px] text-muted-foreground truncate">{p.code}</span>
+                    </div>
                   </div>
-                </div>
-              </button>
+                  <button
+                    type="button"
+                    onClick={toggleExpanded}
+                    className="p-1 rounded-md hover:bg-accent/60 text-muted-foreground"
+                    aria-label={expanded ? "Recolher detalhes" : "Abrir detalhes"}
+                  >
+                    {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </button>
+                </button>
+                {expanded && (
+                  <div className="px-2 pb-2 pt-0 space-y-1 border-t border-border/50">
+                    {lines.length > 0 && (
+                      <p className="text-[11px] text-muted-foreground truncate pt-2">{lines.join(" • ")}</p>
+                    )}
+                    <p className="text-[11px] text-muted-foreground truncate">
+                      {[p.bairro, p.cidade].filter(Boolean).join(", ")}
+                    </p>
+                    {p.endereco && (
+                      <p className="text-[11px] text-muted-foreground truncate">{p.endereco}</p>
+                    )}
+                  </div>
+                )}
+              </div>
             );
           })}
         </div>
