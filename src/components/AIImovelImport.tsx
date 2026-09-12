@@ -5,6 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Sparkles, Loader2, Wand2, ChevronDown, ChevronUp } from 'lucide-react';
+import { normalizeUnidade, normalizeBox, extractUnitBoxFromText } from '@/lib/aiImovelFields';
 
 const NUMBER_FIELDS = ['preco', 'precoParcelado', 'comissao', 'bonus', 'area', 'areaPrivativa'];
 const INT_FIELDS = ['quartos', 'suites', 'banheiros', 'lavabo', 'vagas', 'elevadores'];
