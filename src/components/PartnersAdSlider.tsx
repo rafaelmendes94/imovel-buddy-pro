@@ -51,7 +51,7 @@ export function PartnersAdSlider() {
             />
           )}
           <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/70 to-background/20" />
-          <div className="absolute inset-0 flex items-center gap-4 p-4 sm:p-6">
+          <div className="absolute inset-0 flex items-center gap-3 sm:gap-4 p-4 sm:p-6 pt-11 sm:pt-6 pr-4 sm:pr-32">
             {p.logo_url && (
               <img
                 src={p.logo_url}
