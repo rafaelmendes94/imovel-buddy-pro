@@ -983,11 +983,12 @@ export default function Properties() {
         <div className="flex flex-col gap-3">
           <BackButton />
           {/* Action buttons row */}
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <h1 className="text-lg sm:text-xl font-bold text-foreground flex items-center gap-2">
               <Building2 className="w-5 h-5 text-accent" /> Imóveis
             </h1>
-            <div className="flex gap-2 flex-wrap flex-shrink-0">
+            <div className="flex flex-wrap gap-2 w-full sm:w-auto sm:flex-shrink-0">
+
               <button
                 onClick={() => navigate("/relatorios")}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-colors"
