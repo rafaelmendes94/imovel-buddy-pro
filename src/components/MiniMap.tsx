@@ -45,7 +45,7 @@ export function MiniMap({ lat, lng, name, height = "250px", zoom = 15 }: MiniMap
         zoom,
         mapTypeId: "hybrid",
         clickableIcons: false,
-        gestureHandling: "cooperative",
+        gestureHandling: "greedy",
         zoomControl: true,
         streetViewControl: false,
         mapTypeControl: false,
