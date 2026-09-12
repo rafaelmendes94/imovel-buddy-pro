@@ -265,9 +265,7 @@ function PropertyCard({ p, brokerName, whatsapp, onOpen, isOwner = false, onUpda
             <button
               type="button"
               disabled={saving}
-              onClick={(e) => isSold
-                ? patchImovel(e, { status: "Disponível", data_venda: null }, "Imóvel reativado")
-                : patchImovel(e, { status: "Vendido", data_venda: new Date().toISOString().slice(0, 10) }, "Imóvel marcado como vendido")}
+              onClick={(e) => toggleSold(e)}
               className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-success/15 px-2 py-2 text-[11px] font-bold text-success transition-colors hover:bg-success/25 disabled:opacity-50"
             >
               {isSold ? <><RotateCcw className="h-3.5 w-3.5" /> Reabrir</> : <><CheckCircle2 className="h-3.5 w-3.5" /> Vendido</>}
