@@ -954,7 +954,7 @@ export default function BrokerSite() {
               </div>
 
               <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                {soldProperties.slice(0, 6).map((property) => (
+                {(isOwner ? soldProperties : soldProperties.slice(0, 6)).map((property) => (
                   <article key={property.id} className="overflow-hidden rounded-3xl border border-border bg-card shadow-[var(--shadow-card)]">
                     <div className="relative h-56 overflow-hidden">
                       <img src={property.imagens?.[0] || "/placeholder.svg"} alt={property.titulo} loading="lazy" className="h-full w-full object-cover" />
