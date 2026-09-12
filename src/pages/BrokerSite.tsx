@@ -551,6 +551,18 @@ export default function BrokerSite() {
     reloadProperties();
   };
 
+  const handleReactivate = async (property: DBProperty) => {
+    setReactivatingId(property.id);
+    const res = await reactivateProperty(property.id);
+    setReactivatingId(null);
+    if (!res.ok) {
+      toast.error("Não foi possível reativar: " + (res.error || ""));
+      return;
+    }
+    handlePropertyUpdated(property.id, (res.patch || { status: "Disponível", data_venda: null, plataforma_venda: "" }) as Partial<DBProperty>);
+    toast.success("Imóvel reativado — venda removida do ranking");
+  };
+
   const handlePropertyUpdated = (id: string, patch: Partial<DBProperty>) => {
     const apply = (list: DBProperty[]) => list.map((p) => (p.id === id ? { ...p, ...patch } : p));
     const all = apply([...properties, ...soldProperties]);
