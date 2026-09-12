@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { MarkerClusterer } from "@googlemaps/markerclusterer";
 import {
   Search, SlidersHorizontal, Loader2, MapPin, LocateFixed, List, Map as MapIcon,
-  BedDouble, Bath, Car, Ruler, X, ArrowLeft, RefreshCw,
+  BedDouble, Bath, Car, Ruler, X, ArrowLeft, RefreshCw, Navigation, ChevronUp, ChevronDown,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { PUBLIC_IMOVEL_COLUMNS } from "@/lib/publicImovelColumns";
@@ -14,6 +14,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { googleMapsRouteUrl, mapMarkerSvg } from "@/lib/mapUtils";
+import { toast } from "sonner";
 
 type Imovel = {
   id: string;
@@ -80,27 +82,10 @@ function distanceKm(a: { lat: number; lng: number }, b: { lat: number; lng: numb
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 
-function markerSvg(label: string, selected: boolean) {
-  const w = Math.max(64, label.length * 8 + 26);
-  const bg = selected ? "#0f1b3d" : "#ffffff";
-  const fg = selected ? "#ffffff" : "#0f1b3d";
-  const stroke = selected ? "#0f1b3d" : "#d8dce6";
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="42" viewBox="0 0 ${w} 42">
-    <g filter="url(#s)">
-      <rect x="4" y="4" width="${w - 8}" height="26" rx="13" fill="${bg}" stroke="${stroke}" stroke-width="1.2"/>
-      <path d="M${w / 2 - 6} 29H${w / 2 + 6}L${w / 2} 38Z" fill="${bg}"/>
-    </g>
-    <text x="${w / 2}" y="21" text-anchor="middle" font-family="system-ui,-apple-system,Arial" font-size="12" font-weight="700" fill="${fg}">${label}</text>
-    <defs><filter id="s" x="-20%" y="-20%" width="140%" height="180%">
-      <feDropShadow dx="0" dy="1.5" stdDeviation="1.6" flood-color="#0f1b3d" flood-opacity="0.25"/>
-    </filter></defs>
-  </svg>`;
-}
-
 export default function ExplorarMapa() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const { ready: mapsReady, loading: mapsLoading } = useGoogleMapsLoader();
+  const { ready: mapsReady, loading: mapsLoading, error: mapsError } = useGoogleMapsLoader();
 
   const mapDivRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
@@ -118,6 +103,9 @@ export default function ExplorarMapa() {
   const [mobileView, setMobileView] = useState<"map" | "list">("map");
   const [moreOpen, setMoreOpen] = useState(false);
   const [myPos, setMyPos] = useState<{ lat: number; lng: number } | null>(null);
+  const [sheetExpanded, setSheetExpanded] = useState(false);
+  const [resultLimit, setResultLimit] = useState(60);
+  const dragStartYRef = useRef<number | null>(null);
 
   // filtros
   const [term, setTerm] = useState(params.get("busca") || "");
@@ -140,7 +128,9 @@ export default function ExplorarMapa() {
       const { data } = await (supabase.from("imoveis") as any)
         .select(`${COLS}, edificios(nome), condominios(nome), empreendimentos(nome)`)
         .eq("ativo_site", true)
-        .eq("status", "Disponível");
+        .eq("status", "Disponível")
+        .order("created_at", { ascending: false })
+        .limit(500);
       if (!cancelled) {
         setImoveis((data || []).filter((r: Imovel) => Number(r.latitude) && Number(r.longitude)));
         setLoading(false);
@@ -194,6 +184,7 @@ export default function ExplorarMapa() {
     setFRooms(0); setFSuites(0); setFParking(0); setFAreaMin("");
     setFSeaView(false); setFDecorated(false); setFSwap(false);
     setVisibleIds(null);
+    setResultLimit(60);
   };
 
   const fitToProperties = useCallback((items: Imovel[]) => {
@@ -243,18 +234,20 @@ export default function ExplorarMapa() {
 
     const markers = filtered.map((im) => {
       const active = im.id === selectedId || im.id === hoverId;
+      const markerIcon = mapMarkerSvg(fmtPrice(im.preco), active);
       const marker = new g.maps.Marker({
         position: { lat: Number(im.latitude), lng: Number(im.longitude) },
         title: im.titulo,
         zIndex: active ? 999 : 1,
         icon: {
-          url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(markerSvg(fmtPrice(im.preco), active))}`,
-          scaledSize: new g.maps.Size(Math.max(64, fmtPrice(im.preco).length * 8 + 26), 42),
-          anchor: new g.maps.Point(Math.max(64, fmtPrice(im.preco).length * 8 + 26) / 2, 38),
+          url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(markerIcon.svg)}`,
+          scaledSize: new g.maps.Size(markerIcon.width, markerIcon.height),
+          anchor: new g.maps.Point(markerIcon.width / 2, markerIcon.height - 2),
         },
       });
       marker.addListener("click", () => {
         setSelectedId(im.id);
+        setSheetExpanded(false);
         mapRef.current?.panTo({ lat: Number(im.latitude), lng: Number(im.longitude) });
       });
       markersRef.current[im.id] = marker;
@@ -295,13 +288,20 @@ export default function ExplorarMapa() {
   };
 
   const locateMe = () => {
-    if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition((p) => {
-      const pos = { lat: p.coords.latitude, lng: p.coords.longitude };
-      setMyPos(pos);
-      mapRef.current?.panTo(pos);
-      mapRef.current?.setZoom(14);
-    });
+    if (!navigator.geolocation) {
+      toast.error("Localização não disponível neste aparelho.");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (p) => {
+        const pos = { lat: p.coords.latitude, lng: p.coords.longitude };
+        setMyPos(pos);
+        mapRef.current?.panTo(pos);
+        mapRef.current?.setZoom(14);
+      },
+      () => toast.error("Não foi possível acessar sua localização. Verifique a permissão do navegador."),
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
   };
 
   const selected = listed.find((i) => i.id === selectedId) || filtered.find((i) => i.id === selectedId) || null;
@@ -309,6 +309,18 @@ export default function ExplorarMapa() {
     (fType ? 1 : 0) + (fCity ? 1 : 0) + (fNeighborhood ? 1 : 0) + (fMin ? 1 : 0) + (fMax ? 1 : 0) +
     (fRooms ? 1 : 0) + (fSuites ? 1 : 0) + (fParking ? 1 : 0) + (fAreaMin ? 1 : 0) +
     (fSeaView ? 1 : 0) + (fDecorated ? 1 : 0) + (fSwap ? 1 : 0);
+
+  const activeChips = [
+    fType && { label: fType, clear: () => setFType("") },
+    fCity && { label: fCity, clear: () => { setFCity(""); setFNeighborhood(""); } },
+    fNeighborhood && { label: fNeighborhood, clear: () => setFNeighborhood("") },
+    fRooms > 0 && { label: `${fRooms}+ dorm.`, clear: () => setFRooms(0) },
+    fSuites > 0 && { label: `${fSuites}+ suítes`, clear: () => setFSuites(0) },
+    fParking > 0 && { label: `${fParking}+ vagas`, clear: () => setFParking(0) },
+    fSeaView && { label: "Vista mar", clear: () => setFSeaView(false) },
+    fDecorated && { label: "Decorado", clear: () => setFDecorated(false) },
+    fSwap && { label: "Aceita permuta", clear: () => setFSwap(false) },
+  ].filter(Boolean) as Array<{ label: string; clear: () => void }>;
 
   const Card = ({ im, compact }: { im: Imovel; compact?: boolean }) => {
     const dist = myPos ? distanceKm(myPos, { lat: Number(im.latitude), lng: Number(im.longitude) }) : null;
@@ -357,13 +369,16 @@ export default function ExplorarMapa() {
             )}
           </div>
           {(compact || im.id === selectedId) && (
-            <Button
-              size="sm"
-              className="w-full mt-2 h-9 rounded-xl font-bold"
-              onClick={(e) => { e.stopPropagation(); navigate(`/imovel/${im.id}`); }}
-            >
-              Ver imóvel
-            </Button>
+            <div className="grid grid-cols-[1fr_auto] gap-2 pt-2">
+              <Button size="sm" className="h-10 rounded-xl font-bold" onClick={(e) => { e.stopPropagation(); navigate(`/imovel/${im.id}`); }}>
+                Ver imóvel
+              </Button>
+              <Button size="icon" variant="outline" className="h-10 w-10 rounded-xl" asChild onClick={(e) => e.stopPropagation()}>
+                <a href={googleMapsRouteUrl(Number(im.latitude), Number(im.longitude))} target="_blank" rel="noopener noreferrer" aria-label={`Traçar rota para ${im.titulo}`} title="Traçar rota">
+                  <Navigation className="h-4 w-4" />
+                </a>
+              </Button>
+            </div>
           )}
         </div>
       </button>
@@ -428,6 +443,15 @@ export default function ExplorarMapa() {
             </span>
           </div>
           {chips}
+          {activeChips.length > 0 && (
+            <div className="flex gap-2 overflow-x-auto no-scrollbar" aria-label="Filtros ativos">
+              {activeChips.map((chip) => (
+                <button key={chip.label} onClick={chip.clear} className="flex h-8 shrink-0 items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 text-xs font-semibold text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                  {chip.label}<X className="h-3 w-3" aria-hidden="true" />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </header>
 
@@ -437,7 +461,7 @@ export default function ExplorarMapa() {
         <div
           className={cn(
             "relative lg:w-[65%] w-full",
-            "h-[calc(100vh-190px)] lg:h-[calc(100vh-124px)]",
+            "h-[calc(100dvh-190px-env(safe-area-inset-bottom))] min-h-[430px] lg:h-[calc(100vh-124px)]",
             mobileView === "list" && "hidden lg:block"
           )}
         >
@@ -445,6 +469,11 @@ export default function ExplorarMapa() {
           {(mapsLoading || loading) && (
             <div className="absolute inset-0 flex items-center justify-center bg-background/70">
               <Loader2 className="w-7 h-7 animate-spin text-muted-foreground" />
+            </div>
+          )}
+          {mapsError && (
+            <div className="absolute inset-0 z-20 flex items-center justify-center bg-background p-6 text-center" role="alert">
+              <div><MapPin className="mx-auto mb-3 h-10 w-10 text-muted-foreground" /><p className="font-bold">Mapa indisponível</p><p className="mt-1 text-sm text-muted-foreground">{mapsError}</p></div>
             </div>
           )}
 
@@ -457,12 +486,16 @@ export default function ExplorarMapa() {
             </button>
           )}
 
-          <button
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
             onClick={locateMe}
-            className="absolute bottom-4 left-4 z-20 flex items-center gap-2 px-3.5 h-10 rounded-full bg-card shadow-lg border border-border text-xs font-bold hover:bg-muted"
+            className="absolute bottom-28 left-3 z-20 h-11 rounded-full bg-card px-3.5 text-xs font-bold shadow-lg lg:bottom-4 lg:left-4"
+            aria-label="Usar minha localização"
           >
             <LocateFixed className="w-4 h-4" /> Minha localização
-          </button>
+          </Button>
 
           {visibleIds && (
             <button
@@ -488,22 +521,42 @@ export default function ExplorarMapa() {
             </div>
           )}
 
-          {/* Carrossel mobile */}
-          <div className="lg:hidden absolute bottom-3 left-0 right-0 z-20">
-            <div
-              ref={carouselRef}
-              className="flex gap-3 px-3 overflow-x-auto snap-x snap-mandatory no-scrollbar pb-1"
-            >
-              {listed.slice(0, 40).map((im) => <Card key={im.id} im={im} compact />)}
+          {/* Bottom sheet móvel — arraste a alça ou toque para expandir */}
+          <section
+            className={cn("lg:hidden absolute inset-x-0 bottom-0 z-30 rounded-t-2xl border-t border-border bg-background/98 shadow-2xl backdrop-blur transition-[height] duration-300", sheetExpanded ? "h-[72%]" : selected ? "h-[252px]" : "h-[92px]")}
+            aria-label="Resultados no mapa"
+            onPointerDown={(e) => { dragStartYRef.current = e.clientY; }}
+            onPointerUp={(e) => {
+              if (dragStartYRef.current === null) return;
+              const delta = e.clientY - dragStartYRef.current;
+              if (delta < -35) setSheetExpanded(true);
+              if (delta > 35) setSheetExpanded(false);
+              dragStartYRef.current = null;
+            }}
+          >
+            <button type="button" onClick={() => setSheetExpanded((value) => !value)} className="flex h-12 w-full items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring" aria-expanded={sheetExpanded} aria-label={sheetExpanded ? "Recolher resultados" : "Expandir resultados"}>
+              <span className="h-1.5 w-12 rounded-full bg-border" />
+              <span className="text-xs font-bold text-muted-foreground">{listed.length} resultados</span>
+              {sheetExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+            </button>
+            <div className="h-[calc(100%-48px)] overflow-y-auto px-3 pb-[calc(88px+env(safe-area-inset-bottom))]">
+              {!sheetExpanded && selected ? <Card im={selected} compact /> : !sheetExpanded ? (
+                <button type="button" onClick={() => setSheetExpanded(true)} className="w-full rounded-xl border border-border bg-card px-4 py-3 text-left text-sm font-semibold">Toque ou arraste para ver os imóveis desta área</button>
+              ) : (
+                <div className="space-y-2">
+                  {listed.slice(0, resultLimit).map((im) => <Card key={im.id} im={im} />)}
+                  {listed.length > resultLimit && <Button variant="outline" className="h-11 w-full" onClick={() => setResultLimit((value) => value + 60)}>Carregar mais</Button>}
+                </div>
+              )}
             </div>
-          </div>
+          </section>
         </div>
 
         {/* Lista */}
         <aside
           className={cn(
             "lg:w-[35%] w-full border-l border-border bg-muted/30 overflow-y-auto",
-            "h-[calc(100vh-190px)] lg:h-[calc(100vh-124px)]",
+            "h-[calc(100dvh-190px-env(safe-area-inset-bottom))] lg:h-[calc(100vh-124px)]",
             mobileView === "map" && "hidden lg:block"
           )}
           ref={listRef}
@@ -520,19 +573,13 @@ export default function ExplorarMapa() {
                 <Button variant="outline" className="mt-4 rounded-full" onClick={clearFilters}>Limpar filtros</Button>
               </div>
             ) : (
-              listed.map((im) => <Card key={im.id} im={im} />)
+              listed.slice(0, resultLimit).map((im) => <Card key={im.id} im={im} />)
             )}
           </div>
         </aside>
       </div>
 
-      {/* Alternar mapa/lista (mobile) */}
-      <button
-        onClick={() => setMobileView(mobileView === "map" ? "list" : "map")}
-        className="lg:hidden fixed left-1/2 -translate-x-1/2 bottom-[86px] z-40 flex items-center gap-2 px-5 h-11 rounded-full bg-primary text-primary-foreground shadow-xl text-sm font-bold"
-      >
-        {mobileView === "map" ? <><List className="w-4 h-4" /> Lista</> : <><MapIcon className="w-4 h-4" /> Mapa</>}
-      </button>
+      {mobileView === "list" && <Button onClick={() => setMobileView("map")} className="lg:hidden fixed left-1/2 -translate-x-1/2 bottom-[calc(86px+env(safe-area-inset-bottom))] z-40 h-11 rounded-full px-5 shadow-xl"><MapIcon className="mr-2 h-4 w-4" /> Mapa</Button>}
 
       {/* Mais filtros */}
       <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
