@@ -5,6 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Sparkles, Loader2, Wand2, ChevronDown, ChevronUp } from 'lucide-react';
+import { normalizeUnidade, normalizeBox, extractUnitBoxFromText } from '@/lib/aiImovelFields';
 
 const NUMBER_FIELDS = ['preco', 'precoParcelado', 'comissao', 'bonus', 'area', 'areaPrivativa'];
 const INT_FIELDS = ['quartos', 'suites', 'banheiros', 'lavabo', 'vagas', 'elevadores'];
@@ -61,6 +62,32 @@ export function AIImovelImport({ onApply, currentArrays = {} }: AIImovelImportPr
 
         count++;
       }
+
+      // ===== UNIDADE / BOX: padronização + fallback pelo texto =====
+      const tipo = String(updates.tipo ?? fields.tipo ?? '');
+      const fallback = extractUnitBoxFromText(text, tipo);
+
+      const unidade = normalizeUnidade(fields.unidade, tipo) || fallback.unidade || '';
+      if (unidade) {
+        if (updates.unidade !== unidade) count += updates.unidade ? 0 : 1;
+        updates.unidade = unidade;
+      } else {
+        delete updates.unidade;
+      }
+
+      const box = normalizeBox(fields.box) || fallback.box || '';
+      if (box) {
+        if (!updates.box) count += 1;
+        updates.box = box;
+      } else {
+        delete updates.box;
+      }
+
+      if (updates.vagas === undefined && fallback.vagas !== undefined) {
+        updates.vagas = Math.min(fallback.vagas, 10);
+        count++;
+      }
+
 
       if (count === 0) {
         toast({ title: 'Nada identificado', description: 'A IA não encontrou informações reconhecíveis no texto.' });
