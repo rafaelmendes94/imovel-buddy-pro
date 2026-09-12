@@ -291,6 +291,7 @@ export function PropertyMap({ properties, onSelectProperty }: PropertyMapProps) 
 
     return () => {
       cancelled = true;
+      detach?.();
       markersRef.current.forEach((m) => {
         if (typeof m.setMap === "function") m.setMap(null);
         else if ("map" in m) m.map = null;
