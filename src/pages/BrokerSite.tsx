@@ -53,6 +53,7 @@ import {
 import { PublicMobileNav } from "@/components/PublicMobileNav";
 import { toast } from "sonner";
 import { generateBrokerCatalogPdf } from "@/utils/generateBrokerCatalogPdf";
+import { markPropertySold, reactivateProperty, isSoldStatus } from "@/lib/salesRegistry";
 
 const formatCurrency = (v: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
 
@@ -119,9 +120,25 @@ interface DBProperty {
 
 function PropertyCard({ p, brokerName, whatsapp, onOpen, isOwner = false, onUpdated, onEdit, onDelete }: { p: DBProperty; brokerName: string; whatsapp: string; onOpen: (p: DBProperty) => void; isOwner?: boolean; onUpdated?: (id: string, patch: Partial<DBProperty>) => void; onEdit?: (p: DBProperty) => void; onDelete?: (p: DBProperty) => void }) {
   const [saving, setSaving] = useState(false);
-  const isSold = p.status === "Vendido";
+  const isSold = isSoldStatus(p.status);
   const img = (p.imagens || []).find((u) => !!u && u.trim() !== "") || "/placeholder.svg";
   const msg = encodeURIComponent(`Olá ${brokerName}! Tenho interesse no imóvel: ${p.titulo} - ${formatCurrency(p.preco)}`);
+
+  const toggleSold = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSaving(true);
+    const res = isSold
+      ? await reactivateProperty(p.id)
+      : await markPropertySold(p.id, { brokerName: p.corretor_nome || brokerName });
+    setSaving(false);
+    if (!res.ok) { toast.error("Não foi possível atualizar: " + (res.error || "")); return; }
+    if (isSold) {
+      toast.success("Imóvel reativado — venda removida do ranking");
+    } else {
+      toast.success((res as any).alreadySold ? "Imóvel já estava vendido" : "Imóvel marcado como vendido — venda registrada no ranking");
+    }
+    onUpdated?.(p.id, ((res as any).patch || {}) as Partial<DBProperty>);
+  };
 
   const patchImovel = async (e: React.MouseEvent, patch: Partial<DBProperty>, successMsg: string) => {
     e.stopPropagation();
@@ -265,9 +282,7 @@ function PropertyCard({ p, brokerName, whatsapp, onOpen, isOwner = false, onUpda
             <button
               type="button"
               disabled={saving}
-              onClick={(e) => isSold
-                ? patchImovel(e, { status: "Disponível", data_venda: null }, "Imóvel reativado")
-                : patchImovel(e, { status: "Vendido", data_venda: new Date().toISOString().slice(0, 10) }, "Imóvel marcado como vendido")}
+              onClick={(e) => toggleSold(e)}
               className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-success/15 px-2 py-2 text-[11px] font-bold text-success transition-colors hover:bg-success/25 disabled:opacity-50"
             >
               {isSold ? <><RotateCcw className="h-3.5 w-3.5" /> Reabrir</> : <><CheckCircle2 className="h-3.5 w-3.5" /> Vendido</>}
@@ -397,8 +412,8 @@ export default function BrokerSite() {
       setConfig((pageConfig as BrokerPageConfig | null) || null);
       setProfileAvatar(matchedProfile?.avatar_url || null);
       setBrokerId(matchedProfile?.user_id || matchedProperties[0]?.user_id || null);
-      setProperties(matchedProperties.filter((property) => property.status !== "Vendido"));
-      setSoldProperties(matchedProperties.filter((property) => property.status === "Vendido"));
+      setProperties(matchedProperties.filter((property) => !isSoldStatus(property.status)));
+      setSoldProperties(matchedProperties.filter((property) => isSoldStatus(property.status)));
       setLoading(false);
     };
 
@@ -538,8 +553,8 @@ export default function BrokerSite() {
   const handlePropertyUpdated = (id: string, patch: Partial<DBProperty>) => {
     const apply = (list: DBProperty[]) => list.map((p) => (p.id === id ? { ...p, ...patch } : p));
     const all = apply([...properties, ...soldProperties]);
-    setProperties(all.filter((p) => p.status !== "Vendido"));
-    setSoldProperties(all.filter((p) => p.status === "Vendido"));
+    setProperties(all.filter((p) => !isSoldStatus(p.status)));
+    setSoldProperties(all.filter((p) => isSoldStatus(p.status)));
   };
 
   const handleUploadTabela = async (event: React.ChangeEvent<HTMLInputElement>) => {

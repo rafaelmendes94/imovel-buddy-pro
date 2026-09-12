@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { onSalesChanged } from "@/lib/salesRegistry";
 
 function formatCurrency(value: number) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 0 });
@@ -130,13 +131,14 @@ export default function RankingPage() {
 
   useEffect(() => {
     loadRanking();
+    return onSalesChanged(() => loadRanking());
   }, []);
 
   const loadRanking = async () => {
     const { data: soldProperties } = await supabase
       .from("imoveis")
       .select("id, titulo, tipo, cidade, bairro, preco, data_venda, created_at, updated_at, imagens, corretor_nome, corretor_id, user_id")
-      .eq("status", "Vendido");
+      .ilike("status", "%vendid%");
 
     if (!soldProperties || soldProperties.length === 0) {
       setLoading(false);

@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { saleDedupeKey, onSalesChanged } from "@/lib/salesRegistry";
 
 export interface RealSaleRecord {
   id: string;
@@ -66,7 +67,12 @@ export function useReportData() {
       platform: row.plataforma_venda || "",
     }));
 
-    const manual: RealSaleRecord[] = (mvRes.data || []).map((row: any) => ({
+    // Evita contar a mesma venda duas vezes (imóvel vendido + agenciamento vendido equivalente)
+    const realKeys = new Set(real.map((r) => saleDedupeKey(r.propertyTitle, r.price)));
+
+    const manual: RealSaleRecord[] = (mvRes.data || [])
+      .filter((row: any) => !realKeys.has(saleDedupeKey(row.imovel || "", Number(row.valor) || 0)))
+      .map((row: any) => ({
       id: row.id,
       propertyTitle: row.imovel || "Agenciamento",
       city: row.cidade || "Sem cidade",
@@ -94,7 +100,10 @@ export function useReportData() {
     setLoading(false);
   }, []);
 
-  useEffect(() => { fetchAll(); }, [fetchAll]);
+  useEffect(() => {
+    fetchAll();
+    return onSalesChanged(() => fetchAll());
+  }, [fetchAll]);
 
   const allSales = useMemo(() => [...sales, ...manualSales], [sales, manualSales]);
 

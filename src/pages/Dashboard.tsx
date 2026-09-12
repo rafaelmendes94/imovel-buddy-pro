@@ -7,6 +7,7 @@ import { PartnersAdSlider } from "@/components/PartnersAdSlider";
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { onSalesChanged, isSoldStatus } from "@/lib/salesRegistry";
 import {
   Building2,
   Users,
@@ -76,9 +77,10 @@ export default function Dashboard() {
       setImoveis((imoveisRes.data as ImovelRow[]) || []);
     };
     fetchStats();
+    return onSalesChanged(() => fetchStats());
   }, []);
 
-  const isSold = (s: string | null) => !!s && s.toLowerCase().includes("vendid");
+  const isSold = (s: string | null) => isSoldStatus(s);
 
   const totalProperties = imoveis.length;
   const available = imoveis.filter((p) => (p.status || "").toLowerCase().includes("dispon")).length;
