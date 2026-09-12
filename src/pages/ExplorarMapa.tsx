@@ -210,6 +210,7 @@ export default function ExplorarMapa() {
       streetViewControl: false,
       mapTypeControl: false,
       fullscreenControl: false,
+      gestureHandling: "greedy",
       zoomControl: true,
       zoomControlOptions: { position: g.maps.ControlPosition.RIGHT_BOTTOM },
       styles: [

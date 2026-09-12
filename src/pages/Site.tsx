@@ -445,6 +445,7 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
         mapTypeControl: false,
         streetViewControl: false,
         fullscreenControl: false,
+        gestureHandling: "greedy",
       });
       mapInstanceRef.current = map;
       geocoderRef.current = new google.maps.Geocoder();

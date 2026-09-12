@@ -164,6 +164,7 @@ export function AddressMapPicker({ latitude, longitude, onChange }: AddressMapPi
         mapTypeControl: false,
         streetViewControl: false,
         fullscreenControl: false,
+        gestureHandling: "greedy",
       });
 
       mapInstanceRef.current = map;
