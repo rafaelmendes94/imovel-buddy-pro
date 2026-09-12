@@ -219,6 +219,8 @@ export default function ExplorarMapa() {
     mapRef.current.addListener("dragend", () => setShowSearchArea(true));
     mapRef.current.addListener("zoom_changed", () => setShowSearchArea(true));
     mapRef.current.addListener("click", () => setSelectedId(null));
+    const detach = attachMapRefresh(mapRef.current, mapDivRef.current);
+    return () => detach();
   }, [mapsReady]);
 
   // markers
