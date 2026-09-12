@@ -14,7 +14,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { attachMapRefresh, googleMapsRouteUrl, mapMarkerSvg } from "@/lib/mapUtils";
+import { RASTER_RENDERING, attachMapRefresh, googleMapsRouteUrl, mapMarkerSvg } from "@/lib/mapUtils";
 import { toast } from "sonner";
 
 type Imovel = {
@@ -203,6 +203,7 @@ export default function ExplorarMapa() {
     if (!mapsReady || !mapDivRef.current || mapRef.current) return;
     const g = (window as any).google;
     mapRef.current = new g.maps.Map(mapDivRef.current, {
+      ...RASTER_RENDERING,
       center: { lat: -29.75, lng: -50.02 },
       zoom: 12,
       clickableIcons: false,

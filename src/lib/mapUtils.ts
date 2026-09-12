@@ -1,3 +1,5 @@
+export const RASTER_RENDERING = { renderingType: "RASTER" as any };
+
 export type MapPoint = { lat: number; lng: number };
 
 export function hasValidCoordinates(lat: unknown, lng: unknown): boolean {

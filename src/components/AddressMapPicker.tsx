@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback } from "react";
 import { useGoogleMapsLoader } from "@/hooks/useGoogleMapsLoader";
-import { attachMapRefresh } from "@/lib/mapUtils";
+import { RASTER_RENDERING, attachMapRefresh } from "@/lib/mapUtils";
 import { Loader2 } from "lucide-react";
 
 interface AddressMapPickerProps {
@@ -158,6 +158,7 @@ export function AddressMapPicker({ latitude, longitude, onChange }: AddressMapPi
       const zoom = center === DEFAULT_CENTER ? DEFAULT_ZOOM : PIN_ZOOM;
 
       const map = new MapCtor(mapRef.current, {
+        ...RASTER_RENDERING,
         center,
         zoom,
         mapTypeControl: false,

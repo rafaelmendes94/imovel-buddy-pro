@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useGoogleMapsLoader } from "@/hooks/useGoogleMapsLoader";
 import { PLACEHOLDER_IMAGE } from "@/lib/placeholderImage";
-import { attachMapRefresh, formatMapPrice, googleMapsRouteUrl, hasValidCoordinates, mapMarkerSvg } from "@/lib/mapUtils";
+import { RASTER_RENDERING, attachMapRefresh, formatMapPrice, googleMapsRouteUrl, hasValidCoordinates, mapMarkerSvg } from "@/lib/mapUtils";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -81,6 +81,7 @@ export default function Maps() {
     const maps = (window as any).google?.maps;
     if (!ready || !maps || !mapNodeRef.current || mapRef.current) return;
     const map = new maps.Map(mapNodeRef.current, {
+      ...RASTER_RENDERING,
       center: { lat: -29.75, lng: -50.02 }, zoom: 12, clickableIcons: false,
       streetViewControl: false, mapTypeControl: false, fullscreenControl: false,
       zoomControl: true, gestureHandling: "greedy",

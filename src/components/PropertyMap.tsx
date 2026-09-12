@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Property, formatCurrency } from "@/data/mockData";
 import { useGoogleMapsLoader } from "@/hooks/useGoogleMapsLoader";
-import { attachMapRefresh } from "@/lib/mapUtils";
+import { RASTER_RENDERING, attachMapRefresh } from "@/lib/mapUtils";
 import { BedDouble, Bath, Car, Loader2, LocateFixed, MapPin, Ruler } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -234,6 +234,7 @@ export function PropertyMap({ properties, onSelectProperty }: PropertyMapProps) 
         : { lat: -23.55, lng: -46.63 };
 
       const map = new MapCtor(mapRef.current, {
+        ...RASTER_RENDERING,
         center,
         zoom: 12,
         zoomControl: true,

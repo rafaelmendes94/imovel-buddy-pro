@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useGoogleMapsLoader } from "@/hooks/useGoogleMapsLoader";
-import { attachMapRefresh } from "@/lib/mapUtils";
+import { RASTER_RENDERING, attachMapRefresh } from "@/lib/mapUtils";
 import { Loader2 } from "lucide-react";
 
 interface MiniMapProps {
@@ -40,6 +40,7 @@ export function MiniMap({ lat, lng, name, height = "250px", zoom = 15 }: MiniMap
           : null);
 
       const map = new MapCtor(mapRef.current, {
+        ...RASTER_RENDERING,
         center: { lat, lng },
         zoom,
         mapTypeId: "hybrid",

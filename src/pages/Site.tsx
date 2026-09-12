@@ -435,6 +435,7 @@ function SiteMap({ properties: mapProperties }: { properties: typeof sitePropert
       }
 
       const map = new MapCtor(mapRef.current, {
+        ...RASTER_RENDERING,
         center: { lat: -29.77, lng: -50.08 },
         zoom: 12,
         mapTypeId: mapStyleConfig[mapStyle].mapTypeId,
