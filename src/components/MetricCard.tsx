@@ -19,11 +19,11 @@ export function MetricCard({
   iconClassName,
 }: MetricCardProps) {
   return (
-    <div className="elevated-card rounded-xl p-5">
-      <div className="flex items-start justify-between">
-        <div className="space-y-2">
-          <p className="text-sm text-muted-foreground">{title}</p>
-          <p className="text-2xl font-bold text-card-foreground">{value}</p>
+    <div className="elevated-card rounded-xl p-4 sm:p-5">
+      <div className="flex items-start justify-between gap-2">
+        <div className="space-y-1.5 sm:space-y-2 min-w-0">
+          <p className="text-xs sm:text-sm text-muted-foreground leading-snug">{title}</p>
+          <p className="text-xl sm:text-2xl font-bold text-card-foreground break-words">{value}</p>
           {change && (
             <div className="flex items-center gap-1">
               {changeType === "positive" ? (
@@ -46,7 +46,7 @@ export function MetricCard({
         </div>
         <div
           className={cn(
-            "w-10 h-10 rounded-lg flex items-center justify-center",
+            "w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-lg flex items-center justify-center",
             iconClassName || "bg-accent/10"
           )}
         >
