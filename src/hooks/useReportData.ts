@@ -66,7 +66,12 @@ export function useReportData() {
       platform: row.plataforma_venda || "",
     }));
 
-    const manual: RealSaleRecord[] = (mvRes.data || []).map((row: any) => ({
+    // Evita contar a mesma venda duas vezes (imóvel vendido + agenciamento vendido equivalente)
+    const realKeys = new Set(real.map((r) => saleDedupeKey(r.propertyTitle, r.price)));
+
+    const manual: RealSaleRecord[] = (mvRes.data || [])
+      .filter((row: any) => !realKeys.has(saleDedupeKey(row.imovel || "", Number(row.valor) || 0)))
+      .map((row: any) => ({
       id: row.id,
       propertyTitle: row.imovel || "Agenciamento",
       city: row.cidade || "Sem cidade",
