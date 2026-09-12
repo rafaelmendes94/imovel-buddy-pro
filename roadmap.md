@@ -12,3 +12,10 @@
 - [x] Unify internal, broker-public, and portal-public property detail presentation using one shared route and renderer.
 - [x] Preserve public privacy and authorized editing.
 - [x] Validate typecheck, production build, and desktop/mobile preview interactions.
+
+## Current request — Mapas
+- [ ] Unificar a base visual e comportamental dos mapas públicos e do CRM.
+- [ ] Melhorar busca, filtros, clusters, seleção, localização e rota.
+- [ ] Criar experiência móvel em tela útil com bottom sheet e safe-area.
+- [ ] Reutilizar bloco responsivo de localização nos detalhes.
+- [ ] Validar typecheck, build e preview desktop/mobile.
