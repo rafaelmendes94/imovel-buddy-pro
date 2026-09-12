@@ -944,7 +944,7 @@ export default function BrokerSite() {
 
 
 
-        {soldProperties.length > 0 && !searchTerm && (
+        {soldProperties.length > 0 && (!searchTerm || isOwner) && (
           <section className="border-y border-border bg-muted/40">
             <div className="container py-14">
               <div className="mb-6 space-y-2">
