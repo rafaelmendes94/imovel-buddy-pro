@@ -173,14 +173,21 @@ function splitEmpreendimentoUnidade(raw: string) {
   return { empreendimento: s, unidade };
 }
 
-/** "J-09" / "Q06/L44" → quadra + lote */
+/** "J-09" / "Q06/L44" / "QUADRA 6 LOTE 44" → quadra + lote */
 export function parseQuadraLote(raw: string) {
   const s = txt(raw)
-    .replace(/\bQ(UADRA)?\s*[:.\-]?\s*/i, "")
-    .replace(/\bL(OTE|T)?\s*[:.\-]?\s*/i, "-");
-  const m = s.match(/^([A-Za-z]{1,3}|\d{1,3})\s*[-/ ]\s*(\d{1,4}[A-Za-z]?)$/);
+    .replace(/\bQ(UADRA|D)?\s*[:.\-]?\s*/i, "")
+    .replace(/\bL(OTE|T)?\s*[:.\-]?\s*/i, "-")
+    .replace(/[-/\s]+/g, "-")
+    .replace(/^-|-$/g, "");
+  const m = s.match(/^([A-Za-z]{1,3}|\d{1,3})-(\d{1,4}[A-Za-z]?)$/);
   return m ? { quadra: m[1].toUpperCase(), lote: m[2] } : { quadra: "", lote: "" };
 }
+
+/** Referência que claramente é quadra/lote e nunca unidade. */
+const looksLikeQuadraLote = (s: string) =>
+  /^(Q(UADRA|D)?\s*[:.\-]?\s*)?[A-Za-z0-9]{1,3}\s*[-/ ]\s*(L(OTE|T)?\s*[:.\-]?\s*)?\d{1,4}[A-Za-z]?$/i.test(s) &&
+  /[-/ ]/.test(s);
 
 export interface NormalizedImovel {
   titulo: string;
