@@ -94,7 +94,13 @@ serve(async (req) => {
               "Você extrai dados estruturados de anúncios/textos de imóveis brasileiros para preencher um formulário de CRM imobiliário. " +
               "Preencha SOMENTE os campos que estiverem claramente presentes ou fortemente implícitos no texto. " +
               "Nunca invente valores, telefones, endereços ou preços. Omita campos desconhecidos. " +
-              "Valores monetários e áreas em número puro (ex: 850000, 92.5). Textos em português do Brasil.",
+              "Valores monetários e áreas em número puro (ex: 850000, 92.5). Textos em português do Brasil. " +
+              "REGRAS DE UNIDADE E BOX: 'AP/Apto/Apartamento/unidade/un 1006' => unidade='1006' (só o número, sem prefixo). " +
+              "Quadra e lote vão em 'quadra' e 'lote' (ex: 'Q11 L04' => quadra='11', lote='04') e NUNCA em 'unidade'. " +
+              "Casa/sobrado/terreno/lote sem apartamento não têm unidade. " +
+              "'box 76', 'box nº 76', 'vaga 76', 'garagem 76' => box='76'; 'box 31 e 32' ou 'boxes 31/32' => box='31 e 32' e vagas=2. " +
+              "Quantidade sem número do box ('1 box', '2 vagas') => box vazio e vagas com a quantidade.",
+
           },
           { role: "user", content: text.slice(0, 12000) },
         ],
