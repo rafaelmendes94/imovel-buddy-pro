@@ -700,6 +700,7 @@ export default function Properties() {
         toast.error("Erro ao atualizar status");
         return false;
       }
+      notifySalesChanged();
     }
     return true;
   };
