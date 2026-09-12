@@ -1014,7 +1014,7 @@ export default function Properties() {
                   </div>
                 )}
               </div>
-              <div className="flex flex-col items-end gap-0.5">
+              <div className="flex flex-row flex-wrap sm:flex-col items-center sm:items-end gap-2 sm:gap-0.5">
                 {(isSuperAdmin || isAdminStaff) && (
                   <button
                     onClick={() => setImportOpen(true)}
