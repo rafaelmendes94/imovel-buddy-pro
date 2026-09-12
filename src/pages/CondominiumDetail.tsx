@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
-import { MiniMap } from "@/components/MiniMap";
+import { LocationMapCard } from "@/components/LocationMapCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useSmartBack } from "@/lib/useSmartBack";
@@ -393,28 +393,7 @@ export default function CondominiumDetail() {
 
         {/* localização */}
         <Section id="localizacao" title="Localização">
-          <div className="rounded-xl border border-border overflow-hidden">
-            {condo.latitude && condo.longitude ? (
-              <MiniMap lat={Number(condo.latitude)} lng={Number(condo.longitude)} name={condo.nome} height="340px" />
-            ) : (
-              <div className="p-6 text-sm text-muted-foreground">Coordenadas não cadastradas.</div>
-            )}
-            <div className="flex flex-wrap items-center justify-between gap-2 p-3 border-t border-border">
-              <p className="text-xs text-muted-foreground">{fullAddress || "Endereço não informado"}</p>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => window.open(
-                  condo.latitude && condo.longitude
-                    ? `https://www.google.com/maps?q=${condo.latitude},${condo.longitude}`
-                    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress || condo.nome)}`,
-                  "_blank"
-                )}
-              >
-                <ExternalLink className="w-4 h-4 mr-1.5" /> Abrir no Google Maps
-              </Button>
-            </div>
-          </div>
+          <LocationMapCard lat={condo.latitude} lng={condo.longitude} name={condo.nome} address={fullAddress} />
         </Section>
 
         {(materiais.length > 0 || condo.mapa_pdf_url || implantacaoUrl || (condo.videos || []).length > 0) && (

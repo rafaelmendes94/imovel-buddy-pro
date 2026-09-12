@@ -62,6 +62,7 @@ function ensureGoogleMapsLoaded(): Promise<void> {
 export function useGoogleMapsLoader() {
   const [ready, setReady] = useState<boolean>(() => !!window.__lovableGoogleMapsReady);
   const [loading, setLoading] = useState<boolean>(() => !window.__lovableGoogleMapsReady);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -74,12 +75,15 @@ export function useGoogleMapsLoader() {
       })
       .catch((err) => {
         console.error("[GoogleMaps] load error", err);
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+          setError("Não foi possível carregar o mapa. Verifique sua conexão e tente novamente.");
+        }
       });
     return () => {
       cancelled = true;
     };
   }, []);
 
-  return { ready, loading };
+  return { ready, loading, error };
 }

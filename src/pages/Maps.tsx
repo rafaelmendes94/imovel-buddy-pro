@@ -1,383 +1,193 @@
-import { PLACEHOLDER_IMAGE } from "@/lib/placeholderImage";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { MarkerClusterer } from "@googlemaps/markerclusterer";
+import { LocateFixed, MapPin, Navigation, RefreshCw, Search, SlidersHorizontal, X } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useGoogleMapsLoader } from "@/hooks/useGoogleMapsLoader";
-import {
-  MapPin, Loader2, Search, X, Filter, Building2, Home, Fence, Landmark,
-  BedDouble, Bath, Car, Ruler, Eye,
-} from "lucide-react";
+import { PLACEHOLDER_IMAGE } from "@/lib/placeholderImage";
+import { formatMapPrice, googleMapsRouteUrl, hasValidCoordinates, mapMarkerSvg } from "@/lib/mapUtils";
 import { cn } from "@/lib/utils";
-import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
-function formatCurrency(v: number) {
-  return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
-}
-
-function formatShortPrice(price: number): string {
-  if (price >= 1000000) return `${(price / 1000000).toFixed(price % 1000000 === 0 ? 0 : 1)}M`;
-  if (price >= 1000) return `${(price / 1000).toFixed(0)}K`;
-  return String(price);
-}
-
-const typeConfig: Record<string, { emoji: string; color: string; label: string }> = {
-  Apartamento: { emoji: "🏢", color: "#2563eb", label: "Apartamento" },
-  Casa: { emoji: "🏠", color: "#059669", label: "Casa" },
-  Comercial: { emoji: "🏪", color: "#d97706", label: "Comercial" },
-  Terreno: { emoji: "🌳", color: "#7c3aed", label: "Terreno" },
-  Lote: { emoji: "📐", color: "#8b5cf6", label: "Lote" },
-  Cobertura: { emoji: "🏙️", color: "#0891b2", label: "Cobertura" },
-  Sobrado: { emoji: "🏡", color: "#16a34a", label: "Sobrado" },
-  Kitnet: { emoji: "🛏️", color: "#f59e0b", label: "Kitnet" },
-  Sala: { emoji: "💼", color: "#6366f1", label: "Sala" },
-  Loja: { emoji: "🛒", color: "#ea580c", label: "Loja" },
-  Galpão: { emoji: "🏭", color: "#78716c", label: "Galpão" },
-  Condomínio: { emoji: "🏘️", color: "#0d9488", label: "Condomínio" },
+type PropertyRow = {
+  id: string; titulo: string; tipo: string | null; status: string | null; preco: number | null;
+  endereco: string | null; numero: string | null; bairro: string | null; cidade: string | null;
+  latitude: number | null; longitude: number | null; imagens: string[] | null;
 };
-
-const defaultCfg = { emoji: "📍", color: "#2563eb", label: "Outro" };
 
 export default function Maps() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<any>(null);
-  const markersRef = useRef<any[]>([]);
-  const infoWindowRef = useRef<any>(null);
-  const { ready: mapsReady, loading: mapsLoading } = useGoogleMapsLoader();
-
-  const [imoveis, setImoveis] = useState<any[]>([]);
+  const { ready, loading: mapsLoading, error: mapsError } = useGoogleMapsLoader();
+  const mapNodeRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<any>(null);
+  const markersRef = useRef<Map<string, any>>(new Map());
+  const clustererRef = useRef<MarkerClusterer | null>(null);
+  const [properties, setProperties] = useState<PropertyRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterType, setFilterType] = useState("");
-  const [filterStatus, setFilterStatus] = useState("");
-  const [showFilters, setShowFilters] = useState(false);
-  const [selectedProperty, setSelectedProperty] = useState<any | null>(null);
+  const [term, setTerm] = useState("");
+  const [type, setType] = useState("");
+  const [status, setStatus] = useState("");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [showSearchArea, setShowSearchArea] = useState(false);
+  const [areaIds, setAreaIds] = useState<string[] | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   useEffect(() => {
     if (!user) return;
-    const load = async () => {
+    let active = true;
+    (async () => {
       setLoading(true);
-      const { data } = await supabase
-        .from("imoveis")
-        .select("*")
-        .order("created_at", { ascending: false });
-      setImoveis(data || []);
+      const { data, error } = await supabase.from("imoveis")
+        .select("id,titulo,tipo,status,preco,endereco,numero,bairro,cidade,latitude,longitude,imagens")
+        .order("created_at", { ascending: false }).limit(500);
+      if (!active) return;
+      if (error) toast.error("Não foi possível carregar os imóveis do mapa.");
+      setProperties(((data || []) as PropertyRow[]).filter((item) => hasValidCoordinates(item.latitude, item.longitude)));
       setLoading(false);
-    };
-    load();
+    })();
+    return () => { active = false; };
   }, [user]);
 
-  const filtered = imoveis.filter((im) => {
-    if (filterType && im.tipo !== filterType) return false;
-    if (filterStatus && im.status !== filterStatus) return false;
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      const searchable = `${im.titulo} ${im.endereco} ${im.bairro} ${im.cidade} ${im.empreendimento}`.toLowerCase();
-      if (!searchable.includes(term)) return false;
+  const types = useMemo(() => [...new Set(properties.map((item) => item.tipo).filter(Boolean))] as string[], [properties]);
+  const statuses = useMemo(() => [...new Set(properties.map((item) => item.status).filter(Boolean))] as string[], [properties]);
+  const filtered = useMemo(() => properties.filter((item) => {
+    if (type && item.tipo !== type) return false;
+    if (status && item.status !== status) return false;
+    const q = term.trim().toLowerCase();
+    return !q || `${item.titulo} ${item.endereco || ""} ${item.bairro || ""} ${item.cidade || ""}`.toLowerCase().includes(q);
+  }), [properties, term, type, status]);
+  const listed = useMemo(() => areaIds ? filtered.filter((item) => areaIds.includes(item.id)) : filtered, [filtered, areaIds]);
+  const selected = filtered.find((item) => item.id === selectedId) || null;
+
+  const fitItems = useCallback((items: PropertyRow[]) => {
+    const maps = (window as any).google?.maps;
+    if (!maps || !mapRef.current || !items.length) return;
+    if (items.length === 1) {
+      mapRef.current.setCenter({ lat: Number(items[0].latitude), lng: Number(items[0].longitude) });
+      mapRef.current.setZoom(15);
+      return;
     }
-    return true;
-  });
-
-  const mappable = filtered.filter((im) => im.latitude && im.longitude && (Number(im.latitude) !== 0 || Number(im.longitude) !== 0));
-
-  const initMap = useCallback(() => {
-    if (!mapsReady || !mapRef.current) return;
-
-    // Cleanup
-    markersRef.current.forEach(m => m.map = null);
-    markersRef.current = [];
-
-    const center = mappable.length > 0
-      ? { lat: Number(mappable[0].latitude), lng: Number(mappable[0].longitude) }
-      : { lat: -29.75, lng: -50.10 };
-
-    const map = new (window as any).google.maps.Map(mapRef.current, {
-      center,
-      zoom: mappable.length > 1 ? 12 : 15,
-      zoomControl: true,
-      zoomControlOptions: { position: ((window as any).google.maps.ControlPosition).RIGHT_BOTTOM },
-      streetViewControl: false,
-      mapTypeControl: false,
-      fullscreenControl: false,
-    });
-    mapInstanceRef.current = map;
-    infoWindowRef.current = new (window as any).google.maps.InfoWindow();
-
-    mappable.forEach((im) => {
-      const cfg = typeConfig[im.tipo] || defaultCfg;
-      const shortPrice = formatShortPrice(im.preco);
-
-      const pinSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="72" height="34" viewBox="0 0 72 34">
-        <rect x="2" y="2" width="68" height="22" rx="11" fill="${cfg.color}" />
-        <path d="M31 24H41L36 32L31 24Z" fill="${cfg.color}" />
-        <text x="36" y="17" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" font-weight="700" fill="white">${shortPrice}</text>
-      </svg>`;
-
-      const marker = new (window as any).google.maps.Marker({
-        position: { lat: Number(im.latitude), lng: Number(im.longitude) },
-        map,
-        title: im.titulo,
-        icon: {
-          url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(pinSvg)}`,
-          scaledSize: new (window as any).google.maps.Size(72, 34),
-          anchor: new (window as any).google.maps.Point(36, 32),
-        },
-      });
-      markersRef.current.push(marker);
-
-      const imgs = im.imagens && im.imagens.length > 0 ? im.imagens : [];
-      const mainImg = imgs[0] || PLACEHOLDER_IMAGE;
-      const address = [im.endereco, im.numero, im.bairro].filter(Boolean).join(", ");
-      const esc = (s: any) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-      const safeUrl = (u: any) => { const s = String(u ?? ""); return /^https?:\/\//i.test(s) || /^data:image\//i.test(s) ? esc(s) : ""; };
-
-      marker.addListener("click", () => {
-        const popupContent = `
-        <div style="width:280px;font-family:system-ui,-apple-system,sans-serif;padding:0;">
-          <img src="${safeUrl(mainImg)}" alt="${esc(im.titulo)}" style="width:100%;height:140px;object-fit:cover;border-radius:8px 8px 0 0;display:block;" />
-          <div style="padding:12px;">
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-              <span style="font-size:10px;font-weight:700;color:#fff;background:${cfg.color};padding:2px 8px;border-radius:4px;letter-spacing:0.5px;text-transform:uppercase;">${esc(im.tipo)}</span>
-              <span style="font-size:10px;font-weight:600;color:${im.status === 'Disponível' ? '#059669' : im.status === 'Vendido' ? '#dc2626' : '#d97706'};">${esc(im.status)}</span>
-            </div>
-            <h3 style="font-size:14px;font-weight:700;margin:0 0 4px 0;color:#0f172a;line-height:1.3;text-transform:uppercase;">${esc(im.titulo)}</h3>
-            <p style="font-size:11px;color:#64748b;margin:0 0 6px 0;line-height:1.4;">📍 ${esc(address)} – ${esc(im.cidade)}</p>
-            ${im.empreendimento ? `<p style="font-size:10px;color:#94a3b8;margin:0 0 6px 0;">🏗 ${esc(im.empreendimento)}</p>` : ""}
-            <div style="display:flex;gap:10px;margin-bottom:8px;font-size:10px;color:#64748b;">
-              ${im.quartos > 0 ? `<span>🛏 ${esc(im.quartos)}</span>` : ""}
-              ${im.banheiros > 0 ? `<span>🚿 ${esc(im.banheiros)}</span>` : ""}
-              ${im.vagas > 0 ? `<span>🚗 ${esc(im.vagas)}</span>` : ""}
-              ${im.area > 0 ? `<span>📐 ${esc(im.area)}m²</span>` : ""}
-            </div>
-            <div style="display:flex;align-items:center;justify-content:space-between;">
-              <p style="font-size:18px;font-weight:800;color:${cfg.color};margin:0;">${esc(formatCurrency(im.preco))}</p>
-              <span id="gmaps-ver-${esc(im.id)}" style="font-size:11px;color:${cfg.color};cursor:pointer;font-weight:700;text-decoration:underline;padding:4px 8px;">Ver mais →</span>
-            </div>
-          </div>
-        </div>`;
-
-        infoWindowRef.current!.setContent(popupContent);
-        infoWindowRef.current!.open(map, marker);
-
-        setTimeout(() => {
-          const btn = document.getElementById(`gmaps-ver-${im.id}`);
-          btn?.addEventListener("click", () => setSelectedProperty(im));
-        }, 100);
-      });
-    });
-
-    if (mappable.length > 1) {
-      const bounds = new (window as any).google.maps.LatLngBounds();
-      mappable.forEach((im) => bounds.extend({ lat: Number(im.latitude), lng: Number(im.longitude) }));
-      map.fitBounds(bounds, 40);
-    }
-  }, [mappable, mapsReady]);
+    const bounds = new maps.LatLngBounds();
+    items.forEach((item) => bounds.extend({ lat: Number(item.latitude), lng: Number(item.longitude) }));
+    mapRef.current.fitBounds(bounds, 52);
+  }, []);
 
   useEffect(() => {
-    if (loading || mappable.length === 0 || !mapsReady) return;
-    initMap();
-    return () => {
-      markersRef.current.forEach(m => m.map = null);
-      markersRef.current = [];
-    };
-  }, [loading, initMap, mapsReady]);
+    const maps = (window as any).google?.maps;
+    if (!ready || !maps || !mapNodeRef.current || mapRef.current) return;
+    const map = new maps.Map(mapNodeRef.current, {
+      center: { lat: -29.75, lng: -50.02 }, zoom: 12, clickableIcons: false,
+      streetViewControl: false, mapTypeControl: false, fullscreenControl: false,
+      zoomControl: true, gestureHandling: "greedy",
+      zoomControlOptions: { position: maps.ControlPosition.RIGHT_BOTTOM },
+    });
+    map.addListener("dragend", () => setShowSearchArea(true));
+    map.addListener("zoom_changed", () => setShowSearchArea(true));
+    map.addListener("click", () => setSelectedId(null));
+    mapRef.current = map;
+  }, [ready]);
 
-  const types = [...new Set(imoveis.map((im) => im.tipo).filter(Boolean))];
-  const statuses = [...new Set(imoveis.map((im) => im.status).filter(Boolean))];
+  useEffect(() => {
+    const maps = (window as any).google?.maps;
+    if (!maps || !mapRef.current) return;
+    clustererRef.current?.clearMarkers();
+    markersRef.current.forEach((marker) => marker.setMap(null));
+    markersRef.current.clear();
+    const markers = filtered.map((item) => {
+      const iconData = mapMarkerSvg(item.preco ? formatMapPrice(item.preco) : item.tipo || "Imóvel", item.id === selectedId);
+      const marker = new maps.Marker({
+        position: { lat: Number(item.latitude), lng: Number(item.longitude) }, title: item.titulo,
+        zIndex: item.id === selectedId ? 999 : 1,
+        icon: { url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(iconData.svg)}`, scaledSize: new maps.Size(iconData.width, iconData.height), anchor: new maps.Point(iconData.width / 2, iconData.height - 2) },
+      });
+      marker.addListener("click", () => {
+        setSelectedId(item.id); setSheetOpen(false);
+        mapRef.current?.panTo({ lat: Number(item.latitude), lng: Number(item.longitude) });
+      });
+      markersRef.current.set(item.id, marker);
+      return marker;
+    });
+    clustererRef.current = new MarkerClusterer({ map: mapRef.current, markers });
+    return () => { clustererRef.current?.clearMarkers(); markers.forEach((marker) => marker.setMap(null)); };
+  }, [filtered, selectedId, ready]);
 
-  if (loading || mapsLoading) {
-    return (
-      <AppLayout>
-        <div className="flex items-center justify-center py-32">
-          <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+  const framed = useRef(false);
+  useEffect(() => {
+    if (!framed.current && !loading && mapRef.current && filtered.length) { framed.current = true; fitItems(filtered); }
+  }, [filtered, loading, fitItems]);
+
+  const searchArea = () => {
+    const bounds = mapRef.current?.getBounds();
+    if (!bounds) return;
+    setAreaIds(filtered.filter((item) => bounds.contains({ lat: Number(item.latitude), lng: Number(item.longitude) })).map((item) => item.id));
+    setShowSearchArea(false);
+  };
+  const locate = () => {
+    if (!navigator.geolocation) { toast.error("Localização não disponível neste aparelho."); return; }
+    navigator.geolocation.getCurrentPosition((position) => {
+      mapRef.current?.panTo({ lat: position.coords.latitude, lng: position.coords.longitude }); mapRef.current?.setZoom(14);
+    }, () => toast.error("Não foi possível acessar sua localização."), { enableHighAccuracy: true, timeout: 10000 });
+  };
+
+  const ResultCard = ({ item, compact = false }: { item: PropertyRow; compact?: boolean }) => (
+    <article className={cn("overflow-hidden rounded-xl border bg-card", item.id === selectedId ? "border-primary ring-2 ring-primary/20" : "border-border", compact ? "grid grid-cols-[104px_1fr]" : "grid grid-cols-[116px_1fr]") }>
+      <img src={item.imagens?.[0] || PLACEHOLDER_IMAGE} alt={item.titulo} loading="lazy" className="h-full min-h-28 w-full object-cover" />
+      <div className="min-w-0 p-3">
+        <div className="flex items-center justify-between gap-2"><span className="text-[10px] font-bold uppercase text-primary">{item.tipo || "Imóvel"}</span><span className="text-[10px] text-muted-foreground">{item.status}</span></div>
+        <h2 className="mt-1 line-clamp-1 text-sm font-bold">{item.titulo}</h2>
+        <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">{[item.endereco, item.numero, item.bairro, item.cidade].filter(Boolean).join(", ")}</p>
+        <p className="mt-1 text-sm font-black text-primary">{item.preco ? item.preco.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }) : "Preço a consultar"}</p>
+        <div className="mt-2 flex gap-2">
+          <Button size="sm" className="h-9 flex-1" onClick={() => navigate(`/imovel/${item.id}`)}>Abrir detalhes</Button>
+          <Button size="icon" variant="outline" className="h-9 w-9" asChild>
+            <a href={googleMapsRouteUrl(Number(item.latitude), Number(item.longitude))} target="_blank" rel="noopener noreferrer" aria-label={`Traçar rota para ${item.titulo}`}><Navigation className="h-4 w-4" /></a>
+          </Button>
         </div>
-      </AppLayout>
-    );
-  }
+      </div>
+    </article>
+  );
 
   return (
     <AppLayout>
-      <div className="p-4 sm:p-6 lg:p-8 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Mapa de Imóveis</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">{mappable.length} imóveis com localização • {imoveis.length} total</p>
+      <div className="flex h-[calc(100dvh-132px-env(safe-area-inset-bottom))] min-h-[520px] flex-col overflow-hidden lg:h-screen lg:min-h-0">
+        <header className="z-20 border-b border-border bg-background px-3 py-3 sm:px-5">
+          <div className="flex items-center gap-2">
+            <div className="relative min-w-0 flex-1"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input value={term} onChange={(e) => setTerm(e.target.value)} className="h-11 pl-9 pr-9" placeholder="Buscar imóvel, rua, bairro ou cidade" aria-label="Buscar no mapa" />{term && <button onClick={() => setTerm("")} className="absolute right-2 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center" aria-label="Limpar busca"><X className="h-4 w-4" /></button>}</div>
+            <Button variant="outline" size="icon" className="h-11 w-11 shrink-0" aria-label="Limpar filtros" onClick={() => { setType(""); setStatus(""); setAreaIds(null); }}><SlidersHorizontal className="h-4 w-4" /></Button>
           </div>
+          <div className="mt-2 flex gap-2 overflow-x-auto no-scrollbar" aria-label="Filtros do mapa">
+            <button onClick={() => setType("")} className={cn("h-9 shrink-0 rounded-full border px-3 text-xs font-semibold", !type ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card")}>Todos os tipos</button>
+            {types.map((value) => <button key={value} onClick={() => setType(type === value ? "" : value)} className={cn("h-9 shrink-0 rounded-full border px-3 text-xs font-semibold", type === value ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card")}>{value}</button>)}
+            {statuses.map((value) => <button key={value} onClick={() => setStatus(status === value ? "" : value)} className={cn("h-9 shrink-0 rounded-full border px-3 text-xs font-semibold", status === value ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card")}>{value}</button>)}
+          </div>
+        </header>
+        <div className="relative flex min-h-0 flex-1">
+          <div className="relative min-w-0 flex-1">
+            <div ref={mapNodeRef} className="h-full w-full" />
+            {(loading || mapsLoading) && <div className="absolute inset-0 z-30 grid place-items-center bg-background/75"><p className="text-sm font-semibold text-muted-foreground">Carregando mapa…</p></div>}
+            {mapsError && <div className="absolute inset-0 z-30 grid place-items-center bg-background p-6 text-center"><div><MapPin className="mx-auto mb-3 h-10 w-10 text-muted-foreground" /><p className="font-bold">Mapa indisponível</p><p className="mt-1 text-sm text-muted-foreground">{mapsError}</p></div></div>}
+            {showSearchArea && <Button onClick={searchArea} className="absolute left-1/2 top-3 z-20 h-10 -translate-x-1/2 rounded-full shadow-lg"><RefreshCw className="mr-2 h-4 w-4" />Buscar nesta área</Button>}
+            <Button onClick={locate} variant="secondary" className="absolute bottom-28 left-3 z-20 h-11 rounded-full shadow-lg lg:bottom-4" aria-label="Usar minha localização"><LocateFixed className="mr-2 h-4 w-4" />Minha localização</Button>
+            {areaIds && <Button onClick={() => { setAreaIds(null); fitItems(filtered); }} variant="outline" size="sm" className="absolute right-3 top-3 z-20 bg-card shadow">Ver toda a região</Button>}
+
+            <section className={cn("absolute inset-x-0 bottom-0 z-20 rounded-t-2xl border-t border-border bg-background shadow-2xl transition-[height] lg:hidden", sheetOpen ? "h-[68%]" : selected ? "h-[226px]" : "h-[82px]")} aria-label="Resultados do mapa">
+              <button onClick={() => setSheetOpen((value) => !value)} className="flex h-12 w-full items-center justify-center gap-2" aria-expanded={sheetOpen}><span className="h-1.5 w-12 rounded-full bg-border" /><span className="text-xs font-bold text-muted-foreground">{listed.length} imóveis</span></button>
+              <div className="h-[calc(100%-48px)] space-y-2 overflow-y-auto px-3 pb-[calc(82px+env(safe-area-inset-bottom))]">
+                {sheetOpen ? listed.slice(0, 100).map((item) => <button key={item.id} className="block w-full text-left" onClick={() => { setSelectedId(item.id); setSheetOpen(false); mapRef.current?.panTo({ lat: Number(item.latitude), lng: Number(item.longitude) }); }}><ResultCard item={item} /></button>) : selected ? <ResultCard item={selected} compact /> : <button onClick={() => setSheetOpen(true)} className="w-full rounded-xl border border-border bg-card p-3 text-sm font-semibold">Toque para ver os imóveis desta área</button>}
+              </div>
+            </section>
+          </div>
+          <aside className="hidden w-[380px] shrink-0 overflow-y-auto border-l border-border bg-muted/30 p-3 lg:block">
+            <p className="mb-3 text-xs font-bold uppercase text-muted-foreground">{listed.length} imóveis nesta área</p>
+            <div className="space-y-2">{listed.slice(0, 150).map((item) => <button key={item.id} className="block w-full text-left" onClick={() => { setSelectedId(item.id); mapRef.current?.panTo({ lat: Number(item.latitude), lng: Number(item.longitude) }); }}><ResultCard item={item} /></button>)}</div>
+            {!listed.length && <div className="py-16 text-center text-sm text-muted-foreground"><MapPin className="mx-auto mb-3 h-10 w-10 opacity-40" />Nenhum imóvel nesta área.</div>}
+          </aside>
         </div>
-
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Buscar por título, endereço, bairro..." className="pl-9" />
-            {searchTerm && (
-              <button onClick={() => setSearchTerm("")} className="absolute right-3 top-1/2 -translate-y-1/2">
-                <X className="w-4 h-4 text-muted-foreground" />
-              </button>
-            )}
-          </div>
-          <button onClick={() => setShowFilters(!showFilters)} className={cn(
-            "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors border",
-            showFilters || filterType || filterStatus ? "bg-accent text-accent-foreground border-accent" : "bg-secondary text-secondary-foreground border-border"
-          )}>
-            <Filter className="w-4 h-4" /> Filtros
-            {(filterType || filterStatus) && <span className="w-2 h-2 rounded-full bg-destructive" />}
-          </button>
-        </div>
-
-        {showFilters && (
-          <div className="flex flex-wrap gap-2 p-3 rounded-xl bg-card border border-border">
-            <div className="flex flex-wrap gap-1.5">
-              <button onClick={() => setFilterType("")} className={cn("px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors", !filterType ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground hover:bg-secondary")}>Todos</button>
-              {types.map((t) => (
-                <button key={t} onClick={() => setFilterType(filterType === t ? "" : t)} className={cn("px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors", filterType === t ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground hover:bg-secondary")}>{t}</button>
-              ))}
-            </div>
-            <div className="w-px bg-border mx-1" />
-            <div className="flex flex-wrap gap-1.5">
-              <button onClick={() => setFilterStatus("")} className={cn("px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors", !filterStatus ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground hover:bg-secondary")}>Todos Status</button>
-              {statuses.map((s) => (
-                <button key={s} onClick={() => setFilterStatus(filterStatus === s ? "" : s)} className={cn("px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors", filterStatus === s ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground hover:bg-secondary")}>{s}</button>
-              ))}
-            </div>
-            {(filterType || filterStatus) && (
-              <button onClick={() => { setFilterType(""); setFilterStatus(""); }} className="px-3 py-1.5 rounded-lg text-xs font-semibold text-destructive hover:bg-destructive/10 transition-colors ml-auto">Limpar</button>
-            )}
-          </div>
-        )}
-
-        {mappable.length > 0 ? (
-          <div className="space-y-3">
-            <div className="rounded-xl overflow-hidden relative border border-border shadow-sm h-[500px] sm:h-[650px]">
-              <div className="absolute top-4 left-4 z-10">
-                <div className="bg-card/95 backdrop-blur-sm rounded-lg shadow-lg px-3 py-2 border border-border flex items-center gap-2">
-                  <MapPin className="w-3.5 h-3.5 text-accent" />
-                  <span className="text-[11px] font-bold text-foreground">{mappable.length} imóveis no mapa</span>
-                </div>
-              </div>
-              <div ref={mapRef} style={{ height: "100%", width: "100%" }} />
-            </div>
-
-            {/* Legenda */}
-            {(() => {
-              const activeTypes = [...new Set(mappable.map(im => im.tipo).filter(Boolean))];
-              return activeTypes.length > 0 ? (
-                <div className="flex flex-wrap gap-2 px-1">
-                  {activeTypes.map((type) => {
-                    const cfg = typeConfig[type] || defaultCfg;
-                    return (
-                      <div key={type} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-card border border-border text-xs font-medium">
-                        <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: cfg.color }} />
-                        <span>{cfg.emoji}</span>
-                        <span className="text-foreground">{cfg.label}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : null;
-            })()}
-          </div>
-        ) : (
-          <div className="text-center py-20 text-muted-foreground">
-            <MapPin className="w-16 h-16 mx-auto mb-4 opacity-40" />
-            <p className="text-lg font-semibold">Nenhum imóvel com coordenadas</p>
-            <p className="text-sm mt-1">Cadastre latitude e longitude nos imóveis para vê-los no mapa</p>
-          </div>
-        )}
-
-        {selectedProperty && (
-          <div className="fixed inset-0 z-50 bg-foreground/50 flex items-center justify-center p-4" onClick={() => setSelectedProperty(null)}>
-            <div className="bg-card rounded-xl border border-border shadow-2xl w-full max-w-lg animate-scale-in max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-              <div className="relative h-56">
-                <img
-                  src={(selectedProperty.imagens && selectedProperty.imagens.length > 0 ? selectedProperty.imagens[0] : null) || PLACEHOLDER_IMAGE}
-                  alt={selectedProperty.titulo}
-                  className="w-full h-full object-cover"
-                />
-                <button onClick={() => setSelectedProperty(null)} className="absolute top-3 right-3 w-8 h-8 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center">
-                  <X className="w-4 h-4 text-foreground" />
-                </button>
-                <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent p-4">
-                  <p className="text-xl font-bold text-white">{formatCurrency(selectedProperty.preco)}</p>
-                </div>
-              </div>
-
-              <div className="p-5 space-y-4">
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="px-2.5 py-0.5 rounded text-[10px] font-bold text-white" style={{ background: (typeConfig[selectedProperty.tipo] || defaultCfg).color }}>{selectedProperty.tipo}</span>
-                    <span className={cn("px-2 py-0.5 rounded text-[10px] font-semibold",
-                      selectedProperty.status === 'Disponível' ? "bg-success/10 text-success" :
-                      selectedProperty.status === 'Vendido' ? "bg-destructive/10 text-destructive" :
-                      "bg-warning/10 text-warning"
-                    )}>{selectedProperty.status}</span>
-                  </div>
-                  <h2 className="text-lg font-bold text-card-foreground uppercase">{selectedProperty.titulo}</h2>
-                  <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
-                    <MapPin className="w-3.5 h-3.5" />
-                    {[selectedProperty.endereco, selectedProperty.numero, selectedProperty.bairro, selectedProperty.cidade].filter(Boolean).join(", ")}
-                  </p>
-                </div>
-
-                {selectedProperty.empreendimento && (
-                  <div className="flex items-center gap-2">
-                    <Landmark className="w-4 h-4 text-accent" />
-                    <span className="text-sm font-semibold text-foreground">{selectedProperty.empreendimento}</span>
-                  </div>
-                )}
-
-                <div className="grid grid-cols-4 gap-3">
-                  {selectedProperty.quartos > 0 && (
-                    <div className="text-center p-2 rounded-lg bg-muted/50">
-                      <BedDouble className="w-4 h-4 mx-auto text-accent mb-1" />
-                      <p className="text-xs font-bold text-foreground">{selectedProperty.quartos}</p>
-                      <p className="text-[10px] text-muted-foreground">Quartos</p>
-                    </div>
-                  )}
-                  {selectedProperty.banheiros > 0 && (
-                    <div className="text-center p-2 rounded-lg bg-muted/50">
-                      <Bath className="w-4 h-4 mx-auto text-accent mb-1" />
-                      <p className="text-xs font-bold text-foreground">{selectedProperty.banheiros}</p>
-                      <p className="text-[10px] text-muted-foreground">Banheiros</p>
-                    </div>
-                  )}
-                  {selectedProperty.vagas > 0 && (
-                    <div className="text-center p-2 rounded-lg bg-muted/50">
-                      <Car className="w-4 h-4 mx-auto text-accent mb-1" />
-                      <p className="text-xs font-bold text-foreground">{selectedProperty.vagas}</p>
-                      <p className="text-[10px] text-muted-foreground">Vagas</p>
-                    </div>
-                  )}
-                  {selectedProperty.area > 0 && (
-                    <div className="text-center p-2 rounded-lg bg-muted/50">
-                      <Ruler className="w-4 h-4 mx-auto text-accent mb-1" />
-                      <p className="text-xs font-bold text-foreground">{selectedProperty.area}m²</p>
-                      <p className="text-[10px] text-muted-foreground">Área</p>
-                    </div>
-                  )}
-                </div>
-
-                {selectedProperty.descricao && (
-                  <p className="text-sm text-muted-foreground line-clamp-3">{selectedProperty.descricao}</p>
-                )}
-
-                <div className="flex gap-3 pt-2">
-                  <button
-                    onClick={() => { setSelectedProperty(null); navigate(`/editar-imovel/${selectedProperty.id}`); }}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-accent text-accent-foreground text-sm font-semibold hover:opacity-90 transition-opacity"
-                  >
-                    <Eye className="w-4 h-4" /> Ver Detalhes
-                  </button>
-                  <button onClick={() => setSelectedProperty(null)} className="px-4 py-2.5 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium hover:bg-muted transition-colors">
-                    Fechar
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </AppLayout>
   );
