@@ -120,7 +120,7 @@ interface DBProperty {
 
 function PropertyCard({ p, brokerName, whatsapp, onOpen, isOwner = false, onUpdated, onEdit, onDelete }: { p: DBProperty; brokerName: string; whatsapp: string; onOpen: (p: DBProperty) => void; isOwner?: boolean; onUpdated?: (id: string, patch: Partial<DBProperty>) => void; onEdit?: (p: DBProperty) => void; onDelete?: (p: DBProperty) => void }) {
   const [saving, setSaving] = useState(false);
-  const isSold = p.status === "Vendido";
+  const isSold = isSoldStatus(p.status);
   const img = (p.imagens || []).find((u) => !!u && u.trim() !== "") || "/placeholder.svg";
   const msg = encodeURIComponent(`Olá ${brokerName}! Tenho interesse no imóvel: ${p.titulo} - ${formatCurrency(p.preco)}`);
 
@@ -412,8 +412,8 @@ export default function BrokerSite() {
       setConfig((pageConfig as BrokerPageConfig | null) || null);
       setProfileAvatar(matchedProfile?.avatar_url || null);
       setBrokerId(matchedProfile?.user_id || matchedProperties[0]?.user_id || null);
-      setProperties(matchedProperties.filter((property) => property.status !== "Vendido"));
-      setSoldProperties(matchedProperties.filter((property) => property.status === "Vendido"));
+      setProperties(matchedProperties.filter((property) => !isSoldStatus(property.status)));
+      setSoldProperties(matchedProperties.filter((property) => isSoldStatus(property.status)));
       setLoading(false);
     };
 
@@ -553,8 +553,8 @@ export default function BrokerSite() {
   const handlePropertyUpdated = (id: string, patch: Partial<DBProperty>) => {
     const apply = (list: DBProperty[]) => list.map((p) => (p.id === id ? { ...p, ...patch } : p));
     const all = apply([...properties, ...soldProperties]);
-    setProperties(all.filter((p) => p.status !== "Vendido"));
-    setSoldProperties(all.filter((p) => p.status === "Vendido"));
+    setProperties(all.filter((p) => !isSoldStatus(p.status)));
+    setSoldProperties(all.filter((p) => isSoldStatus(p.status)));
   };
 
   const handleUploadTabela = async (event: React.ChangeEvent<HTMLInputElement>) => {
