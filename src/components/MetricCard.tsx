@@ -25,7 +25,7 @@ export function MetricCard({
           <p className="text-xs sm:text-sm text-muted-foreground leading-snug">{title}</p>
           <p className={cn(
             "font-bold text-card-foreground tabular-nums leading-tight break-words",
-            value.length > 10 ? "text-base sm:text-xl" : "text-xl sm:text-2xl"
+            value.length > 10 ? "text-sm sm:text-xl" : "text-xl sm:text-2xl"
           )}>{value}</p>
 
           {change && (
