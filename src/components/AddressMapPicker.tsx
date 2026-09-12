@@ -62,7 +62,7 @@ function createDraggableMarker(maps: any, map: any, position: any) {
 }
 
 export function AddressMapPicker({ latitude, longitude, onChange }: AddressMapPickerProps) {
-  const { ready, loading } = useGoogleMapsLoader();
+  const { ready, loading, error: mapsError, retry: retryMaps } = useGoogleMapsLoader();
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const markerRef = useRef<any>(null);
@@ -222,6 +222,17 @@ export function AddressMapPicker({ latitude, longitude, onChange }: AddressMapPi
     return (
       <div className="flex items-center justify-center h-[250px] rounded-lg bg-muted/50 border border-border">
         <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (mapsError) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-3 h-[250px] rounded-lg bg-muted/50 border border-border p-4 text-center" role="alert">
+        <p className="text-xs text-muted-foreground">{mapsError}</p>
+        <button type="button" onClick={retryMaps} className="h-10 rounded-full border border-border bg-card px-4 text-xs font-bold">
+          Tentar novamente
+        </button>
       </div>
     );
   }

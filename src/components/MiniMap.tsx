@@ -13,7 +13,7 @@ interface MiniMapProps {
 export function MiniMap({ lat, lng, name, height = "250px", zoom = 15 }: MiniMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
-  const { ready, loading, error } = useGoogleMapsLoader();
+  const { ready, loading, error, retry } = useGoogleMapsLoader();
 
   useEffect(() => {
     if (!ready || !mapRef.current) return;
@@ -75,8 +75,11 @@ export function MiniMap({ lat, lng, name, height = "250px", zoom = 15 }: MiniMap
 
   if (error) {
     return (
-      <div className="flex items-center justify-center rounded-xl border border-border bg-muted px-6 text-center text-sm text-muted-foreground" style={{ height }} role="status">
-        {error}
+      <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-border bg-muted px-6 text-center text-sm text-muted-foreground" style={{ height }} role="alert">
+        <span>{error}</span>
+        <button type="button" onClick={retry} className="h-10 rounded-full border border-border bg-card px-4 text-xs font-bold text-foreground">
+          Tentar novamente
+        </button>
       </div>
     );
   }
