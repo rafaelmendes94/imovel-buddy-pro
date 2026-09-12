@@ -98,7 +98,7 @@ export function PropertyMap({ properties, onSelectProperty }: PropertyMapProps) 
   const infoWindowRef = useRef<any>(null);
   const mapsRef = useRef<any>(null);
   const selectedIdRef = useRef<string | null>(null);
-  const { ready, loading } = useGoogleMapsLoader();
+  const { ready, loading, error: mapsError, retry: retryMaps } = useGoogleMapsLoader();
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number } | null>(null);
@@ -301,6 +301,17 @@ export function PropertyMap({ properties, onSelectProperty }: PropertyMapProps) 
     return (
       <div className="rounded-xl overflow-hidden relative border border-border shadow-sm h-[400px] sm:h-[600px] flex items-center justify-center bg-muted">
         <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (mapsError) {
+    return (
+      <div className="rounded-xl overflow-hidden relative border border-border shadow-sm h-[400px] sm:h-[600px] flex flex-col items-center justify-center gap-3 bg-muted p-6 text-center" role="alert">
+        <p className="text-sm text-muted-foreground">{mapsError}</p>
+        <button type="button" onClick={retryMaps} className="h-11 rounded-full border border-border bg-card px-4 text-xs font-bold">
+          Tentar novamente
+        </button>
       </div>
     );
   }

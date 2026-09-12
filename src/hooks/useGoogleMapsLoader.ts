@@ -1,14 +1,38 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 const BROWSER_KEY = import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY as string | undefined;
 const TRACKING_ID = import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_TRACKING_ID as string | undefined;
+const LOAD_TIMEOUT_MS = 15000;
 
 declare global {
   interface Window {
     __lovableGoogleMapsCallback?: () => void;
     __lovableGoogleMapsReady?: boolean;
     __lovableGoogleMapsPromise?: Promise<void>;
+    gm_authFailure?: () => void;
   }
+}
+
+const AUTH_ERROR =
+  "O mapa foi bloqueado pelo Google para este endereço (chave restrita por domínio). Abra o site publicado ou libere este domínio na chave do Google Maps.";
+const GENERIC_ERROR = "Não foi possível carregar o mapa. Verifique sua conexão e tente novamente.";
+
+let authFailed = false;
+const authListeners = new Set<() => void>();
+
+function subscribeAuthFailure(listener: () => void): () => void {
+  authListeners.add(listener);
+  return () => authListeners.delete(listener);
+}
+
+if (typeof window !== "undefined") {
+  // Google chama gm_authFailure quando a chave/domínio é rejeitado — pode ocorrer
+  // depois do script carregar, por isso o aviso é global e não só durante o load.
+  window.gm_authFailure = () => {
+    authFailed = true;
+    window.__lovableGoogleMapsReady = false;
+    authListeners.forEach((listener) => listener());
+  };
 }
 
 function ensureGoogleMapsLoaded(): Promise<void> {
@@ -19,10 +43,34 @@ function ensureGoogleMapsLoaded(): Promise<void> {
   if (window.__lovableGoogleMapsPromise) return window.__lovableGoogleMapsPromise;
 
   if (!BROWSER_KEY) {
-    return Promise.reject(new Error("Google Maps browser key não configurada"));
+    return Promise.reject(new Error(AUTH_ERROR));
   }
 
-  window.__lovableGoogleMapsPromise = new Promise<void>((resolve, reject) => {
+  const promise = new Promise<void>((resolve, reject) => {
+    let settled = false;
+    const finish = (err?: Error) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      if (err) {
+        window.__lovableGoogleMapsPromise = undefined;
+        reject(err);
+      } else {
+        resolve();
+      }
+    };
+
+    const timer = setTimeout(
+      () => finish(new Error(authFailed ? AUTH_ERROR : GENERIC_ERROR)),
+      LOAD_TIMEOUT_MS
+    );
+
+    const unsubscribe = subscribeAuthFailure(() => {
+      unsubscribe();
+      finish(new Error(AUTH_ERROR));
+    });
+
+
     window.__lovableGoogleMapsCallback = async () => {
       try {
         const g = (window as any).google;
@@ -33,16 +81,24 @@ function ensureGoogleMapsLoaded(): Promise<void> {
             g.maps.importLibrary("geocoding").catch(() => null),
           ]);
         }
+        if (!(window as any).google?.maps?.Map) {
+          finish(new Error(GENERIC_ERROR));
+          return;
+        }
         window.__lovableGoogleMapsReady = true;
-        resolve();
+        finish();
       } catch (e) {
-        reject(e as Error);
+        finish(e instanceof Error ? e : new Error(GENERIC_ERROR));
       }
     };
 
     const existing = document.querySelector('script[data-google-maps-loader]') as HTMLScriptElement | null;
     if (existing) {
-      // Script tag exists; assume callback will fire when ready.
+      // Script já presente: se a API já estiver disponível, resolve; senão o callback/timeout decide.
+      if ((window as any).google?.maps?.Map) {
+        window.__lovableGoogleMapsReady = true;
+        finish();
+      }
       return;
     }
 
@@ -52,20 +108,40 @@ function ensureGoogleMapsLoaded(): Promise<void> {
     script.async = true;
     script.defer = true;
     script.dataset.googleMapsLoader = "true";
-    script.onerror = () => reject(new Error("Falha ao carregar Google Maps"));
+    script.onerror = () => {
+      script.remove();
+      finish(new Error(GENERIC_ERROR));
+    };
     document.head.appendChild(script);
   });
 
-  return window.__lovableGoogleMapsPromise;
+  window.__lovableGoogleMapsPromise = promise;
+  return promise;
 }
 
 export function useGoogleMapsLoader() {
-  const [ready, setReady] = useState<boolean>(() => !!window.__lovableGoogleMapsReady);
-  const [loading, setLoading] = useState<boolean>(() => !window.__lovableGoogleMapsReady);
-  const [error, setError] = useState<string | null>(null);
+  const [ready, setReady] = useState<boolean>(() => !!window.__lovableGoogleMapsReady && !authFailed);
+  const [loading, setLoading] = useState<boolean>(() => !window.__lovableGoogleMapsReady && !authFailed);
+  const [error, setError] = useState<string | null>(() => (authFailed ? AUTH_ERROR : null));
+  const [attempt, setAttempt] = useState(0);
+
+  useEffect(() =>
+    subscribeAuthFailure(() => {
+      setReady(false);
+      setLoading(false);
+      setError(AUTH_ERROR);
+    }),
+  []);
 
   useEffect(() => {
     let cancelled = false;
+    if (authFailed) {
+      setError(AUTH_ERROR);
+      setLoading(false);
+      return;
+    }
+    setError(null);
+    if (!window.__lovableGoogleMapsReady) setLoading(true);
     ensureGoogleMapsLoaded()
       .then(() => {
         if (!cancelled) {
@@ -73,17 +149,26 @@ export function useGoogleMapsLoader() {
           setLoading(false);
         }
       })
-      .catch((err) => {
+      .catch((err: Error) => {
         console.error("[GoogleMaps] load error", err);
         if (!cancelled) {
           setLoading(false);
-          setError("Não foi possível carregar o mapa. Verifique sua conexão e tente novamente.");
+          setError(err?.message || GENERIC_ERROR);
         }
       });
     return () => {
       cancelled = true;
     };
+  }, [attempt]);
+
+  const retry = useCallback(() => {
+    if (!window.__lovableGoogleMapsReady) {
+      window.__lovableGoogleMapsPromise = undefined;
+      document.querySelectorAll('script[data-google-maps-loader]').forEach((node) => node.remove());
+      authFailed = false;
+    }
+    setAttempt((value) => value + 1);
   }, []);
 
-  return { ready, loading, error };
+  return { ready, loading, error, retry };
 }

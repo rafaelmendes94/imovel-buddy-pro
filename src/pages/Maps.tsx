@@ -22,7 +22,7 @@ type PropertyRow = {
 export default function Maps() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { ready, loading: mapsLoading, error: mapsError } = useGoogleMapsLoader();
+  const { ready, loading: mapsLoading, error: mapsError, retry: retryMaps } = useGoogleMapsLoader();
   const mapNodeRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
   const markersRef = useRef<Map<string, any>>(new Map());
@@ -170,7 +170,7 @@ export default function Maps() {
           <div className="relative min-w-0 flex-1">
             <div ref={mapNodeRef} className="h-full w-full" />
             {(loading || mapsLoading) && <div className="absolute inset-0 z-30 grid place-items-center bg-background/75"><p className="text-sm font-semibold text-muted-foreground">Carregando mapa…</p></div>}
-            {mapsError && <div className="absolute inset-0 z-30 grid place-items-center bg-background p-6 text-center"><div><MapPin className="mx-auto mb-3 h-10 w-10 text-muted-foreground" /><p className="font-bold">Mapa indisponível</p><p className="mt-1 text-sm text-muted-foreground">{mapsError}</p></div></div>}
+            {mapsError && <div className="absolute inset-0 z-30 grid place-items-center bg-background p-6 text-center" role="alert"><div><MapPin className="mx-auto mb-3 h-10 w-10 text-muted-foreground" /><p className="font-bold">Mapa indisponível</p><p className="mt-1 text-sm text-muted-foreground">{mapsError}</p><Button variant="outline" className="mt-4 h-11" onClick={retryMaps}><RefreshCw className="mr-2 h-4 w-4" />Tentar novamente</Button></div></div>}
             {showSearchArea && <Button onClick={searchArea} className="absolute left-1/2 top-3 z-20 h-10 -translate-x-1/2 rounded-full shadow-lg"><RefreshCw className="mr-2 h-4 w-4" />Buscar nesta área</Button>}
             <Button onClick={locate} variant="secondary" className="absolute bottom-28 left-3 z-20 h-11 rounded-full shadow-lg lg:bottom-4" aria-label="Usar minha localização"><LocateFixed className="mr-2 h-4 w-4" />Minha localização</Button>
             {areaIds && <Button onClick={() => { setAreaIds(null); fitItems(filtered); }} variant="outline" size="sm" className="absolute right-3 top-3 z-20 bg-card shadow">Ver toda a região</Button>}

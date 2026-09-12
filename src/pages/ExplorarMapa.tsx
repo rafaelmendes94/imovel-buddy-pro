@@ -85,7 +85,7 @@ function distanceKm(a: { lat: number; lng: number }, b: { lat: number; lng: numb
 export default function ExplorarMapa() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const { ready: mapsReady, loading: mapsLoading, error: mapsError } = useGoogleMapsLoader();
+  const { ready: mapsReady, loading: mapsLoading, error: mapsError, retry: retryMaps } = useGoogleMapsLoader();
 
   const mapDivRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
@@ -470,7 +470,14 @@ export default function ExplorarMapa() {
           )}
           {mapsError && (
             <div className="absolute inset-0 z-20 flex items-center justify-center bg-background p-6 text-center" role="alert">
-              <div><MapPin className="mx-auto mb-3 h-10 w-10 text-muted-foreground" /><p className="font-bold">Mapa indisponível</p><p className="mt-1 text-sm text-muted-foreground">{mapsError}</p></div>
+              <div>
+                <MapPin className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
+                <p className="font-bold">Mapa indisponível</p>
+                <p className="mt-1 text-sm text-muted-foreground">{mapsError}</p>
+                <Button type="button" variant="outline" className="mt-4 h-11" onClick={retryMaps}>
+                  <RefreshCw className="mr-2 h-4 w-4" /> Tentar novamente
+                </Button>
+              </div>
             </div>
           )}
 
