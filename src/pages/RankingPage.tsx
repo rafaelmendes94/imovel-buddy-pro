@@ -301,7 +301,7 @@ export default function RankingPage() {
             <div className="text-center">
               <div className="flex items-center justify-center gap-1 sm:gap-2 mb-1">
                 <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400 shrink-0" />
-                <p className="text-base sm:text-3xl font-black text-emerald-400 break-all">
+                <p className="text-[13px] sm:text-3xl font-black text-emerald-400 whitespace-nowrap">
                   {formatCurrency(totalVGV)}
                 </p>
               </div>
