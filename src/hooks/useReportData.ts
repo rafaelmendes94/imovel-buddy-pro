@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { saleDedupeKey, onSalesChanged } from "@/lib/salesRegistry";
 
 export interface RealSaleRecord {
   id: string;
@@ -99,7 +100,10 @@ export function useReportData() {
     setLoading(false);
   }, []);
 
-  useEffect(() => { fetchAll(); }, [fetchAll]);
+  useEffect(() => {
+    fetchAll();
+    return onSalesChanged(() => fetchAll());
+  }, [fetchAll]);
 
   const allSales = useMemo(() => [...sales, ...manualSales], [sales, manualSales]);
 
