@@ -123,6 +123,22 @@ function PropertyCard({ p, brokerName, whatsapp, onOpen, isOwner = false, onUpda
   const img = (p.imagens || []).find((u) => !!u && u.trim() !== "") || "/placeholder.svg";
   const msg = encodeURIComponent(`Olá ${brokerName}! Tenho interesse no imóvel: ${p.titulo} - ${formatCurrency(p.preco)}`);
 
+  const toggleSold = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSaving(true);
+    const res = isSold
+      ? await reactivateProperty(p.id)
+      : await markPropertySold(p.id, { brokerName: p.corretor_nome || brokerName });
+    setSaving(false);
+    if (!res.ok) { toast.error("Não foi possível atualizar: " + (res.error || "")); return; }
+    if (isSold) {
+      toast.success("Imóvel reativado — venda removida do ranking");
+    } else {
+      toast.success((res as any).alreadySold ? "Imóvel já estava vendido" : "Imóvel marcado como vendido — venda registrada no ranking");
+    }
+    onUpdated?.(p.id, ((res as any).patch || {}) as Partial<DBProperty>);
+  };
+
   const patchImovel = async (e: React.MouseEvent, patch: Partial<DBProperty>, successMsg: string) => {
     e.stopPropagation();
     setSaving(true);
