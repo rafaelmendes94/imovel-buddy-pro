@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import { generatePropertyPdf } from "@/utils/generatePropertyPdf";
 import { useAuth } from "@/hooks/useAuth";
 import { ImportImoveisWizard } from "@/components/ImportImoveisWizard";
+import { ImportPdfTabelaBeta } from "@/components/ImportPdfTabelaBeta";
 import { getPropertyUnitParts } from "@/lib/propertyIdentity";
 import { exportImoveisXls } from "@/lib/exportImoveisXls";
 
@@ -421,6 +422,7 @@ export default function Properties() {
   const { user, subscription, isSuperAdmin, isAdminStaff } = useAuth();
   const [currentImoveis, setCurrentImoveis] = useState(0);
   const [importOpen, setImportOpen] = useState(false);
+  const [pdfImportOpen, setPdfImportOpen] = useState(false);
   const maxImoveis = subscription?.plan?.max_properties ?? 0;
   const limitReached = !isSuperAdmin && !isAdminStaff && maxImoveis > 0 && currentImoveis >= maxImoveis;
 
