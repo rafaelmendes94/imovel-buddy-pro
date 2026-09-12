@@ -90,6 +90,8 @@ export default function Maps() {
     map.addListener("zoom_changed", () => setShowSearchArea(true));
     map.addListener("click", () => setSelectedId(null));
     mapRef.current = map;
+    const detach = attachMapRefresh(map, mapNodeRef.current);
+    return () => detach();
   }, [ready]);
 
   useEffect(() => {
