@@ -23,7 +23,11 @@ export function MetricCard({
       <div className="flex items-start justify-between gap-2">
         <div className="space-y-1.5 sm:space-y-2 min-w-0">
           <p className="text-xs sm:text-sm text-muted-foreground leading-snug">{title}</p>
-          <p className="text-xl sm:text-2xl font-bold text-card-foreground break-words">{value}</p>
+          <p className={cn(
+            "font-bold text-card-foreground tabular-nums leading-tight break-words",
+            value.length > 12 ? "text-base sm:text-xl" : "text-xl sm:text-2xl"
+          )}>{value}</p>
+
           {change && (
             <div className="flex items-center gap-1">
               {changeType === "positive" ? (
