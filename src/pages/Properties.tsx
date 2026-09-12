@@ -1905,6 +1905,12 @@ export default function Properties() {
         onImported={() => window.location.reload()}
       />
 
+      <ImportPdfTabelaBeta
+        open={pdfImportOpen}
+        onClose={() => setPdfImportOpen(false)}
+        onImported={() => window.location.reload()}
+      />
+
       {/* Delete Confirmation Modal */}
       {deleteConfirmId && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setDeleteConfirmId(null)}>
