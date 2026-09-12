@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Property, formatCurrency } from "@/data/mockData";
 import { useGoogleMapsLoader } from "@/hooks/useGoogleMapsLoader";
+import { attachMapRefresh } from "@/lib/mapUtils";
 import { BedDouble, Bath, Car, Loader2, LocateFixed, MapPin, Ruler } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -214,6 +215,7 @@ export function PropertyMap({ properties, onSelectProperty }: PropertyMapProps) 
     if (!ready || !mapRef.current || !maps) return;
 
     let cancelled = false;
+    let detach: (() => void) | undefined;
 
     (async () => {
       const MapCtor =
@@ -243,6 +245,7 @@ export function PropertyMap({ properties, onSelectProperty }: PropertyMapProps) 
       mapInstanceRef.current = map;
       infoWindowRef.current = new maps.InfoWindow();
       setMapCenter(center);
+      detach = attachMapRefresh(map, mapRef.current);
 
       // Track map center so the list re-sorts by proximity as user explores
       map.addListener("idle", () => {
