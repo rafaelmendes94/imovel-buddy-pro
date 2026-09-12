@@ -53,6 +53,7 @@ import {
 import { PublicMobileNav } from "@/components/PublicMobileNav";
 import { toast } from "sonner";
 import { generateBrokerCatalogPdf } from "@/utils/generateBrokerCatalogPdf";
+import { markPropertySold, reactivateProperty, isSoldStatus } from "@/lib/salesRegistry";
 
 const formatCurrency = (v: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
 
