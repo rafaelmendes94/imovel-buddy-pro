@@ -216,6 +216,10 @@ export default function ImovelPublico() {
       })
     : [];
 
+  const mapsSearchUrl = imovel?.latitude != null && imovel?.longitude != null
+    ? `https://www.google.com/maps?q=${imovel.latitude},${imovel.longitude}`
+    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`;
+
 
   const handleShare = async () => {
     const url = window.location.href;
