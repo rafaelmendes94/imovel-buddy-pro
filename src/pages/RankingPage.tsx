@@ -296,36 +296,36 @@ export default function RankingPage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8 }}
-            className="flex items-center justify-center gap-6 sm:gap-10"
+            className="grid grid-cols-3 items-start justify-center gap-3 sm:flex sm:items-center sm:gap-10"
           >
             <div className="text-center">
-              <div className="flex items-center justify-center gap-2 mb-1">
-                <DollarSign className="w-5 h-5 text-emerald-400" />
-                <p className="text-2xl sm:text-3xl font-black text-emerald-400">
+              <div className="flex items-center justify-center gap-1 sm:gap-2 mb-1">
+                <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400 shrink-0" />
+                <p className="text-base sm:text-3xl font-black text-emerald-400 break-all">
                   {formatCurrency(totalVGV)}
                 </p>
               </div>
-              <p className="text-xs text-gray-500 uppercase tracking-widest font-bold">VGV Total Vendido</p>
+              <p className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider sm:tracking-widest font-bold leading-tight">VGV Total Vendido</p>
             </div>
-            <div className="w-px h-12 bg-gray-700" />
+            <div className="hidden sm:block w-px h-12 bg-gray-700" />
             <div className="text-center">
-              <div className="flex items-center justify-center gap-2 mb-1">
-                <TrendingUp className="w-5 h-5 text-blue-400" />
-                <p className="text-2xl sm:text-3xl font-black text-blue-400">
+              <div className="flex items-center justify-center gap-1 sm:gap-2 mb-1">
+                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400 shrink-0" />
+                <p className="text-base sm:text-3xl font-black text-blue-400">
                   <AnimatedCounter target={totalSold} duration={1500} />
                 </p>
               </div>
-              <p className="text-xs text-gray-500 uppercase tracking-widest font-bold">Vendas Realizadas</p>
+              <p className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider sm:tracking-widest font-bold leading-tight">Vendas Realizadas</p>
             </div>
-            <div className="w-px h-12 bg-gray-700" />
+            <div className="hidden sm:block w-px h-12 bg-gray-700" />
             <div className="text-center">
-              <div className="flex items-center justify-center gap-2 mb-1">
-                <Users className="w-5 h-5 text-purple-400" />
-                <p className="text-2xl sm:text-3xl font-black text-purple-400">
+              <div className="flex items-center justify-center gap-1 sm:gap-2 mb-1">
+                <Users className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400 shrink-0" />
+                <p className="text-base sm:text-3xl font-black text-purple-400">
                   <AnimatedCounter target={ranking.length} duration={1000} />
                 </p>
               </div>
-              <p className="text-xs text-gray-500 uppercase tracking-widest font-bold">Corretores</p>
+              <p className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider sm:tracking-widest font-bold leading-tight">Corretores</p>
             </div>
           </motion.div>
         </div>
