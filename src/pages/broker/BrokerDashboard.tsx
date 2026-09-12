@@ -7,6 +7,7 @@ import { PartnersAdSlider } from "@/components/PartnersAdSlider";
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { onSalesChanged } from "@/lib/salesRegistry";
 import { formatCurrency } from "@/data/mockData";
 import {
   Building2,
@@ -58,7 +59,7 @@ export default function BrokerDashboard() {
 
   useEffect(() => {
     if (!user) return;
-    (async () => {
+    const load = async () => {
       setLoading(true);
       const { data } = await supabase
         .from("imoveis")
@@ -77,7 +78,9 @@ export default function BrokerDashboard() {
         }))
       );
       setLoading(false);
-    })();
+    };
+    load();
+    return onSalesChanged(() => load());
   }, [user]);
 
   const stats = useMemo(() => {
