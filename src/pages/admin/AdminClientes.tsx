@@ -140,10 +140,11 @@ export default function AdminClientes() {
 
   return (
     <AdminLayout>
-      <div className="p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-foreground">Clientes (Corretores)</h1>
-          <div className="flex gap-2">
+      <div className="p-4 sm:p-6 space-y-5 sm:space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Clientes (Corretores)</h1>
+          <div className="flex flex-wrap gap-2">
+
             <Button variant="outline" onClick={runLifecycle} title="Processa trials expirados, bloqueios e cancelamentos agora">
               <RefreshCw className="w-4 h-4 mr-2" />Rodar ciclo agora
             </Button>
