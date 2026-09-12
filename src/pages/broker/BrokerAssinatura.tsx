@@ -11,6 +11,7 @@ const statusLabels: Record<string, string> = {
   trial: "Trial",
   active: "Ativo",
   overdue: "Pendente",
+  pending_payment: "Aguardando pagamento",
   blocked: "Bloqueado",
   cancelled: "Cancelado",
 };
@@ -19,9 +20,16 @@ const statusColors: Record<string, string> = {
   trial: "bg-info/10 text-info border-info/30",
   active: "bg-success/10 text-success border-success/30",
   overdue: "bg-warning/10 text-warning border-warning/30",
+  pending_payment: "bg-warning/10 text-warning border-warning/30",
   blocked: "bg-destructive/10 text-destructive border-destructive/30",
   cancelled: "bg-muted text-muted-foreground border-border",
 };
+
+const cycleLabel = (cycle: string) =>
+  cycle === "monthly" ? "mês" :
+  cycle === "quarterly" ? "trim" :
+  cycle === "semiannual" ? "sem" :
+  "ano";
 
 export default function BrokerAssinatura() {
   const { subscription, user } = useAuth();
@@ -101,7 +109,7 @@ export default function BrokerAssinatura() {
                     <p className="text-3xl font-bold text-accent mt-1">
                       R$ {plan.price}
                       <span className="text-sm font-normal text-muted-foreground">
-                        /{plan.billing_cycle === "monthly" ? "mês" : plan.billing_cycle === "quarterly" ? "trim" : "ano"}
+                        /{cycleLabel(plan.billing_cycle)}
                       </span>
                     </p>
                   </div>

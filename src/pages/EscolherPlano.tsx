@@ -95,13 +95,6 @@ export default function EscolherPlano() {
 
     await refreshUserData();
 
-    if (plan.trial_days > 0) {
-      toast({ title: "Trial ativado!", description: "Você já pode acessar o painel." });
-      setSelectingId(null);
-      navigate(homePath, { replace: true });
-      return;
-    }
-
     const { data, error } = await supabase.functions.invoke("asaas-checkout", {
       body: { plan_id: plan.id, user_id: user.id },
     });
@@ -122,7 +115,7 @@ export default function EscolherPlano() {
   };
 
   const cycleLabel = (c: string) =>
-    c === "monthly" ? "/mês" : c === "quarterly" ? "/trim." : c === "annual" ? "/ano" : "";
+    c === "monthly" ? "/mês" : c === "quarterly" ? "/trim." : c === "semiannual" ? "/sem." : c === "annual" ? "/ano" : "";
 
   return (
     <div className="min-h-screen bg-background py-10 px-4">

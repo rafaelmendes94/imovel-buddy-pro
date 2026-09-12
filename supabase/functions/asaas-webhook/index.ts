@@ -112,7 +112,7 @@ serve(async (req) => {
     const getPeriodEnd = async (plan_id: string) => {
       const { data: plan } = await supabase.from("plans").select("billing_cycle").eq("id", plan_id).maybeSingle();
       const cycle = (plan as any)?.billing_cycle || "monthly";
-      const days = cycle === "annual" ? 365 : cycle === "quarterly" ? 90 : 30;
+      const days = cycle === "annual" ? 365 : cycle === "semiannual" ? 180 : cycle === "quarterly" ? 90 : 30;
       return new Date(now.getTime() + days * 86400000);
     };
 

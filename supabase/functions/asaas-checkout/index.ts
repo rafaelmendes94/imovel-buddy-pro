@@ -136,6 +136,7 @@ serve(async (req) => {
     const cycleMap: Record<string, string> = {
       monthly: "MONTHLY",
       quarterly: "QUARTERLY",
+      semiannual: "SEMIANNUALLY",
       annual: "YEARLY",
     };
 
