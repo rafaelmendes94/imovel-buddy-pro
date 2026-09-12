@@ -14,7 +14,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { googleMapsRouteUrl, mapMarkerSvg } from "@/lib/mapUtils";
+import { attachMapRefresh, googleMapsRouteUrl, mapMarkerSvg } from "@/lib/mapUtils";
 import { toast } from "sonner";
 
 type Imovel = {

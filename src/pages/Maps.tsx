@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useGoogleMapsLoader } from "@/hooks/useGoogleMapsLoader";
 import { PLACEHOLDER_IMAGE } from "@/lib/placeholderImage";
-import { formatMapPrice, googleMapsRouteUrl, hasValidCoordinates, mapMarkerSvg } from "@/lib/mapUtils";
+import { attachMapRefresh, formatMapPrice, googleMapsRouteUrl, hasValidCoordinates, mapMarkerSvg } from "@/lib/mapUtils";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
