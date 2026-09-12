@@ -582,7 +582,7 @@ export default function Reports() {
                         <p className="text-sm text-muted-foreground text-center py-8">Nenhuma venda encontrada com os filtros selecionados</p>
                       ) : (
                         <div className="overflow-x-auto">
-                          <table className="w-full text-sm">
+                          <table className="w-full min-w-[680px] text-sm">
                             <thead>
                               <tr className="border-b border-border">
                                 {["Data", "Imóvel", "Cidade", "Tipo", "Segmento", "Corretor", "Plataforma", "Valor"].map(h => (

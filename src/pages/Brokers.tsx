@@ -290,7 +290,7 @@ export default function Brokers() {
               </div>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="w-full min-w-[680px] text-sm">
                 <thead>
                   <tr className="text-left text-xs uppercase tracking-wider text-muted-foreground border-b border-border">
                     <th className="py-2 px-2">Nome</th>
