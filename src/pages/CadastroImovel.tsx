@@ -30,6 +30,7 @@ import {
   Play, FolderDown, History, Clock, Download, CheckCircle2, Ban, ChevronLeft, ChevronRight, Star, GripVertical
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { resolvePropertyBrokerName } from '@/lib/propertyFlow';
 
 const statusConfig: Record<string, { label: string; color: string; bg: string; border: string; icon: typeof Home }> = {
   "Disponível": { label: "Ativo", color: "text-emerald-500", bg: "bg-emerald-500/10", border: "border-emerald-500/30", icon: Home },
@@ -333,6 +334,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
   const [newCaract, setNewCaract] = useState('');
   const [brokersList, setBrokersList] = useState<{ user_id: string; full_name: string; phone: string | null }[]>([]);
   const [selectedBrokerId, setSelectedBrokerId] = useState<string>('');
+  const [loadedOwnerName, setLoadedOwnerName] = useState('');
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
@@ -487,6 +489,14 @@ export function ImovelForm({ editId }: { editId?: string }) {
         navigate('/imoveis');
         return;
       }
+      const { data: ownerProfile } = data.user_id
+        ? await supabase
+            .from('profiles')
+            .select('full_name')
+            .eq('user_id', data.user_id)
+            .maybeSingle()
+        : { data: null };
+      setLoadedOwnerName((ownerProfile as any)?.full_name || (data as any).corretor_nome || '');
       setForm({
         titulo: data.titulo || '',
         tipo: data.tipo || '',
@@ -779,7 +789,12 @@ export function ImovelForm({ editId }: { editId?: string }) {
         latitude: parseFloat(form.latitude) || 0,
         longitude: parseFloat(form.longitude) || 0,
         corretor_cadastro_id: form.corretorCadastroId || null,
-        ...(form.corretorCadastroId ? { corretor_nome: form.corretorNome } : {}),
+        corretor_nome: resolvePropertyBrokerName({
+          internalBrokerName: form.corretorCadastroId ? form.corretorNome : null,
+          loadedOwnerName: isEdit ? loadedOwnerName : null,
+          profileName: profile?.full_name,
+          existingBrokerName: form.corretorNome,
+        }),
         edificio_id: form.edificio_id || null,
         condominio_id: form.condominio_id || null,
         empreendimento_id: form.empreendimento_id || null,

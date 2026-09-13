@@ -54,6 +54,7 @@ import { PublicMobileNav } from "@/components/PublicMobileNav";
 import { toast } from "sonner";
 import { generateBrokerCatalogPdf } from "@/utils/generateBrokerCatalogPdf";
 import { markPropertySold, reactivateProperty, isSoldStatus } from "@/lib/salesRegistry";
+import { resolveBrokerPageAvatar } from "@/lib/propertyFlow";
 
 const formatCurrency = (v: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
 
@@ -522,7 +523,7 @@ export default function BrokerSite() {
   }
 
   const isOwner = !!currentUserId && ((!!brokerId && currentUserId === brokerId) || isSuperAdmin);
-  const manageOwnerId = brokerId || currentUserId || "";
+  const manageOwnerId = brokerId || slug || currentUserId || "";
 
   const openNewProperty = () => { setEditing(null); setFormOpen(true); };
 
@@ -640,7 +641,7 @@ export default function BrokerSite() {
   const whatsapp = normalizePhone(config?.whatsapp || brokerRecord?.phone || "");
   const email = config?.email_contact || brokerRecord?.email || "";
   const creci = brokerRecord?.creci || "";
-  const avatarUrl = profileAvatar || config?.profile_photo_url || getAvatarFallback(brokerName);
+  const avatarUrl = resolveBrokerPageAvatar(config?.profile_photo_url, profileAvatar, getAvatarFallback(brokerName));
   const coverUrl = config?.cover_photo_url;
   const accentColor = config?.accent_color && config.accent_color.trim() !== "" ? config.accent_color : null;
   const eyebrow = config?.site_title || "Portfólio do corretor";
