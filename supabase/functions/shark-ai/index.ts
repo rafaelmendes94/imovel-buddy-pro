@@ -1,13 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
-
-async function getAIModel(): Promise<string> {
-  try {
-    const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
-    const { data } = await supabase.from("system_settings").select("value").eq("key", "ai_model").maybeSingle();
-    return data?.value || "google/gemini-3-flash-preview";
-  } catch { return "google/gemini-3-flash-preview"; }
-}
+import { geminiJson, getAIModel } from "../_shared/gemini.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -15,18 +7,13 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-serve(async (req) => {
+export async function handler(req: Request) {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const { query, properties } = await req.json();
-
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
-    }
 
     const systemPrompt = `Você é o SHARK 🦈, um tubarão inteligente e agressivo especialista em mercado imobiliário da MV BROKER CONNECT.
 
@@ -55,110 +42,21 @@ REGRAS DE RESPOSTA:
 - Use emojis de tubarão 🦈 e mar 🌊 com moderação
 - Forneça dados precisos e atualizados quando possível
 - Para índices econômicos, mencione que os valores podem ter sido atualizados e sugira consultar fontes oficiais (IBGE, CBIC, Banco Central)
+- Responda somente JSON válido no formato {"matchedIds":[],"explanation":"..."}.
+- matchedIds deve conter apenas IDs existentes na lista de imóveis enviada.
 
 LISTA DE IMÓVEIS DISPONÍVEIS:
 ${JSON.stringify(properties, null, 2)}`;
 
-    const response = await fetch(
-      "https://ai.gateway.lovable.dev/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: await getAIModel(),
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: query },
-          ],
-          tools: [
-            {
-              type: "function",
-              function: {
-                name: "filter_properties",
-                description:
-                  "Retorna os IDs dos imóveis que correspondem à busca e/ou uma explicação sobre mercado imobiliário.",
-                parameters: {
-                  type: "object",
-                  properties: {
-                    matchedIds: {
-                      type: "array",
-                      items: { type: "string" },
-                      description:
-                        "Array com os IDs dos imóveis encontrados. Vazio [] se a pergunta é sobre mercado/índices.",
-                    },
-                    explanation: {
-                      type: "string",
-                      description:
-                        "Explicação amigável em português. Para buscas: descreva os resultados. Para perguntas de mercado: responda completamente com dados.",
-                    },
-                  },
-                  required: ["matchedIds", "explanation"],
-                  additionalProperties: false,
-                },
-              },
-            },
-          ],
-          tool_choice: {
-            type: "function",
-            function: { name: "filter_properties" },
-          },
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(
-          JSON.stringify({
-            error: "Muitas requisições. Tente novamente em alguns segundos.",
-          }),
-          {
-            status: 429,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
-        );
-      }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({
-            error: "Créditos esgotados. Adicione fundos na sua conta.",
-          }),
-          {
-            status: 402,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
-        );
-      }
-      const text = await response.text();
-      console.error("AI gateway error:", response.status, text);
-      return new Response(
-        JSON.stringify({ error: "Erro ao processar busca" }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    const data = await response.json();
-    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
-
-    if (toolCall?.function?.arguments) {
-      const result = JSON.parse(toolCall.function.arguments);
-      return new Response(JSON.stringify(result), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const content = data.choices?.[0]?.message?.content || "";
+    const result = await geminiJson<{ matchedIds?: string[]; explanation?: string }>(systemPrompt, query, {
+      model: await getAIModel("gemini-2.5-flash"),
+      temperature: 0.2,
+    });
     return new Response(
       JSON.stringify({
-        matchedIds: [],
+        matchedIds: Array.isArray(result.matchedIds) ? result.matchedIds : [],
         explanation:
-          content || "🦈 Não consegui processar sua busca. Tente novamente!",
+          result.explanation || "🦈 Não consegui processar sua busca. Tente novamente!",
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -176,4 +74,6 @@ ${JSON.stringify(properties, null, 2)}`;
       }
     );
   }
-});
+}
+
+if (import.meta.main) serve(handler);

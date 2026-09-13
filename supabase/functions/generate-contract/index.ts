@@ -1,13 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
-
-async function getAIModel(): Promise<string> {
-  try {
-    const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
-    const { data } = await supabase.from("system_settings").select("value").eq("key", "ai_model").maybeSingle();
-    return data?.value || "google/gemini-3-flash-preview";
-  } catch { return "google/gemini-3-flash-preview"; }
-}
+import { geminiText, getAIModel } from "../_shared/gemini.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -15,7 +8,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-serve(async (req) => {
+export async function handler(req: Request) {
   if (req.method === "OPTIONS")
     return new Response(null, { headers: corsHeaders });
 
@@ -31,9 +24,6 @@ serve(async (req) => {
     }
 
     const { templateType, fields } = await req.json();
-
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
     const templatePrompts: Record<string, string> = {
       "compra-venda": `Gere um CONTRATO DE COMPRA E VENDA DE IMÓVEL completo e profissional, em português do Brasil, seguindo o padrão jurídico brasileiro. Use as informações fornecidas para preencher todos os campos. Inclua cláusulas padrão de: objeto, preço e forma de pagamento, obrigações das partes, posse e transferência, penalidades, rescisão, foro e disposições gerais. Formate com numeração de cláusulas.`,
@@ -125,51 +115,23 @@ Texto justificado. NÃO inclua comentários, apenas o documento final em markdow
       .map(([k, v]) => `${k}: ${v}`)
       .join("\n");
 
-    const response = await fetch(
-      "https://ai.gateway.lovable.dev/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: await getAIModel(),
-          messages: [
-            { role: "system", content: systemPrompt },
-            {
-              role: "user",
-              content: `Dados para preencher o documento:\n\n${fieldsText}\n\nIMPORTANTE: Se o valor de algum campo for composto apenas por underscores (ex: "_______________"), trate esse campo como em branco e, no texto final, escreva o campo seguido de uma linha contínua de underscores LONGA O SUFICIENTE PARA SE ESTENDER ATÉ O FINAL DA LINHA do documento A4 (use no mínimo 70 caracteres "_" consecutivos, na mesma fonte do parágrafo, sem quebras). Se o campo aparecer no meio do parágrafo, ainda assim use underscores suficientes para preencher visualmente o restante da linha. Gere o documento completo, pronto para uso. Não inclua instruções ou comentários, apenas o texto do documento formatado.`,
-            },
-
-          ],
-          stream: true,
-        }),
-      }
+    const content = await geminiText(
+      systemPrompt,
+      `Dados para preencher o documento:\n\n${fieldsText}\n\nIMPORTANTE: Se o valor de algum campo for composto apenas por underscores (ex: "_______________"), trate esse campo como em branco e, no texto final, escreva o campo seguido de uma linha contínua de underscores LONGA O SUFICIENTE PARA SE ESTENDER ATÉ O FINAL DA LINHA do documento A4 (use no mínimo 70 caracteres "_" consecutivos, na mesma fonte do parágrafo, sem quebras). Se o campo aparecer no meio do parágrafo, ainda assim use underscores suficientes para preencher visualmente o restante da linha. Gere o documento completo, pronto para uso. Não inclua instruções ou comentários, apenas o texto do documento formatado.`,
+      { model: await getAIModel("gemini-2.5-flash"), temperature: 0.25 },
     );
 
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "Limite de requisições excedido. Tente novamente em alguns instantes." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "Créditos insuficientes. Adicione créditos no workspace." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      const t = await response.text();
-      console.error("AI gateway error:", response.status, t);
-      return new Response(
-        JSON.stringify({ error: "Erro ao gerar documento" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream({
+      start(controller) {
+        const payload = JSON.stringify({ choices: [{ delta: { content } }] });
+        controller.enqueue(encoder.encode(`data: ${payload}\n\n`));
+        controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+        controller.close();
+      },
+    });
 
-    return new Response(response.body, {
+    return new Response(stream, {
       headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
     });
   } catch (e) {
@@ -179,4 +141,6 @@ Texto justificado. NÃO inclua comentários, apenas o documento final em markdow
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
-});
+}
+
+if (import.meta.main) serve(handler);

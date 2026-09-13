@@ -1,13 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
-
-async function getAIModel(): Promise<string> {
-  try {
-    const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
-    const { data } = await supabase.from("system_settings").select("value").eq("key", "ai_model").maybeSingle();
-    return data?.value || "google/gemini-2.5-pro";
-  } catch { return "google/gemini-2.5-pro"; }
-}
+import { geminiJson, getAIModel } from "../_shared/gemini.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -150,7 +143,7 @@ const toolSchema = {
   },
 };
 
-serve(async (req) => {
+export async function handler(req: Request) {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -168,9 +161,6 @@ serve(async (req) => {
 
     const { propertyData, existingProperties, currentPrice } = await req.json();
     const listedPrice = Number(currentPrice ?? propertyData?.currentPrice ?? 0);
-
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
     const searchContext = `${propertyData.type} ${propertyData.area}m² ${propertyData.bedrooms} quartos em ${propertyData.city}${propertyData.address ? `, ${propertyData.address}` : ""}${propertyData.condominium ? `, ${propertyData.condominium}` : ""}`;
 
@@ -245,50 +235,20 @@ ${listedPrice > 0 ? `   - O imóvel está anunciado por R$ ${listedPrice.toLocal
 
 Sempre responda em português brasileiro. Seja preciso, detalhado e profissional.`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: await getAIModel(),
-        messages: [
-          { role: "system", content: systemPrompt },
-          {
-            role: "user",
-            content: `Faça uma avaliação COMPLETA e DETALHADA deste imóvel: ${searchContext}. ${propertyData.seaView ? "Possui vista para o mar." : ""} ${propertyData.decorated ? "É decorado/mobiliado." : ""} ${propertyData.floor ? `Localizado no ${propertyData.floor}.` : ""} ${propertyData.description || ""}\n\nForneça:\n1. Pelo menos 5 anúncios similares com URLs de portais\n2. Breakdown por portal\n3. Análise de rentabilidade (aluguel)\n4. Sugestões de valorização com custo\n5. Score de confiança\n6. Insights do bairro\n7. Histórico de preços\n8. Previsão de venda`,
-          },
-        ],
-        tools: [toolSchema],
-        tool_choice: { type: "function", function: { name: "property_valuation" } },
-      }),
-    });
+    const result = await geminiJson(
+      systemPrompt +
+        "\n\nResponda somente JSON válido seguindo estes campos obrigatórios: " +
+        Object.keys(toolSchema.function.parameters.properties).join(", ") +
+        ".",
+      `Faça uma avaliação COMPLETA e DETALHADA deste imóvel: ${searchContext}. ${propertyData.seaView ? "Possui vista para o mar." : ""} ${propertyData.decorated ? "É decorado/mobiliado." : ""} ${propertyData.floor ? `Localizado no ${propertyData.floor}.` : ""} ${propertyData.description || ""}\n\nForneça:\n1. Pelo menos 5 anúncios similares com URLs de portais\n2. Breakdown por portal\n3. Análise de rentabilidade (aluguel)\n4. Sugestões de valorização com custo\n5. Score de confiança\n6. Insights do bairro\n7. Histórico de preços\n8. Previsão de venda`,
+      { model: await getAIModel("gemini-2.5-pro"), temperature: 0.25 },
+    );
 
-    if (!response.ok) {
-      const text = await response.text();
-      console.error("AI gateway error:", response.status, text);
-
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Limite de requisições excedido. Tente novamente em instantes." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Créditos insuficientes para gerar avaliação." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-      }
-      return new Response(JSON.stringify({ error: "Erro ao processar avaliação" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    }
-
-    const data = await response.json();
-    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
-
-    if (toolCall?.function?.arguments) {
-      const result = JSON.parse(toolCall.function.arguments);
-      return new Response(JSON.stringify(result), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    }
-
-    return new Response(JSON.stringify({ error: "Não foi possível gerar a avaliação. Tente novamente." }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return new Response(JSON.stringify(result), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
     console.error("property-valuation error:", e);
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Erro desconhecido" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
-});
+}
+
+if (import.meta.main) serve(handler);

@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { geminiJson } from "../_shared/gemini.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -62,7 +63,7 @@ const FIELDS = {
   link360: { type: "string" },
 } as const;
 
-serve(async (req) => {
+export async function handler(req: Request) {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -76,21 +77,7 @@ serve(async (req) => {
       });
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY não configurada");
-
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          {
-            role: "system",
-            content:
+    const fields = await geminiJson<Record<string, unknown>>(
               "Você extrai dados estruturados de anúncios/textos de imóveis brasileiros para preencher um formulário de CRM imobiliário. " +
               "Preencha SOMENTE os campos que estiverem claramente presentes ou fortemente implícitos no texto. " +
               "Nunca invente valores, telefones, endereços ou preços. Omita campos desconhecidos. " +
@@ -99,53 +86,12 @@ serve(async (req) => {
               "Quadra e lote vão em 'quadra' e 'lote' (ex: 'Q11 L04' => quadra='11', lote='04') e NUNCA em 'unidade'. " +
               "Casa/sobrado/terreno/lote sem apartamento não têm unidade. " +
               "'box 76', 'box nº 76', 'vaga 76', 'garagem 76' => box='76'; 'box 31 e 32' ou 'boxes 31/32' => box='31 e 32' e vagas=2. " +
-              "Quantidade sem número do box ('1 box', '2 vagas') => box vazio e vagas com a quantidade.",
-
-          },
-          { role: "user", content: text.slice(0, 12000) },
-        ],
-        tools: [
-          {
-            type: "function",
-            function: {
-              name: "preencher_imovel",
-              description: "Preenche os campos do cadastro de imóvel identificados no texto.",
-              parameters: {
-                type: "object",
-                properties: FIELDS,
-                additionalProperties: false,
-              },
-            },
-          },
-        ],
-        tool_choice: { type: "function", function: { name: "preencher_imovel" } },
-      }),
-    });
-
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Muitas requisições. Tente novamente em alguns segundos." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Créditos de IA esgotados." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const t = await response.text();
-      console.error("AI gateway error:", response.status, t);
-      return new Response(JSON.stringify({ error: "Erro ao analisar o texto." }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const data = await response.json();
-    const args = data.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
-    const fields = args ? JSON.parse(args) : {};
+              "Quantidade sem número do box ('1 box', '2 vagas') => box vazio e vagas com a quantidade. " +
+              "Responda somente um objeto JSON válido com os campos identificados. Campos permitidos: " +
+              Object.keys(FIELDS).join(", ") + ".",
+      text.slice(0, 12000),
+      { model: "gemini-2.5-flash", temperature: 0.1 },
+    );
 
     return new Response(JSON.stringify({ fields }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -157,4 +103,6 @@ serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
-});
+}
+
+if (import.meta.main) serve(handler);

@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { geminiJson } from "../_shared/gemini.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -61,7 +62,7 @@ const SYSTEM = [
   "Se o texto marcar VENDIDO, defina vendido=true. Se for apenas uma listagem de vendidos sem dados suficientes, defina também dados_insuficientes=true.",
 ].join(" ");
 
-serve(async (req) => {
+export async function handler(req: Request) {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -75,83 +76,15 @@ serve(async (req) => {
       });
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY não configurada");
-
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3.8-flash",
-        messages: [
-          { role: "system", content: SYSTEM },
-          { role: "user", content: text.slice(0, 60000) },
-        ],
-        tools: [
-          {
-            type: "function",
-            function: {
-              name: "registrar_imoveis",
-              description: "Registra a lista de imóveis identificados na tabela em PDF.",
-              parameters: {
-                type: "object",
-                properties: {
-                  imoveis: {
-                    type: "array",
-                    items: { type: "object", properties: IMOVEL_FIELDS, additionalProperties: false },
-                  },
-                },
-                required: ["imoveis"],
-                additionalProperties: false,
-              },
-            },
-          },
-        ],
-        tool_choice: { type: "function", function: { name: "registrar_imoveis" } },
-      }),
-    });
-
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Muitas requisições de IA. Aguarde alguns segundos e tente novamente." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Créditos de IA esgotados. Adicione créditos para continuar." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 403) {
-        return new Response(JSON.stringify({ error: "Uso de IA bloqueado nas configurações do workspace." }), {
-          status: 403,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const t = await response.text();
-      console.error("AI gateway error:", response.status, t);
-      return new Response(JSON.stringify({ error: "Erro ao analisar a tabela em PDF." }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const data = await response.json();
-    const args = data.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
-    let imoveis: unknown[] = [];
-    if (args) {
-      try {
-        const parsed = JSON.parse(args);
-        if (Array.isArray(parsed?.imoveis)) imoveis = parsed.imoveis;
-      } catch (e) {
-        console.error("JSON parse error:", e);
-      }
-    }
+    const parsed = await geminiJson<{ imoveis?: unknown[] }>(
+      SYSTEM +
+        " Responda somente um objeto JSON válido no formato {\"imoveis\": []}. Campos permitidos em cada imóvel: " +
+        Object.keys(IMOVEL_FIELDS).join(", ") +
+        ".",
+      text.slice(0, 60000),
+      { model: "gemini-2.5-pro", temperature: 0.1 },
+    );
+    const imoveis = Array.isArray(parsed?.imoveis) ? parsed.imoveis : [];
 
     return new Response(JSON.stringify({ imoveis }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -163,4 +96,6 @@ serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
-});
+}
+
+if (import.meta.main) serve(handler);

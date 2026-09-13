@@ -1,6 +1,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { handler as propertyFeed } from "../property-feed/index.ts";
+import { handler as generateDescription } from "../generate-description/index.ts";
+import { handler as propertyValuation } from "../property-valuation/index.ts";
+import { handler as generateContract } from "../generate-contract/index.ts";
+import { handler as sharkAi } from "../shark-ai/index.ts";
+import { handler as parseImovelIa } from "../parse-imovel-ia/index.ts";
+import { handler as parseTabelaPdfIa } from "../parse-tabela-pdf-ia/index.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -350,14 +356,14 @@ serve(async (req: Request) => {
     if (fn === "admin-create-broker") return await adminCreateBroker(req);
     if (fn === "reset-password") return await resetPassword(req);
     if (fn === "property-feed") return await propertyFeed(req);
+    if (fn === "generate-description") return await generateDescription(req);
+    if (fn === "property-valuation") return await propertyValuation(req);
+    if (fn === "generate-contract") return await generateContract(req);
+    if (fn === "shark-ai") return await sharkAi(req);
+    if (fn === "parse-imovel-ia") return await parseImovelIa(req);
+    if (fn === "parse-tabela-pdf-ia") return await parseTabelaPdfIa(req);
     if (
       [
-        "generate-description",
-        "property-valuation",
-        "generate-contract",
-        "shark-ai",
-        "parse-imovel-ia",
-        "parse-tabela-pdf-ia",
         "mercado-pago-checkout",
         "mercado-pago-webhook",
       ].includes(fn)
