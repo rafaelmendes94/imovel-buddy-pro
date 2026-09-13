@@ -1982,6 +1982,7 @@ export type Database = {
       subscription_payments: {
         Row: {
           amount: number
+          asaas_payment_id: string | null
           created_at: string
           id: string
           mercado_pago_payment_id: string | null
@@ -1992,6 +1993,7 @@ export type Database = {
         }
         Insert: {
           amount: number
+          asaas_payment_id?: string | null
           created_at?: string
           id?: string
           mercado_pago_payment_id?: string | null
@@ -2002,6 +2004,7 @@ export type Database = {
         }
         Update: {
           amount?: number
+          asaas_payment_id?: string | null
           created_at?: string
           id?: string
           mercado_pago_payment_id?: string | null
@@ -2022,6 +2025,7 @@ export type Database = {
       }
       subscriptions: {
         Row: {
+          asaas_subscription_id: string | null
           blocked_at: string | null
           created_at: string
           current_period_end: string | null
@@ -2034,6 +2038,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          asaas_subscription_id?: string | null
           blocked_at?: string | null
           created_at?: string
           current_period_end?: string | null
@@ -2046,6 +2051,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          asaas_subscription_id?: string | null
           blocked_at?: string | null
           created_at?: string
           current_period_end?: string | null

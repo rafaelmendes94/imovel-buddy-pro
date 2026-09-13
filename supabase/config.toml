@@ -22,5 +22,8 @@ verify_jwt = false
 [functions.asaas-webhook]
 verify_jwt = false
 
+[functions.asaas-test]
+verify_jwt = false
+
 [functions.property-feed]
 verify_jwt = false

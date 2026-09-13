@@ -134,17 +134,19 @@ serve(async (req) => {
           current_period_start: now.toISOString(),
           current_period_end: periodEnd.toISOString(),
           blocked_at: null,
+          asaas_subscription_id: payment.subscription || String(payment.id),
           mercado_pago_subscription_id: payment.subscription || String(payment.id),
         }).eq("id", existingSub.id);
 
-        await supabase.from("subscription_payments").insert({
+        await supabase.from("subscription_payments").upsert({
           subscription_id: existingSub.id,
           amount: payment.value,
           status: "approved",
+          asaas_payment_id: String(payment.id),
           mercado_pago_payment_id: String(payment.id),
           paid_at: now.toISOString(),
           reference_period: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`,
-        });
+        }, { onConflict: "asaas_payment_id" });
       } else {
         const { data: newSub } = await supabase.from("subscriptions").insert({
           user_id: externalRef.user_id,
@@ -152,18 +154,20 @@ serve(async (req) => {
           status: "active",
           current_period_start: now.toISOString(),
           current_period_end: periodEnd.toISOString(),
+          asaas_subscription_id: payment.subscription || String(payment.id),
           mercado_pago_subscription_id: payment.subscription || String(payment.id),
         }).select("id").single();
 
         if (newSub) {
-          await supabase.from("subscription_payments").insert({
+          await supabase.from("subscription_payments").upsert({
             subscription_id: newSub.id,
             amount: payment.value,
             status: "approved",
+            asaas_payment_id: String(payment.id),
             mercado_pago_payment_id: String(payment.id),
             paid_at: now.toISOString(),
             reference_period: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`,
-          });
+          }, { onConflict: "asaas_payment_id" });
         }
       }
     } else if (event === "PAYMENT_OVERDUE") {

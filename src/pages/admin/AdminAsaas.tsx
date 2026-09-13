@@ -66,31 +66,20 @@ export default function AdminAsaas() {
     setTesting(true);
     setTestResult(null);
     try {
-      const baseUrl = environment === "production"
-        ? "https://api.asaas.com/api"
-        : "https://sandbox.asaas.com/api";
-
-      // We test by calling asaas-checkout with a test to validate key
-      // Instead, let's just invoke the edge function with a simple test
-      const { data, error } = await supabase.functions.invoke("asaas-checkout", {
-        body: { plan_id: "test", user_id: "test" },
+      const { data, error } = await supabase.functions.invoke("asaas-test", {
+        body: { api_key: apiKey, environment },
       });
 
-      // If API key is not set, it returns a specific message
-      if (data?.error?.includes("não configurado")) {
+      if (error || data?.error || data?.ok === false) {
         setTestResult("error");
-        toast({ title: "Erro", description: "API Key não configurada.", variant: "destructive" });
-      } else if (error) {
-        setTestResult("error");
-        toast({ title: "Erro na conexão", description: "Verifique a API Key.", variant: "destructive" });
+        toast({ title: "Erro na conexão", description: data?.error || error?.message || "Verifique a API Key.", variant: "destructive" });
       } else {
-        // Even a 404 for plan means the key works
         setTestResult("success");
         toast({ title: "Conexão OK!", description: "A API Key do Asaas está funcionando." });
       }
-    } catch {
+    } catch (err: any) {
       setTestResult("error");
-      toast({ title: "Erro na conexão", description: "Não foi possível testar.", variant: "destructive" });
+      toast({ title: "Erro na conexão", description: err?.message || "Não foi possível testar.", variant: "destructive" });
     }
     setTesting(false);
   };

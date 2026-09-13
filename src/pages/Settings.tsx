@@ -133,17 +133,19 @@ export default function Settings() {
     setTestingAsaas(true);
     setTestResult(null);
     try {
-      const { data } = await supabase.functions.invoke("asaas-checkout", {
-        body: { plan_id: "test", user_id: "test" },
+      const { data, error } = await supabase.functions.invoke("asaas-test", {
+        body: { api_key: asaasKey, environment: asaasEnv },
       });
-      if (data?.error?.includes("não configurado")) {
+      if (error || data?.error || data?.ok === false) {
         setTestResult("error");
+        toast({ title: "Falha na conexão", description: data?.error || error?.message || "Verifique a API Key.", variant: "destructive" });
       } else {
         setTestResult("success");
         toast({ title: "Conexão OK!", description: "API Key do Asaas válida." });
       }
-    } catch {
+    } catch (err: any) {
       setTestResult("error");
+      toast({ title: "Falha na conexão", description: err?.message || "Não foi possível testar o Asaas.", variant: "destructive" });
     }
     setTestingAsaas(false);
   };

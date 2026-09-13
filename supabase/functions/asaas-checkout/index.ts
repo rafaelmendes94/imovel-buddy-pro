@@ -171,6 +171,37 @@ serve(async (req) => {
       });
     }
 
+    if (subscriptionData.id) {
+      const { data: existingSub } = await supabase
+        .from("subscriptions")
+        .select("id")
+        .eq("user_id", user_id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (existingSub) {
+        await supabase
+          .from("subscriptions")
+          .update({
+            plan_id,
+            status: "pending_payment",
+            asaas_subscription_id: subscriptionData.id,
+            mercado_pago_subscription_id: subscriptionData.id,
+          })
+          .eq("id", existingSub.id);
+      } else {
+        await supabase.from("subscriptions").insert({
+          user_id,
+          plan_id,
+          status: "pending_payment",
+          current_period_start: new Date().toISOString(),
+          asaas_subscription_id: subscriptionData.id,
+          mercado_pago_subscription_id: subscriptionData.id,
+        });
+      }
+    }
+
     // Get the first payment invoice URL
     let invoiceUrl = null;
     if (subscriptionData.id) {

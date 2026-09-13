@@ -150,6 +150,34 @@ async function asaasCheckout(req: Request) {
     return json({ error: "Erro ao criar assinatura no Asaas", details: subscriptionData }, 500);
   }
 
+  if (subscriptionData.id) {
+    const { data: existingSub } = await supabase
+      .from("subscriptions")
+      .select("id")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (existingSub) {
+      await supabase.from("subscriptions").update({
+        plan_id,
+        status: "pending_payment",
+        asaas_subscription_id: subscriptionData.id,
+        mercado_pago_subscription_id: subscriptionData.id,
+      }).eq("id", existingSub.id);
+    } else {
+      await supabase.from("subscriptions").insert({
+        user_id: userId,
+        plan_id,
+        status: "pending_payment",
+        current_period_start: new Date().toISOString(),
+        asaas_subscription_id: subscriptionData.id,
+        mercado_pago_subscription_id: subscriptionData.id,
+      });
+    }
+  }
+
   let invoiceUrl = null;
   if (subscriptionData.id) {
     const paymentsRes = await fetch(`${baseUrl}/v3/subscriptions/${subscriptionData.id}/payments`, {
@@ -160,6 +188,49 @@ async function asaasCheckout(req: Request) {
   }
 
   return json({ invoiceUrl, subscription_id: subscriptionData.id });
+}
+
+async function asaasTest(req: Request) {
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+  const callerId = await authedUserId(req, supabaseUrl, anonKey);
+  if (!callerId) return json({ error: "Unauthorized" }, 401);
+
+  const supabase = createClient(supabaseUrl, getServiceKey());
+  const { data: roleData } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", callerId)
+    .eq("role", "super_admin")
+    .maybeSingle();
+  if (!roleData) return json({ error: "Apenas super admin pode testar o Asaas" }, 403);
+
+  const body = await req.json().catch(() => ({}));
+  const settings = await loadSettings(supabase, ["asaas_api_key", "asaas_environment"]);
+  const apiKey = String(body.api_key || settings.asaas_api_key || "").trim();
+  const environment = String(body.environment || settings.asaas_environment || "sandbox");
+  if (!apiKey) return json({ error: "Informe a API Key do Asaas." }, 400);
+
+  const baseUrl = environment === "production"
+    ? "https://api.asaas.com/api"
+    : "https://sandbox.asaas.com/api";
+  const testRes = await fetch(`${baseUrl}/v3/customers?limit=1&offset=0`, {
+    headers: {
+      "Content-Type": "application/json",
+      access_token: apiKey,
+    },
+  });
+  const data = await testRes.json().catch(() => null);
+
+  if (!testRes.ok) {
+    return json({
+      ok: false,
+      error: data?.errors?.[0]?.description || data?.message || "Falha ao validar API Key do Asaas.",
+      status: testRes.status,
+    }, 400);
+  }
+
+  return json({ ok: true, environment });
 }
 
 async function asaasWebhook(req: Request) {
@@ -234,6 +305,7 @@ async function asaasWebhook(req: Request) {
         current_period_start: now.toISOString(),
         current_period_end: periodEnd.toISOString(),
         blocked_at: null,
+        asaas_subscription_id: payment.subscription || String(payment.id),
         mercado_pago_subscription_id: payment.subscription || String(payment.id),
       }).eq("id", subscriptionId);
     } else {
@@ -243,20 +315,22 @@ async function asaasWebhook(req: Request) {
         status: "active",
         current_period_start: now.toISOString(),
         current_period_end: periodEnd.toISOString(),
+        asaas_subscription_id: payment.subscription || String(payment.id),
         mercado_pago_subscription_id: payment.subscription || String(payment.id),
       }).select("id").single();
       subscriptionId = newSub?.id;
     }
 
     if (subscriptionId) {
-      await supabase.from("subscription_payments").insert({
+      await supabase.from("subscription_payments").upsert({
         subscription_id: subscriptionId,
         amount: payment.value,
         status: "approved",
+        asaas_payment_id: String(payment.id),
         mercado_pago_payment_id: String(payment.id),
         paid_at: now.toISOString(),
         reference_period: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`,
-      });
+      }, { onConflict: "asaas_payment_id" });
     }
   } else if (event === "PAYMENT_OVERDUE" && existingSub) {
     const periodEnd = existingSub.current_period_end ? new Date(existingSub.current_period_end) : null;
@@ -352,6 +426,7 @@ serve(async (req: Request) => {
   try {
     const fn = getFunctionName(req);
     if (fn === "asaas-checkout") return await asaasCheckout(req);
+    if (fn === "asaas-test") return await asaasTest(req);
     if (fn === "asaas-webhook") return await asaasWebhook(req);
     if (fn === "admin-create-broker") return await adminCreateBroker(req);
     if (fn === "reset-password") return await resetPassword(req);
