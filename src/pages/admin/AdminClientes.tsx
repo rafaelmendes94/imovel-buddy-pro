@@ -40,7 +40,7 @@ export default function AdminClientes() {
   const fetchData = async () => {
     const [rolesRes, plansRes] = await Promise.all([
       supabase.from("user_roles").select("user_id").eq("role", "broker"),
-      supabase.from("plans").select("*").eq("is_active", true),
+      supabase.from("plans").select("*").eq("is_active", true).in("plan_type", ["corretor", "imobiliaria"]),
     ]);
 
     setPlans(plansRes.data || []);
