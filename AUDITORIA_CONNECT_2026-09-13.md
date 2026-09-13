@@ -80,3 +80,94 @@ Observação: em localhost o Google Maps pode logar erro de chave/domínio. No s
 4. Existem muitos imóveis ativos sem foto. Isso parece dado real, não erro de frontend, mas precisa filtro/relatório operacional se o admin quiser tratar.
 
 5. Links antigos por slug continuam funcionando, mas se duas contas tiverem mesmo slug o link antigo continua ambíguo. Os novos links gerados pelo sistema agora usam `user_id`.
+
+## Fase 2 - mapa do sistema
+
+### Rotas públicas conferidas
+
+- `/planos`: abre sem erro.
+- `/parceiros`: abre sem erro.
+- `/brick-store`: abre sem erro.
+- `/galeria-cidade`: abre sem erro.
+- `/mapa`: abre sem erro técnico em localhost.
+- `/explorar-mapa`: abre sem erro técnico em localhost.
+- `/todos-imoveis`: abre sem erro.
+- `/ranking`: redireciona para `/login`, portanto está protegido.
+
+### Regras de acesso encontradas
+
+- `AuthGuard` bloqueia usuários sem login.
+- Corretor/imobiliária só entra se `approval_status = approved`.
+- Corretor/imobiliária sem assinatura efetiva é enviado para `/escolher-plano`.
+- Assinatura `pending_payment`, `cancelled`, `blocked` ou trial vencido envia para `/painel/assinatura`.
+- Super Admin e Secretária/Admin Staff passam pelas travas de assinatura.
+- `ModuleGuard` libera Super Admin para tudo.
+- Secretária/Admin Staff depende de `staff_permissions`.
+- Corretor depende dos módulos salvos no plano (`subscription.plan.modules`).
+
+### Módulos internos mapeados
+
+- Administração: Dashboard, Funcionários, Cargos e Funções, Clientes, Planos, Opções do Sistema, IA, Asaas/Pagamentos, Parceiros.
+- Operacional/admin: Imóveis, Edifícios, Condomínios, Mapas Condomínio, Fotos da Cidade, Avaliações, Financeiro, Tabelas, Gerador de Tabela, Contratos, Material Extra, Configurações.
+- Corretor/imobiliária: Painel, Assinatura, Feeds XML, Cadastro Rápido, Imóveis, Feed de Imóveis, Mapas Condomínio, Site, Corretores, Construtoras, Ranking, Avaliações, Tabelas, Gerador de Tabela, Fotos da Cidade, Material Extra, Contratos e Configurações conforme plano.
+
+### Achados novos
+
+1. Tela `Imobiliárias` usa dados fixos no front:
+   - `Alpha Imóveis`
+   - `Beta Imobiliária`
+   - Cadastros, edições e exclusões mudam só o estado da tela.
+   - Ao recarregar, os dados voltam ao mock.
+   - Prioridade: alta.
+
+2. Tela `Material Extra` / `Videomaker` usa dados iniciais mockados:
+   - Trabalhos, agenda e financeiro são mantidos só no estado da tela.
+   - Ao recarregar, alterações podem sumir.
+   - Prioridade: alta se esse módulo for usado em produção.
+
+3. Há rotas autenticadas sem `ModuleGuard` específico:
+   - `/cadastro-corretores`
+   - `/construtoras`
+   - `/construtoras/:id`
+   - `/construtoras/:id/avaliacoes`
+   - `/brick`
+   - `/configuracoes`
+
+   Essas rotas dependem apenas de estar logado e passar assinatura/aprovação. Precisa validar se isso é a regra desejada para corretor/imobiliária.
+
+4. O site público principal ainda tem fallback de WhatsApp fixo `5511999999999` em alguns pontos. Isso precisa ser trocado por configuração real ou ficar vazio quando não houver telefone.
+
+5. Algumas páginas públicas continuam usando `select("*")` em tabelas públicas. Não quebrou nos testes, mas é melhor trocar por seleção explícita para evitar vazamento futuro quando novas colunas internas forem adicionadas.
+
+6. A chave do Google Maps está em variável com nome `VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY`. Funciona tecnicamente, mas ainda carrega referência antiga de Lovable no nome da variável.
+
+### Próximas frentes recomendadas
+
+1. Corrigir telas com mock para usar Supabase real:
+   - `Imobiliárias`
+   - `Videomaker` / `Material Extra`
+
+2. Fazer teste autenticado com usuários reais:
+   - Super Admin
+   - Secretária/Admin Staff
+   - Corretor individual
+   - Imobiliária/dono
+   - Membro da equipe
+
+3. Revisar permissões por módulo:
+   - confirmar o que corretor pode acessar sempre;
+   - confirmar o que depende de plano;
+   - bloquear rota que não aparece no menu, se não puder ser aberta por URL direta.
+
+4. Completar integração financeira:
+   - checkout Asaas;
+   - webhook Asaas;
+   - bloqueio/liberação por pagamento;
+   - tela de assinatura do cliente;
+   - logs de pagamentos.
+
+5. Otimizar imagens e listagens:
+   - paginação;
+   - seleção explícita de colunas;
+   - lazy loading;
+   - miniaturas/capa em vez de imagens grandes na listagem.
