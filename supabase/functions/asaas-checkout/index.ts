@@ -187,7 +187,6 @@ serve(async (req) => {
             plan_id,
             status: "pending_payment",
             asaas_subscription_id: subscriptionData.id,
-            mercado_pago_subscription_id: subscriptionData.id,
           })
           .eq("id", existingSub.id);
       } else {
@@ -197,7 +196,6 @@ serve(async (req) => {
           status: "pending_payment",
           current_period_start: new Date().toISOString(),
           asaas_subscription_id: subscriptionData.id,
-          mercado_pago_subscription_id: subscriptionData.id,
         });
       }
     }

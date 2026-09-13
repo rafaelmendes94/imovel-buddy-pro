@@ -115,7 +115,6 @@ async function recordAsaasPayment(supabase: any, payload: {
     amount: payload.amount,
     status: payload.status,
     asaas_payment_id: payload.asaas_payment_id,
-    mercado_pago_payment_id: payload.asaas_payment_id,
     paid_at: payload.paid_at,
     reference_period: payload.reference_period,
   };
@@ -235,7 +234,6 @@ async function asaasCheckout(req: Request) {
         plan_id,
         status: "pending_payment",
         asaas_subscription_id: subscriptionData.id,
-        mercado_pago_subscription_id: subscriptionData.id,
       }).eq("id", existingSub.id);
     } else {
       await supabase.from("subscriptions").insert({
@@ -244,7 +242,6 @@ async function asaasCheckout(req: Request) {
         status: "pending_payment",
         current_period_start: new Date().toISOString(),
         asaas_subscription_id: subscriptionData.id,
-        mercado_pago_subscription_id: subscriptionData.id,
       });
     }
   }
@@ -377,7 +374,6 @@ async function asaasWebhook(req: Request) {
         current_period_end: periodEnd.toISOString(),
         blocked_at: null,
         asaas_subscription_id: payment.subscription || String(payment.id),
-        mercado_pago_subscription_id: payment.subscription || String(payment.id),
       }).eq("id", subscriptionId);
     } else {
       const { data: newSub } = await supabase.from("subscriptions").insert({
@@ -387,7 +383,6 @@ async function asaasWebhook(req: Request) {
         current_period_start: now.toISOString(),
         current_period_end: periodEnd.toISOString(),
         asaas_subscription_id: payment.subscription || String(payment.id),
-        mercado_pago_subscription_id: payment.subscription || String(payment.id),
       }).select("id").single();
       subscriptionId = newSub?.id;
     }

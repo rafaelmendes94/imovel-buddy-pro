@@ -1,7 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 
-const BROWSER_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined;
-const TRACKING_ID = import.meta.env.VITE_GOOGLE_MAPS_TRACKING_ID as string | undefined;
+const BROWSER_KEY = (
+  import.meta.env.VITE_GOOGLE_MAPS_API_KEY ||
+  import.meta.env.VITE_GOOGLE_MAPS_BROWSER_KEY
+) as string | undefined;
+const TRACKING_ID = (
+  import.meta.env.VITE_GOOGLE_MAPS_TRACKING_ID
+) as string | undefined;
 const LOAD_TIMEOUT_MS = 15000;
 
 declare global {

@@ -123,11 +123,11 @@ export default function AdminIA() {
                 <Zap className="w-5 h-5 text-primary" />
                 <h2 className="font-semibold text-card-foreground">Status</h2>
                 <Badge variant="secondary" className="bg-success/10 text-success text-[10px]">
-                  Lovable AI Ativo
+                  IA do sistema ativa
                 </Badge>
               </div>
               <p className="text-xs text-muted-foreground">
-                O sistema utiliza Lovable AI integrado com acesso a modelos Gemini e GPT sem necessidade de API key externa.
+                O sistema utiliza o provedor configurado no servidor para gerar descrições e analisar dados.
                 Você pode opcionalmente configurar uma chave própria do Google Gemini para controle de custos e limites independentes.
               </p>
             </div>

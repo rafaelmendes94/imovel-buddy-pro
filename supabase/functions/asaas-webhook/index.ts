@@ -27,7 +27,6 @@ async function recordAsaasPayment(supabase: any, payload: {
     amount: payload.amount,
     status: payload.status,
     asaas_payment_id: payload.asaas_payment_id,
-    mercado_pago_payment_id: payload.asaas_payment_id,
     paid_at: payload.paid_at,
     reference_period: payload.reference_period,
   };
@@ -168,7 +167,6 @@ serve(async (req) => {
           current_period_end: periodEnd.toISOString(),
           blocked_at: null,
           asaas_subscription_id: payment.subscription || String(payment.id),
-          mercado_pago_subscription_id: payment.subscription || String(payment.id),
         }).eq("id", existingSub.id);
 
         await recordAsaasPayment(supabase, {
@@ -187,7 +185,6 @@ serve(async (req) => {
           current_period_start: now.toISOString(),
           current_period_end: periodEnd.toISOString(),
           asaas_subscription_id: payment.subscription || String(payment.id),
-          mercado_pago_subscription_id: payment.subscription || String(payment.id),
         }).select("id").single();
 
         if (newSub) {
