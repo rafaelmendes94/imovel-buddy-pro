@@ -39,6 +39,9 @@ import { Ban, ChevronDown, ChevronRight, MessageCircle, MoreHorizontal, Pencil, 
 export default function Financeiro() {
   const { isSuperAdmin, hasModuleAccess, loading: authLoading } = useAuth();
   const canAccess = isSuperAdmin || hasModuleAccess("financeiro");
+  const canCreateFinance = isSuperAdmin || hasModuleAccess("financeiro", "create");
+  const canEditFinance = isSuperAdmin || hasModuleAccess("financeiro", "edit");
+  const canDeleteFinance = isSuperAdmin || hasModuleAccess("financeiro", "delete");
 
   const fin = useFinanceData();
   const [search, setSearch] = useState("");
@@ -155,24 +158,32 @@ export default function Financeiro() {
 
   const rowActions = (sub: FinSubscriber) => (
     <div className="flex items-center gap-1.5 justify-end">
-      <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); charge(sub); }}>
-        <MessageCircle className="w-3.5 h-3.5 mr-1" />Cobrar
-      </Button>
-      <QuickPayButton payment={openPaymentOf(sub.id)} onConfirm={(p) => confirmPayment(sub, p)} />
-      <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); setEditSub(sub); }}>
-        <Pencil className="w-3.5 h-3.5" />
-      </Button>
-      <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); setMembersSub(sub); }}>
-        <Users className="w-3.5 h-3.5" />
-      </Button>
-      <Button
-        size="sm"
-        variant="ghost"
-        className={sub.status === "blocked" ? "text-[hsl(var(--fin-emerald))]" : "text-[hsl(var(--fin-rose))]"}
-        onClick={(e) => { e.stopPropagation(); setBlockSub({ sub, block: sub.status !== "blocked" }); }}
-      >
-        <Ban className="w-3.5 h-3.5" />
-      </Button>
+      {canCreateFinance && (
+        <>
+          <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); charge(sub); }}>
+            <MessageCircle className="w-3.5 h-3.5 mr-1" />Cobrar
+          </Button>
+          <QuickPayButton payment={openPaymentOf(sub.id)} onConfirm={(p) => confirmPayment(sub, p)} />
+        </>
+      )}
+      {canEditFinance && (
+        <>
+          <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); setEditSub(sub); }}>
+            <Pencil className="w-3.5 h-3.5" />
+          </Button>
+          <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); setMembersSub(sub); }}>
+            <Users className="w-3.5 h-3.5" />
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            className={sub.status === "blocked" ? "text-[hsl(var(--fin-emerald))]" : "text-[hsl(var(--fin-rose))]"}
+            onClick={(e) => { e.stopPropagation(); setBlockSub({ sub, block: sub.status !== "blocked" }); }}
+          >
+            <Ban className="w-3.5 h-3.5" />
+          </Button>
+        </>
+      )}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button size="sm" variant="ghost" onClick={(e) => e.stopPropagation()}>
@@ -181,19 +192,31 @@ export default function Financeiro() {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={() => setProfileSub(sub)}>Ver histórico e perfil</DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setEditSub(sub)}>Alterar plano / vencimento</DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setChargeSub(sub)}>Gerar cobrança</DropdownMenuItem>
-          <DropdownMenuItem onClick={() => { setManualDefault(sub.id); setManualOpen(true); }}>
-            Registrar pagamento
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => { setManualDefault(sub.id); setManualOpen(true); }}>
-            Desconto / cortesia
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setNoteSub(sub)}>Observação</DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem className="text-destructive" onClick={() => setCancelSub(sub)}>
-            Cancelar assinatura
-          </DropdownMenuItem>
+          {canEditFinance && (
+            <>
+              <DropdownMenuItem onClick={() => setEditSub(sub)}>Alterar plano / vencimento</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setNoteSub(sub)}>Observação</DropdownMenuItem>
+            </>
+          )}
+          {canCreateFinance && (
+            <>
+              <DropdownMenuItem onClick={() => setChargeSub(sub)}>Gerar cobrança</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => { setManualDefault(sub.id); setManualOpen(true); }}>
+                Registrar pagamento
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => { setManualDefault(sub.id); setManualOpen(true); }}>
+                Desconto / cortesia
+              </DropdownMenuItem>
+            </>
+          )}
+          {canDeleteFinance && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-destructive" onClick={() => setCancelSub(sub)}>
+                Cancelar assinatura
+              </DropdownMenuItem>
+            </>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
@@ -207,12 +230,18 @@ export default function Financeiro() {
         onSave={fin.upsertMember}
         onRemove={fin.removeMember}
         onStatus={fin.setMemberStatus}
+        readOnly={!canEditFinance}
       />
       <div>
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
           Histórico de pagamentos
         </p>
-        <PaymentHistory subscriber={sub} payments={paymentsOf(sub.id)} onConfirm={(p) => confirmPayment(sub, p)} />
+        <PaymentHistory
+          subscriber={sub}
+          payments={paymentsOf(sub.id)}
+          onConfirm={(p) => confirmPayment(sub, p)}
+          canConfirm={canCreateFinance}
+        />
       </div>
     </div>
   );
@@ -228,9 +257,11 @@ export default function Financeiro() {
               <p className="text-xs text-muted-foreground">Assinaturas, cobranças e recorrência</p>
             </div>
           </div>
-          <Button onClick={() => { setManualDefault(undefined); setManualOpen(true); }}>
-            <Plus className="w-4 h-4 mr-1" /> Registrar pagamento
-          </Button>
+          {canCreateFinance && (
+            <Button onClick={() => { setManualDefault(undefined); setManualOpen(true); }}>
+              <Plus className="w-4 h-4 mr-1" /> Registrar pagamento
+            </Button>
+          )}
         </div>
 
         <Tabs defaultValue="assinantes" className="space-y-4">
@@ -393,12 +424,16 @@ export default function Financeiro() {
                           </div>
                           <StatusBadge status={sub.status} />
                         </div>
-                        <div className="grid grid-cols-3 gap-2">
-                          <Button size="lg" variant="outline" className="h-11" onClick={() => charge(sub)}>Cobrar</Button>
-                          {openP ? (
-                            <QuickPayButton payment={openP} onConfirm={(p) => confirmPayment(sub, p)} className="h-11 w-full" />
-                          ) : (
-                            <Button size="lg" variant="outline" className="h-11" disabled>Pago</Button>
+                        <div className={`grid gap-2 ${canCreateFinance ? "grid-cols-3" : "grid-cols-1"}`}>
+                          {canCreateFinance && (
+                            <>
+                              <Button size="lg" variant="outline" className="h-11" onClick={() => charge(sub)}>Cobrar</Button>
+                              {openP ? (
+                                <QuickPayButton payment={openP} onConfirm={(p) => confirmPayment(sub, p)} className="h-11 w-full" />
+                              ) : (
+                                <Button size="lg" variant="outline" className="h-11" disabled>Pago</Button>
+                              )}
+                            </>
                           )}
                           <Button size="lg" className="h-11" onClick={() => setProfileSub(sub)}>Abrir</Button>
                         </div>
@@ -434,6 +469,8 @@ export default function Financeiro() {
         onSaveMember={fin.upsertMember}
         onRemoveMember={fin.removeMember}
         onMemberStatus={fin.setMemberStatus}
+        canConfirmPayments={canCreateFinance}
+        canManageMembers={canEditFinance}
       />
 
       <SubscriberProfile
@@ -448,6 +485,8 @@ export default function Financeiro() {
         onSaveMember={fin.upsertMember}
         onRemoveMember={fin.removeMember}
         onMemberStatus={fin.setMemberStatus}
+        canConfirmPayments={canCreateFinance}
+        canManageMembers={canEditFinance}
       />
 
       <SubscriberEditDialog

@@ -8,6 +8,7 @@ import { Plus, Ban, PlayCircle, Pause, CheckCircle2, Clock, RefreshCw } from "lu
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Client {
   user_id: string;
@@ -36,6 +37,9 @@ export default function AdminClientes() {
   const [asTrial, setAsTrial] = useState(false);
   const [creating, setCreating] = useState(false);
   const { toast } = useToast();
+  const { isSuperAdmin, hasModuleAccess } = useAuth();
+  const canCreateClients = isSuperAdmin || hasModuleAccess("clientes", "create");
+  const canEditClients = isSuperAdmin || hasModuleAccess("clientes", "edit");
 
   const fetchData = async () => {
     const [rolesRes, plansRes] = await Promise.all([
@@ -152,13 +156,17 @@ export default function AdminClientes() {
           <h1 className="text-xl sm:text-2xl font-bold text-foreground">Clientes (Corretores)</h1>
           <div className="flex flex-wrap gap-2">
 
-            <Button variant="outline" onClick={runLifecycle} title="Processa trials expirados, bloqueios e cancelamentos agora">
-              <RefreshCw className="w-4 h-4 mr-2" />Rodar ciclo agora
-            </Button>
+            {isSuperAdmin && (
+              <Button variant="outline" onClick={runLifecycle} title="Processa trials expirados, bloqueios e cancelamentos agora">
+                <RefreshCw className="w-4 h-4 mr-2" />Rodar ciclo agora
+              </Button>
+            )}
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button><Plus className="w-4 h-4 mr-2" />Novo Cliente</Button>
-            </DialogTrigger>
+            {canCreateClients && (
+              <DialogTrigger asChild>
+                <Button><Plus className="w-4 h-4 mr-2" />Novo Cliente</Button>
+              </DialogTrigger>
+            )}
             <DialogContent>
               <DialogHeader><DialogTitle>Criar Cliente</DialogTitle></DialogHeader>
               <div className="space-y-3">
@@ -206,31 +214,35 @@ export default function AdminClientes() {
                     <span className="text-xs text-muted-foreground">
                       {(c.subscription as any).plans?.name || "Sem plano"}
                     </span>
-                    <div className="flex gap-1">
-                      <Button size="sm" variant="ghost" title="Simular pagamento aprovado" onClick={() => simulatePayment(c.user_id)}>
-                        <CheckCircle2 className="w-4 h-4 text-success" />
-                      </Button>
-                      {c.subscription.status === "trial" && (
-                        <Button size="sm" variant="ghost" title="Forçar trial expirado" onClick={() => expireTrial(c.subscription.id)}>
-                          <Clock className="w-4 h-4 text-warning" />
-                        </Button>
-                      )}
-                      {c.subscription.status !== "active" && (
-                        <Button size="sm" variant="ghost" title="Marcar ativo" onClick={() => updateSubscriptionStatus(c.subscription.id, "active")}>
-                          <PlayCircle className="w-4 h-4 text-success" />
-                        </Button>
-                      )}
-                      {c.subscription.status !== "blocked" && (
-                        <Button size="sm" variant="ghost" title="Bloquear" onClick={() => updateSubscriptionStatus(c.subscription.id, "blocked")}>
-                          <Ban className="w-4 h-4 text-destructive" />
-                        </Button>
-                      )}
-                      {c.subscription.status !== "cancelled" && (
-                        <Button size="sm" variant="ghost" title="Cancelar" onClick={() => updateSubscriptionStatus(c.subscription.id, "cancelled")}>
-                          <Pause className="w-4 h-4 text-muted-foreground" />
-                        </Button>
-                      )}
-                    </div>
+                    {canEditClients && (
+                      <div className="flex gap-1">
+                        {isSuperAdmin && (
+                          <Button size="sm" variant="ghost" title="Simular pagamento aprovado" onClick={() => simulatePayment(c.user_id)}>
+                            <CheckCircle2 className="w-4 h-4 text-success" />
+                          </Button>
+                        )}
+                        {c.subscription.status === "trial" && (
+                          <Button size="sm" variant="ghost" title="Forçar trial expirado" onClick={() => expireTrial(c.subscription.id)}>
+                            <Clock className="w-4 h-4 text-warning" />
+                          </Button>
+                        )}
+                        {c.subscription.status !== "active" && (
+                          <Button size="sm" variant="ghost" title="Marcar ativo" onClick={() => updateSubscriptionStatus(c.subscription.id, "active")}>
+                            <PlayCircle className="w-4 h-4 text-success" />
+                          </Button>
+                        )}
+                        {c.subscription.status !== "blocked" && (
+                          <Button size="sm" variant="ghost" title="Bloquear" onClick={() => updateSubscriptionStatus(c.subscription.id, "blocked")}>
+                            <Ban className="w-4 h-4 text-destructive" />
+                          </Button>
+                        )}
+                        {c.subscription.status !== "cancelled" && (
+                          <Button size="sm" variant="ghost" title="Cancelar" onClick={() => updateSubscriptionStatus(c.subscription.id, "cancelled")}>
+                            <Pause className="w-4 h-4 text-muted-foreground" />
+                          </Button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <span className="text-sm text-muted-foreground">Sem assinatura</span>

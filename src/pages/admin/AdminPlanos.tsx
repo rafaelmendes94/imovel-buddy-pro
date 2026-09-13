@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/hooks/useAuth";
 
 const availableModules = [
   { key: "imoveis", label: "Imóveis" },
@@ -60,6 +61,10 @@ export default function AdminPlanos() {
   const [form, setForm] = useState<PlanForm>(emptyForm);
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
+  const { isSuperAdmin, hasModuleAccess } = useAuth();
+  const canCreatePlans = isSuperAdmin || hasModuleAccess("planos", "create");
+  const canEditPlans = isSuperAdmin || hasModuleAccess("planos", "edit");
+  const canDeletePlans = isSuperAdmin || hasModuleAccess("planos", "delete");
 
   const fetchPlans = async () => {
     const { data } = await supabase.from("plans").select("*").order("created_at");
@@ -173,9 +178,11 @@ export default function AdminPlanos() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <h1 className="text-xl sm:text-2xl font-bold text-foreground">Planos</h1>
           <Dialog open={dialogOpen} onOpenChange={v => { setDialogOpen(v); if (!v) { setEditId(null); setForm(emptyForm); } }}>
-            <DialogTrigger asChild>
-              <Button><Plus className="w-4 h-4 mr-2" />Novo Plano</Button>
-            </DialogTrigger>
+            {canCreatePlans && (
+              <DialogTrigger asChild>
+                <Button><Plus className="w-4 h-4 mr-2" />Novo Plano</Button>
+              </DialogTrigger>
+            )}
             <DialogContent className="max-w-lg">
               <DialogHeader><DialogTitle>{editId ? "Editar Plano" : "Novo Plano"}</DialogTitle></DialogHeader>
               <div className="space-y-3 max-h-[60vh] overflow-y-auto">
@@ -272,17 +279,25 @@ export default function AdminPlanos() {
                     <Badge key={m} variant="outline" className="text-xs">{m}</Badge>
                   ))}
                 </div>
-                <div className="flex gap-2 pt-2">
-                  <Button size="sm" variant="outline" onClick={() => openEdit(plan)}>
-                    <Pencil className="w-3 h-3 mr-1" />Editar
-                  </Button>
-                  <Button size="sm" variant="ghost" onClick={() => toggleActive(plan.id, plan.is_active)}>
-                    {plan.is_active ? "Desativar" : "Ativar"}
-                  </Button>
-                  <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => handleDelete(plan)}>
-                    <Trash2 className="w-3 h-3 mr-1" />Excluir
-                  </Button>
-                </div>
+                {(canEditPlans || canDeletePlans) && (
+                  <div className="flex gap-2 pt-2">
+                    {canEditPlans && (
+                      <>
+                        <Button size="sm" variant="outline" onClick={() => openEdit(plan)}>
+                          <Pencil className="w-3 h-3 mr-1" />Editar
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => toggleActive(plan.id, plan.is_active)}>
+                          {plan.is_active ? "Desativar" : "Ativar"}
+                        </Button>
+                      </>
+                    )}
+                    {canDeletePlans && (
+                      <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => handleDelete(plan)}>
+                        <Trash2 className="w-3 h-3 mr-1" />Excluir
+                      </Button>
+                    )}
+                  </div>
+                )}
               </div>
             ))}
           </div>

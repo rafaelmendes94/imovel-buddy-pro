@@ -16,11 +16,12 @@ interface Props {
   onSave: (subscriberId: string, member: Partial<FinMember> & { name: string }) => Promise<void>;
   onRemove: (m: FinMember) => Promise<void>;
   onStatus: (m: FinMember, status: string) => Promise<void>;
+  readOnly?: boolean;
 }
 
 const roleLabel = (v: string) => MEMBER_ROLES.find((r) => r.value === v)?.label || "Corretor";
 
-export function MembersPanel({ subscriberId, members, onSave, onRemove, onStatus }: Props) {
+export function MembersPanel({ subscriberId, members, onSave, onRemove, onStatus, readOnly = false }: Props) {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Partial<FinMember> & { name: string }>({ name: "", member_role: "broker", status: "active" });
   const [saving, setSaving] = useState(false);
@@ -36,9 +37,11 @@ export function MembersPanel({ subscriberId, members, onSave, onRemove, onStatus
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Usuários vinculados ({members.length})
         </p>
-        <Button size="sm" variant="outline" onClick={openNew}>
-          <UserPlus className="w-3.5 h-3.5 mr-1" /> Adicionar
-        </Button>
+        {!readOnly && (
+          <Button size="sm" variant="outline" onClick={openNew}>
+            <UserPlus className="w-3.5 h-3.5 mr-1" /> Adicionar
+          </Button>
+        )}
       </div>
 
       {members.length === 0 && <p className="text-sm text-muted-foreground">Nenhum usuário vinculado.</p>}
@@ -66,20 +69,22 @@ export function MembersPanel({ subscriberId, members, onSave, onRemove, onStatus
                 <a href={waLink(m.phone)!} target="_blank" rel="noreferrer">WhatsApp</a>
               </Button>
             )}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button size="icon" variant="ghost" className="h-8 w-8"><MoreVertical className="w-4 h-4" /></Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => { setEditing(m); setOpen(true); }}>Editar</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onStatus(m, m.status === "blocked" ? "active" : "blocked")}>
-                  {m.status === "blocked" ? "Liberar acesso" : "Bloquear acesso"}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onRemove(m)} className="text-destructive">
-                  Retirar do grupo
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {!readOnly && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button size="icon" variant="ghost" className="h-8 w-8"><MoreVertical className="w-4 h-4" /></Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => { setEditing(m); setOpen(true); }}>Editar</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onStatus(m, m.status === "blocked" ? "active" : "blocked")}>
+                    {m.status === "blocked" ? "Liberar acesso" : "Bloquear acesso"}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onRemove(m)} className="text-destructive">
+                    Retirar do grupo
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         </div>
       ))}

@@ -23,11 +23,14 @@ interface Props {
   onSaveMember: (subscriberId: string, m: Partial<FinMember> & { name: string }) => Promise<void>;
   onRemoveMember: (m: FinMember) => Promise<void>;
   onMemberStatus: (m: FinMember, status: string) => Promise<void>;
+  canConfirmPayments?: boolean;
+  canManageMembers?: boolean;
 }
 
 export function SubscriberProfile({
   open, onOpenChange, subscriber, plan, payments, members, logs,
   onConfirmPayment, onSaveMember, onRemoveMember, onMemberStatus,
+  canConfirmPayments = true, canManageMembers = true,
 }: Props) {
   if (!subscriber) return null;
 
@@ -99,6 +102,7 @@ export function SubscriberProfile({
               onSave={onSaveMember}
               onRemove={onRemoveMember}
               onStatus={onMemberStatus}
+              readOnly={!canManageMembers}
             />
           </TabsContent>
 
@@ -114,7 +118,12 @@ export function SubscriberProfile({
           </TabsContent>
 
           <TabsContent value="history" className="pt-3">
-            <PaymentHistory subscriber={subscriber} payments={payments} onConfirm={onConfirmPayment} />
+            <PaymentHistory
+              subscriber={subscriber}
+              payments={payments}
+              onConfirm={onConfirmPayment}
+              canConfirm={canConfirmPayments}
+            />
           </TabsContent>
 
           <TabsContent value="notes" className="pt-3">

@@ -13,9 +13,10 @@ interface Props {
   subscriber: FinSubscriber;
   payments: FinPayment[];
   onConfirm: (p: FinPayment) => Promise<void>;
+  canConfirm?: boolean;
 }
 
-export function PaymentHistory({ subscriber, payments, onConfirm }: Props) {
+export function PaymentHistory({ subscriber, payments, onConfirm, canConfirm = true }: Props) {
   const [target, setTarget] = useState<FinPayment | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -26,7 +27,7 @@ export function PaymentHistory({ subscriber, payments, onConfirm }: Props) {
       {list.length === 0 && <p className="text-sm text-muted-foreground">Nenhum pagamento registrado.</p>}
       {list.map((p) => {
         const label = paymentStatusLabel(p);
-        const clickable = !isPaid(p) && (label === "Pendente" || label === "Atrasado");
+        const clickable = canConfirm && !isPaid(p) && (label === "Pendente" || label === "Atrasado");
         return (
           <div
             key={p.id}
