@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { BackButton } from "@/components/BackButton";
@@ -53,24 +53,9 @@ interface ImobProperty {
   status: string;
 }
 
-const initialImobiliarias: Imobiliaria[] = [
-  {
-    id: "1", name: "Alpha Imóveis", cnpj: "12.345.678/0001-90", phone: "(51) 3456-7890", email: "contato@alphaimoveis.com", address: "Av. Beira Mar, 500 - Capão da Canoa", creci: "J-12345",
-    corretores: [
-      { id: "c1", name: "Carlos Silva", email: "carlos@alpha.com", phone: "(51) 99876-5432", creci: "123456-RS", status: "Ativo" },
-      { id: "c2", name: "Ana Rodrigues", email: "ana@alpha.com", phone: "(51) 99765-4321", creci: "234567-RS", status: "Ativo" },
-    ],
-  },
-  {
-    id: "2", name: "Beta Imobiliária", cnpj: "98.765.432/0001-10", phone: "(51) 3567-8901", email: "contato@betaimob.com", address: "Rua Central, 200 - Xangri-lá", creci: "J-67890",
-    corretores: [
-      { id: "c3", name: "Marcos Oliveira", email: "marcos@beta.com", phone: "(51) 99654-3210", creci: "345678-RS", status: "Ativo" },
-    ],
-  },
-];
-
 export default function Imobiliarias() {
-  const [imobiliarias, setImobiliarias] = useState<Imobiliaria[]>(initialImobiliarias);
+  const [imobiliarias, setImobiliarias] = useState<Imobiliaria[]>([]);
+  const [loading, setLoading] = useState(true);
   const [expandedImob, setExpandedImob] = useState<string | null>(null);
   const [editingImob, setEditingImob] = useState<Imobiliaria | null>(null);
   const [editingCorretor, setEditingCorretor] = useState<{ imobId: string; corretor: Corretor | null } | null>(null);
@@ -81,6 +66,68 @@ export default function Imobiliarias() {
   
   // Real properties from DB
   const [imobProperties, setImobProperties] = useState<Record<string, ImobProperty[]>>({});
+
+  const loadImobiliarias = useCallback(async () => {
+    setLoading(true);
+    const { data: agencies, error: agenciesError } = await supabase
+      .from("subscribers")
+      .select("id, name, email, phone, creci, document, address")
+      .eq("subscriber_type", "imobiliaria")
+      .order("name");
+
+    if (agenciesError) {
+      toast.error("Não foi possível carregar as imobiliárias");
+      setLoading(false);
+      return;
+    }
+
+    const agencyIds = ((agencies as any[]) || []).map((agency) => agency.id);
+    const { data: brokers, error: brokersError } = agencyIds.length
+      ? await supabase
+          .from("subscriber_brokers")
+          .select("id, subscriber_id, name, email, phone, creci, status")
+          .in("subscriber_id", agencyIds)
+          .order("name")
+      : { data: [] as any[], error: null };
+
+    if (brokersError) {
+      toast.error("Não foi possível carregar os corretores das imobiliárias");
+      setLoading(false);
+      return;
+    }
+
+    const brokersByAgency = new Map<string, Corretor[]>();
+    ((brokers as any[]) || []).forEach((broker) => {
+      const current = brokersByAgency.get(broker.subscriber_id) || [];
+      current.push({
+        id: broker.id,
+        name: broker.name || "",
+        email: broker.email || "",
+        phone: broker.phone || "",
+        creci: broker.creci || "",
+        status: broker.status === "active" ? "Ativo" : "Inativo",
+      });
+      brokersByAgency.set(broker.subscriber_id, current);
+    });
+
+    setImobiliarias(
+      ((agencies as any[]) || []).map((agency) => ({
+        id: agency.id,
+        name: agency.name || "",
+        cnpj: agency.document || "",
+        phone: agency.phone || "",
+        email: agency.email || "",
+        address: agency.address || "",
+        creci: agency.creci || "",
+        corretores: brokersByAgency.get(agency.id) || [],
+      })),
+    );
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    loadImobiliarias();
+  }, [loadImobiliarias]);
 
   useEffect(() => {
     // Fetch properties grouped by imobiliaria_nome
@@ -107,17 +154,32 @@ export default function Imobiliarias() {
   const resetImobForm = () => setImobForm({ name: "", cnpj: "", phone: "", email: "", address: "", creci: "" });
   const resetCorretorForm = () => setCorretorForm({ name: "", email: "", phone: "", creci: "", status: "Ativo" });
 
-  const handleSaveImob = () => {
+  const handleSaveImob = async () => {
     if (!imobForm.name.trim()) return toast.error("Nome da imobiliária é obrigatório");
+    const payload = {
+      name: imobForm.name.trim(),
+      email: imobForm.email.trim() || null,
+      phone: imobForm.phone.trim() || null,
+      creci: imobForm.creci.trim() || null,
+      document: imobForm.cnpj.trim() || null,
+      address: imobForm.address.trim() || null,
+      subscriber_type: "imobiliaria",
+      plan: "monthly",
+      status: "active",
+      updated_at: new Date().toISOString(),
+    };
+
     if (editingImob) {
-      setImobiliarias(prev => prev.map(i => i.id === editingImob.id ? { ...i, ...imobForm } : i));
+      const { error } = await supabase.from("subscribers").update(payload as any).eq("id", editingImob.id);
+      if (error) return toast.error("Não foi possível atualizar a imobiliária");
       toast.success("Imobiliária atualizada!");
       setEditingImob(null);
     } else {
-      const newImob: Imobiliaria = { id: Date.now().toString(), ...imobForm, corretores: [] };
-      setImobiliarias(prev => [...prev, newImob]);
+      const { error } = await supabase.from("subscribers").insert(payload as any);
+      if (error) return toast.error("Não foi possível cadastrar a imobiliária");
       toast.success("Imobiliária cadastrada!");
     }
+    await loadImobiliarias();
     resetImobForm();
     setActiveTab("lista");
   };
@@ -128,25 +190,41 @@ export default function Imobiliarias() {
     setActiveTab("imobiliaria");
   };
 
-  const handleDeleteImob = (id: string) => {
-    setImobiliarias(prev => prev.filter(i => i.id !== id));
+  const handleDeleteImob = async (id: string) => {
+    if (!confirm("Excluir esta imobiliária e seus corretores vinculados?")) return;
+    const { error } = await supabase.from("subscribers").delete().eq("id", id);
+    if (error) return toast.error("Não foi possível remover a imobiliária");
+    await loadImobiliarias();
     toast.success("Imobiliária removida!");
   };
 
-  const handleSaveCorretor = () => {
+  const handleSaveCorretor = async () => {
     if (!editingCorretor) return;
     if (!corretorForm.name.trim()) return toast.error("Nome do corretor é obrigatório");
     const imobId = editingCorretor.imobId;
+    const payload = {
+      subscriber_id: imobId,
+      name: corretorForm.name.trim(),
+      email: corretorForm.email.trim() || null,
+      phone: corretorForm.phone.trim() || null,
+      creci: corretorForm.creci.trim() || null,
+      status: corretorForm.status === "Ativo" ? "active" : "blocked",
+      member_role: "broker",
+    };
+
     if (editingCorretor.corretor) {
-      setImobiliarias(prev => prev.map(i => i.id === imobId ? {
-        ...i, corretores: i.corretores.map(c => c.id === editingCorretor.corretor!.id ? { ...c, ...corretorForm } : c)
-      } : i));
+      const { error } = await supabase
+        .from("subscriber_brokers")
+        .update(payload as any)
+        .eq("id", editingCorretor.corretor.id);
+      if (error) return toast.error("Não foi possível atualizar o corretor");
       toast.success("Corretor atualizado!");
     } else {
-      const newCorretor: Corretor = { id: Date.now().toString(), ...corretorForm };
-      setImobiliarias(prev => prev.map(i => i.id === imobId ? { ...i, corretores: [...i.corretores, newCorretor] } : i));
+      const { error } = await supabase.from("subscriber_brokers").insert(payload as any);
+      if (error) return toast.error("Não foi possível cadastrar o corretor");
       toast.success("Corretor cadastrado!");
     }
+    await loadImobiliarias();
     setEditingCorretor(null);
     resetCorretorForm();
     setActiveTab("lista");
@@ -164,8 +242,11 @@ export default function Imobiliarias() {
     setActiveTab("corretor");
   };
 
-  const handleDeleteCorretor = (imobId: string, corretorId: string) => {
-    setImobiliarias(prev => prev.map(i => i.id === imobId ? { ...i, corretores: i.corretores.filter(c => c.id !== corretorId) } : i));
+  const handleDeleteCorretor = async (_imobId: string, corretorId: string) => {
+    if (!confirm("Excluir este corretor da imobiliária?")) return;
+    const { error } = await supabase.from("subscriber_brokers").delete().eq("id", corretorId);
+    if (error) return toast.error("Não foi possível remover o corretor");
+    await loadImobiliarias();
     toast.success("Corretor removido!");
   };
 
@@ -233,7 +314,9 @@ export default function Imobiliarias() {
           {/* === LISTA === */}
           <TabsContent value="lista" className="space-y-3">
             {filteredImobiliarias.length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-12">Nenhuma imobiliária encontrada</p>
+              <p className="text-sm text-muted-foreground text-center py-12">
+                {loading ? "Carregando imobiliárias..." : "Nenhuma imobiliária encontrada"}
+              </p>
             )}
 
             <div className="grid grid-cols-1 gap-4">
