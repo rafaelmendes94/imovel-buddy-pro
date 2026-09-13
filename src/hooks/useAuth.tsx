@@ -6,13 +6,24 @@ type AppRole = "super_admin" | "admin_staff" | "broker" | "partner";
 
 type ActionPerms = { view: boolean; create: boolean; edit: boolean; delete: boolean };
 type StaffPermissions = Record<string, ActionPerms>;
+type ApprovalStatus = "pending" | "approved" | "rejected";
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
   roles: AppRole[];
-  profile: { id: string; full_name: string; email: string | null; phone: string | null; avatar_url: string | null; agency_id: string | null; account_type: string } | null;
+  profile: {
+    id: string;
+    full_name: string;
+    email: string | null;
+    phone: string | null;
+    avatar_url: string | null;
+    agency_id: string | null;
+    account_type: string;
+    approval_status?: ApprovalStatus;
+    rejection_reason?: string | null;
+  } | null;
   subscription: {
     id: string;
     plan_id: string;

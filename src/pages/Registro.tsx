@@ -61,7 +61,7 @@ export default function Registro() {
 
     toast({
       title: "Conta criada!",
-      description: "Agora escolha seu plano para começar.",
+      description: "Seu cadastro foi enviado para aprovação.",
     });
     navigate("/escolher-plano");
   };

@@ -1659,6 +1659,9 @@ export type Database = {
         Row: {
           account_type: string
           agency_id: string | null
+          approval_status: string
+          approved_at: string | null
+          approved_by: string | null
           avatar_url: string | null
           created_at: string
           email: string | null
@@ -1666,11 +1669,16 @@ export type Database = {
           id: string
           phone: string | null
           ratings_public: boolean
+          rejection_reason: string | null
+          terms_accepted_at: string | null
           user_id: string
         }
         Insert: {
           account_type?: string
           agency_id?: string | null
+          approval_status?: string
+          approved_at?: string | null
+          approved_by?: string | null
           avatar_url?: string | null
           created_at?: string
           email?: string | null
@@ -1678,11 +1686,16 @@ export type Database = {
           id?: string
           phone?: string | null
           ratings_public?: boolean
+          rejection_reason?: string | null
+          terms_accepted_at?: string | null
           user_id: string
         }
         Update: {
           account_type?: string
           agency_id?: string | null
+          approval_status?: string
+          approved_at?: string | null
+          approved_by?: string | null
           avatar_url?: string | null
           created_at?: string
           email?: string | null
@@ -1690,6 +1703,8 @@ export type Database = {
           id?: string
           phone?: string | null
           ratings_public?: boolean
+          rejection_reason?: string | null
+          terms_accepted_at?: string | null
           user_id?: string
         }
         Relationships: []
