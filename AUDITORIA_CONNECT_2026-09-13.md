@@ -171,3 +171,296 @@ Observação: em localhost o Google Maps pode logar erro de chave/domínio. No s
    - seleção explícita de colunas;
    - lazy loading;
    - miniaturas/capa em vez de imagens grandes na listagem.
+
+## Fase 3 - auditoria geral ampliada
+
+### Comandos executados
+
+- `npm run build`: passou.
+- `npm test`: passou, 15 testes em 4 arquivos.
+- `npm run lint`: falhou com 734 problemas.
+- `npm audit --audit-level=moderate`: falhou com 25 vulnerabilidades.
+- Teste Playwright sem login em rotas internas: todas as rotas testadas redirecionaram para `/login`.
+- Consulta anon Supabase: conferida leitura pública e retorno RLS em tabelas sensíveis.
+
+### Build e performance
+
+- Build de produção passou.
+- Bundle principal ficou grande:
+  - `dist/assets/index-rJ-QKAPh.js`: 3.898,90 kB, gzip 1.089,17 kB.
+- Chunks pesados:
+  - `pdf.worker.min`: 1.265,41 kB.
+  - `html2pdf.bundle.min`: 969,26 kB.
+  - `html2pdf`: 776,17 kB.
+  - `pdf`: 483,23 kB.
+- Há alerta de import duplicado do `jszip`: import dinâmico em `Properties.tsx`, mas import estático em `Condominiums.tsx`.
+- Impacto provável:
+  - carregamento inicial mais lento;
+  - navegação mobile mais pesada;
+  - telas de imóveis/mapa carregam dependências antes do necessário.
+
+### Qualidade de código
+
+- Lint falha com 734 problemas:
+  - muitos `any`;
+  - blocos `catch` vazios;
+  - hooks com dependências incompletas;
+  - `require()` no `tailwind.config.ts`;
+  - `@ts-ignore` onde deveria ser `@ts-expect-error`;
+  - `prefer-const`;
+  - warnings de Fast Refresh por arquivos exportando componente e constantes juntos.
+- Isso não quebra o build hoje, mas aumenta risco de bug silencioso.
+
+### Segurança de dependências
+
+`npm audit` retornou 25 vulnerabilidades:
+
+- 1 crítica.
+- 17 altas.
+- 5 moderadas.
+- 2 baixas.
+
+Pacotes relevantes citados:
+
+- `react-router-dom` / `@remix-run/router`: vulnerabilidades de XSS/open redirect.
+- `vite` / `esbuild`: risco no dev server.
+- `rollup`: path traversal/arbitrary file write.
+- `postcss`: XSS/arbitrary file read em cenários específicos.
+- `lodash`, `js-yaml`, `glob`, `minimatch`, `ws`, `nanoid`, `browserslist`.
+
+Recomendação: atualizar dependências em uma etapa própria, com build/teste completo depois, porque `npm audit fix` pode alterar bastante o lockfile.
+
+### Rotas internas sem login
+
+Rotas testadas sem sessão e resultado esperado confirmado:
+
+- `/dashboard`
+- `/imoveis`
+- `/cadastro-imovel`
+- `/edificios`
+- `/condominios`
+- `/fotos-cidade`
+- `/corretores`
+- `/cadastro-corretores`
+- `/relatorios`
+- `/configuracoes`
+- `/site-editor`
+- `/ranking`
+- `/avaliacoes`
+- `/financeiro`
+- `/tabelas`
+- `/contratos`
+- `/videomaker`
+- `/imobiliarias`
+- `/construtoras`
+- `/brick`
+- `/admin/clientes`
+- `/admin/planos`
+- `/admin/funcionarios`
+- `/admin/cargos`
+- `/admin/opcoes`
+- `/admin/ia`
+- `/admin/asaas`
+- `/admin/parceiros`
+- `/painel`
+- `/painel/assinatura`
+
+Todas redirecionaram para `/login`.
+
+### Permissões e papéis
+
+- Regra geral encontrada:
+  - Super Admin: acesso total.
+  - Admin Staff/Secretária: depende de `staff_permissions`.
+  - Corretor/imobiliária: depende do plano e dos módulos em `subscription.plan.modules`.
+- A proteção anônima está funcionando nas rotas internas.
+- Ainda falta teste autenticado por papel real:
+  - Super Admin;
+  - Secretária com permissões parciais;
+  - Corretor;
+  - Imobiliária/dono;
+  - membro da equipe da imobiliária.
+- Algumas rotas usam apenas `AuthGuard` e não têm trava fina por módulo. Isso precisa decisão:
+  - `/cadastro-corretores`
+  - `/construtoras`
+  - `/construtoras/:id`
+  - `/construtoras/:id/avaliacoes`
+  - `/brick`
+  - `/configuracoes`
+
+### Banco/RLS
+
+Consulta anon com chave pública:
+
+- Tabelas públicas que retornam dados:
+  - `public_broker_profiles`: 10 registros.
+  - `plans`: 15 registros.
+  - `site_config`: 5 registros.
+  - `partners`: 16 registros.
+  - `city_galleries`: 2 registros.
+- Tabelas sensíveis consultadas como anon retornaram 0 linhas, sem erro:
+  - `profiles`
+  - `subscriptions`
+  - `subscribers`
+  - `payments`
+  - `staff_permissions`
+  - `user_roles`
+  - `billing_customers`
+  - `subscription_payments`
+  - `financial_activity_logs`
+
+Observação: retornar 0 linhas por RLS é aceitável, mas precisa testar com usuários autenticados por papel para garantir que cada role enxerga só o que deve.
+
+### Risco em migrations/policies
+
+- O schema consolidado ainda mostra policies antigas como:
+  - `Admins manage payments`
+  - `Admins manage subscribers`
+  - `Admins manage subscriber_brokers`
+- As migrations novas criam policies mais finas com `has_staff_permission`, mas não removem necessariamente todos os nomes antigos dependendo do estado real do banco.
+- No banco real precisa confirmar `pg_policies` para:
+  - `payments`
+  - `subscribers`
+  - `subscriber_brokers`
+  - `financial_activity_logs`
+  - `subscriptions`
+  - `subscription_payments`
+- Se a policy antiga ampla ainda estiver ativa, Secretária/Admin Staff pode ter acesso mais amplo do que o desejado.
+
+### Cadastro, login e aprovação
+
+- Registro cria conta com metadata:
+  - `full_name`
+  - `phone`
+  - `account_type`
+- Trigger `handle_new_user` cria perfil com `approval_status = pending`.
+- `AuthGuard` bloqueia usuário não aprovado.
+- `Login` redireciona por papel/assinatura, mas quem estiver pendente acaba barrado pelo `AuthGuard` ao chegar no painel.
+- Melhoria recomendada:
+  - buscar `approval_status` já no login e mandar direto para uma tela clara de “aguardando aprovação”, evitando navegação intermediária.
+- Termos de uso ainda não aparecem no cadastro do Connect nesta auditoria. Se for regra também do Connect, precisa implementar checkbox e salvar `terms_accepted_at`.
+
+### Financeiro
+
+- `/financeiro` é a tela mais completa e usa o hook `useFinanceData`.
+- Usa dados de:
+  - `subscribers` legado;
+  - `payments` legado;
+  - `subscriber_brokers`;
+  - `plans`;
+  - `financial_activity_logs`;
+  - `subscriptions`;
+  - `subscription_payments`;
+  - `profiles`.
+- Possui:
+  - dashboard;
+  - filtros;
+  - cobrança por WhatsApp;
+  - pagamento rápido;
+  - pagamento manual;
+  - cortesia/isenção;
+  - histórico;
+  - membros;
+  - bloqueio/liberação;
+  - cancelamento;
+  - troca de plano e vencimento.
+- Risco encontrado:
+  - mistura modelo legado (`subscribers/payments`) com modelo real de assinatura (`subscriptions/subscription_payments`).
+  - alguns pagamentos sintéticos são gerados em tela quando não há cobrança real.
+  - isso é útil visualmente, mas pode confundir se o usuário entender como cobrança real emitida.
+- `AdminClientes` é uma tela antiga/simple. Ela também gerencia clientes/assinaturas, mas com menos regra que `/financeiro`.
+  - Recomendação: unificar fluxo no Financeiro/Gestão do Cliente e ocultar/descontinuar `AdminClientes`, ou transformar `AdminClientes` em atalho para o painel novo.
+
+### Asaas
+
+- `asaas-checkout`:
+  - lê chave em `system_settings`;
+  - cria customer;
+  - cria assinatura;
+  - atualiza/cria `subscriptions`;
+  - gera invoice URL.
+- `asaas-webhook`:
+  - tem token opcional `ASAAS_WEBHOOK_TOKEN`;
+  - processa `PAYMENT_CONFIRMED`, `PAYMENT_RECEIVED`, `PAYMENT_OVERDUE`, `PAYMENT_REFUNDED`, `PAYMENT_DELETED`;
+  - atualiza status e vencimento da assinatura.
+- Riscos/dívidas:
+  - `asaas_subscription_id` também é gravado em `mercado_pago_subscription_id`.
+  - `asaas_payment_id` também é gravado em `mercado_pago_payment_id`.
+  - Isso deve ser separado/removido para não contaminar relatórios.
+  - Sem chave real Asaas, só foi possível auditar código, não fluxo real de pagamento.
+
+### Telas reais no Supabase
+
+Pelo código, estas telas usam Supabase para CRUD ou leitura real:
+
+- Imóveis.
+- Cadastro/Edição de imóvel.
+- Edifícios.
+- Condomínios.
+- Empreendimentos.
+- Construtoras.
+- Corretores.
+- Fotos da cidade.
+- Tabelas.
+- Brick/Admin Brick.
+- Parceiros/Admin Parceiros.
+- Planos.
+- Funcionários.
+- Cargos/Funções.
+- Opções do sistema.
+- Configuração IA.
+- Asaas/Pagamentos.
+- Financeiro.
+- Site/configuração pública.
+
+### Telas com mock/estado local
+
+- `Imobiliarias.tsx`:
+  - usa `initialImobiliarias`.
+  - salvar, editar e excluir não persistem no banco.
+  - link público de corretor nessa tela usa slug por nome, podendo cair no problema antigo de duplicidade.
+
+- `VideoMaker.tsx`:
+  - usa `initialJobs`, `initialFinance`, `initialEvents`.
+  - kanban, financeiro e agenda não persistem no banco.
+
+### Público/site
+
+- Páginas públicas funcionaram nos testes.
+- `site_config` é público, incluindo campos de contato/configuração. Isso parece intencional para site público, mas deve evitar segredos nessa tabela.
+- Ainda existe fallback fixo de WhatsApp `5511999999999` no site principal.
+- Páginas públicas devem usar seleção explícita de colunas; algumas ainda usam `select("*")`.
+
+### Imóveis e mídia
+
+- Listagens e detalhes carregam imagens diretamente do array de URLs.
+- Há muitos imóveis ativos sem foto nos dados públicos.
+- Melhorias recomendadas:
+  - gerar thumbnail/capa;
+  - paginação menor;
+  - lazy loading agressivo;
+  - evitar carregar galerias completas na listagem;
+  - mover PDF/geração pesada para import dinâmico apenas quando o usuário clicar.
+
+### Mapa
+
+- Em localhost, mapa pode depender da restrição da chave Google.
+- A variável ainda se chama `VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY`.
+- Recomendação:
+  - renomear para `VITE_GOOGLE_MAPS_BROWSER_KEY`;
+  - manter fallback temporário para não quebrar deploy;
+  - validar domínios autorizados no Google Cloud.
+
+### Prioridade sugerida para ajustes
+
+1. Conferir policies reais no Supabase (`pg_policies`) e remover policies amplas antigas se ainda existirem.
+2. Resolver fluxo financeiro/Asaas:
+   - separar campos Asaas de Mercado Pago;
+   - confirmar webhook com token obrigatório;
+   - deixar cobrança sintética claramente visual.
+3. Transformar `Imobiliarias.tsx` em tela real ou remover/ocultar.
+4. Transformar `VideoMaker.tsx` em tela real ou remover/ocultar.
+5. Unificar `AdminClientes` com `/financeiro`.
+6. Otimizar bundle e carregamento de imagens/listagens.
+7. Atualizar dependências com vulnerabilidades e testar tudo.
+8. Reduzir dívida de lint em etapas.
