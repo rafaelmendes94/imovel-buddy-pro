@@ -69,29 +69,36 @@ export default function AdminClientes() {
     if (!newEmail || !newName || !newPassword || !selectedPlan) return;
     setCreating(true);
 
-    const { data, error } = await supabase.auth.signUp({
-      email: newEmail,
-      password: newPassword,
-      options: { data: { full_name: newName } },
+    const { data, error } = await supabase.functions.invoke("admin-create-broker", {
+      body: {
+        full_name: newName,
+        email: newEmail,
+        password: newPassword,
+        account_type: "corretor",
+        plan_id: selectedPlan,
+      },
     });
 
-    if (error) {
-      toast({ title: "Erro", description: error.message, variant: "destructive" });
+    if (error || data?.error) {
+      toast({ title: "Erro", description: data?.error || error?.message, variant: "destructive" });
       setCreating(false);
       return;
     }
 
-    if (data.user) {
-      const plan = plans.find(p => p.id === selectedPlan);
-      const now = new Date();
-      await supabase.from("subscriptions").insert({
-        user_id: data.user.id,
-        plan_id: selectedPlan,
-        status: asTrial ? "trial" : "active",
-        trial_ends_at: asTrial ? new Date(now.getTime() + (plan?.trial_days || 7) * 86400000).toISOString() : null,
-        current_period_start: now.toISOString(),
-        current_period_end: new Date(now.getTime() + 30 * 86400000).toISOString(),
-      } as any);
+    if (!asTrial && data?.user_id) {
+      const { data: subs } = await supabase
+        .from("subscriptions")
+        .select("id")
+        .eq("user_id", data.user_id)
+        .order("created_at", { ascending: false })
+        .limit(1);
+      const subId = subs?.[0]?.id;
+      if (subId) {
+        await supabase.from("subscriptions").update({
+          status: "active" as any,
+          trial_ends_at: null,
+        }).eq("id", subId);
+      }
     }
 
     toast({ title: "Cliente criado!" });

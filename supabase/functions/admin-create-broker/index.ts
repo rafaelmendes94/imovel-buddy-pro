@@ -68,12 +68,19 @@ Deno.serve(async (req) => {
 
     const newUserId = created.user.id;
 
-    // Update profile (handle_new_user trigger creates it; we just patch phone)
-    if (phone) {
-      await supabaseAdmin.from("profiles").update({ phone, full_name }).eq("user_id", newUserId);
-    } else {
-      await supabaseAdmin.from("profiles").update({ full_name }).eq("user_id", newUserId);
-    }
+    // Update profile (handle_new_user trigger creates it). Admin-created accounts
+    // must enter already approved, otherwise AuthGuard blocks the first login.
+    await supabaseAdmin
+      .from("profiles")
+      .update({
+        full_name,
+        phone: phone || null,
+        account_type: account_type || "corretor",
+        approval_status: "approved",
+        approved_at: new Date().toISOString(),
+        approved_by: callerId,
+      })
+      .eq("user_id", newUserId);
 
     // Create trial subscription with chosen plan
     if (plan_id) {

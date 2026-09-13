@@ -159,25 +159,19 @@ export default function AdminFuncionarios() {
 
     const finalFunction = newFunction === "Outro" ? newCustomFunction : newFunction;
 
-    const { data, error } = await supabase.auth.signUp({
-      email: newEmail,
-      password: newPassword,
-      options: { data: { full_name: newName } },
+    const { data, error } = await supabase.functions.invoke("admin-create-staff", {
+      body: {
+        full_name: newName,
+        email: newEmail,
+        password: newPassword,
+        function_title: finalFunction,
+      },
     });
 
-    if (error) {
-      toast({ title: "Erro", description: error.message, variant: "destructive" });
+    if (error || data?.error) {
+      toast({ title: "Erro", description: data?.error || error?.message, variant: "destructive" });
       setCreating(false);
       return;
-    }
-
-    if (data.user) {
-      await supabase.from("user_roles").update({ role: "admin_staff" as any }).eq("user_id", data.user.id);
-      await supabase.from("staff_permissions").insert({
-        user_id: data.user.id,
-        permissions: DEFAULT_PERMISSIONS,
-        function_title: finalFunction,
-      } as any);
     }
 
     toast({ title: "Funcionário criado!" });

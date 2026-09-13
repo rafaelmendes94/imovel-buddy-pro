@@ -56,6 +56,44 @@ const loadSettings = async (supabase: any, keys: string[]) => {
   return map;
 };
 
+const DEFAULT_STAFF_PERMISSIONS = {
+  dashboard_admin: { view: false, create: false, edit: false, delete: false },
+  funcionarios: { view: false, create: false, edit: false, delete: false },
+  clientes: { view: false, create: false, edit: false, delete: false },
+  planos: { view: false, create: false, edit: false, delete: false },
+  dashboard: { view: false, create: false, edit: false, delete: false },
+  relatorios: { view: false, create: false, edit: false, delete: false },
+  site_editor: { view: false, create: false, edit: false, delete: false },
+  imoveis: { view: false, create: false, edit: false, delete: false },
+  edificios: { view: false, create: false, edit: false, delete: false },
+  condominios: { view: false, create: false, edit: false, delete: false },
+  fotos_cidade: { view: false, create: false, edit: false, delete: false },
+  avaliacoes: { view: false, create: false, edit: false, delete: false },
+  financeiro: { view: false, create: false, edit: false, delete: false },
+  tabelas: { view: false, create: false, edit: false, delete: false },
+  contratos: { view: false, create: false, edit: false, delete: false },
+  material_extra: { view: false, create: false, edit: false, delete: false },
+  corretores: { view: false, create: false, edit: false, delete: false },
+  imobiliarias: { view: false, create: false, edit: false, delete: false },
+  configuracoes: { view: false, create: false, edit: false, delete: false },
+};
+
+async function requireSuperAdmin(req: Request, supabaseUrl: string, anonKey: string) {
+  const callerId = await authedUserId(req, supabaseUrl, anonKey);
+  if (!callerId) return { error: json({ error: "Unauthorized" }, 401) };
+
+  const supabaseAdmin = createClient(supabaseUrl, getServiceKey());
+  const { data: roleData } = await supabaseAdmin
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", callerId)
+    .eq("role", "super_admin")
+    .maybeSingle();
+
+  if (!roleData) return { error: json({ error: "Apenas super admin pode executar esta ação" }, 403) };
+  return { callerId, supabaseAdmin };
+}
+
 async function recordAsaasPayment(supabase: any, payload: {
   subscription_id: string;
   amount: number;
@@ -381,17 +419,9 @@ async function asaasWebhook(req: Request) {
 async function adminCreateBroker(req: Request) {
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-  const callerId = await authedUserId(req, supabaseUrl, anonKey);
-  if (!callerId) return json({ error: "Unauthorized" }, 401);
-
-  const supabaseAdmin = createClient(supabaseUrl, getServiceKey());
-  const { data: roleData } = await supabaseAdmin
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", callerId)
-    .eq("role", "super_admin")
-    .maybeSingle();
-  if (!roleData) return json({ error: "Apenas super admin pode cadastrar corretores" }, 403);
+  const auth = await requireSuperAdmin(req, supabaseUrl, anonKey);
+  if (auth.error) return auth.error;
+  const { callerId, supabaseAdmin } = auth;
 
   const { full_name, email, password, phone, account_type, plan_id } = await req.json();
   if (!full_name || !email || !password || password.length < 6) {
@@ -410,11 +440,17 @@ async function adminCreateBroker(req: Request) {
     return json({ error: createErr?.message || "Erro ao criar usuário" }, 400);
   }
 
-  if (phone) {
-    await supabaseAdmin.from("profiles").update({ phone, full_name }).eq("user_id", created.user.id);
-  } else {
-    await supabaseAdmin.from("profiles").update({ full_name }).eq("user_id", created.user.id);
-  }
+  await supabaseAdmin
+    .from("profiles")
+    .update({
+      full_name,
+      phone: phone || null,
+      account_type: account_type || "corretor",
+      approval_status: "approved",
+      approved_at: new Date().toISOString(),
+      approved_by: callerId,
+    })
+    .eq("user_id", created.user.id);
 
   if (plan_id) {
     const { error: subErr } = await supabaseAdmin.rpc("create_trial_subscription", {
@@ -423,6 +459,52 @@ async function adminCreateBroker(req: Request) {
     });
     if (subErr) return json({ success: true, user_id: created.user.id, warning: `Conta criada, mas plano não vinculado: ${subErr.message}` });
   }
+
+  return json({ success: true, user_id: created.user.id });
+}
+
+async function adminCreateStaff(req: Request) {
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+  const auth = await requireSuperAdmin(req, supabaseUrl, anonKey);
+  if (auth.error) return auth.error;
+  const { callerId, supabaseAdmin } = auth;
+
+  const { full_name, email, password, function_title } = await req.json();
+  if (!full_name || !email || !password || password.length < 6) {
+    return json({ error: "Nome, email e senha (mín. 6 caracteres) são obrigatórios" }, 400);
+  }
+
+  const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+    user_metadata: { full_name, account_type: "admin_staff" },
+  });
+  if (createErr || !created.user) {
+    const msg = (createErr?.message || "").toLowerCase();
+    if (msg.includes("already")) return json({ error: "Este e-mail já possui uma conta no sistema." }, 409);
+    return json({ error: createErr?.message || "Erro ao criar usuário" }, 400);
+  }
+
+  await supabaseAdmin
+    .from("profiles")
+    .update({
+      full_name,
+      account_type: "admin_staff",
+      approval_status: "approved",
+      approved_at: new Date().toISOString(),
+      approved_by: callerId,
+    })
+    .eq("user_id", created.user.id);
+
+  await supabaseAdmin.from("user_roles").delete().eq("user_id", created.user.id);
+  await supabaseAdmin.from("user_roles").insert({ user_id: created.user.id, role: "admin_staff" });
+  await supabaseAdmin.from("staff_permissions").insert({
+    user_id: created.user.id,
+    permissions: DEFAULT_STAFF_PERMISSIONS,
+    function_title: function_title || null,
+  });
 
   return json({ success: true, user_id: created.user.id });
 }
@@ -461,6 +543,7 @@ serve(async (req: Request) => {
     if (fn === "asaas-test") return await asaasTest(req);
     if (fn === "asaas-webhook") return await asaasWebhook(req);
     if (fn === "admin-create-broker") return await adminCreateBroker(req);
+    if (fn === "admin-create-staff") return await adminCreateStaff(req);
     if (fn === "reset-password") return await resetPassword(req);
     if (fn === "property-feed") return await propertyFeed(req);
     if (fn === "generate-description") return await generateDescription(req);
