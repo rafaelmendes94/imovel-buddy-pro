@@ -15,5 +15,3 @@ npm run dev
 npm test
 npm run build
 ```
-
-TODO: Document your project here
