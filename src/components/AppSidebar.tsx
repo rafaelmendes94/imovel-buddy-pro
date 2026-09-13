@@ -71,9 +71,9 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
 
   const isAdmin = isSuperAdmin || isAdminStaff;
   const enabledModules: string[] = subscription?.plan?.modules || [];
-  const brokerSlug = profile?.full_name ? toSlug(profile.full_name) : "";
-  const showMyPage = isBroker && !isAdmin && !!brokerSlug;
-  const myPageUrl = brokerSlug ? `${window.location.origin}/corretor/${brokerSlug}` : "";
+  const brokerPageKey = profile?.user_id || (profile?.full_name ? toSlug(profile.full_name) : "");
+  const showMyPage = isBroker && !isAdmin && !!brokerPageKey;
+  const myPageUrl = brokerPageKey ? `${window.location.origin}/corretor/${brokerPageKey}` : "";
 
   const copyMyPageLink = async () => {
     try {
@@ -315,7 +315,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
         {showMyPage && (
           <div className="mb-1 rounded-lg bg-sidebar-accent/40 border border-sidebar-border p-2 space-y-1">
             <Link
-              to={`/corretor/${brokerSlug}`}
+              to={`/corretor/${brokerPageKey}`}
               onClick={onNavigate}
               target="_blank"
               rel="noopener noreferrer"

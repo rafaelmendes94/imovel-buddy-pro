@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 
 interface BrokerData {
   id: string;
+  user_id?: string;
   name: string;
   email: string | null;
   phone: string | null;
@@ -53,7 +54,7 @@ export default function Brokers() {
   const [search, setSearch] = useState("");
   const [brokers, setBrokers] = useState<BrokerData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [appearanceFor, setAppearanceFor] = useState<{ slug: string; name: string } | null>(null);
+  const [appearanceFor, setAppearanceFor] = useState<{ ownerId: string; name: string } | null>(null);
 
   const [agencyBrokers, setAgencyBrokers] = useState<any[]>([]);
   const [inviteOpen, setInviteOpen] = useState(false);
@@ -138,6 +139,7 @@ export default function Brokers() {
         const agg = uid ? ratingAgg[uid] : undefined;
         return {
           ...b,
+          user_id: uid,
           imoveis_count: brokerStats[b.name]?.count || 0,
           vgv: brokerStats[b.name]?.vgv || 0,
           rating: agg && agg.n > 0 ? agg.sum / agg.n : 0,
@@ -412,14 +414,14 @@ export default function Brokers() {
 
                 <div className="grid grid-cols-2 gap-2">
                   <button
-                    onClick={() => setAppearanceFor({ slug: toSlug(broker.name), name: broker.name })}
+                    onClick={() => setAppearanceFor({ ownerId: broker.user_id || toSlug(broker.name), name: broker.name })}
                     className="flex items-center justify-center gap-1.5 py-2 rounded-lg bg-accent/10 text-accent text-xs font-semibold hover:bg-accent/20 transition-colors"
                   >
                     <Palette className="w-3.5 h-3.5" />
                     Aparência
                   </button>
                   <Link
-                    to={`/corretor/${toSlug(broker.name)}`}
+                    to={`/corretor/${broker.user_id || toSlug(broker.name)}`}
                     target="_blank"
                     className="flex items-center justify-center gap-1.5 py-2 rounded-lg bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/20 transition-colors"
                   >
@@ -438,7 +440,7 @@ export default function Brokers() {
           open={!!appearanceFor}
           onOpenChange={(open) => !open && setAppearanceFor(null)}
           configType="broker_page"
-          ownerId={appearanceFor.slug}
+          ownerId={appearanceFor.ownerId}
           showProfilePhoto
           title={`Aparência da página de ${appearanceFor.name}`}
         />

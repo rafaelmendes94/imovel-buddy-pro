@@ -346,6 +346,7 @@ export default function ImovelPublico() {
     ["Banheiros", String(imovel.banheiros)],
     ...(imovel.lavabo ? [["Lavabo", String(imovel.lavabo)] as [string, string]] : []),
     ["Vagas", String(imovel.vagas)],
+    ...(imovel.elevadores ? [["Elevadores", String(imovel.elevadores)] as [string, string]] : []),
     ...(imovel.padrao ? [["Padrão", imovel.padrao] as [string, string]] : []),
     ...(imovel.condicao ? [["Condição", imovel.condicao] as [string, string]] : []),
     ...(imovel.vista ? [["Vista", imovel.vista] as [string, string]] : []),

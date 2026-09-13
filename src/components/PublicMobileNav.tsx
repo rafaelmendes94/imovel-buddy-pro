@@ -27,13 +27,13 @@ export function PublicMobileNav() {
       }
       const { data: profile } = await (supabase as any)
         .from("public_broker_profiles")
-        .select("full_name")
+        .select("user_id, full_name")
         .eq("user_id", user.id)
         .maybeSingle();
       if (cancelled) return;
       const name = profile?.full_name || user.user_metadata?.full_name || user.email;
-      if (name) {
-        setMyBrokerPath(`/corretor/${toSlug(String(name))}`);
+      if (profile?.user_id || name) {
+        setMyBrokerPath(`/corretor/${profile?.user_id || toSlug(String(name))}`);
       } else {
         setMyBrokerPath("/parceiros");
       }

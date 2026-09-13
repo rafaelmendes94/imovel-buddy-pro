@@ -75,6 +75,7 @@ interface SiteProperty {
   bathrooms: number;
   parking: number;
   broker: string;
+  brokerId?: string;
   image: string;
   images: string[];
   createdAt: string;
@@ -100,7 +101,7 @@ interface SiteProperty {
   caracteristicas?: string[];
 }
 // Broker info map (populated from DB)
-const brokerInfo: Record<string, { photo: string; whatsapp: string }> = {};
+const brokerInfo: Record<string, { photo: string; whatsapp: string; userId?: string }> = {};
 
 const normalizePhone = (value?: string | null) => (value || "").replace(/\D/g, "");
 const getBrokerAvatar = (name: string) =>
@@ -299,7 +300,7 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, 
 
         {/* Broker + WhatsApp */}
         <div className="flex items-center justify-between gap-2 pt-2 border-t border-border mt-auto">
-          <Link to={`/corretor/${toSlug(property.broker)}`} className="flex items-center gap-2 hover:opacity-80 transition-opacity min-w-0 flex-1">
+          <Link to={`/corretor/${property.brokerId || toSlug(property.broker)}`} className="flex items-center gap-2 hover:opacity-80 transition-opacity min-w-0 flex-1">
             <img
               src={broker.photo}
               alt={property.broker}
@@ -827,20 +828,21 @@ export default function Site() {
         brokerInfo[broker.name] = {
           photo: brokerInfo[broker.name]?.photo || getBrokerAvatar(broker.name),
           whatsapp: normalizePhone(broker.phone) || brokerInfo[broker.name]?.whatsapp || "",
+          userId: brokerInfo[broker.name]?.userId,
         };
       });
 
       // Carrega profiles dos donos dos imóveis (fallback quando não há corretor_nome)
       const ownerIds = Array.from(new Set((data || []).map((r: any) => r.user_id).filter(Boolean)));
-      const profilesById: Record<string, { full_name: string; phone: string | null; avatar_url: string | null }> = {};
-      const profilesByName: Record<string, { full_name: string; phone: string | null; avatar_url: string | null }> = {};
+      const profilesById: Record<string, { user_id: string; full_name: string; phone: string | null; avatar_url: string | null }> = {};
+      const profilesByName: Record<string, { user_id: string; full_name: string; phone: string | null; avatar_url: string | null }> = {};
       if (ownerIds.length) {
         const { data: profs } = await (supabase as any)
           .from("public_broker_profiles")
           .select("user_id, full_name, phone, avatar_url")
           .in("user_id", ownerIds);
         (profs || []).forEach((p: any) => {
-          profilesById[p.user_id] = { full_name: p.full_name || "", phone: p.phone, avatar_url: p.avatar_url };
+          profilesById[p.user_id] = { user_id: p.user_id, full_name: p.full_name || "", phone: p.phone, avatar_url: p.avatar_url };
           if (p.full_name) profilesByName[p.full_name.trim().toLowerCase()] = profilesById[p.user_id];
         });
       }
@@ -856,6 +858,7 @@ export default function Site() {
             brokerInfo[brokerName] = {
               photo: brokerProfile?.avatar_url || brokerInfo[brokerName]?.photo || getBrokerAvatar(brokerName),
               whatsapp: normalizePhone(brokerProfile?.phone || "") || brokerInfo[brokerName]?.whatsapp || "",
+              userId: brokerProfile?.user_id || brokerInfo[brokerName]?.userId || (row as any).user_id,
             };
           }
 
@@ -872,6 +875,7 @@ export default function Site() {
             bathrooms: row.banheiros,
             parking: row.vagas,
             broker: brokerName,
+            brokerId: brokerProfile?.user_id || (row as any).user_id || undefined,
             image: row.imagens?.[0] || PLACEHOLDER_IMAGE,
             images: row.imagens || [],
             createdAt: row.created_at,
@@ -1075,7 +1079,7 @@ export default function Site() {
                     {profile?.full_name && (
                       <>
                         <a
-                          href={`/corretor/${toSlug(profile.full_name)}`}
+                          href={`/corretor/${profile.user_id || toSlug(profile.full_name)}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={() => setUserMenuOpen(false)}
@@ -1085,7 +1089,7 @@ export default function Site() {
                         </a>
                         <button
                           onClick={async () => {
-                            const url = `${window.location.origin}/corretor/${toSlug(profile.full_name)}`;
+                            const url = `${window.location.origin}/corretor/${profile.user_id || toSlug(profile.full_name)}`;
                             try {
                               await navigator.clipboard.writeText(url);
                               toast.success("Link copiado! Compartilhe com seus clientes.");
@@ -1491,7 +1495,7 @@ export default function Site() {
               <div className="space-y-3">
                 {displayRanking.map((broker, i) => {
                   const MedalIcon = medalIcons[i] || Star;
-                  const slug = toSlug(broker.name);
+                  const slug = brokerInfo[broker.name]?.userId || toSlug(broker.name);
                   return (
                     <Link
                       key={broker.name}

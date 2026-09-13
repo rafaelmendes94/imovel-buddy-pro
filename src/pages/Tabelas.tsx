@@ -32,20 +32,22 @@ export default function Tabelas() {
   const [viewerOpen, setViewerOpen] = useState(false);
 
   const slug = profile?.full_name ? toSlug(profile.full_name) : "";
+  const ownerKey = user?.id || slug;
   const brokerName = profile?.full_name || "Corretor";
-  const publicUrl = slug ? `${window.location.origin}/corretor/${slug}` : "";
+  const publicUrl = ownerKey ? `${window.location.origin}/corretor/${ownerKey}` : "";
 
   const fetchTabela = async () => {
-    if (!slug) { setLoading(false); return; }
+    if (!ownerKey) { setLoading(false); return; }
     setLoading(true);
     const { data } = await (supabase.from("site_config") as any)
       .select("id, tabela_url")
       .eq("config_type", "broker_page")
-      .eq("owner_id", slug)
-      .maybeSingle();
-    if (data) {
-      setConfigId(data.id);
-      setTabelaUrl(data.tabela_url || null);
+      .in("owner_id", Array.from(new Set([ownerKey, slug].filter(Boolean))))
+      .limit(1);
+    const row = Array.isArray(data) ? data[0] : null;
+    if (row) {
+      setConfigId(row.id);
+      setTabelaUrl(row.tabela_url || null);
     } else {
       setConfigId(null);
       setTabelaUrl(null);
@@ -56,7 +58,7 @@ export default function Tabelas() {
   useEffect(() => {
     fetchTabela();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug]);
+  }, [ownerKey, slug]);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -66,13 +68,13 @@ export default function Tabelas() {
       e.target.value = "";
       return;
     }
-    if (!slug || !user) {
+    if (!ownerKey || !user) {
       toast.error("Perfil incompleto. Configure seu nome em Configurações.");
       return;
     }
     setUploading(true);
     try {
-      const path = `brokers/${slug}/tabela-${Date.now()}.pdf`;
+      const path = `brokers/${ownerKey}/tabela-${Date.now()}.pdf`;
       const { error: upErr } = await supabase.storage
         .from("tabelas")
         .upload(path, file, { upsert: true, contentType: "application/pdf" });
@@ -89,7 +91,7 @@ export default function Tabelas() {
         const { data, error } = await (supabase.from("site_config") as any)
           .insert({
             config_type: "broker_page",
-            owner_id: slug,
+            owner_id: ownerKey,
             tabela_url: url,
             site_title: brokerName,
           })

@@ -1180,7 +1180,7 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
           <div className="flex items-center justify-between p-4 bg-muted/40 rounded-xl border border-border">
             {broker ? (
               <Link
-                to={`/corretor/${toSlug(property.broker)}`}
+                to={`/corretor/${property.userId || toSlug(property.broker)}`}
                 className="flex items-center gap-3 hover:opacity-80 transition-opacity"
                 onClick={onClose}
               >

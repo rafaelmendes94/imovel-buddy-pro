@@ -69,6 +69,7 @@ interface BrokerRecord {
 }
 
 interface BrokerPageConfig {
+  owner_id?: string | null;
   site_title: string;
   slogan: string;
   cover_photo_url: string | null;
@@ -376,7 +377,7 @@ export default function BrokerSite() {
       const { data: { session } } = await supabase.auth.getSession();
       const uid = session?.user?.id || null;
 
-      const [{ data: brokersData }, { data: propertiesData }, { data: pageConfig }, { data: profilesData }] = await Promise.all([
+      const [{ data: brokersData }, { data: propertiesData }, { data: profilesData }] = await Promise.all([
         supabase
           .from("subscriber_brokers")
           .select("name, phone, creci, email")
@@ -384,17 +385,22 @@ export default function BrokerSite() {
         supabase
           .from("imoveis")
           .select("id, user_id, titulo, endereco, cidade, tipo, status, preco, area, quartos, banheiros, vagas, comissao, imagens, vista_mar, decorado, aceita_permuta, condicoes_pagamento, empreendimento, unidade, box, quadra, lote, bairro, corretor_nome, created_at, data_venda, termo_exclusividade_url, link_material, drive_fotos_url, fotos_pdf_url, ativo_site"),
-        supabase
-          .from("site_config")
-          .select("site_title, slogan, cover_photo_url, profile_photo_url, logo_url, whatsapp, footer_text, email_contact, bio, tabela_url, accent_color")
-          .eq("config_type", "broker_page")
-          .eq("owner_id", slug)
-          .maybeSingle(),
         (supabase as any).from("public_broker_profiles").select("user_id, full_name, phone, avatar_url"),
       ]);
 
       const matchedBroker = ((brokersData as BrokerRecord[] | null) || []).find((broker) => toSlug(broker.name) === slug) || null;
-      const matchedProfile = ((profilesData as any[]) || []).find((p) => p.full_name && toSlug(p.full_name) === slug) || null;
+      const matchedProfile = ((profilesData as any[]) || []).find((p) => p.user_id === slug || (p.full_name && toSlug(p.full_name) === slug)) || null;
+      const legacySlug = matchedProfile?.full_name ? toSlug(matchedProfile.full_name) : slug;
+      const ownerKeys = Array.from(new Set([matchedProfile?.user_id, legacySlug, slug].filter(Boolean)));
+      const { data: pageConfigs } = await supabase
+        .from("site_config")
+        .select("owner_id, site_title, slogan, cover_photo_url, profile_photo_url, logo_url, whatsapp, footer_text, email_contact, bio, tabela_url, accent_color")
+        .eq("config_type", "broker_page")
+        .in("owner_id", ownerKeys);
+      const pageConfig = ((pageConfigs as BrokerPageConfig[] | null) || [])
+        .find((config) => config.owner_id === matchedProfile?.user_id) ||
+        ((pageConfigs as BrokerPageConfig[] | null) || [])[0] ||
+        null;
 
       const matchedProperties = ((propertiesData as DBProperty[] | null) || [])
         .filter((property) => {
@@ -483,13 +489,13 @@ export default function BrokerSite() {
     (async () => {
       const { data } = await (supabase as any)
         .from("broker_ratings")
-        .select("pontualidade, agilidade, transparencia, credibilidade, negociacao")
+        .select("pontualidade, agilidade, conhecimento_mercado, atendimento, negociacao")
         .eq("broker_id", brokerId);
       const rows = (data as any[]) || [];
       setRatingsCount(rows.length);
       if (!rows.length) { setAvgRating(null); return; }
       const total = rows.reduce((s, r) =>
-        s + ((r.pontualidade + r.agilidade + r.transparencia + r.credibilidade + r.negociacao) / 5), 0);
+        s + ((r.pontualidade + r.agilidade + r.conhecimento_mercado + r.atendimento + r.negociacao) / 5), 0);
       setAvgRating(Number((total / rows.length).toFixed(1)));
     })();
   }, [brokerId]);
@@ -572,7 +578,8 @@ export default function BrokerSite() {
 
   const handleUploadTabela = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file || !slug || !currentUserId) return;
+    const configOwnerId = manageOwnerId || slug;
+    if (!file || !configOwnerId || !currentUserId) return;
     try {
       setUploading(true);
       const ext = file.name.split(".").pop() || "pdf";
@@ -586,13 +593,14 @@ export default function BrokerSite() {
         .from("site_config")
         .select("id")
         .eq("config_type", "broker_page")
-        .eq("owner_id", slug)
-        .maybeSingle();
+        .in("owner_id", Array.from(new Set([configOwnerId, slug].filter(Boolean))))
+        .limit(1);
+      const existingRow = Array.isArray(existing) ? existing[0] : null;
 
-      if (existing?.id) {
-        await (supabase.from("site_config") as any).update({ tabela_url: url }).eq("id", existing.id);
+      if (existingRow?.id) {
+        await (supabase.from("site_config") as any).update({ tabela_url: url, owner_id: configOwnerId }).eq("id", existingRow.id);
       } else {
-        await (supabase.from("site_config") as any).insert({ config_type: "broker_page", owner_id: slug, tabela_url: url, site_title: brokerName });
+        await (supabase.from("site_config") as any).insert({ config_type: "broker_page", owner_id: configOwnerId, tabela_url: url, site_title: brokerName });
       }
       setConfig((prev) => prev ? { ...prev, tabela_url: url } : { site_title: brokerName, slogan: "", cover_photo_url: null, profile_photo_url: null, logo_url: null, whatsapp: null, footer_text: null, email_contact: null, bio: null, tabela_url: url, accent_color: null });
       toast.success("Tabela completa enviada!");

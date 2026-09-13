@@ -28,6 +28,7 @@ interface SiteProperty {
   bathrooms: number;
   parking: number;
   broker: string;
+  brokerId?: string;
   brokerPhoto?: string;
   brokerWhatsapp?: string;
   image: string;
@@ -212,7 +213,7 @@ function PropertyCard({ property, onSelect, isFavorited, onToggleFavorite, isInR
 
         {/* Broker + WhatsApp */}
         <div className="flex items-center justify-between gap-2 pt-2 border-t border-border mt-auto">
-          <Link to={`/corretor/${toSlug(property.broker)}`} className="flex items-center gap-2 hover:opacity-80 transition-opacity min-w-0 flex-1" onClick={(e) => e.stopPropagation()}>
+          <Link to={`/corretor/${property.brokerId || toSlug(property.broker)}`} className="flex items-center gap-2 hover:opacity-80 transition-opacity min-w-0 flex-1" onClick={(e) => e.stopPropagation()}>
             <img
               src={brokerPhoto}
               alt={property.broker}
@@ -276,15 +277,15 @@ export default function AllProperties() {
 
       if (!error && data) {
         const ownerIds = Array.from(new Set(data.map((r: any) => r.user_id).filter(Boolean)));
-        const profilesById: Record<string, { full_name: string; phone: string | null; avatar_url: string | null }> = {};
-        const profilesByName: Record<string, { full_name: string; phone: string | null; avatar_url: string | null }> = {};
+        const profilesById: Record<string, { user_id: string; full_name: string; phone: string | null; avatar_url: string | null }> = {};
+        const profilesByName: Record<string, { user_id: string; full_name: string; phone: string | null; avatar_url: string | null }> = {};
         if (ownerIds.length) {
           const { data: profs } = await (supabase as any)
             .from('public_broker_profiles')
             .select('user_id, full_name, phone, avatar_url')
             .in('user_id', ownerIds);
           (profs || []).forEach((p: any) => {
-            profilesById[p.user_id] = { full_name: p.full_name || '', phone: p.phone, avatar_url: p.avatar_url };
+            profilesById[p.user_id] = { user_id: p.user_id, full_name: p.full_name || '', phone: p.phone, avatar_url: p.avatar_url };
             if (p.full_name) profilesByName[p.full_name.trim().toLowerCase()] = profilesById[p.user_id];
           });
         }
@@ -309,6 +310,7 @@ export default function AllProperties() {
               bathrooms: row.banheiros,
               parking: row.vagas,
               broker: brokerName,
+              brokerId: brokerProfile?.user_id || (row as any).user_id || undefined,
               brokerPhoto: brokerProfile?.avatar_url || undefined,
               brokerWhatsapp: normalizePhone(brokerProfile?.phone || ''),
               image: row.imagens?.[0] || PLACEHOLDER_IMAGE,
