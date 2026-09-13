@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { BackButton } from "@/components/BackButton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -21,6 +21,7 @@ import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths,
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { supabase } from "@/integrations/supabase/client";
 
 // Material types & client types
 const materialTypes = [
@@ -111,36 +112,15 @@ const eventTypeConfig: Record<AgendaEvent["type"], { label: string; color: strin
   outro: { label: "Outro", color: "bg-muted-foreground", bg: "bg-muted/30 border-border text-muted-foreground" },
 };
 
-// Initial mock data
-const initialJobs: VideoJob[] = [
-  { id: "1", property: "Cobertura Duplex - Ed. Marina", client: "Construtora Alpha", address: "Av. Beira Mar, 1200", value: 1500, materialType: "vr", clientType: "construtor", status: "gravar", dueDate: "2026-04-02", notes: "Drone + interna", createdAt: "2026-03-25" },
-  { id: "2", property: "Apto 3Q - Cond. Jardins", client: "Imobiliária Beta", address: "Rua das Flores, 300", value: 800, materialType: "vc", clientType: "assinante", status: "gravado", dueDate: "2026-03-30", notes: "Já gravado, aguardando edição", createdAt: "2026-03-20" },
-  { id: "3", property: "Sala Comercial - Tower One", client: "JB Imóveis", address: "Av. Central, 500", value: 600, materialType: "vr360", clientType: "mv_broker", status: "editando", dueDate: "2026-03-28", notes: "Edição com tour virtual", createdAt: "2026-03-18" },
-  { id: "4", property: "Casa 4Q - Cond. Alphaville", client: "RE/MAX", address: "Alameda dos Ipês, 45", value: 2000, materialType: "vc360", clientType: "particular", status: "entregue", dueDate: "2026-03-26", notes: "Entregue via Google Drive", createdAt: "2026-03-10" },
-  { id: "5", property: "Loft Studio - Ed. Art Déco", client: "Exclusiva Imóveis", address: "Rua Augusta, 890", value: 500, materialType: "vcdn", clientType: "assinante", status: "enviado", dueDate: "2026-03-22", notes: "", createdAt: "2026-03-05" },
-];
-
-const initialFinance: FinanceEntry[] = [
-  { id: "1", property: "Cobertura Duplex - Ed. Marina", client: "Construtora Alpha", materialType: "vr", clientType: "construtor", clientValue: 1500, editorCost: 400, status: "pendente", dueDate: "2026-04-05" },
-  { id: "2", property: "Apto 3Q - Cond. Jardins", client: "Imobiliária Beta", materialType: "vc", clientType: "assinante", clientValue: 800, editorCost: 250, status: "pendente", dueDate: "2026-04-01" },
-  { id: "3", property: "Sala Comercial - Tower One", client: "JB Imóveis", materialType: "vr360", clientType: "mv_broker", clientValue: 600, editorCost: 200, status: "pago", dueDate: "2026-03-28", paidAt: "2026-03-27" },
-  { id: "4", property: "Casa 4Q - Cond. Alphaville", client: "RE/MAX", materialType: "vc360", clientType: "particular", clientValue: 2000, editorCost: 600, status: "pago", dueDate: "2026-03-20", paidAt: "2026-03-19" },
-  { id: "5", property: "Loft Studio - Ed. Art Déco", client: "Exclusiva Imóveis", materialType: "vcdn", clientType: "assinante", clientValue: 500, editorCost: 150, status: "pago", dueDate: "2026-03-15", paidAt: "2026-03-14" },
-  { id: "6", property: "Penthouse Ed. Atlântico", client: "Premium Imóveis", materialType: "vr", clientType: "construtor", clientValue: 2500, editorCost: 700, status: "pago", dueDate: "2026-02-20", paidAt: "2026-02-19" },
-  { id: "7", property: "Casa Praia - Cond. Royal", client: "Royal Imóveis", materialType: "vc", clientType: "particular", clientValue: 1800, editorCost: 500, status: "pago", dueDate: "2026-02-10", paidAt: "2026-02-09" },
-  { id: "8", property: "Apt 2Q - Ed. Solar", client: "Solar Imóveis", materialType: "vr360", clientType: "assinante", clientValue: 700, editorCost: 200, status: "pago", dueDate: "2026-01-25", paidAt: "2026-01-24" },
-  { id: "9", property: "Sala Comercial Centro", client: "JB Imóveis", materialType: "vcdn", clientType: "mv_broker", clientValue: 550, editorCost: 180, status: "pago", dueDate: "2026-01-15", paidAt: "2026-01-14" },
-];
-
-const initialEvents: AgendaEvent[] = [
-  { id: "1", title: "Gravar Cobertura Ed. Marina", date: "2026-04-02", time: "09:00", endTime: "11:00", type: "gravacao", notes: "Levar drone e gimbal", location: "Av. Beira Mar, 1200", jobId: "1" },
-  { id: "2", title: "Entrega vídeo Tower One", date: "2026-03-28", time: "14:00", endTime: "15:00", type: "entrega", notes: "Enviar link do drive", location: "" },
-  { id: "3", title: "Reunião com Construtora Alpha", date: "2026-03-29", time: "10:00", endTime: "11:30", type: "reuniao", notes: "Discutir pacote de 5 imóveis", location: "Escritório" },
-  { id: "4", title: "Gravar Apto Jardim Europa", date: "2026-03-27", time: "08:00", endTime: "10:00", type: "gravacao", notes: "Tour virtual 360", location: "Rua Europa, 450" },
-  { id: "5", title: "Editar vídeo Loft Studio", date: "2026-03-27", time: "14:00", endTime: "18:00", type: "outro", notes: "Finalizar color grading", location: "Estúdio" },
-];
-
 const fmtBRL = (v: number) => `R$ ${v.toLocaleString("pt-BR")}`;
+
+type MaterialRecordType = "job" | "finance" | "event";
+type MaterialRecordRow = {
+  id: string;
+  record_type: MaterialRecordType;
+  data: Record<string, any>;
+  created_at: string;
+};
 
 function InlineEdit({ value, onSave, type = "text", className = "", formatDisplay }: { value: string | number; onSave: (v: string) => void; type?: string; className?: string; formatDisplay?: (v: string | number) => string }) {
   const [editing, setEditing] = useState(false);
@@ -172,9 +152,10 @@ function InlineEdit({ value, onSave, type = "text", className = "", formatDispla
 }
 
 export default function VideoMaker() {
-  const [jobs, setJobs] = useState<VideoJob[]>(initialJobs);
-  const [finance, setFinance] = useState<FinanceEntry[]>(initialFinance);
-  const [events, setEvents] = useState<AgendaEvent[]>(initialEvents);
+  const [jobs, setJobs] = useState<VideoJob[]>([]);
+  const [finance, setFinance] = useState<FinanceEntry[]>([]);
+  const [events, setEvents] = useState<AgendaEvent[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchFinance, setSearchFinance] = useState("");
   const [jobDialogOpen, setJobDialogOpen] = useState(false);
   const [eventDialogOpen, setEventDialogOpen] = useState(false);
@@ -194,6 +175,102 @@ export default function VideoMaker() {
   const [newJob, setNewJob] = useState({ property: "", client: "", address: "", value: "", dueDate: "", notes: "", status: "gravar" as VideoJob["status"], materialType: "vr" as MaterialType, clientType: "assinante" as ClientType });
   const [newEvent, setNewEvent] = useState({ title: "", date: "", time: "", endTime: "", type: "gravacao" as AgendaEvent["type"], notes: "", location: "", property: "", client: "", clientValue: "", editorCost: "", materialType: "vr" as MaterialType, clientType: "assinante" as ClientType });
   const [newFinance, setNewFinance] = useState({ property: "", client: "", clientValue: "", editorCost: "", dueDate: "", status: "pendente" as FinanceEntry["status"], materialType: "vr" as MaterialType, clientType: "assinante" as ClientType });
+
+  const loadRecords = useCallback(async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("material_extra_records")
+      .select("id, record_type, data, created_at")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      toast.error("Não foi possível carregar o Material Extra");
+      setLoading(false);
+      return;
+    }
+
+    const rows = ((data as MaterialRecordRow[]) || []).map((row) => ({
+      ...row,
+      data: row.data || {},
+    }));
+
+    setJobs(rows.filter((row) => row.record_type === "job").map((row) => ({
+      id: row.id,
+      property: String(row.data.property || ""),
+      client: String(row.data.client || ""),
+      address: String(row.data.address || ""),
+      value: Number(row.data.value) || 0,
+      materialType: (row.data.materialType || "vr") as MaterialType,
+      clientType: (row.data.clientType || "assinante") as ClientType,
+      status: (row.data.status || "gravar") as VideoJob["status"],
+      dueDate: String(row.data.dueDate || ""),
+      notes: String(row.data.notes || ""),
+      createdAt: String(row.data.createdAt || row.created_at.slice(0, 10)),
+    })));
+
+    setFinance(rows.filter((row) => row.record_type === "finance").map((row) => ({
+      id: row.id,
+      property: String(row.data.property || ""),
+      client: String(row.data.client || ""),
+      materialType: (row.data.materialType || "vr") as MaterialType,
+      clientType: (row.data.clientType || "assinante") as ClientType,
+      clientValue: Number(row.data.clientValue) || 0,
+      editorCost: Number(row.data.editorCost) || 0,
+      status: (row.data.status || "pendente") as FinanceEntry["status"],
+      dueDate: String(row.data.dueDate || ""),
+      paidAt: row.data.paidAt ? String(row.data.paidAt) : undefined,
+    })));
+
+    setEvents(rows.filter((row) => row.record_type === "event").map((row) => ({
+      id: row.id,
+      title: String(row.data.title || ""),
+      date: String(row.data.date || ""),
+      time: String(row.data.time || ""),
+      endTime: String(row.data.endTime || ""),
+      type: (row.data.type || "outro") as AgendaEvent["type"],
+      notes: String(row.data.notes || ""),
+      location: String(row.data.location || ""),
+      jobId: row.data.jobId ? String(row.data.jobId) : undefined,
+    })));
+
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    loadRecords();
+  }, [loadRecords]);
+
+  const saveRecord = useCallback(async <T extends Record<string, any>>(recordType: MaterialRecordType, data: T, id?: string) => {
+    if (id) {
+      const { error } = await supabase
+        .from("material_extra_records")
+        .update({ data, updated_at: new Date().toISOString() } as any)
+        .eq("id", id);
+      if (error) throw error;
+      return id;
+    }
+
+    const { data: inserted, error } = await supabase
+      .from("material_extra_records")
+      .insert({ record_type: recordType, data } as any)
+      .select("id")
+      .single();
+
+    if (error) throw error;
+    return (inserted as any).id as string;
+  }, []);
+
+  const deleteRecord = useCallback(async (id: string) => {
+    const { error } = await supabase.from("material_extra_records").delete().eq("id", id);
+    if (error) throw error;
+  }, []);
+
+  const patchRecord = useCallback(async <T extends { id: string }>(recordType: MaterialRecordType, item: T, patch: Partial<T>) => {
+    const updated = { ...item, ...patch };
+    const { id, ...data } = updated;
+    await saveRecord(recordType, data, id);
+    return updated;
+  }, [saveRecord]);
 
   // ====== FINANCIAL METRICS ======
   const paidEntries = finance.filter(f => f.status === "pago");
@@ -240,57 +317,77 @@ export default function VideoMaker() {
   };
   const handleDragOver = (e: React.DragEvent, colKey: string) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; setDragOverColumn(colKey); };
   const handleDragLeave = () => setDragOverColumn(null);
-  const handleDrop = (e: React.DragEvent, newStatus: VideoJob["status"]) => {
+  const handleDrop = async (e: React.DragEvent, newStatus: VideoJob["status"]) => {
     e.preventDefault();
     const jobId = draggedJobId || e.dataTransfer.getData("text/plain");
     if (!jobId) return;
     const job = jobs.find(j => j.id === jobId);
     if (job && job.status !== newStatus) {
-      setJobs(prev => prev.map(j => j.id === jobId ? { ...j, status: newStatus } : j));
+      try {
+        const updated = await patchRecord("job", job, { status: newStatus });
+        setJobs(prev => prev.map(j => j.id === jobId ? updated : j));
+      } catch {
+        toast.error("Não foi possível mover o trabalho");
+      }
       toast.success(`Movido para "${kanbanColumns.find(c => c.key === newStatus)?.label}"`);
     }
     setDraggedJobId(null);
     setDragOverColumn(null);
   };
   const handleDragEnd = () => { setDraggedJobId(null); setDragOverColumn(null); };
-  const moveJob = (jobId: string, direction: "next" | "prev") => {
+  const moveJob = async (jobId: string, direction: "next" | "prev") => {
     const job = jobs.find(j => j.id === jobId);
     if (!job) return;
     const order: VideoJob["status"][] = ["gravar", "gravado", "editando", "entregue", "enviado"];
     const idx = order.indexOf(job.status);
     const ni = direction === "next" ? idx + 1 : idx - 1;
     if (ni < 0 || ni >= order.length) return;
-    setJobs(prev => prev.map(j => j.id === jobId ? { ...j, status: order[ni] } : j));
+    try {
+      const updated = await patchRecord("job", job, { status: order[ni] });
+      setJobs(prev => prev.map(j => j.id === jobId ? updated : j));
+    } catch {
+      return toast.error("Não foi possível mover o trabalho");
+    }
     toast.success(`Movido para "${kanbanColumns[ni].label}"`);
   };
 
   // CRUD handlers
-  const handleAddJob = () => {
+  const handleAddJob = async () => {
     if (!newJob.property || !newJob.client) return toast.error("Preencha os campos obrigatórios");
-    const job: VideoJob = { id: Date.now().toString(), property: newJob.property, client: newJob.client, address: newJob.address, value: Number(newJob.value) || 0, materialType: newJob.materialType, clientType: newJob.clientType, status: newJob.status, dueDate: newJob.dueDate, notes: newJob.notes, createdAt: new Date().toISOString().split("T")[0] };
-    if (editingJob) {
-      setJobs(prev => prev.map(j => j.id === editingJob.id ? { ...job, id: editingJob.id, createdAt: editingJob.createdAt } : j));
-      toast.success("Trabalho atualizado!");
-    } else {
-      setJobs(prev => [...prev, job]);
-      toast.success("Novo trabalho adicionado!");
+    const jobData = { property: newJob.property, client: newJob.client, address: newJob.address, value: Number(newJob.value) || 0, materialType: newJob.materialType, clientType: newJob.clientType, status: newJob.status, dueDate: newJob.dueDate, notes: newJob.notes, createdAt: editingJob?.createdAt || new Date().toISOString().split("T")[0] };
+    try {
+      const id = await saveRecord("job", jobData, editingJob?.id);
+      const job: VideoJob = { id, ...jobData };
+      if (editingJob) {
+        setJobs(prev => prev.map(j => j.id === editingJob.id ? job : j));
+        toast.success("Trabalho atualizado!");
+      } else {
+        setJobs(prev => [job, ...prev]);
+        toast.success("Novo trabalho adicionado!");
+      }
+    } catch {
+      return toast.error("Não foi possível salvar o trabalho");
     }
     setNewJob({ property: "", client: "", address: "", value: "", dueDate: "", notes: "", status: "gravar", materialType: "vr", clientType: "assinante" });
     setEditingJob(null);
     setJobDialogOpen(false);
   };
   const handleEditJob = (job: VideoJob) => { setEditingJob(job); setNewJob({ property: job.property, client: job.client, address: job.address, value: String(job.value), dueDate: job.dueDate, notes: job.notes, status: job.status, materialType: job.materialType, clientType: job.clientType }); setJobDialogOpen(true); };
-  const handleDeleteJob = (id: string) => { setJobs(prev => prev.filter(j => j.id !== id)); toast.success("Trabalho removido!"); };
+  const handleDeleteJob = async (id: string) => {
+    try {
+      await deleteRecord(id);
+      setJobs(prev => prev.filter(j => j.id !== id));
+      toast.success("Trabalho removido!");
+    } catch {
+      toast.error("Não foi possível remover o trabalho");
+    }
+  };
 
-  const handleAddFinance = () => {
+  const handleAddFinance = async () => {
     if (!newFinance.property || !newFinance.client) return toast.error("Preencha os campos obrigatórios");
-    const baseId = Date.now().toString();
-    const entry: FinanceEntry = { id: baseId, property: newFinance.property, client: newFinance.client, materialType: newFinance.materialType, clientType: newFinance.clientType, clientValue: Number(newFinance.clientValue) || 0, editorCost: Number(newFinance.editorCost) || 0, status: newFinance.status, dueDate: newFinance.dueDate };
-    setFinance(prev => [...prev, entry]);
+    const financeData = { property: newFinance.property, client: newFinance.client, materialType: newFinance.materialType, clientType: newFinance.clientType, clientValue: Number(newFinance.clientValue) || 0, editorCost: Number(newFinance.editorCost) || 0, status: newFinance.status, dueDate: newFinance.dueDate };
 
-    // Auto-cria card no Kanban na coluna "Para Gravar"
-    const newKanbanJob: VideoJob = {
-      id: baseId + "-job",
+    const jobData = {
       property: newFinance.property,
       client: newFinance.client,
       address: "",
@@ -302,31 +399,49 @@ export default function VideoMaker() {
       notes: "",
       createdAt: new Date().toISOString().split("T")[0],
     };
-    setJobs(prev => [...prev, newKanbanJob]);
+    try {
+      const [financeId, jobId] = await Promise.all([
+        saveRecord("finance", financeData),
+        saveRecord("job", jobData),
+      ]);
+      setFinance(prev => [{ id: financeId, ...financeData }, ...prev]);
+      setJobs(prev => [{ id: jobId, ...jobData }, ...prev]);
+    } catch {
+      return toast.error("Não foi possível adicionar o registro financeiro");
+    }
 
     setNewFinance({ property: "", client: "", clientValue: "", editorCost: "", dueDate: "", status: "pendente", materialType: "vr", clientType: "assinante" });
     setFinanceDialogOpen(false);
     toast.success("Registro financeiro adicionado e enviado para o Kanban (Para Gravar)!");
   };
-  const toggleFinanceStatus = (id: string) => {
-    setFinance(prev => prev.map(f => {
-      if (f.id !== id) return f;
-      if (f.status === "pago") return { ...f, status: "pendente" as const, paidAt: undefined };
-      return { ...f, status: "pago" as const, paidAt: new Date().toISOString().split("T")[0] };
-    }));
+  const toggleFinanceStatus = async (id: string) => {
+    const item = finance.find(f => f.id === id);
+    if (!item) return;
+    const patch = item.status === "pago"
+      ? { status: "pendente" as const, paidAt: undefined }
+      : { status: "pago" as const, paidAt: new Date().toISOString().split("T")[0] };
+    try {
+      const updated = await patchRecord("finance", item, patch);
+      setFinance(prev => prev.map(f => f.id === id ? updated : f));
+    } catch {
+      return toast.error("Não foi possível atualizar o status");
+    }
     toast.success("Status atualizado!");
   };
 
-  const handleAddEvent = () => {
+  const handleAddEvent = async () => {
     if (!newEvent.title || !newEvent.date) return toast.error("Preencha título e data");
-    const baseId = Date.now().toString();
     if (editingEvent) {
-      setEvents(prev => prev.map(e => e.id === editingEvent.id ? { ...editingEvent, ...newEvent } : e));
+      const eventData = { title: newEvent.title, date: newEvent.date, time: newEvent.time, endTime: newEvent.endTime, type: newEvent.type, notes: newEvent.notes, location: newEvent.location, jobId: editingEvent.jobId };
+      try {
+        const updated = await patchRecord("event", editingEvent, eventData);
+        setEvents(prev => prev.map(e => e.id === editingEvent.id ? updated : e));
+      } catch {
+        return toast.error("Não foi possível atualizar o evento");
+      }
       toast.success("Evento atualizado!");
     } else {
-      const eventId = baseId;
-      const newAgendaEvent: AgendaEvent = {
-        id: eventId,
+      const eventData = {
         title: newEvent.title,
         date: newEvent.date,
         time: newEvent.time,
@@ -335,42 +450,49 @@ export default function VideoMaker() {
         notes: newEvent.notes,
         location: newEvent.location,
       };
-      setEvents(prev => [...prev, newAgendaEvent]);
 
       // Se o evento for de gravação OU tiver imóvel/cliente preenchidos, cria card no Kanban + Financeiro
       const hasJobData = newEvent.property && newEvent.client;
-      if (hasJobData) {
-        const jobId = baseId + "-job";
-        const newKanbanJob: VideoJob = {
-          id: jobId,
-          property: newEvent.property,
-          client: newEvent.client,
-          address: newEvent.location,
+      try {
+        const eventId = await saveRecord("event", eventData);
+        setEvents(prev => [{ id: eventId, ...eventData }, ...prev]);
+
+        if (hasJobData) {
+          const jobData = {
+            property: newEvent.property,
+            client: newEvent.client,
+            address: newEvent.location,
           value: Number(newEvent.clientValue) || 0,
           materialType: newEvent.materialType,
           clientType: newEvent.clientType,
           status: "gravar",
           dueDate: newEvent.date,
-          notes: newEvent.notes,
-          createdAt: new Date().toISOString().split("T")[0],
-        };
-        setJobs(prev => [newKanbanJob, ...prev]);
+            notes: newEvent.notes,
+            createdAt: new Date().toISOString().split("T")[0],
+          };
 
-        const newFinanceEntry: FinanceEntry = {
-          id: baseId + "-fin",
-          property: newEvent.property,
-          client: newEvent.client,
-          materialType: newEvent.materialType,
-          clientType: newEvent.clientType,
-          clientValue: Number(newEvent.clientValue) || 0,
-          editorCost: Number(newEvent.editorCost) || 0,
-          status: "pendente",
-          dueDate: newEvent.date,
-        };
-        setFinance(prev => [newFinanceEntry, ...prev]);
-        toast.success("Evento criado e enviado para Kanban e Financeiro!");
-      } else {
-        toast.success("Evento adicionado!");
+          const financeData = {
+            property: newEvent.property,
+            client: newEvent.client,
+            materialType: newEvent.materialType,
+            clientType: newEvent.clientType,
+            clientValue: Number(newEvent.clientValue) || 0,
+            editorCost: Number(newEvent.editorCost) || 0,
+            status: "pendente" as const,
+            dueDate: newEvent.date,
+          };
+          const [jobId, financeId] = await Promise.all([
+            saveRecord("job", jobData),
+            saveRecord("finance", financeData),
+          ]);
+          setJobs(prev => [{ id: jobId, ...jobData }, ...prev]);
+          setFinance(prev => [{ id: financeId, ...financeData }, ...prev]);
+          toast.success("Evento criado e enviado para Kanban e Financeiro!");
+        } else {
+          toast.success("Evento adicionado!");
+        }
+      } catch {
+        return toast.error("Não foi possível adicionar o evento");
       }
     }
     setNewEvent({ title: "", date: "", time: "", endTime: "", type: "gravacao", notes: "", location: "", property: "", client: "", clientValue: "", editorCost: "", materialType: "vr", clientType: "assinante" });
@@ -378,7 +500,35 @@ export default function VideoMaker() {
     setEventDialogOpen(false);
   };
   const handleEditEvent = (ev: AgendaEvent) => { setEditingEvent(ev); setNewEvent({ title: ev.title, date: ev.date, time: ev.time, endTime: ev.endTime, type: ev.type, notes: ev.notes, location: ev.location, property: "", client: "", clientValue: "", editorCost: "", materialType: "vr", clientType: "assinante" }); setEventDialogOpen(true); };
-  const handleDeleteEvent = (id: string) => { setEvents(prev => prev.filter(e => e.id !== id)); toast.success("Evento removido!"); };
+  const handleDeleteEvent = async (id: string) => {
+    try {
+      await deleteRecord(id);
+      setEvents(prev => prev.filter(e => e.id !== id));
+      toast.success("Evento removido!");
+    } catch {
+      toast.error("Não foi possível remover o evento");
+    }
+  };
+
+  const updateFinanceEntry = async (entry: FinanceEntry, patch: Partial<FinanceEntry>) => {
+    try {
+      const updated = await patchRecord("finance", entry, patch);
+      setFinance(prev => prev.map(x => x.id === entry.id ? updated : x));
+      toast.success("Atualizado!");
+    } catch {
+      toast.error("Não foi possível atualizar o registro");
+    }
+  };
+
+  const handleDeleteFinance = async (id: string) => {
+    try {
+      await deleteRecord(id);
+      setFinance(prev => prev.filter(x => x.id !== id));
+      toast.success("Removido!");
+    } catch {
+      toast.error("Não foi possível remover o registro");
+    }
+  };
 
   const filteredFinance = finance.filter(f => f.property.toLowerCase().includes(searchFinance.toLowerCase()) || f.client.toLowerCase().includes(searchFinance.toLowerCase()));
 
@@ -404,7 +554,7 @@ export default function VideoMaker() {
             <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
               <Clapperboard className="w-7 h-7 text-accent" /> Material Extra
             </h1>
-            <p className="text-muted-foreground text-sm">Gestão de produção audiovisual, financeiro e agenda</p>
+            <p className="text-muted-foreground text-sm">{loading ? "Carregando produção audiovisual..." : "Gestão de produção audiovisual, financeiro e agenda"}</p>
           </div>
         </div>
 
@@ -585,18 +735,18 @@ export default function VideoMaker() {
                   ) : filteredFinance.map(f => (
                     <TableRow key={f.id}>
                       <TableCell className="font-medium text-foreground">
-                        <InlineEdit value={f.property} onSave={v => { setFinance(prev => prev.map(x => x.id === f.id ? { ...x, property: v } : x)); toast.success("Atualizado!"); }} />
+                        <InlineEdit value={f.property} onSave={v => updateFinanceEntry(f, { property: v })} />
                       </TableCell>
                       <TableCell className="text-muted-foreground">
-                        <InlineEdit value={f.client} onSave={v => { setFinance(prev => prev.map(x => x.id === f.id ? { ...x, client: v } : x)); toast.success("Atualizado!"); }} />
+                        <InlineEdit value={f.client} onSave={v => updateFinanceEntry(f, { client: v })} />
                       </TableCell>
                       <TableCell><Badge variant="outline" className={cn("text-[10px]", materialTypeColors[f.materialType])}>{materialTypes.find(m => m.value === f.materialType)?.label}</Badge></TableCell>
                       <TableCell><Badge variant="outline" className={cn("text-[10px]", clientTypeColors[f.clientType])}>{clientTypes.find(c => c.value === f.clientType)?.label}</Badge></TableCell>
                       <TableCell>
-                        <InlineEdit value={f.clientValue} type="number" className="font-semibold text-emerald-400" formatDisplay={v => fmtBRL(Number(v))} onSave={v => { setFinance(prev => prev.map(x => x.id === f.id ? { ...x, clientValue: Number(v) || 0 } : x)); toast.success("Atualizado!"); }} />
+                        <InlineEdit value={f.clientValue} type="number" className="font-semibold text-emerald-400" formatDisplay={v => fmtBRL(Number(v))} onSave={v => updateFinanceEntry(f, { clientValue: Number(v) || 0 })} />
                       </TableCell>
                       <TableCell>
-                        <InlineEdit value={f.editorCost} type="number" className="font-semibold text-red-400" formatDisplay={v => fmtBRL(Number(v))} onSave={v => { setFinance(prev => prev.map(x => x.id === f.id ? { ...x, editorCost: Number(v) || 0 } : x)); toast.success("Atualizado!"); }} />
+                        <InlineEdit value={f.editorCost} type="number" className="font-semibold text-red-400" formatDisplay={v => fmtBRL(Number(v))} onSave={v => updateFinanceEntry(f, { editorCost: Number(v) || 0 })} />
                       </TableCell>
                       <TableCell className="font-semibold text-accent">{fmtBRL(f.clientValue - f.editorCost)}</TableCell>
                       <TableCell className="text-muted-foreground">{f.dueDate ? format(new Date(f.dueDate + "T12:00:00"), "dd/MM/yyyy") : "-"}</TableCell>
@@ -613,7 +763,7 @@ export default function VideoMaker() {
                         <Button variant="ghost" size="sm" onClick={() => toggleFinanceStatus(f.id)} className="gap-1">
                           <CheckCircle2 className="w-3.5 h-3.5" />{f.status === "pago" ? "Desfazer" : "Pago"}
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => { setFinance(prev => prev.filter(x => x.id !== f.id)); toast.success("Removido!"); }}><Trash2 className="w-3.5 h-3.5" /></Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDeleteFinance(f.id)}><Trash2 className="w-3.5 h-3.5" /></Button>
                       </TableCell>
                     </TableRow>
                   ))}
