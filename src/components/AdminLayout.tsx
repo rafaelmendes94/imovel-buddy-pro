@@ -3,9 +3,19 @@ import { AdminSidebar } from "./AdminSidebar";
 import { Menu, LayoutDashboard, Building2, Users, CreditCard, MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MobileBottomNav } from "./MobileBottomNav";
+import { useAuth } from "@/hooks/useAuth";
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { isSuperAdmin, hasModuleAccess } = useAuth();
+  const canSee = (moduleKey: string) => isSuperAdmin || hasModuleAccess(moduleKey);
+  const bottomItems = [
+    { label: "Painel", icon: LayoutDashboard, path: "/dashboard" },
+    ...(canSee("imoveis") ? [{ label: "Imóveis", icon: Building2, path: "/imoveis" }] : []),
+    ...(canSee("clientes") ? [{ label: "Clientes", icon: Users, path: "/admin/clientes" }] : []),
+    ...(canSee("planos") ? [{ label: "Planos", icon: CreditCard, path: "/admin/planos" }] : []),
+    { label: "Menu", icon: MoreHorizontal, action: () => setMobileOpen(true) },
+  ];
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -37,15 +47,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         <div className="pb-[76px] lg:pb-0">{children}</div>
       </main>
 
-      <MobileBottomNav
-        items={[
-          { label: "Painel", icon: LayoutDashboard, path: "/dashboard" },
-          { label: "Imóveis", icon: Building2, path: "/imoveis" },
-          { label: "Clientes", icon: Users, path: "/admin/clientes" },
-          { label: "Planos", icon: CreditCard, path: "/admin/planos" },
-          { label: "Menu", icon: MoreHorizontal, action: () => setMobileOpen(true) },
-        ]}
-      />
+      <MobileBottomNav items={bottomItems} />
     </div>
   );
 }

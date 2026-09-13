@@ -32,15 +32,15 @@ const cycleLabel = (cycle: string) =>
   "ano";
 
 export default function BrokerAssinatura() {
-  const { subscription, user } = useAuth();
+  const { subscription, user, profile } = useAuth();
   const [plans, setPlans] = useState<any[]>([]);
   const [loadingCheckout, setLoadingCheckout] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    const accountType = user?.user_metadata?.account_type || "corretor";
+    const accountType = profile?.account_type || user?.user_metadata?.account_type || "corretor";
     supabase.from("plans").select("*").eq("is_active", true).eq("plan_type", accountType).then(({ data }) => setPlans(data || []));
-  }, [user]);
+  }, [profile, user]);
 
   const handleCheckout = async (planId: string) => {
     setLoadingCheckout(planId);

@@ -8,9 +8,29 @@ import { MobileBottomNav } from "./MobileBottomNav";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { isSuperAdmin, isAdminStaff } = useAuth();
+  const { isSuperAdmin, isAdminStaff, isBroker, subscription, hasModuleAccess } = useAuth();
   const useAdmin = isSuperAdmin || isAdminStaff;
   const Sidebar = useAdmin ? AdminSidebar : AppSidebar;
+  const brokerModules = subscription?.plan?.modules || [];
+  const canSee = (moduleKey: string) =>
+    isSuperAdmin ||
+    (isAdminStaff && hasModuleAccess(moduleKey)) ||
+    (isBroker && brokerModules.includes(moduleKey));
+  const bottomItems = useAdmin
+    ? [
+        { label: "Painel", icon: Home, path: "/dashboard" },
+        ...(canSee("imoveis") ? [{ label: "Imóveis", icon: Building2, path: "/imoveis", matchPaths: ["/imoveis", "/cadastro-imovel"] }] : []),
+        { label: "Buscar", icon: Search, path: "/todos-imoveis" },
+        ...(canSee("corretores") ? [{ label: "Corretores", icon: Users, path: "/corretores" }] : []),
+        { label: "Menu", icon: MoreHorizontal, action: () => setMobileOpen(true) },
+      ]
+    : [
+        { label: "Início", icon: Home, path: "/painel" },
+        ...(canSee("imoveis") ? [{ label: "Imóveis", icon: Building2, path: "/imoveis", matchPaths: ["/imoveis", "/cadastro-imovel"] }] : []),
+        { label: "Buscar", icon: Search, path: "/todos-imoveis" },
+        { label: "Corretores", icon: Users, path: "/cadastro-corretores" },
+        { label: "Menu", icon: MoreHorizontal, action: () => setMobileOpen(true) },
+      ];
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -55,15 +75,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="pb-[76px] lg:pb-0">{children}</div>
       </main>
 
-      <MobileBottomNav
-        items={[
-          { label: "Início", icon: Home, path: "/dashboard" },
-          { label: "Imóveis", icon: Building2, path: "/imoveis", matchPaths: ["/imoveis", "/cadastro-imovel"] },
-          { label: "Buscar", icon: Search, path: "/todos-imoveis" },
-          { label: "Corretores", icon: Users, path: "/corretores" },
-          { label: "Menu", icon: MoreHorizontal, action: () => setMobileOpen(true) },
-        ]}
-      />
+      <MobileBottomNav items={bottomItems} />
     </div>
   );
 }
