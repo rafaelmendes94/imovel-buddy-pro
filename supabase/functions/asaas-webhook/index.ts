@@ -6,6 +6,39 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+async function recordAsaasPayment(supabase: any, payload: {
+  subscription_id: string;
+  amount: number;
+  status: string;
+  asaas_payment_id: string;
+  paid_at: string;
+  reference_period: string;
+}) {
+  const { data: existingPayment, error: lookupError } = await supabase
+    .from("subscription_payments")
+    .select("id")
+    .eq("asaas_payment_id", payload.asaas_payment_id)
+    .maybeSingle();
+
+  if (lookupError) throw lookupError;
+
+  const data = {
+    subscription_id: payload.subscription_id,
+    amount: payload.amount,
+    status: payload.status,
+    asaas_payment_id: payload.asaas_payment_id,
+    mercado_pago_payment_id: payload.asaas_payment_id,
+    paid_at: payload.paid_at,
+    reference_period: payload.reference_period,
+  };
+
+  const result = existingPayment
+    ? await supabase.from("subscription_payments").update(data).eq("id", existingPayment.id)
+    : await supabase.from("subscription_payments").insert(data);
+
+  if (result.error) throw result.error;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -138,15 +171,14 @@ serve(async (req) => {
           mercado_pago_subscription_id: payment.subscription || String(payment.id),
         }).eq("id", existingSub.id);
 
-        await supabase.from("subscription_payments").upsert({
+        await recordAsaasPayment(supabase, {
           subscription_id: existingSub.id,
           amount: payment.value,
           status: "approved",
           asaas_payment_id: String(payment.id),
-          mercado_pago_payment_id: String(payment.id),
           paid_at: now.toISOString(),
           reference_period: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`,
-        }, { onConflict: "asaas_payment_id" });
+        });
       } else {
         const { data: newSub } = await supabase.from("subscriptions").insert({
           user_id: externalRef.user_id,
@@ -159,15 +191,14 @@ serve(async (req) => {
         }).select("id").single();
 
         if (newSub) {
-          await supabase.from("subscription_payments").upsert({
+          await recordAsaasPayment(supabase, {
             subscription_id: newSub.id,
             amount: payment.value,
             status: "approved",
             asaas_payment_id: String(payment.id),
-            mercado_pago_payment_id: String(payment.id),
             paid_at: now.toISOString(),
             reference_period: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`,
-          }, { onConflict: "asaas_payment_id" });
+          });
         }
       }
     } else if (event === "PAYMENT_OVERDUE") {

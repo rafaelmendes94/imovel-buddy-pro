@@ -56,6 +56,39 @@ const loadSettings = async (supabase: any, keys: string[]) => {
   return map;
 };
 
+async function recordAsaasPayment(supabase: any, payload: {
+  subscription_id: string;
+  amount: number;
+  status: string;
+  asaas_payment_id: string;
+  paid_at: string;
+  reference_period: string;
+}) {
+  const { data: existingPayment, error: lookupError } = await supabase
+    .from("subscription_payments")
+    .select("id")
+    .eq("asaas_payment_id", payload.asaas_payment_id)
+    .maybeSingle();
+
+  if (lookupError) throw lookupError;
+
+  const data = {
+    subscription_id: payload.subscription_id,
+    amount: payload.amount,
+    status: payload.status,
+    asaas_payment_id: payload.asaas_payment_id,
+    mercado_pago_payment_id: payload.asaas_payment_id,
+    paid_at: payload.paid_at,
+    reference_period: payload.reference_period,
+  };
+
+  const result = existingPayment
+    ? await supabase.from("subscription_payments").update(data).eq("id", existingPayment.id)
+    : await supabase.from("subscription_payments").insert(data);
+
+  if (result.error) throw result.error;
+}
+
 async function asaasCheckout(req: Request) {
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -322,15 +355,14 @@ async function asaasWebhook(req: Request) {
     }
 
     if (subscriptionId) {
-      await supabase.from("subscription_payments").upsert({
+      await recordAsaasPayment(supabase, {
         subscription_id: subscriptionId,
         amount: payment.value,
         status: "approved",
         asaas_payment_id: String(payment.id),
-        mercado_pago_payment_id: String(payment.id),
         paid_at: now.toISOString(),
         reference_period: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`,
-      }, { onConflict: "asaas_payment_id" });
+      });
     }
   } else if (event === "PAYMENT_OVERDUE" && existingSub) {
     const periodEnd = existingSub.current_period_end ? new Date(existingSub.current_period_end) : null;
