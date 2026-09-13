@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Download, ExternalLink, Fence, FolderOpen, Images, Loader2, Map as MapIcon, MapPin, Plus, Search, SlidersHorizontal, X } from "lucide-react";
-import JSZip from "jszip";
 import { useToast } from "@/hooks/use-toast";
 
 interface CondoRow {
@@ -89,6 +88,7 @@ export default function Condominiums() {
     if (!urls.length) return;
     setZipping(c.id);
     try {
+      const JSZip = (await import("jszip")).default;
       const zip = new JSZip();
       let ok = 0;
       await Promise.all(urls.map(async (u, i) => {
