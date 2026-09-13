@@ -106,7 +106,7 @@ export interface PaymentLike {
   discount_amount?: number | null;
 }
 
-export const isPaid = (p: PaymentLike) => !!p.paid_at || p.status === "paid";
+export const isPaid = (p: PaymentLike) => !!p.paid_at || ["paid", "approved", "confirmed"].includes(p.status);
 export const isCourtesy = (p: PaymentLike) => !!p.is_courtesy;
 
 export const isOpen = (p: PaymentLike) => !isPaid(p) && !isCourtesy(p) && p.status !== "cancelled";

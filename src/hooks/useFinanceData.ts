@@ -4,6 +4,9 @@ import { isoDate, nextDueDate, toDate } from "@/lib/finance";
 
 export interface FinSubscriber {
   id: string;
+  source?: "legacy" | "subscription";
+  subscription_id?: string | null;
+  legacy_subscriber_id?: string | null;
   name: string;
   email: string | null;
   phone: string | null;
@@ -27,6 +30,9 @@ export interface FinSubscriber {
 
 export interface FinPayment {
   id: string;
+  source?: "legacy" | "subscription" | "synthetic";
+  subscription_payment_id?: string | null;
+  subscription_id?: string | null;
   subscriber_id: string;
   amount: number;
   due_date: string;
@@ -94,18 +100,146 @@ export function useFinanceData() {
   const [actor, setActor] = useState<{ id: string | null; name: string }>({ id: null, name: "Administrador" });
 
   const fetchAll = useCallback(async () => {
-    const [subRes, payRes, memRes, planRes, logRes, userRes] = await Promise.all([
+    const [subRes, payRes, memRes, planRes, logRes, userRes, realSubRes, realPayRes] = await Promise.all([
       supabase.from("subscribers").select("*").order("name"),
       supabase.from("payments").select("*").order("due_date", { ascending: false }),
       supabase.from("subscriber_brokers").select("*").order("name"),
       supabase.from("plans").select("*").order("plan_type").order("price"),
       supabase.from("financial_activity_logs").select("*").order("created_at", { ascending: false }).limit(500),
       supabase.auth.getUser(),
+      supabase.from("subscriptions").select("*, plans(*)").order("created_at", { ascending: false }),
+      supabase.from("subscription_payments").select("*").order("created_at", { ascending: false }),
     ]);
-    setSubscribers((subRes.data as any[]) || []);
-    setPayments((payRes.data as any[]) || []);
+
+    const legacySubscribers = ((subRes.data as any[]) || []).map((sub) => ({ ...sub, source: "legacy" as const }));
+    const legacyPayments = ((payRes.data as any[]) || []).map((payment) => ({
+      ...payment,
+      source: "legacy" as const,
+      subscription_payment_id: null,
+      subscription_id: null,
+    }));
+    const plansData = (planRes.data as FinPlan[]) || [];
+    const realSubscriptions = (realSubRes.data as any[]) || [];
+    const realPayments = (realPayRes.data as any[]) || [];
+    const userIds = [...new Set(realSubscriptions.map((sub) => sub.user_id).filter(Boolean))];
+    const { data: profilesData } = userIds.length
+      ? await supabase
+          .from("profiles")
+          .select("user_id, full_name, email, phone, account_type, created_at")
+          .in("user_id", userIds)
+      : { data: [] as any[] };
+
+    const profileByUser = new Map(((profilesData as any[]) || []).map((profile) => [profile.user_id, profile]));
+    const legacyByOwner = new Map(
+      legacySubscribers
+        .filter((sub) => sub.owner_user_id)
+        .map((sub) => [sub.owner_user_id as string, sub]),
+    );
+    const visibleIdBySubscription = new Map<string, string>();
+    const planById = new Map(plansData.map((plan) => [plan.id, plan]));
+
+    const subscriptionSubscribers: FinSubscriber[] = realSubscriptions.map((sub) => {
+      const profile = profileByUser.get(sub.user_id) || {};
+      const plan = sub.plans || planById.get(sub.plan_id) || {};
+      const legacy = legacyByOwner.get(sub.user_id);
+      const visibleId = legacy?.id || sub.id;
+      visibleIdBySubscription.set(sub.id, visibleId);
+      return {
+        id: visibleId,
+        source: "subscription",
+        subscription_id: sub.id,
+        legacy_subscriber_id: legacy?.id || null,
+        name: profile.full_name || legacy?.name || profile.email || "Cliente sem nome",
+        email: profile.email || legacy?.email || null,
+        phone: profile.phone || legacy?.phone || null,
+        creci: legacy?.creci || null,
+        plan: plan.billing_cycle || legacy?.plan || "monthly",
+        status: sub.status,
+        notes: legacy?.notes || null,
+        created_at: sub.created_at,
+        plan_id: sub.plan_id || null,
+        subscriber_type: profile.account_type || legacy?.subscriber_type || plan.plan_type || "corretor",
+        owner_user_id: sub.user_id,
+        due_day: legacy?.due_day || (sub.current_period_end ? new Date(sub.current_period_end).getDate() : null),
+        next_due_date: sub.current_period_end ? sub.current_period_end.slice(0, 10) : null,
+        start_date: sub.current_period_start ? sub.current_period_start.slice(0, 10) : sub.created_at?.slice(0, 10) || null,
+        document: legacy?.document || null,
+        city: legacy?.city || null,
+        blocked_at: sub.blocked_at || null,
+        cancel_reason: legacy?.cancel_reason || null,
+        cancelled_at: sub.status === "cancelled" ? sub.current_period_end || null : legacy?.cancelled_at || null,
+      };
+    });
+
+    const realPaymentRows: FinPayment[] = realPayments.map((payment) => {
+      const sub = realSubscriptions.find((item) => item.id === payment.subscription_id);
+      const dueDate = payment.paid_at || sub?.current_period_end || payment.created_at;
+      return {
+        id: payment.id,
+        source: "subscription",
+        subscription_payment_id: payment.id,
+        subscription_id: payment.subscription_id,
+        subscriber_id: visibleIdBySubscription.get(payment.subscription_id) || payment.subscription_id,
+        amount: Number(payment.amount) || 0,
+        due_date: dueDate.slice(0, 10),
+        paid_at: payment.paid_at,
+        status: payment.status === "approved" ? "paid" : payment.status,
+        reference_month: payment.reference_period?.length === 7 ? `${payment.reference_period}-01` : payment.reference_period || dueDate.slice(0, 10),
+        created_at: payment.created_at,
+        competence: payment.reference_period?.length === 7 ? `${payment.reference_period}-01` : payment.reference_period || null,
+        method: payment.asaas_payment_id ? "asaas" : payment.mercado_pago_payment_id ? "mercado_pago" : null,
+        paid_by: null,
+        paid_by_name: payment.asaas_payment_id ? "Asaas" : payment.mercado_pago_payment_id ? "Mercado Pago" : null,
+        notes: null,
+        discount_amount: 0,
+        is_courtesy: false,
+      };
+    });
+
+    const realPaymentKeys = new Set(realPaymentRows.map((payment) => `${payment.subscription_id}:${payment.reference_month?.slice(0, 7)}`));
+    const syntheticPayments: FinPayment[] = subscriptionSubscribers
+      .filter((sub) => sub.subscription_id && sub.status !== "cancelled")
+      .map((sub) => {
+        const dueDate = sub.next_due_date || new Date().toISOString().slice(0, 10);
+        const referenceMonth = `${dueDate.slice(0, 7)}-01`;
+        if (realPaymentKeys.has(`${sub.subscription_id}:${dueDate.slice(0, 7)}`)) return null;
+        const plan = plansData.find((item) => item.id === sub.plan_id);
+        return {
+          id: `due:${sub.subscription_id}:${dueDate}`,
+          source: "synthetic" as const,
+          subscription_payment_id: null,
+          subscription_id: sub.subscription_id,
+          subscriber_id: sub.id,
+          amount: Number(plan?.price) || 0,
+          due_date: dueDate,
+          paid_at: null,
+          status: ["overdue", "blocked"].includes(sub.status) ? "overdue" : "pending",
+          reference_month: referenceMonth,
+          created_at: dueDate,
+          competence: referenceMonth,
+          method: null,
+          paid_by: null,
+          paid_by_name: null,
+          notes: null,
+          discount_amount: 0,
+          is_courtesy: false,
+        };
+      })
+      .filter(Boolean) as FinPayment[];
+
+    const realUserIds = new Set(realSubscriptions.map((sub) => sub.user_id).filter(Boolean));
+    const subscribersData = [
+      ...subscriptionSubscribers,
+      ...legacySubscribers.filter((sub) => !sub.owner_user_id || !realUserIds.has(sub.owner_user_id)),
+    ];
+    const paymentsData = [...realPaymentRows, ...syntheticPayments, ...legacyPayments].sort((a, b) =>
+      a.due_date < b.due_date ? 1 : -1,
+    );
+
+    setSubscribers(subscribersData);
+    setPayments(paymentsData);
     setMembers((memRes.data as any[]) || []);
-    setPlans((planRes.data as any[]) || []);
+    setPlans(plansData);
     setLogs((logRes.data as any[]) || []);
     const u = userRes.data?.user;
     if (u) {
@@ -150,10 +284,69 @@ export function useFinanceData() {
     [planOf],
   );
 
+  const subscriptionIdOf = (sub: FinSubscriber) => sub.subscription_id || (sub.source === "subscription" ? sub.id : null);
+
+  const advanceSubscription = useCallback(
+    async (sub: FinSubscriber, baseDate: string, amount: number, paidAt: string, paymentId?: string) => {
+      const subscriptionId = subscriptionIdOf(sub);
+      if (!subscriptionId) return;
+
+      const base = toDate(baseDate) || new Date();
+      const next = nextDueDate(base, cycleOf(sub));
+      const nextIso = next.toISOString();
+      const referencePeriod = baseDate.slice(0, 7);
+
+      if (paymentId && !paymentId.startsWith("due:")) {
+        await supabase
+          .from("subscription_payments")
+          .update({ status: "approved", paid_at: paidAt } as any)
+          .eq("id", paymentId);
+      } else {
+        await supabase.from("subscription_payments").insert({
+          subscription_id: subscriptionId,
+          amount,
+          status: "approved",
+          paid_at: paidAt,
+          reference_period: referencePeriod,
+        } as any);
+      }
+
+      await supabase
+        .from("subscriptions")
+        .update({
+          status: "active",
+          blocked_at: null,
+          current_period_start: paidAt,
+          current_period_end: nextIso,
+        } as any)
+        .eq("id", subscriptionId);
+    },
+    [cycleOf],
+  );
+
   /** Pagamento com 1 clique. Gera apenas a próxima cobrança. */
   const confirmPayment = useCallback(
     async (payment: FinPayment, sub: FinSubscriber, opts?: { method?: string; notes?: string }) => {
       const paidAt = new Date().toISOString();
+      if (sub.source === "subscription" || payment.source === "subscription" || payment.source === "synthetic") {
+        await advanceSubscription(sub, payment.due_date, Number(payment.amount) || 0, paidAt, payment.subscription_payment_id || payment.id);
+        if (sub.legacy_subscriber_id) {
+          await supabase
+            .from("subscribers")
+            .update({ next_due_date: isoDate(nextDueDate(toDate(payment.due_date) || new Date(), cycleOf(sub))), status: "active", blocked_at: null } as any)
+            .eq("id", sub.legacy_subscriber_id);
+        }
+        await logEvent(
+          sub.legacy_subscriber_id || sub.id,
+          "payment_registered",
+          `Pagamento registrado de R$ ${Number(payment.amount).toFixed(2)}`,
+          { amount: payment.amount, competence: payment.competence || payment.due_date, method: opts?.method || "asaas/manual" },
+          null,
+        );
+        await fetchAll();
+        return;
+      }
+
       await supabase
         .from("payments")
         .update({
@@ -204,7 +397,7 @@ export function useFinanceData() {
       );
       await fetchAll();
     },
-    [actor, cycleOf, fetchAll, logEvent],
+    [actor, advanceSubscription, cycleOf, fetchAll, logEvent],
   );
 
   const registerManualPayment = useCallback(
@@ -218,6 +411,23 @@ export function useFinanceData() {
       is_courtesy?: boolean;
       discount_amount?: number;
     }) => {
+      const sub = subscribers.find((item) => item.id === input.subscriber_id);
+      if (sub?.source === "subscription") {
+        const paidAt = input.is_courtesy ? `${input.paid_at}T12:00:00` : new Date(`${input.paid_at}T12:00:00`).toISOString();
+        await advanceSubscription(sub, input.paid_at, input.amount, paidAt);
+        await logEvent(
+          sub.legacy_subscriber_id || sub.id,
+          input.is_courtesy ? "courtesy" : "payment_registered",
+          input.is_courtesy
+            ? `Cortesia/isenção lançada (${input.competence})`
+            : `Pagamento manual de R$ ${input.amount.toFixed(2)} (${input.competence})`,
+          input as any,
+          null,
+        );
+        await fetchAll();
+        return;
+      }
+
       const competenceIso = `${input.competence}-01`;
       await supabase.from("payments").insert({
         subscriber_id: input.subscriber_id,
@@ -244,11 +454,23 @@ export function useFinanceData() {
       );
       await fetchAll();
     },
-    [actor, fetchAll, logEvent],
+    [actor, advanceSubscription, fetchAll, logEvent, subscribers],
   );
 
   const createCharge = useCallback(
     async (sub: FinSubscriber, amount: number, dueDate: string) => {
+      if (sub.source === "subscription") {
+        await logEvent(
+          sub.legacy_subscriber_id || sub.id,
+          "charge_created",
+          `Cobrança registrada para ${dueDate} (${amount.toFixed(2)})`,
+          { amount, dueDate, subscription_id: sub.subscription_id },
+          null,
+        );
+        await fetchAll();
+        return;
+      }
+
       const competence = `${dueDate.slice(0, 7)}-01`;
       await supabase.from("payments").insert({
         subscriber_id: sub.id,
@@ -268,6 +490,29 @@ export function useFinanceData() {
   /** Bloqueia/libera o titular e todos os vinculados, preservando os dados. */
   const setGroupBlocked = useCallback(
     async (sub: FinSubscriber, blocked: boolean) => {
+      if (sub.source === "subscription") {
+        const subscriptionId = subscriptionIdOf(sub);
+        if (subscriptionId) {
+          await supabase
+            .from("subscriptions")
+            .update(
+              blocked
+                ? ({ status: "blocked", blocked_at: new Date().toISOString() } as any)
+                : ({ status: "active", blocked_at: null } as any),
+            )
+            .eq("id", subscriptionId);
+        }
+        if (sub.legacy_subscriber_id) {
+          await supabase
+            .from("subscribers")
+            .update(
+              blocked
+                ? ({ status: "blocked", blocked_at: new Date().toISOString() } as any)
+                : ({ status: "active", blocked_at: null } as any),
+            )
+            .eq("id", sub.legacy_subscriber_id);
+        }
+      } else
       if (blocked) {
         const group = members.filter((m) => m.subscriber_id === sub.id);
         await Promise.all(
@@ -296,7 +541,7 @@ export function useFinanceData() {
       }
 
       // Reflete no acesso ao sistema (conta-mãe + vinculados herdam via agency_id)
-      if (sub.owner_user_id) {
+      if (sub.source !== "subscription" && sub.owner_user_id) {
         const { data: subs } = await supabase
           .from("subscriptions")
           .select("id,status")
@@ -328,7 +573,33 @@ export function useFinanceData() {
 
   const updateSubscriber = useCallback(
     async (sub: FinSubscriber, patch: Record<string, any>, description?: string, eventType = "updated") => {
-      await supabase.from("subscribers").update(patch as any).eq("id", sub.id);
+      if (sub.source === "subscription") {
+        const subscriptionPatch: Record<string, any> = {};
+        const profilePatch: Record<string, any> = {};
+
+        if (patch.plan_id !== undefined) subscriptionPatch.plan_id = patch.plan_id;
+        if (patch.status !== undefined) subscriptionPatch.status = patch.status;
+        if (patch.next_due_date !== undefined) subscriptionPatch.current_period_end = `${patch.next_due_date}T12:00:00`;
+        if (patch.subscriber_type !== undefined) profilePatch.account_type = patch.subscriber_type;
+        if (patch.name !== undefined) profilePatch.full_name = patch.name;
+        if (patch.email !== undefined) profilePatch.email = patch.email;
+        if (patch.phone !== undefined) profilePatch.phone = patch.phone;
+
+        const subscriptionId = subscriptionIdOf(sub);
+        if (subscriptionId && Object.keys(subscriptionPatch).length) {
+          await supabase.from("subscriptions").update(subscriptionPatch as any).eq("id", subscriptionId);
+        }
+        if (sub.owner_user_id && Object.keys(profilePatch).length) {
+          await supabase.from("profiles").update(profilePatch as any).eq("user_id", sub.owner_user_id);
+        }
+        if (sub.legacy_subscriber_id) {
+          const legacyPatch = { ...patch };
+          if (legacyPatch.next_due_date === "") legacyPatch.next_due_date = null;
+          await supabase.from("subscribers").update(legacyPatch as any).eq("id", sub.legacy_subscriber_id);
+        }
+      } else {
+        await supabase.from("subscribers").update(patch as any).eq("id", sub.id);
+      }
       await logEvent(sub.id, eventType, description || "Cadastro atualizado", patch);
       await fetchAll();
     },
@@ -337,10 +608,23 @@ export function useFinanceData() {
 
   const cancelSubscription = useCallback(
     async (sub: FinSubscriber, reason: string, note?: string) => {
-      await supabase
-        .from("subscribers")
-        .update({ status: "cancelled", cancel_reason: reason, cancelled_at: new Date().toISOString() } as any)
-        .eq("id", sub.id);
+      if (sub.source === "subscription") {
+        const subscriptionId = subscriptionIdOf(sub);
+        if (subscriptionId) {
+          await supabase.from("subscriptions").update({ status: "cancelled" } as any).eq("id", subscriptionId);
+        }
+        if (sub.legacy_subscriber_id) {
+          await supabase
+            .from("subscribers")
+            .update({ status: "cancelled", cancel_reason: reason, cancelled_at: new Date().toISOString() } as any)
+            .eq("id", sub.legacy_subscriber_id);
+        }
+      } else {
+        await supabase
+          .from("subscribers")
+          .update({ status: "cancelled", cancel_reason: reason, cancelled_at: new Date().toISOString() } as any)
+          .eq("id", sub.id);
+      }
       await logEvent(sub.id, "cancelled", `Assinatura cancelada — motivo: ${reason}`, { reason, note });
       await fetchAll();
     },

@@ -36,7 +36,7 @@ export function FinanceDashboard({ subscribers, payments, plans, cycleOf, planOf
     const sum = (list: FinPayment[]) => list.reduce((s, p) => s + (Number(p.amount) || 0), 0);
     const paidOn = (fn: (d: Date) => boolean) => sum(paid.filter((p) => { const d = toDate(p.paid_at); return !!d && fn(d); }));
 
-    const active = subscribers.filter((s) => ["active", "pending_payment", "overdue"].includes(s.status));
+    const active = subscribers.filter((s) => ["trial", "active", "pending_payment", "overdue"].includes(s.status));
     const mrr = active.reduce((s, sub) => {
       const plan = planOf(sub);
       const amount = plan?.price ?? Number(payments.find((p) => p.subscriber_id === sub.id)?.amount || 0);

@@ -84,7 +84,7 @@ export default function Financeiro() {
     const now = new Date();
     const open = fin.payments.filter(isOpen);
     const sum = (l: FinPayment[]) => l.reduce((s, p) => s + Number(p.amount || 0), 0);
-    const activeSubs = fin.subscribers.filter((s) => ["active", "pending_payment", "overdue"].includes(s.status));
+    const activeSubs = fin.subscribers.filter((s) => ["trial", "active", "pending_payment", "overdue"].includes(s.status));
     return {
       revenueMonth: sum(fin.payments.filter((p) => isPaid(p) && toDate(p.paid_at) && isSameMonth(toDate(p.paid_at)!, now))),
       receivable: sum(open.filter((p) => !isLate(p))),
@@ -118,7 +118,7 @@ export default function Financeiro() {
       if (filterDue === "7" && !(openP && daysToDue(openP) >= 0 && daysToDue(openP) <= 7)) return false;
       if (filterDue === "month" && !(openP && toDate(openP.due_date) && isSameMonth(toDate(openP.due_date)!, new Date()))) return false;
 
-      if (activeCard === "active" && !["active", "pending_payment", "overdue"].includes(s.status)) return false;
+      if (activeCard === "active" && !["trial", "active", "pending_payment", "overdue"].includes(s.status)) return false;
       if (activeCard === "defaulting" && !(openP && isLate(openP))) return false;
       if (activeCard === "overdue" && !(openP && isLate(openP))) return false;
       if (activeCard === "receivable" && !(openP && !isLate(openP))) return false;
