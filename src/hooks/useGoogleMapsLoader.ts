@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
 
-const BROWSER_KEY = import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY as string | undefined;
-const TRACKING_ID = import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_TRACKING_ID as string | undefined;
+const BROWSER_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined;
+const TRACKING_ID = import.meta.env.VITE_GOOGLE_MAPS_TRACKING_ID as string | undefined;
 const LOAD_TIMEOUT_MS = 15000;
 
 declare global {
   interface Window {
-    __lovableGoogleMapsCallback?: () => void;
-    __lovableGoogleMapsReady?: boolean;
-    __lovableGoogleMapsPromise?: Promise<void>;
+    __mvGoogleMapsCallback?: () => void;
+    __mvGoogleMapsReady?: boolean;
+    __mvGoogleMapsPromise?: Promise<void>;
     gm_authFailure?: () => void;
   }
 }
@@ -30,17 +30,17 @@ if (typeof window !== "undefined") {
   // depois do script carregar, por isso o aviso é global e não só durante o load.
   window.gm_authFailure = () => {
     authFailed = true;
-    window.__lovableGoogleMapsReady = false;
+    window.__mvGoogleMapsReady = false;
     authListeners.forEach((listener) => listener());
   };
 }
 
 function ensureGoogleMapsLoaded(): Promise<void> {
   if (typeof window === "undefined") return Promise.resolve();
-  if (window.__lovableGoogleMapsReady && (window as any).google?.maps?.Map) {
+  if (window.__mvGoogleMapsReady && (window as any).google?.maps?.Map) {
     return Promise.resolve();
   }
-  if (window.__lovableGoogleMapsPromise) return window.__lovableGoogleMapsPromise;
+  if (window.__mvGoogleMapsPromise) return window.__mvGoogleMapsPromise;
 
   if (!BROWSER_KEY) {
     return Promise.reject(new Error(AUTH_ERROR));
@@ -53,7 +53,7 @@ function ensureGoogleMapsLoaded(): Promise<void> {
       settled = true;
       clearTimeout(timer);
       if (err) {
-        window.__lovableGoogleMapsPromise = undefined;
+        window.__mvGoogleMapsPromise = undefined;
         reject(err);
       } else {
         resolve();
@@ -71,7 +71,7 @@ function ensureGoogleMapsLoaded(): Promise<void> {
     });
 
 
-    window.__lovableGoogleMapsCallback = async () => {
+    window.__mvGoogleMapsCallback = async () => {
       try {
         const g = (window as any).google;
         if (g?.maps?.importLibrary) {
@@ -85,7 +85,7 @@ function ensureGoogleMapsLoaded(): Promise<void> {
           finish(new Error(GENERIC_ERROR));
           return;
         }
-        window.__lovableGoogleMapsReady = true;
+        window.__mvGoogleMapsReady = true;
         finish();
       } catch (e) {
         finish(e instanceof Error ? e : new Error(GENERIC_ERROR));
@@ -96,7 +96,7 @@ function ensureGoogleMapsLoaded(): Promise<void> {
     if (existing) {
       // Script já presente: se a API já estiver disponível, resolve; senão o callback/timeout decide.
       if ((window as any).google?.maps?.Map) {
-        window.__lovableGoogleMapsReady = true;
+        window.__mvGoogleMapsReady = true;
         finish();
       }
       return;
@@ -104,7 +104,7 @@ function ensureGoogleMapsLoaded(): Promise<void> {
 
     const channelParam = TRACKING_ID ? `&channel=${TRACKING_ID}` : "";
     const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${BROWSER_KEY}&loading=async&callback=__lovableGoogleMapsCallback${channelParam}`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${BROWSER_KEY}&loading=async&callback=__mvGoogleMapsCallback${channelParam}`;
     script.async = true;
     script.defer = true;
     script.dataset.googleMapsLoader = "true";
@@ -115,13 +115,13 @@ function ensureGoogleMapsLoaded(): Promise<void> {
     document.head.appendChild(script);
   });
 
-  window.__lovableGoogleMapsPromise = promise;
+  window.__mvGoogleMapsPromise = promise;
   return promise;
 }
 
 export function useGoogleMapsLoader() {
-  const [ready, setReady] = useState<boolean>(() => !!window.__lovableGoogleMapsReady && !authFailed);
-  const [loading, setLoading] = useState<boolean>(() => !window.__lovableGoogleMapsReady && !authFailed);
+  const [ready, setReady] = useState<boolean>(() => !!window.__mvGoogleMapsReady && !authFailed);
+  const [loading, setLoading] = useState<boolean>(() => !window.__mvGoogleMapsReady && !authFailed);
   const [error, setError] = useState<string | null>(() => (authFailed ? AUTH_ERROR : null));
   const [attempt, setAttempt] = useState(0);
 
@@ -141,7 +141,7 @@ export function useGoogleMapsLoader() {
       return;
     }
     setError(null);
-    if (!window.__lovableGoogleMapsReady) setLoading(true);
+    if (!window.__mvGoogleMapsReady) setLoading(true);
     ensureGoogleMapsLoaded()
       .then(() => {
         if (!cancelled) {
@@ -162,8 +162,8 @@ export function useGoogleMapsLoader() {
   }, [attempt]);
 
   const retry = useCallback(() => {
-    if (!window.__lovableGoogleMapsReady) {
-      window.__lovableGoogleMapsPromise = undefined;
+    if (!window.__mvGoogleMapsReady) {
+      window.__mvGoogleMapsPromise = undefined;
       document.querySelectorAll('script[data-google-maps-loader]').forEach((node) => node.remove());
       authFailed = false;
     }
