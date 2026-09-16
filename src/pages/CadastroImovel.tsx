@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { resolvePropertyBrokerName } from '@/lib/propertyFlow';
+import { uploadImageToCloudflare } from '@/lib/cloudflareImages';
 
 const statusConfig: Record<string, { label: string; color: string; bg: string; border: string; icon: typeof Home }> = {
   "Disponível": { label: "Ativo", color: "text-emerald-500", bg: "bg-emerald-500/10", border: "border-emerald-500/30", icon: Home },
@@ -720,12 +721,8 @@ export function ImovelForm({ editId }: { editId?: string }) {
     try {
       const uploadedUrls: string[] = [];
       for (const file of images) {
-        const ext = file.name.split('.').pop();
-        const path = `${user.id}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
-        const { error: uploadError } = await supabase.storage.from('site-assets').upload(path, file);
-        if (uploadError) throw uploadError;
-        const { data: urlData } = supabase.storage.from('site-assets').getPublicUrl(path);
-        uploadedUrls.push(urlData.publicUrl);
+        const url = await uploadImageToCloudflare(file, { folder: `imoveis/${form.codigo || 'sem-codigo'}`, source: 'cadastro-imovel' });
+        uploadedUrls.push(url);
       }
 
       const orderedFromState = photoOrder
@@ -1178,12 +1175,17 @@ export function ImovelForm({ editId }: { editId?: string }) {
                   return;
                 }
                 try {
-                  const ext = file.name.split('.').pop();
-                  const path = `${user.id}/exclusividade/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
-                  const { error: upErr } = await supabase.storage.from('site-assets').upload(path, file);
-                  if (upErr) throw upErr;
-                  const { data: urlData } = supabase.storage.from('site-assets').getPublicUrl(path);
-                  set('termoExclusividadeUrl', urlData.publicUrl);
+                  if (file.type.startsWith('image/')) {
+                    const url = await uploadImageToCloudflare(file, { folder: 'exclusividade', source: 'termo-exclusividade' });
+                    set('termoExclusividadeUrl', url);
+                  } else {
+                    const ext = file.name.split('.').pop();
+                    const path = `${user.id}/exclusividade/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+                    const { error: upErr } = await supabase.storage.from('site-assets').upload(path, file);
+                    if (upErr) throw upErr;
+                    const { data: urlData } = supabase.storage.from('site-assets').getPublicUrl(path);
+                    set('termoExclusividadeUrl', urlData.publicUrl);
+                  }
                   toast({ title: "Termo enviado", description: "Arquivo carregado com sucesso." });
                 } catch (err: any) {
                   toast({ title: "Erro no upload", description: err.message, variant: "destructive" });

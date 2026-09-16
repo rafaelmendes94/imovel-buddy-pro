@@ -1,6 +1,6 @@
 import { AppLayout } from "@/components/AppLayout";
 import { BackButton } from "@/components/BackButton";
-import { Building2, CreditCard, Bell, Shield, KeyRound, Palette, Eye, EyeOff, Globe, Copy, Loader2, CheckCircle, XCircle, User, Phone } from "lucide-react";
+import { Building2, CreditCard, Bell, Shield, KeyRound, Palette, Eye, EyeOff, Globe, Copy, Loader2, CheckCircle, XCircle, User, Phone, Image } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -12,11 +12,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Switch } from "@/components/ui/switch";
 import { SiteConfigDialog } from "@/components/SiteConfigDialog";
 import { useAuth } from "@/hooks/useAuth";
+import { uploadImageToCloudflare } from "@/lib/cloudflareImages";
 
 export default function Settings() {
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [showSiteConfig, setShowSiteConfig] = useState(false);
   const [showAsaasDialog, setShowAsaasDialog] = useState(false);
+  const [showCloudflareDialog, setShowCloudflareDialog] = useState(false);
   const [showProfileDialog, setShowProfileDialog] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -32,6 +34,16 @@ export default function Settings() {
   const [testingAsaas, setTestingAsaas] = useState(false);
   const [testResult, setTestResult] = useState<"success" | "error" | null>(null);
 
+  // Cloudflare Images state
+  const [cloudflareAccountId, setCloudflareAccountId] = useState("");
+  const [cloudflareToken, setCloudflareToken] = useState("");
+  const [cloudflareHash, setCloudflareHash] = useState("");
+  const [cloudflareVariant, setCloudflareVariant] = useState("public");
+  const [showCloudflareToken, setShowCloudflareToken] = useState(false);
+  const [savingCloudflare, setSavingCloudflare] = useState(false);
+  const [testingCloudflare, setTestingCloudflare] = useState(false);
+  const [cloudflareTestResult, setCloudflareTestResult] = useState<"success" | "error" | null>(null);
+
   // Profile state
   const [profileName, setProfileName] = useState("");
   const [profilePhone, setProfilePhone] = useState("");
@@ -42,6 +54,10 @@ export default function Settings() {
   useEffect(() => {
     if (showAsaasDialog) loadAsaasSettings();
   }, [showAsaasDialog]);
+
+  useEffect(() => {
+    if (showCloudflareDialog) loadCloudflareSettings();
+  }, [showCloudflareDialog]);
 
   useEffect(() => {
     if (showProfileDialog) loadProfile();
@@ -83,12 +99,13 @@ export default function Settings() {
   const handleAvatarUpload = async (file: File) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    const ext = file.name.split(".").pop();
-    const path = `${user.id}/avatar-${Date.now()}.${ext}`;
-    const { error: upErr } = await supabase.storage.from("site-assets").upload(path, file, { upsert: true });
-    if (upErr) { toast({ title: "Erro no upload", description: upErr.message, variant: "destructive" }); return; }
-    const { data: pub } = supabase.storage.from("site-assets").getPublicUrl(path);
-    setProfileAvatar(pub.publicUrl);
+    try {
+      const url = await uploadImageToCloudflare(file, { folder: "avatars", source: "perfil" });
+      setProfileAvatar(url);
+      toast({ title: "Foto enviada", description: "Avatar carregado no Cloudflare." });
+    } catch (err: any) {
+      toast({ title: "Erro no upload", description: err?.message || "Falha ao enviar imagem.", variant: "destructive" });
+    }
   };
 
   const loadAsaasSettings = async () => {
@@ -148,6 +165,57 @@ export default function Settings() {
       toast({ title: "Falha na conexão", description: err?.message || "Não foi possível testar o Asaas.", variant: "destructive" });
     }
     setTestingAsaas(false);
+  };
+
+  const loadCloudflareSettings = async () => {
+    const { data } = await supabase
+      .from("system_settings")
+      .select("key, value")
+      .in("key", ["cloudflare_account_id", "cloudflare_images_token", "cloudflare_images_hash", "cloudflare_images_variant"]);
+    if (data) {
+      data.forEach((s) => {
+        if (s.key === "cloudflare_account_id") setCloudflareAccountId(s.value);
+        if (s.key === "cloudflare_images_token") setCloudflareToken(s.value);
+        if (s.key === "cloudflare_images_hash") setCloudflareHash(s.value);
+        if (s.key === "cloudflare_images_variant") setCloudflareVariant(s.value || "public");
+      });
+    }
+  };
+
+  const handleSaveCloudflare = async () => {
+    setSavingCloudflare(true);
+    try {
+      await saveAsaasSetting("cloudflare_account_id", cloudflareAccountId.trim());
+      await saveAsaasSetting("cloudflare_images_token", cloudflareToken.trim());
+      await saveAsaasSetting("cloudflare_images_hash", cloudflareHash.trim());
+      await saveAsaasSetting("cloudflare_images_variant", cloudflareVariant.trim() || "public");
+      toast({ title: "Cloudflare salvo!", description: "Uploads de imagem usarão Cloudflare Images." });
+    } catch (err: any) {
+      toast({ title: "Erro ao salvar", description: err.message, variant: "destructive" });
+    }
+    setSavingCloudflare(false);
+  };
+
+  const handleTestCloudflare = async () => {
+    setTestingCloudflare(true);
+    setCloudflareTestResult(null);
+    try {
+      await handleSaveCloudflare();
+      const { data, error } = await supabase.functions.invoke("cloudflare-direct-upload", {
+        body: { filename: "teste.jpg", source: "teste-configuracao" },
+      });
+      if (error || data?.error || !data?.uploadURL) {
+        setCloudflareTestResult("error");
+        toast({ title: "Falha no Cloudflare", description: data?.error || error?.message || "Verifique as credenciais.", variant: "destructive" });
+      } else {
+        setCloudflareTestResult("success");
+        toast({ title: "Cloudflare OK!", description: "URL temporária criada com sucesso." });
+      }
+    } catch (err: any) {
+      setCloudflareTestResult("error");
+      toast({ title: "Falha no Cloudflare", description: err?.message || "Não foi possível testar.", variant: "destructive" });
+    }
+    setTestingCloudflare(false);
   };
 
   const webhookUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/asaas-webhook`;
@@ -230,6 +298,11 @@ export default function Settings() {
       title: "Asaas / Pagamentos",
       description: "Configure a API Key e ambiente do gateway Asaas",
       onClick: () => setShowAsaasDialog(true),
+    }, {
+      icon: Image,
+      title: "Cloudflare Images",
+      description: "Configure a hospedagem das imagens enviadas pelo painel",
+      onClick: () => setShowCloudflareDialog(true),
     }] : []),
   ];
 
@@ -389,6 +462,101 @@ export default function Settings() {
               {testResult && (
                 <Badge variant={testResult === "success" ? "default" : "destructive"}>
                   {testResult === "success" ? "✓ Conexão OK" : "✗ Falha na conexão"}
+                </Badge>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Cloudflare Images Dialog */}
+        <Dialog open={showCloudflareDialog} onOpenChange={setShowCloudflareDialog}>
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Image className="w-5 h-5" />
+                Cloudflare Images
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Account ID</Label>
+                <Input
+                  value={cloudflareAccountId}
+                  onChange={(e) => setCloudflareAccountId(e.target.value)}
+                  placeholder="Ex: 4f7d..."
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>API Token</Label>
+                <div className="relative">
+                  <Input
+                    type={showCloudflareToken ? "text" : "password"}
+                    value={cloudflareToken}
+                    onChange={(e) => setCloudflareToken(e.target.value)}
+                    placeholder="Token com permissão Cloudflare Images:Edit"
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowCloudflareToken(!showCloudflareToken)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    {showCloudflareToken ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Account Hash</Label>
+                <Input
+                  value={cloudflareHash}
+                  onChange={(e) => setCloudflareHash(e.target.value)}
+                  placeholder="Hash usado em https://imagedelivery.net/HASH/..."
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Variante pública</Label>
+                <Input
+                  value={cloudflareVariant}
+                  onChange={(e) => setCloudflareVariant(e.target.value)}
+                  placeholder="public"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Use normalmente "public". A variante precisa existir no Cloudflare Images.
+                </p>
+              </div>
+
+              <div className="rounded-lg border bg-muted/40 p-3 text-xs text-muted-foreground space-y-1">
+                <p>As imagens novas do cadastro, galerias e avatar serão enviadas direto para Cloudflare Images.</p>
+                <p>PDFs e documentos continuam usando o storage atual.</p>
+              </div>
+
+              <div className="flex gap-2 pt-2">
+                <Button onClick={handleSaveCloudflare} disabled={savingCloudflare}>
+                  {savingCloudflare ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                  Salvar
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleTestCloudflare}
+                  disabled={testingCloudflare || !cloudflareAccountId || !cloudflareToken || !cloudflareHash}
+                >
+                  {testingCloudflare ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : cloudflareTestResult === "success" ? (
+                    <CheckCircle className="w-4 h-4 mr-2 text-success" />
+                  ) : cloudflareTestResult === "error" ? (
+                    <XCircle className="w-4 h-4 mr-2 text-destructive" />
+                  ) : null}
+                  Testar
+                </Button>
+              </div>
+
+              {cloudflareTestResult && (
+                <Badge variant={cloudflareTestResult === "success" ? "default" : "destructive"}>
+                  {cloudflareTestResult === "success" ? "✓ Cloudflare OK" : "✗ Falha na conexão"}
                 </Badge>
               )}
             </div>

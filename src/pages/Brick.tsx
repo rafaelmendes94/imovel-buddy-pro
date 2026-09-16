@@ -16,6 +16,7 @@ import {
   Package, X, CheckCircle2, Eye
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { uploadImageToCloudflare } from "@/lib/cloudflareImages";
 
 const categorias = ["Eletrônicos", "Móveis", "Veículos", "Roupas", "Esportes", "Ferramentas", "Livros", "Decoração", "Eletrodomésticos", "Outros"];
 const estados = ["Novo", "Semi-novo", "Usado", "Para peças"];
@@ -101,12 +102,8 @@ export default function Brick() {
       // Upload new images
       const uploadedUrls: string[] = [];
       for (const file of imageFiles) {
-        const ext = file.name.split(".").pop();
-        const path = `brick/${user.id}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
-        const { error: upErr } = await supabase.storage.from("site-assets").upload(path, file);
-        if (upErr) throw upErr;
-        const { data: urlData } = supabase.storage.from("site-assets").getPublicUrl(path);
-        uploadedUrls.push(urlData.publicUrl);
+        const url = await uploadImageToCloudflare(file, { folder: "brick", source: "brick" });
+        uploadedUrls.push(url);
       }
 
       const allImages = [...existingImages, ...uploadedUrls];

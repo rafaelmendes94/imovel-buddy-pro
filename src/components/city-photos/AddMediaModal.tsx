@@ -2,6 +2,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { X, Upload, Save, Video, ImageIcon } from "lucide-react";
+import { uploadImageToCloudflare } from "@/lib/cloudflareImages";
 
 interface Props {
   galleryId: string;
@@ -36,15 +37,17 @@ export function AddMediaModal({ galleryId, onClose, onSaved }: Props) {
     if (files.length === 0) { toast.error("Selecione ao menos uma foto"); setSaving(false); return; }
 
     for (const file of files) {
-      const ext = file.name.split(".").pop();
-      const path = `items/${galleryId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      const { error: upErr } = await supabase.storage.from("city-photos").upload(path, file);
-      if (upErr) { toast.error(`Erro no upload: ${file.name}`); continue; }
-      const { data: pub } = supabase.storage.from("city-photos").getPublicUrl(path);
+      let url = "";
+      try {
+        url = await uploadImageToCloudflare(file, { folder: `city-photos/${galleryId}`, source: "fotos-cidade" });
+      } catch (err: any) {
+        toast.error(`Erro no upload: ${file.name}`, { description: err?.message });
+        continue;
+      }
       await supabase.from("city_gallery_items").insert({
         gallery_id: galleryId,
         tipo: "foto",
-        url: pub.publicUrl,
+        url,
         titulo: titulo || file.name,
       });
     }

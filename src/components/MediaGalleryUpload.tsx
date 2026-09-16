@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Loader2, Upload, X, Plus, FileText, Video as VideoIcon, ExternalLink } from 'lucide-react';
+import { uploadImageToCloudflare } from '@/lib/cloudflareImages';
 
 type Kind = 'image' | 'video' | 'file';
 
@@ -64,15 +65,21 @@ export function MediaGalleryUpload({
     setUploading(true);
     const uploaded: string[] = [];
     for (const file of Array.from(files)) {
-      const ext = (file.name.split('.').pop() || 'bin').toLowerCase();
-      const path = `${user.id}/${folder}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
-      const { error } = await supabase.storage.from('site-assets').upload(path, file, { upsert: false });
-      if (error) {
-        toast({ title: `Erro ao enviar ${file.name}`, description: error.message, variant: 'destructive' });
-        continue;
+      try {
+        if (file.type.startsWith('image/')) {
+          const url = await uploadImageToCloudflare(file, { folder, source: 'media-gallery' });
+          uploaded.push(url);
+        } else {
+          const ext = (file.name.split('.').pop() || 'bin').toLowerCase();
+          const path = `${user.id}/${folder}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+          const { error } = await supabase.storage.from('site-assets').upload(path, file, { upsert: false });
+          if (error) throw error;
+          const { data: urlData } = supabase.storage.from('site-assets').getPublicUrl(path);
+          uploaded.push(urlData.publicUrl);
+        }
+      } catch (error: any) {
+        toast({ title: `Erro ao enviar ${file.name}`, description: error?.message || 'Falha no upload.', variant: 'destructive' });
       }
-      const { data: urlData } = supabase.storage.from('site-assets').getPublicUrl(path);
-      uploaded.push(urlData.publicUrl);
     }
     if (uploaded.length) {
       onChange([...(values || []), ...uploaded]);

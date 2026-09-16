@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, Image, Palette, Loader2, Type, Globe, Phone, Mail, Instagram } from "lucide-react";
+import { uploadImageToCloudflare } from "@/lib/cloudflareImages";
 
 interface SiteConfigDialogProps {
   open: boolean;
@@ -115,15 +116,16 @@ export function SiteConfigDialog({
   };
 
   const uploadFile = async (file: File, folder: string): Promise<string | null> => {
-    const ext = file.name.split(".").pop();
-    const path = `${folder}/${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from("site-assets").upload(path, file, { upsert: true });
-    if (error) {
-      toast({ title: "Erro no upload", description: error.message, variant: "destructive" });
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Arquivo inválido", description: "Envie uma imagem.", variant: "destructive" });
       return null;
     }
-    const { data: urlData } = supabase.storage.from("site-assets").getPublicUrl(path);
-    return urlData.publicUrl;
+    try {
+      return await uploadImageToCloudflare(file, { folder, source: "site-config" });
+    } catch (err: any) {
+      toast({ title: "Erro no upload", description: err?.message || "Falha ao enviar imagem.", variant: "destructive" });
+      return null;
+    }
   };
 
   const handleFileUpload = async (

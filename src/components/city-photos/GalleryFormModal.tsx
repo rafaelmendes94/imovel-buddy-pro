@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { X, Save, Upload } from "lucide-react";
 import type { CityGallery } from "@/pages/CityPhotos";
+import { uploadImageToCloudflare } from "@/lib/cloudflareImages";
 
 interface Props {
   gallery: CityGallery | null;
@@ -29,12 +30,12 @@ export function GalleryFormModal({ gallery, onClose, onSaved }: Props) {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
-    const ext = file.name.split(".").pop();
-    const path = `capas/${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from("city-photos").upload(path, file);
-    if (error) { toast.error("Erro no upload"); setUploading(false); return; }
-    const { data: pub } = supabase.storage.from("city-photos").getPublicUrl(path);
-    setCapaUrl(pub.publicUrl);
+    try {
+      const url = await uploadImageToCloudflare(file, { folder: "city-photos/capas", source: "capa-fotos-cidade" });
+      setCapaUrl(url);
+    } catch (err: any) {
+      toast.error("Erro no upload", { description: err?.message });
+    }
     setUploading(false);
   };
 

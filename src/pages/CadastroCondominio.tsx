@@ -14,6 +14,7 @@ import { InfraToggle } from '@/components/InfraToggle';
 import { useSystemOptions } from '@/hooks/useSystemOptions';
 import { Fence, MapPin, Layers, Save, Image, Loader2, Building2, FileText, DollarSign, FileUp, Upload, Camera, Video, FolderDown, Box } from 'lucide-react';
 import { MediaGalleryUpload } from '@/components/MediaGalleryUpload';
+import { uploadImageToCloudflare } from '@/lib/cloudflareImages';
 
 const typeOptions = ["Vertical", "Horizontal", "Misto"];
 
@@ -84,15 +85,21 @@ export default function CadastroCondominio() {
     const file = e.target.files?.[0];
     if (!file || !user) return;
     setUploading(true);
-    const ext = file.name.split('.').pop();
-    const path = `implantacoes/${user.id}/${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from('site-assets').upload(path, file, { upsert: true });
-    if (error) {
-      toast({ title: "Erro ao enviar arquivo", description: error.message, variant: "destructive" });
-    } else {
-      const { data: urlData } = supabase.storage.from('site-assets').getPublicUrl(path);
-      setForm(f => ({ ...f, implantacao_url: urlData.publicUrl }));
+    try {
+      if (file.type.startsWith('image/')) {
+        const url = await uploadImageToCloudflare(file, { folder: 'condominios/implantacoes', source: 'implantacao-condominio' });
+        setForm(f => ({ ...f, implantacao_url: url }));
+      } else {
+        const ext = file.name.split('.').pop();
+        const path = `implantacoes/${user.id}/${Date.now()}.${ext}`;
+        const { error } = await supabase.storage.from('site-assets').upload(path, file, { upsert: true });
+        if (error) throw error;
+        const { data: urlData } = supabase.storage.from('site-assets').getPublicUrl(path);
+        setForm(f => ({ ...f, implantacao_url: urlData.publicUrl }));
+      }
       toast({ title: "Arquivo enviado ✅" });
+    } catch (error: any) {
+      toast({ title: "Erro ao enviar arquivo", description: error?.message || "Falha no upload.", variant: "destructive" });
     }
     setUploading(false);
   };

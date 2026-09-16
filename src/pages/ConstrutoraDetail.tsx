@@ -16,6 +16,7 @@ import {
   ExternalLink, TrendingUp, Eye, Award, Users, Layers, Upload,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { uploadImageToCloudflare } from "@/lib/cloudflareImages";
 
 interface Construtora {
   id: string; nome: string; slug: string; descricao: string;
@@ -132,18 +133,19 @@ export default function ConstrutoraDetail() {
   const uploadImage = async (file: File, type: 'cover' | 'perfil') => {
     if (!id) return;
     setUploading(true);
-    const ext = file.name.split('.').pop();
-    const path = `construtoras/${id}/${type}_${Date.now()}.${ext}`;
-    const { error: uploadError } = await supabase.storage.from('site-assets').upload(path, file);
-    if (uploadError) { toast.error("Erro no upload"); setUploading(false); return; }
-    const { data: { publicUrl } } = supabase.storage.from('site-assets').getPublicUrl(path);
-    const field = type === 'cover' ? 'cover_url' : 'perfil_url';
-    const updateData: Record<string, string> = { updated_at: new Date().toISOString() };
-    updateData[field] = publicUrl;
-    await supabase.from("construtoras").update(updateData as any).eq("id", id);
-    setUploading(false);
-    toast.success(`${type === 'cover' ? 'Capa' : 'Foto de perfil'} atualizada!`);
-    fetchAll();
+    try {
+      const publicUrl = await uploadImageToCloudflare(file, { folder: `construtoras/${id}`, source: `construtora-${type}` });
+      const field = type === 'cover' ? 'cover_url' : 'perfil_url';
+      const updateData: Record<string, string> = { updated_at: new Date().toISOString() };
+      updateData[field] = publicUrl;
+      await supabase.from("construtoras").update(updateData as any).eq("id", id);
+      toast.success(`${type === 'cover' ? 'Capa' : 'Foto de perfil'} atualizada!`);
+      fetchAll();
+    } catch (err: any) {
+      toast.error("Erro no upload", { description: err?.message });
+    } finally {
+      setUploading(false);
+    }
   };
 
   const saveEmpreendimento = async () => {

@@ -56,6 +56,62 @@ const loadSettings = async (supabase: any, keys: string[]) => {
   return map;
 };
 
+const cloudflareDirectUpload = async (req: Request) => {
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+  const userId = await authedUserId(req, supabaseUrl, anonKey);
+  if (!userId) return json({ error: "Unauthorized" }, 401);
+
+  const body = await req.json().catch(() => ({}));
+  const metadata = {
+    user_id: userId,
+    source: body?.source || "mv-connect",
+    folder: body?.folder || null,
+    filename: body?.filename || null,
+  };
+
+  const supabase = createClient(supabaseUrl, getServiceKey());
+  const settings = await loadSettings(supabase, [
+    "cloudflare_account_id",
+    "cloudflare_images_token",
+    "cloudflare_images_hash",
+    "cloudflare_images_variant",
+  ]);
+
+  const accountId = settings.cloudflare_account_id || Deno.env.get("CLOUDFLARE_ACCOUNT_ID");
+  const apiToken = settings.cloudflare_images_token || Deno.env.get("CLOUDFLARE_IMAGES_TOKEN");
+  const accountHash = settings.cloudflare_images_hash || Deno.env.get("CLOUDFLARE_IMAGES_HASH");
+  const variant = settings.cloudflare_images_variant || Deno.env.get("CLOUDFLARE_IMAGES_VARIANT") || "public";
+
+  if (!accountId || !apiToken || !accountHash) {
+    return json({
+      error: "Cloudflare Images não configurado. Informe Account ID, API Token e Account Hash.",
+    }, 400);
+  }
+
+  const form = new FormData();
+  form.set("requireSignedURLs", "false");
+  form.set("metadata", JSON.stringify(metadata));
+
+  const response = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/images/v2/direct_upload`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${apiToken}` },
+    body: form,
+  });
+  const data = await response.json().catch(() => null);
+  if (!response.ok || !data?.success || !data?.result?.uploadURL || !data?.result?.id) {
+    console.error("Cloudflare direct upload error:", data);
+    return json({ error: "Erro ao criar upload no Cloudflare Images", details: data }, 500);
+  }
+
+  const imageId = data.result.id as string;
+  return json({
+    id: imageId,
+    uploadURL: data.result.uploadURL,
+    deliveryUrl: `https://imagedelivery.net/${accountHash}/${imageId}/${variant}`,
+  });
+};
+
 const DEFAULT_STAFF_PERMISSIONS = {
   dashboard_admin: { view: false, create: false, edit: false, delete: false },
   funcionarios: { view: false, create: false, edit: false, delete: false },
@@ -540,6 +596,7 @@ serve(async (req: Request) => {
     if (fn === "admin-create-broker") return await adminCreateBroker(req);
     if (fn === "admin-create-staff") return await adminCreateStaff(req);
     if (fn === "reset-password") return await resetPassword(req);
+    if (fn === "cloudflare-direct-upload") return await cloudflareDirectUpload(req);
     if (fn === "property-feed") return await propertyFeed(req);
     if (fn === "generate-description") return await generateDescription(req);
     if (fn === "property-valuation") return await propertyValuation(req);
