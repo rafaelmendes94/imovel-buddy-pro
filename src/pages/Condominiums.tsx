@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { PLACEHOLDER_IMAGE } from "@/lib/placeholderImage";
+import { formatProperName } from "@/lib/nameFormat";
 import {
   brl, brlShort, emptyMetrics, metricsByCondo, type CondoMetrics, type MetricImovel,
 } from "@/lib/condoMetrics";
@@ -144,7 +145,7 @@ export default function Condominiums() {
           .select("id, condominio_id, status, preco")
           .not("condominio_id", "is", null),
       ]);
-      setCondos((cRes.data as any) || []);
+      setCondos((((cRes.data as any) || []) as CondoRow[]).map(c => ({ ...c, nome: formatProperName(c.nome) })));
       setImoveis((iRes.data as any) || []);
       setLoading(false);
     })();
@@ -233,8 +234,8 @@ export default function Condominiums() {
     const byM = (id: string) => metricsOf(id);
     const sorted = [...list];
     switch (sort) {
-      case "nome-az": sorted.sort((a, b) => a.nome.localeCompare(b.nome)); break;
-      case "nome-za": sorted.sort((a, b) => b.nome.localeCompare(a.nome)); break;
+      case "nome-az": sorted.sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR")); break;
+      case "nome-za": sorted.sort((a, b) => b.nome.localeCompare(a.nome, "pt-BR")); break;
       case "vgv-ativo": sorted.sort((a, b) => byM(b.id).vgvAtivo - byM(a.id).vgvAtivo); break;
       case "vgv-vendido": sorted.sort((a, b) => byM(b.id).vgvVendido - byM(a.id).vgvVendido); break;
       case "mais-ativos": sorted.sort((a, b) => byM(b.id).ativos - byM(a.id).ativos); break;

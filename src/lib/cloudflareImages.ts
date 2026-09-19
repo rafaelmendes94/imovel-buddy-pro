@@ -35,5 +35,11 @@ export async function uploadImageToCloudflare(file: File, options: UploadOptions
     throw new Error(uploadResult?.errors?.[0]?.message || "Cloudflare recusou o upload da imagem.");
   }
 
+  const variants = Array.isArray(uploadResult?.result?.variants) ? uploadResult.result.variants : [];
+  const publicVariant = variants.find((url: string) => /\/public($|\?)/i.test(url));
+  if (publicVariant || variants[0]) {
+    return String(publicVariant || variants[0]);
+  }
+
   return String(data.deliveryUrl);
 }

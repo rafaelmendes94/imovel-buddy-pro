@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { formatProperName } from "@/lib/nameFormat";
 
 interface Condominio {
   id: string;
@@ -27,7 +28,7 @@ export default function MapasCondominio() {
         .from("condominios")
         .select("id, nome, imagem_url, endereco, cidade, mapa_pdf_url")
         .order("nome");
-      setCondominios(data || []);
+      setCondominios((data || []).map(c => ({ ...c, nome: formatProperName(c.nome) })));
       setLoading(false);
     };
     load();

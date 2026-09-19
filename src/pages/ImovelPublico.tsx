@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { buildWhatsappMessage, toWhatsappNumber } from "@/lib/propertyEvents";
 import { LocationMapCard } from "@/components/LocationMapCard";
+import { FallbackImage } from "@/components/FallbackImage";
 
 interface ImovelRow {
   id: string;
@@ -393,7 +394,7 @@ export default function ImovelPublico() {
         {/* ===== Galeria de fotos ===== */}
         <div {...swipe} className="relative bg-foreground rounded-xl sm:rounded-2xl overflow-hidden shadow-xl aspect-[4/3] sm:aspect-video">
           {images.length > 0 ? (
-            <img src={images[idx]} alt={`${imovel.titulo} - foto ${idx + 1}`} onClick={() => setLightbox(idx)} className="w-full h-full object-cover cursor-zoom-in" />
+            <FallbackImage src={images[idx]} sources={images} alt={`${imovel.titulo} - foto ${idx + 1}`} onClick={() => setLightbox(idx)} className="w-full h-full object-cover cursor-zoom-in" />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-background/60 text-sm">Sem imagem</div>
           )}
@@ -445,7 +446,7 @@ export default function ImovelPublico() {
             <div ref={thumbsRef} className="flex gap-2 overflow-x-auto pb-1 scroll-smooth min-w-0" style={{ scrollbarWidth: "none" }}>
               {images.map((img, i) => (
                 <button key={i} onClick={() => setIdx(i)} className={cn("flex-shrink-0 w-24 h-16 sm:w-36 sm:h-24 rounded-lg overflow-hidden border-2 transition-all", i === idx ? "border-primary" : "border-transparent opacity-70 hover:opacity-100")}>
-                  <img src={img} alt="" className="w-full h-full object-cover" />
+                  <FallbackImage src={img} sources={images} alt="" className="w-full h-full object-cover" />
                 </button>
               ))}
             </div>
@@ -759,7 +760,7 @@ export default function ImovelPublico() {
               <button onClick={(e) => { e.stopPropagation(); setLightbox((i) => (i! + 1) % images.length); }} className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-card/10 hover:bg-card/20 flex items-center justify-center text-background"><ChevronRight className="w-6 h-6" /></button>
             </>
           )}
-          <img src={images[lightbox]} alt="" onClick={(e) => e.stopPropagation()} className="max-w-full max-h-full object-contain rounded-lg" />
+          <FallbackImage src={images[lightbox]} sources={images} alt="" onClick={(e) => e.stopPropagation()} className="max-w-full max-h-full object-contain rounded-lg" />
         </div>
       )}
     </div>

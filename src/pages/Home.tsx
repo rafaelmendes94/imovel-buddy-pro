@@ -1,4 +1,5 @@
 import { PLACEHOLDER_IMAGE } from "@/lib/placeholderImage";
+import { FallbackImage } from "@/components/FallbackImage";
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -75,7 +76,7 @@ function MiniPropertyCard({ property: p }: { property: SiteProperty }) {
   return (
     <Link to={`/site?tipo=${encodeURIComponent(p.tipo)}`} className="min-w-[260px] sm:min-w-[280px] max-w-[300px] snap-start rounded-xl overflow-hidden bg-card border border-border shadow-sm hover:shadow-lg transition-all flex-shrink-0">
       <div className="relative h-40 overflow-hidden">
-        <img src={img} alt={p.titulo} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
+        <FallbackImage src={img} sources={p.imagens} alt={p.titulo} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
         <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-end justify-between">
           <p className="text-base font-bold text-white drop-shadow-lg">{formatCurrency(p.preco)}</p>

@@ -30,6 +30,7 @@ import { ImportImoveisWizard } from "@/components/ImportImoveisWizard";
 import { ImportPdfTabelaBeta } from "@/components/ImportPdfTabelaBeta";
 import { getPropertyUnitParts } from "@/lib/propertyIdentity";
 import { exportImoveisXls } from "@/lib/exportImoveisXls";
+import { FallbackImage } from "@/components/FallbackImage";
 
 // Broker info
 const brokerInfo: Record<string, { photo: string; whatsapp: string }> = {
@@ -1740,7 +1741,7 @@ export default function Properties() {
                       className="bg-background rounded-xl border border-border overflow-hidden cursor-pointer hover:shadow-md transition-shadow group"
                     >
                       <div className="relative h-36 overflow-hidden">
-                        <img src={p.images?.[0] || p.image} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <FallbackImage src={p.images?.[0] || p.image} sources={p.images} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                         <p className="absolute bottom-2 left-3 text-base font-bold text-white drop-shadow">{formatCurrency(p.price)}</p>
                         <button
@@ -2004,7 +2005,7 @@ export default function Properties() {
                         className="flex items-center gap-3 p-3 rounded-xl border border-border hover:bg-muted/30 transition-colors cursor-pointer"
                         onClick={() => { setShowSoldThisMonth(false); openProperty(p); }}
                       >
-                        <img src={p.image} alt={p.title} className="w-16 h-12 rounded-lg object-cover flex-shrink-0" />
+                        <FallbackImage src={p.image} sources={p.images} alt={p.title} className="w-16 h-12 rounded-lg object-cover flex-shrink-0" />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-foreground truncate">{p.title}</p>
                           <p className="text-xs text-muted-foreground truncate">{p.address}, {p.city}</p>
@@ -2047,7 +2048,7 @@ function ImageCarousel({ images: rawImages, alt }: { images?: string[]; alt: str
   return (
     <div className="relative h-48 overflow-hidden group/carousel">
       {images.map((src, i) => (
-        <img key={i} src={src} alt={`${alt} ${i + 1}`} className={cn("absolute inset-0 w-full h-full object-cover transition-all duration-500", i === current ? "opacity-100 scale-100" : "opacity-0 scale-105")} />
+        <FallbackImage key={i} src={src} sources={images} alt={`${alt} ${i + 1}`} className={cn("absolute inset-0 w-full h-full object-cover transition-all duration-500", i === current ? "opacity-100 scale-100" : "opacity-0 scale-105")} />
       ))}
       {images.length > 1 && (
         <>
@@ -2410,7 +2411,7 @@ function RowCarousel({ images }: { images: string[] }) {
   return (
     <div className="relative w-full h-full min-h-[140px] overflow-hidden group/row-carousel">
       {images.map((src, i) => (
-        <img key={i} src={src} alt={`Foto ${i + 1}`} className={cn("absolute inset-0 w-full h-full object-cover transition-all duration-400", i === current ? "opacity-100" : "opacity-0")} />
+        <FallbackImage key={i} src={src} sources={images} alt={`Foto ${i + 1}`} className={cn("absolute inset-0 w-full h-full object-cover transition-all duration-400", i === current ? "opacity-100" : "opacity-0")} />
       ))}
       {images.length > 1 && (
         <>

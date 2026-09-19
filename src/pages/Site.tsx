@@ -1,6 +1,7 @@
 import { PublicMobileNav } from "@/components/PublicMobileNav";
 import { MobileQuickActions } from "@/components/MobileQuickActions";
 import { PLACEHOLDER_IMAGE } from "@/lib/placeholderImage";
+import { FallbackImage } from "@/components/FallbackImage";
 import { RASTER_RENDERING } from "@/lib/mapUtils";
 import { getPropertyUnitParts } from "@/lib/propertyIdentity";
 import { PUBLIC_IMOVEL_COLUMNS } from "@/lib/publicImovelColumns";
@@ -144,8 +145,9 @@ function PropertyCard({ property, onSelect, hideStamp, onViewTerm, isFavorited, 
       {/* Image area */}
       <div className="relative cursor-pointer" onClick={() => onSelect?.(property)}>
         <div className="relative aspect-[4/3] overflow-hidden">
-          <img
+          <FallbackImage
             src={imgs[imgIndex]}
+            sources={imgs}
             alt={property.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
           />

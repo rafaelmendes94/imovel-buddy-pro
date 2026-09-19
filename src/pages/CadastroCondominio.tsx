@@ -15,6 +15,7 @@ import { useSystemOptions } from '@/hooks/useSystemOptions';
 import { Fence, MapPin, Layers, Save, Image, Loader2, Building2, FileText, DollarSign, FileUp, Upload, Camera, Video, FolderDown, Box } from 'lucide-react';
 import { MediaGalleryUpload } from '@/components/MediaGalleryUpload';
 import { uploadImageToCloudflare } from '@/lib/cloudflareImages';
+import { formatProperName } from '@/lib/nameFormat';
 
 const typeOptions = ["Vertical", "Horizontal", "Misto"];
 
@@ -108,7 +109,7 @@ export default function CadastroCondominio() {
     if (!form.nome || !user) return;
     setSaving(true);
     const payload: any = {
-      nome: form.nome, construtora: form.construtora, ano_construcao: form.ano_construcao,
+      nome: formatProperName(form.nome), construtora: form.construtora, ano_construcao: form.ano_construcao,
       tipo: form.tipo, cep: form.cep, endereco: form.endereco, numero: form.numero,
       complemento: form.complemento, bairro: form.bairro, cidade: form.cidade, estado: form.estado,
       total_unidades: form.total_unidades, unidades_disponiveis: form.unidades_disponiveis,
@@ -152,7 +153,7 @@ export default function CadastroCondominio() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="sm:col-span-2 space-y-1.5">
               <Label className="text-xs">Nome do Condomínio *</Label>
-              <Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} placeholder="Nome do condomínio" />
+              <Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} onBlur={() => setForm(f => ({ ...f, nome: formatProperName(f.nome) }))} placeholder="Nome do condomínio" />
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs">Construtora</Label>

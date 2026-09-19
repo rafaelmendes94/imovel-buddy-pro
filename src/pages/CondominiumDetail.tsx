@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useSmartBack } from "@/lib/useSmartBack";
 import { PLACEHOLDER_IMAGE } from "@/lib/placeholderImage";
+import { formatProperName } from "@/lib/nameFormat";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +23,7 @@ import {
 } from "lucide-react";
 import { PhotoGallery } from "@/components/condo/PhotoGallery";
 import { VideoBlock, TourBlock, isFileVideo, videoEmbedUrl, isSafeEmbedUrl } from "@/components/condo/MediaHero";
+import { FallbackImage } from "@/components/FallbackImage";
 
 export default function CondominiumDetail() {
   const { id } = useParams<{ id: string }>();
@@ -53,7 +55,7 @@ export default function CondominiumDetail() {
         supabase.from("condominios").select("*").eq("id", id).maybeSingle(),
         supabase.from("imoveis").select("*").eq("condominio_id", id).order("created_at", { ascending: false }),
       ]);
-      setCondo(cRes.data);
+      setCondo(cRes.data ? { ...cRes.data, nome: formatProperName((cRes.data as any).nome) } : null);
       setImoveis((iRes.data as any) || []);
       setLoading(false);
     })();
@@ -368,7 +370,7 @@ export default function CondominiumDetail() {
                 return (
                   <div key={im.id} className="rounded-xl border border-border bg-card overflow-hidden flex flex-col">
                     <div className="aspect-[4/3] overflow-hidden bg-muted">
-                      <img src={im.imagens?.[0] || PLACEHOLDER_IMAGE} alt={im.titulo} loading="lazy" className="w-full h-full object-cover" />
+                      <FallbackImage src={im.imagens?.[0] || PLACEHOLDER_IMAGE} sources={im.imagens || []} alt={im.titulo} loading="lazy" className="w-full h-full object-cover" />
                     </div>
                     <div className="p-3 space-y-1.5 flex-1 flex flex-col">
                       <div className="flex items-start justify-between gap-2">

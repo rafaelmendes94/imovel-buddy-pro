@@ -55,6 +55,7 @@ import { toast } from "sonner";
 import { generateBrokerCatalogPdf } from "@/utils/generateBrokerCatalogPdf";
 import { markPropertySold, reactivateProperty, isSoldStatus } from "@/lib/salesRegistry";
 import { resolveBrokerPageAvatar } from "@/lib/propertyFlow";
+import { FallbackImage } from "@/components/FallbackImage";
 
 const formatCurrency = (v: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
 
@@ -196,7 +197,7 @@ function PropertyCard({ p, brokerName, whatsapp, onOpen, isOwner = false, onUpda
       className="group cursor-pointer overflow-hidden rounded-3xl border border-border bg-card shadow-[var(--shadow-card)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)]"
     >
       <div className="relative h-60 overflow-hidden">
-        <img src={img} alt={p.titulo} loading="lazy" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+        <FallbackImage src={img} sources={p.imagens || []} alt={p.titulo} loading="lazy" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
         <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-foreground/20 to-transparent" />
         {p.termo_exclusividade_url && (
           <button
@@ -966,7 +967,7 @@ export default function BrokerSite() {
                 {(isOwner ? soldProperties : soldProperties.slice(0, 6)).map((property) => (
                   <article key={property.id} className="overflow-hidden rounded-3xl border border-border bg-card shadow-[var(--shadow-card)]">
                     <div className="relative h-56 overflow-hidden">
-                      <img src={property.imagens?.[0] || "/placeholder.svg"} alt={property.titulo} loading="lazy" className="h-full w-full object-cover" />
+                      <FallbackImage src={property.imagens?.[0] || "/placeholder.svg"} sources={property.imagens || []} alt={property.titulo} loading="lazy" className="h-full w-full object-cover" />
                       <div className="absolute inset-0 bg-gradient-to-t from-foreground/75 via-foreground/10 to-transparent" />
                       <span className="absolute left-4 top-4 rounded-full bg-destructive px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-destructive-foreground">Vendido</span>
                     </div>

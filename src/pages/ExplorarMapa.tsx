@@ -8,6 +8,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { PUBLIC_IMOVEL_COLUMNS } from "@/lib/publicImovelColumns";
 import { PLACEHOLDER_IMAGE } from "@/lib/placeholderImage";
+import { FallbackImage } from "@/components/FallbackImage";
 import { useGoogleMapsLoader } from "@/hooks/useGoogleMapsLoader";
 import { PublicMobileNav } from "@/components/PublicMobileNav";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -342,8 +343,9 @@ export default function ExplorarMapa() {
         )}
       >
         <div className={cn("relative w-full overflow-hidden bg-muted", compact ? "aspect-[16/9]" : "aspect-[4/3]")}>
-          <img
+          <FallbackImage
             src={im.imagens?.[0] || PLACEHOLDER_IMAGE}
+            sources={im.imagens || []}
             alt={im.titulo}
             loading="lazy"
             className="w-full h-full object-cover"
