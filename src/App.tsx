@@ -20,6 +20,7 @@ import Planos from "./pages/Planos";
 import PublicCityPhotos from "./pages/PublicCityPhotos";
 import ImovelPublico from "./pages/ImovelPublico";
 import Feed from "./pages/Feed";
+import TestadorXml from "./pages/TestadorXml";
 
 // Admin pages
 // AdminDashboard removed - using unified Dashboard
@@ -112,6 +113,8 @@ const App = () => (
             <Route path="/planos" element={<Planos />} />
             <Route path="/galeria-cidade" element={<PublicCityPhotos />} />
             <Route path="/imovel/:id" element={<ImovelPublico />} />
+            <Route path="/testador-xml" element={<TestadorXml />} />
+            <Route path="/construtoras/testador-xml" element={<TestadorXml />} />
             <Route path="/feed" element={protectedRoute(<Feed />, { adminModule: "imoveis" })} />
             <Route path="/mapa" element={<ExplorarMapa />} />
             <Route path="/explorar-mapa" element={<ExplorarMapa />} />
