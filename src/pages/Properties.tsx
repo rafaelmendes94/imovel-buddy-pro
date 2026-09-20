@@ -415,13 +415,10 @@ const getSavedCategoryOrder = (): typeof defaultCategories => {
 // (sem dados de exemplo — a lista vem 100% do banco)
 
 
-// Cache em memória para reabrir a página instantaneamente (stale-while-revalidate)
-let propertiesCache: Property[] | null = null;
-
 export default function Properties() {
   const navigate = useNavigate();
-  const { user, subscription, isSuperAdmin, isAdminStaff, hasModuleAccess } = useAuth();
-  const canCreateImoveis = isSuperAdmin || (isAdminStaff && hasModuleAccess("imoveis", "create"));
+  const { user, subscription, isSuperAdmin, isAdminStaff, isBroker, hasModuleAccess } = useAuth();
+  const canCreateImoveis = isSuperAdmin || isBroker || (isAdminStaff && hasModuleAccess("imoveis", "create"));
   const canEditImoveis = isSuperAdmin || (isAdminStaff && hasModuleAccess("imoveis", "edit"));
   const canDeleteImoveis = isSuperAdmin || (isAdminStaff && hasModuleAccess("imoveis", "delete"));
   const canBulkSelectImoveis = canEditImoveis || canDeleteImoveis;
@@ -437,8 +434,8 @@ export default function Properties() {
       .then(({ data }) => setCurrentImoveis(Number(data) || 0));
   }, [user, subscription?.id]);
 
-  const [propertyList, setPropertyList] = useState<Property[]>(() => propertiesCache ?? []);
-  const [loadingProperties, setLoadingProperties] = useState(!propertiesCache);
+  const [propertyList, setPropertyList] = useState<Property[]>([]);
+  const [loadingProperties, setLoadingProperties] = useState(true);
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<Category>("todos");
   const [view, setView] = useState<"grid" | "list" | "map">("grid");
@@ -525,7 +522,10 @@ export default function Properties() {
   const xmlMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (!user?.id) return;
+
     const fetchProperties = async () => {
+      setLoadingProperties(true);
       const { data, error } = await supabase
         .from("imoveis")
         .select("*")
@@ -534,23 +534,23 @@ export default function Properties() {
       if (error) {
         console.error("Erro ao carregar imóveis", error);
         toast.error("Erro ao carregar imóveis");
-        if (!propertiesCache) setPropertyList([]);
+        setPropertyList([]);
         setLoadingProperties(false);
         return;
       }
 
       const rows = data || [];
       const byId = async (table: "edificios" | "condominios" | "empreendimentos", ids: string[]) => {
-        if (!ids.length) return new Map<string, string>();
+        if (!ids.length) return new globalThis.Map<string, string>();
         const { data: related, error: relatedError } = await (supabase as any)
           .from(table)
           .select("id, nome")
           .in("id", ids);
         if (relatedError) {
           console.warn(`Não foi possível carregar ${table}`, relatedError);
-          return new Map<string, string>();
+          return new globalThis.Map<string, string>();
         }
-        return new Map(((related as any[]) || []).map((item) => [item.id, item.nome || ""]));
+        return new globalThis.Map(((related as any[]) || []).map((item) => [item.id, item.nome || ""]));
       };
 
       const edificioNames = await byId(
@@ -654,13 +654,12 @@ export default function Properties() {
         };
       });
 
-      propertiesCache = mapped;
       setPropertyList(mapped);
       setLoadingProperties(false);
     };
 
     fetchProperties();
-  }, []);
+  }, [user?.id]);
 
   // Load favorites from DB
   useEffect(() => {

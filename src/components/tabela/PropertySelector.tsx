@@ -173,9 +173,16 @@ export function PropertySelector({ imoveis, corretores, selectedIds, onToggle, o
                   selected ? "border-primary bg-primary/5 ring-1 ring-primary/40" : "border-border bg-card hover:bg-accent/40"
                 )}
               >
-                <button
-                  type="button"
+                <div
+                  role="button"
+                  tabIndex={0}
                   onClick={() => onToggle(p.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      onToggle(p.id);
+                    }
+                  }}
                   className="flex gap-3 p-2 w-full text-left items-center"
                 >
                   <div className="w-16 h-16 rounded-lg overflow-hidden bg-muted flex items-center justify-center flex-shrink-0">
@@ -203,7 +210,7 @@ export function PropertySelector({ imoveis, corretores, selectedIds, onToggle, o
                   >
                     {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                   </button>
-                </button>
+                </div>
                 {expanded && (
                   <div className="px-2 pb-2 pt-0 space-y-1 border-t border-border/50">
                     {lines.length > 0 && (

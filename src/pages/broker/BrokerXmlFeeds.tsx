@@ -11,16 +11,16 @@ import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-const PROJECT_ID = import.meta.env.VITE_SUPABASE_PROJECT_ID as string;
-const FN_BASE = `https://${PROJECT_ID}.supabase.co/functions/v1/property-feed`;
+const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL as string | undefined)?.replace(/\/$/, "");
+const FN_BASE = SUPABASE_URL ? `${SUPABASE_URL}/functions/v1/property-feed` : "";
 
 export default function BrokerXmlFeeds() {
   const { profile, user } = useAuth();
   const [count, setCount] = useState<number | null>(null);
   const slug = profile?.full_name ? toSlug(profile.full_name) : "";
 
-  const vrsyncUrl = slug ? `${FN_BASE}?slug=${slug}&format=vrsync` : "";
-  const imovelwebUrl = slug ? `${FN_BASE}?slug=${slug}&format=imovelweb` : "";
+  const vrsyncUrl = slug && FN_BASE ? `${FN_BASE}?slug=${slug}&format=vrsync` : "";
+  const imovelwebUrl = slug && FN_BASE ? `${FN_BASE}?slug=${slug}&format=imovelweb` : "";
 
   useEffect(() => {
     if (!user?.id) return;
@@ -28,10 +28,10 @@ export default function BrokerXmlFeeds() {
       const { count } = await supabase
         .from("imoveis")
         .select("*", { count: "exact", head: true })
-        .eq("corretor_id", user.id)
+        .or(`user_id.eq.${user.id},corretor_id.eq.${user.id}`)
         .eq("ativo_site", true)
         .eq("publicar_xml", true)
-        .neq("status_imovel", "Vendido");
+        .neq("status", "Vendido");
       setCount(count ?? 0);
     })();
   }, [user?.id]);
@@ -58,6 +58,12 @@ export default function BrokerXmlFeeds() {
         {!slug && (
           <Card className="p-4 border-destructive/50">
             Complete seu nome completo no perfil para gerar os links.
+          </Card>
+        )}
+
+        {!FN_BASE && (
+          <Card className="p-4 border-destructive/50">
+            Configure a URL do Supabase para gerar os links dos feeds.
           </Card>
         )}
 

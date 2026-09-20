@@ -2,6 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Building2, Camera, ClipboardCheck, Wallet, Table2,
   FileSignature, Clapperboard, Users, CreditCard, LogOut, Home, Building, Fence, Globe, Rss, Zap, ShoppingBag,
+  Trophy,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -21,6 +22,7 @@ const allModules: Record<string, { icon: React.ComponentType<{ className?: strin
   videomaker: { icon: Clapperboard, label: "Material Extra", path: "/painel/videomaker" },
   corretores: { icon: Users, label: "Corretores", path: "/painel/corretores" },
   brick: { icon: ShoppingBag, label: "Brick", path: "/painel/brick" },
+  relatorios: { icon: Trophy, label: "Ranking", path: "/painel/ranking" },
 };
 
 export function BrokerSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {

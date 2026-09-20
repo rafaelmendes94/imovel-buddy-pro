@@ -103,6 +103,7 @@ export function QuickImovelForm({ onSaved, onCancel, defaultCidade = "", cancelL
     setSaving(true);
     const { error } = await supabase.from("imoveis").insert([{
       user_id: user.id,
+      corretor_id: user.id,
       titulo: titulo.trim(),
       tipo,
       status: "Disponível",
