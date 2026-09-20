@@ -115,7 +115,7 @@ const App = () => (
             <Route path="/imovel/:id" element={<ImovelPublico />} />
             <Route path="/testador-xml" element={<TestadorXml />} />
             <Route path="/construtoras/testador-xml" element={<TestadorXml />} />
-            <Route path="/feed" element={protectedRoute(<Feed />, { adminModule: "imoveis" })} />
+            <Route path="/feed" element={protectedRoute(<Feed />, { adminModule: "imoveis", brokerModule: "imoveis" })} />
             <Route path="/mapa" element={<ExplorarMapa />} />
             <Route path="/explorar-mapa" element={<ExplorarMapa />} />
 
@@ -151,7 +151,7 @@ const App = () => (
             <Route path="/painel-parceiro" element={<AuthGuard requiredRoles={["partner"]}><PainelParceiro /></AuthGuard>} />
 
             {/* Legacy routes - now require auth */}
-            <Route path="/dashboard" element={protectedRoute(<Dashboard />, { adminModule: "dashboard_admin" })} />
+            <Route path="/dashboard" element={protectedRoute(<Dashboard />, { adminModule: "dashboard_admin", adminOnly: true })} />
             <Route path="/imoveis" element={protectedRoute(<Properties />, { adminModule: "imoveis", brokerModule: "imoveis" })} />
             <Route path="/edificios" element={protectedRoute(<Buildings />, { adminModule: "edificios", brokerModule: "edificios" })} />
             <Route path="/edificios/:id" element={protectedRoute(<BuildingDetail />, { adminModule: "edificios", brokerModule: "edificios" })} />
@@ -163,10 +163,10 @@ const App = () => (
             <Route path="/corretores" element={protectedRoute(<Brokers />, { adminModule: "corretores", adminOnly: true })} />
             <Route path="/cadastro-corretores" element={protectedRoute(<CadastroCorretores />, { adminModule: "corretores", brokerModule: "corretores" })} />
             <Route path="/relatorios" element={protectedRoute(<Reports />, { adminModule: "relatorios", adminOnly: true })} />
-            <Route path="/configuracoes" element={protectedRoute(<Settings />, { adminModule: "configuracoes" })} />
+            <Route path="/configuracoes" element={protectedRoute(<Settings />, { adminModule: "configuracoes", adminOnly: true })} />
             <Route path="/site-editor" element={protectedRoute(<Site />, { adminModule: "site_editor", brokerModule: "site" })} />
             <Route path="/todos-imoveis" element={<AllProperties />} />
-            <Route path="/ranking" element={protectedRoute(<RankingPage />, { adminModule: "relatorios" })} />
+            <Route path="/ranking" element={protectedRoute(<RankingPage />, { adminModule: "relatorios", brokerModule: "relatorios" })} />
             <Route path="/avaliacoes" element={protectedRoute(<Avaliacoes />, { adminModule: "avaliacoes", brokerModule: "avaliacoes" })} />
             <Route path="/painel/avaliacoes" element={protectedRoute(<Avaliacoes />, { adminModule: "avaliacoes", brokerModule: "avaliacoes" })} />
             <Route path="/financeiro" element={protectedRoute(<Financeiro />, { adminModule: "financeiro", adminOnly: true })} />
@@ -181,9 +181,9 @@ const App = () => (
             <Route path="/imobiliarias" element={protectedRoute(<Imobiliarias />, { adminModule: "imobiliarias", adminOnly: true })} />
             <Route path="/cadastro-imovel" element={protectedRoute(<CadastroImovel />, { adminModule: "imoveis", brokerModule: "imoveis" })} />
             <Route path="/editar-imovel/:id" element={protectedRoute(<EditarImovel />, { adminModule: "imoveis", brokerModule: "imoveis" })} />
-            <Route path="/construtoras" element={protectedRoute(<Construtoras />, { adminModule: "edificios" })} />
-            <Route path="/construtoras/:id" element={protectedRoute(<ConstrutoraDetail />, { adminModule: "edificios" })} />
-            <Route path="/construtoras/:id/avaliacoes" element={protectedRoute(<ConstrutoraAvaliacoes />, { adminModule: "edificios" })} />
+            <Route path="/construtoras" element={protectedRoute(<Construtoras />, { adminModule: "edificios", brokerModule: "edificios" })} />
+            <Route path="/construtoras/:id" element={protectedRoute(<ConstrutoraDetail />, { adminModule: "edificios", brokerModule: "edificios" })} />
+            <Route path="/construtoras/:id/avaliacoes" element={protectedRoute(<ConstrutoraAvaliacoes />, { adminModule: "edificios", brokerModule: "edificios" })} />
             <Route path="/brick" element={protectedRoute(<Brick />, { adminModule: "brick", brokerModule: "brick" })} />
             <Route path="/empreendimentos" element={protectedRoute(<Empreendimentos />, { adminModule: "edificios", brokerModule: "edificios" })} />
             <Route path="/empreendimentos/:id" element={protectedRoute(<EmpreendimentoDetail />, { adminModule: "edificios", brokerModule: "edificios" })} />

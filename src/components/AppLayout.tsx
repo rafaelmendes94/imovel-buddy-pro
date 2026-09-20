@@ -26,9 +26,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       ]
     : [
         { label: "Início", icon: Home, path: "/painel" },
-        ...(canSee("imoveis") ? [{ label: "Imóveis", icon: Building2, path: "/imoveis", matchPaths: ["/imoveis", "/cadastro-imovel"] }] : []),
+        ...(canSee("imoveis") ? [{ label: "Imóveis", icon: Building2, path: "/painel/imoveis", matchPaths: ["/painel/imoveis", "/imoveis", "/cadastro-imovel"] }] : []),
         { label: "Buscar", icon: Search, path: "/todos-imoveis" },
-        { label: "Corretores", icon: Users, path: "/cadastro-corretores" },
+        ...(canSee("corretores") ? [{ label: "Corretores", icon: Users, path: "/painel/corretores", matchPaths: ["/painel/corretores", "/cadastro-corretores"] }] : []),
         { label: "Menu", icon: MoreHorizontal, action: () => setMobileOpen(true) },
       ];
 

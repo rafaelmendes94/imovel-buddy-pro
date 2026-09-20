@@ -39,10 +39,10 @@ const allNavItems: NavItem[] = [
   { icon: Map, label: "Mapas Condomínio", path: "/mapas-condominio", group: "GESTÃO", module: "condominios" },
   { icon: Globe, label: "Site", path: "/site-editor", group: "GESTÃO", module: "site" },
 
-  { icon: Users, label: "Corretores", path: "/cadastro-corretores", group: "COMERCIAL", always: true },
-  { icon: HardHat, label: "Construtoras", path: "/construtoras", group: "COMERCIAL", always: true },
+  { icon: Users, label: "Corretores", path: "/cadastro-corretores", group: "COMERCIAL", module: "corretores" },
+  { icon: HardHat, label: "Construtoras", path: "/construtoras", group: "COMERCIAL", module: "edificios" },
   { icon: Landmark2, label: "Imobiliárias", path: "/imobiliarias", group: "COMERCIAL" }, // admin
-  { icon: Trophy, label: "Ranking", path: "/ranking", group: "COMERCIAL", always: true },
+  { icon: Trophy, label: "Ranking", path: "/ranking", group: "COMERCIAL", module: "relatorios" },
   { icon: ClipboardCheck, label: "Avaliações", path: "/avaliacoes", group: "COMERCIAL", module: "avaliacoes" },
 
   { icon: FileText, label: "Relatórios", path: "/relatorios", group: "FINANCEIRO" }, // admin
@@ -56,7 +56,7 @@ const allNavItems: NavItem[] = [
   { icon: FileSignature, label: "Contratos", path: "/contratos", group: "MÍDIA", module: "contratos" },
 
   { icon: CreditCard, label: "Assinatura", path: "/painel/assinatura", group: "CONFIGURAÇÕES", always: true },
-  { icon: Settings, label: "Configurações", path: "/configuracoes", group: "CONFIGURAÇÕES", always: true },
+  { icon: Settings, label: "Configurações", path: "/configuracoes", group: "CONFIGURAÇÕES" },
 ];
 
 
@@ -85,6 +85,27 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
     }
   };
 
+  const brokerPath = (item: NavItem): NavItem => {
+    if (!isBroker || isAdmin) return item;
+    const pathByModule: Record<string, string> = {
+      "/dashboard": "/painel",
+      "/imoveis": "/painel/imoveis",
+      "/feed": "/painel/feeds-xml",
+      "/mapas-condominio": "/painel/mapas-condominio",
+      "/site-editor": "/painel/site",
+      "/cadastro-corretores": "/painel/corretores",
+      "/construtoras": "/painel/edificios",
+      "/avaliacoes": "/painel/avaliacoes",
+      "/tabelas": "/painel/tabelas",
+      "/ferramentas/gerador-tabela": "/painel/gerador-tabela",
+      "/brick": "/painel/brick",
+      "/fotos-cidade": "/painel/fotos-cidade",
+      "/videomaker": "/painel/videomaker",
+      "/contratos": "/painel/contratos",
+    };
+    return { ...item, path: pathByModule[item.path] || item.path };
+  };
+
   const navItems: NavItem[] = allNavItems
     .filter(item => {
       if (isAdmin) return true;
@@ -93,11 +114,12 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
       return false; // admin-only items hidden for brokers
     })
     .map(item => {
-      if (!item.children) return item;
+      const itemWithBrokerPath = brokerPath(item);
+      if (!itemWithBrokerPath.children) return itemWithBrokerPath;
       const filteredChildren = isAdmin
-        ? item.children
-        : item.children.filter(c => !c.module || enabledModules.includes(c.module));
-      return { ...item, children: filteredChildren };
+        ? itemWithBrokerPath.children
+        : itemWithBrokerPath.children.filter(c => !c.module || enabledModules.includes(c.module));
+      return { ...itemWithBrokerPath, children: filteredChildren };
     });
 
   const { applyOrder, moveItem, hasCustomOrder, resetOrder } = useSidebarOrder(profile?.id);
