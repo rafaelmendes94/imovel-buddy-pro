@@ -118,17 +118,27 @@ const normName = (v: string) =>
  * Encontra um empreendimento já cadastrado pelo nome (usado pelo cadastro por IA),
  * para herdar o endereço oficial em vez do endereço vindo do texto.
  */
-export async function findEmpreendimentoByName(name: string): Promise<EmpreendimentoRecord | null> {
+export async function findEmpreendimentoByName(
+  name: string,
+  preferredTipos: readonly EmpreendimentoTipo[] = [],
+): Promise<EmpreendimentoRecord | null> {
   const target = normName(name);
   if (target.length < 3) return null;
 
   const candidates = await searchEmpreendimentos(clean(name), 12);
   if (!candidates.length) return null;
+  const ordered = preferredTipos.length
+    ? [...candidates].sort((a, b) => {
+        const ai = preferredTipos.indexOf(a.tipo);
+        const bi = preferredTipos.indexOf(b.tipo);
+        return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+      })
+    : candidates;
 
-  const exact = candidates.find((c) => normName(c.nome) === target);
+  const exact = ordered.find((c) => normName(c.nome) === target);
   if (exact) return exact;
 
-  const partial = candidates.find((c) => {
+  const partial = ordered.find((c) => {
     const n = normName(c.nome);
     return n.length >= 3 && (n.includes(target) || target.includes(n));
   });

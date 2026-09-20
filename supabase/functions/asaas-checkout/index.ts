@@ -146,6 +146,7 @@ serve(async (req) => {
     const nextDueDate = new Date();
     nextDueDate.setDate(nextDueDate.getDate() + 1);
     const dueDateStr = nextDueDate.toISOString().split("T")[0];
+    const dueDateIso = `${dueDateStr}T12:00:00.000Z`;
 
     const subscriptionRes = await fetch(`${baseUrl}/v3/subscriptions`, {
       method: "POST",
@@ -186,6 +187,10 @@ serve(async (req) => {
           .update({
             plan_id,
             status: "pending_payment",
+            current_period_start: new Date().toISOString(),
+            current_period_end: dueDateIso,
+            blocked_at: null,
+            trial_ends_at: null,
             asaas_subscription_id: subscriptionData.id,
           })
           .eq("id", existingSub.id);
@@ -195,6 +200,7 @@ serve(async (req) => {
           plan_id,
           status: "pending_payment",
           current_period_start: new Date().toISOString(),
+          current_period_end: dueDateIso,
           asaas_subscription_id: subscriptionData.id,
         });
       }

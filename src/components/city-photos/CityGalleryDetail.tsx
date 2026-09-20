@@ -9,14 +9,28 @@ interface Props {
   gallery: CityGallery;
   onBack: () => void;
   isSuperAdmin: boolean;
+  canCreate?: boolean;
+  canDelete?: boolean;
 }
 
 function getYoutubeId(url: string) {
   const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/);
   return m?.[1] || null;
 }
+function getCloudflareId(url: string) {
+  const m =
+    url.match(/iframe\.videodelivery\.net\/([A-Za-z0-9_-]+)/) ||
+    url.match(/videodelivery\.net\/([A-Za-z0-9_-]+)\/(?:manifest|downloads|thumbnails)/) ||
+    url.match(/watch\.cloudflarestream\.com\/([A-Za-z0-9_-]+)/) ||
+    url.match(/cloudflarestream\.com\/([A-Za-z0-9_-]+)\//);
+  return m?.[1] || null;
+}
+function getVimeoId(url: string) {
+  const m = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  return m?.[1] || null;
+}
 
-export function CityGalleryDetail({ gallery, onBack, isSuperAdmin }: Props) {
+export function CityGalleryDetail({ gallery, onBack, isSuperAdmin, canCreate = isSuperAdmin, canDelete = isSuperAdmin }: Props) {
   const [items, setItems] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
@@ -74,7 +88,7 @@ export function CityGalleryDetail({ gallery, onBack, isSuperAdmin }: Props) {
               <Download className="w-4 h-4" /> Baixar Todas
             </button>
           )}
-          {isSuperAdmin && (
+          {canCreate && (
             <button
               onClick={() => setShowAdd(true)}
               className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors"
@@ -98,16 +112,24 @@ export function CityGalleryDetail({ gallery, onBack, isSuperAdmin }: Props) {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
           {items.map((item) => {
             const ytId = item.tipo === "video" ? getYoutubeId(item.url) : null;
+            const cfId = item.tipo === "video" ? getCloudflareId(item.url) : null;
+            const vmId = item.tipo === "video" ? getVimeoId(item.url) : null;
             return (
               <div key={item.id} className="relative group rounded-lg overflow-hidden border border-border bg-card">
                 {item.tipo === "foto" ? (
                   <div className="aspect-square cursor-pointer" onClick={() => setLightbox(item)}>
                     <img src={item.url} alt={item.titulo} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                   </div>
-                ) : ytId ? (
+                ) : ytId || cfId || vmId ? (
                   <div className="aspect-video">
                     <iframe
-                      src={`https://www.youtube.com/embed/${ytId}`}
+                      src={
+                        ytId
+                          ? `https://www.youtube.com/embed/${ytId}`
+                          : cfId
+                          ? `https://iframe.videodelivery.net/${cfId}`
+                          : `https://player.vimeo.com/video/${vmId}`
+                      }
                       className="w-full h-full"
                       allowFullScreen
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -127,7 +149,7 @@ export function CityGalleryDetail({ gallery, onBack, isSuperAdmin }: Props) {
                       <Download className="w-3.5 h-3.5 text-foreground" />
                     </button>
                   )}
-                  {isSuperAdmin && (
+                  {canDelete && (
                     <button
                       onClick={() => handleDeleteItem(item.id)}
                       className="w-7 h-7 rounded-md bg-card/90 backdrop-blur-sm flex items-center justify-center hover:bg-destructive/90"

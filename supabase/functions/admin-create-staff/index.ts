@@ -12,6 +12,7 @@ const DEFAULT_PERMISSIONS = {
   funcionarios: { view: false, create: false, edit: false, delete: false },
   clientes: { view: false, create: false, edit: false, delete: false },
   planos: { view: false, create: false, edit: false, delete: false },
+  brick: { view: false, create: false, edit: false, delete: false },
   dashboard: { view: false, create: false, edit: false, delete: false },
   relatorios: { view: false, create: false, edit: false, delete: false },
   site_editor: { view: false, create: false, edit: false, delete: false },

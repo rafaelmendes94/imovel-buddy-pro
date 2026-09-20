@@ -10,20 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
-
-const availableModules = [
-  { key: "imoveis", label: "Imóveis" },
-  { key: "edificios", label: "Edifícios" },
-  { key: "condominios", label: "Condomínios" },
-  { key: "site", label: "Site" },
-  { key: "fotos", label: "Fotos da Cidade" },
-  { key: "avaliacoes", label: "Avaliações" },
-  { key: "financeiro", label: "Financeiro" },
-  { key: "tabelas", label: "Tabelas" },
-  { key: "contratos", label: "Contratos" },
-  { key: "videomaker", label: "Material Extra" },
-  { key: "corretores", label: "Corretores" },
-];
+import { PLAN_MODULES } from "@/lib/moduleCatalog";
 
 interface PlanForm {
   name: string;
@@ -230,7 +217,7 @@ export default function AdminPlanos() {
                 <div>
                   <p className="text-sm font-medium text-foreground mb-2">Módulos inclusos</p>
                   <div className="grid grid-cols-2 gap-2">
-                    {availableModules.map(m => (
+                    {PLAN_MODULES.map(m => (
                       <label key={m.key} className="flex items-center gap-2 text-sm">
                         <Switch checked={form.modules.includes(m.key)} onCheckedChange={() => toggleModule(m.key)} />
                         {m.label}

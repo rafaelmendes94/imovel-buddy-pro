@@ -43,3 +43,37 @@ export async function uploadImageToCloudflare(file: File, options: UploadOptions
 
   return String(data.deliveryUrl);
 }
+
+export async function uploadVideoToCloudflare(file: File, options: UploadOptions = {}) {
+  if (!file.type.startsWith("video/")) {
+    throw new Error("Cloudflare Stream aceita apenas arquivos de vídeo.");
+  }
+
+  const { data, error } = await supabase.functions.invoke("cloudflare-stream-direct-upload", {
+    body: {
+      filename: file.name,
+      folder: options.folder || "",
+      source: options.source || "mv-connect",
+      maxDurationSeconds: 3600,
+    },
+  });
+
+  if (error || data?.error || !data?.uploadURL || !data?.iframeUrl) {
+    throw new Error(data?.error || error?.message || "Não foi possível iniciar upload no Cloudflare Stream.");
+  }
+
+  const form = new FormData();
+  form.append("file", file);
+
+  const response = await fetch(data.uploadURL, {
+    method: "POST",
+    body: form,
+  });
+  const uploadResult = await response.json().catch(() => null);
+
+  if (!response.ok || uploadResult?.success === false) {
+    throw new Error(uploadResult?.errors?.[0]?.message || "Cloudflare recusou o upload do vídeo.");
+  }
+
+  return String(data.iframeUrl);
+}

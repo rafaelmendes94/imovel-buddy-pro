@@ -28,10 +28,10 @@ export default function BrokerXmlFeeds() {
       const { count } = await supabase
         .from("imoveis")
         .select("*", { count: "exact", head: true })
-        .eq("user_id", user.id)
+        .eq("corretor_id", user.id)
         .eq("ativo_site", true)
         .eq("publicar_xml", true)
-        .neq("status", "Vendido");
+        .neq("status_imovel", "Vendido");
       setCount(count ?? 0);
     })();
   }, [user?.id]);

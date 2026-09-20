@@ -2,7 +2,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { X, Upload, Save, Video, ImageIcon } from "lucide-react";
-import { uploadImageToCloudflare } from "@/lib/cloudflareImages";
+import { uploadImageToCloudflare, uploadVideoToCloudflare } from "@/lib/cloudflareImages";
 
 interface Props {
   galleryId: string;
@@ -14,6 +14,7 @@ export function AddMediaModal({ galleryId, onClose, onSaved }: Props) {
   const [tipo, setTipo] = useState<"foto" | "video">("foto");
   const [titulo, setTitulo] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
+  const [videoFile, setVideoFile] = useState<File | null>(null);
   const [files, setFiles] = useState<File[]>([]);
   const [saving, setSaving] = useState(false);
 
@@ -21,12 +22,22 @@ export function AddMediaModal({ galleryId, onClose, onSaved }: Props) {
     setSaving(true);
 
     if (tipo === "video") {
-      if (!videoUrl.trim()) { toast.error("Cole o link do vídeo"); setSaving(false); return; }
+      let finalUrl = videoUrl.trim();
+      if (!finalUrl && videoFile) {
+        try {
+          finalUrl = await uploadVideoToCloudflare(videoFile, { folder: `city-photos/${galleryId}/videos`, source: "videos-cidade" });
+        } catch (err: any) {
+          toast.error("Erro no upload do vídeo", { description: err?.message });
+          setSaving(false);
+          return;
+        }
+      }
+      if (!finalUrl) { toast.error("Cole um link ou selecione um vídeo"); setSaving(false); return; }
       const { error } = await supabase.from("city_gallery_items").insert({
         gallery_id: galleryId,
         tipo: "video",
-        url: videoUrl.trim(),
-        titulo,
+        url: finalUrl,
+        titulo: titulo || videoFile?.name || "Vídeo",
       });
       if (error) { toast.error("Erro ao salvar vídeo"); setSaving(false); return; }
       toast.success("Vídeo adicionado");
@@ -96,8 +107,13 @@ export function AddMediaModal({ galleryId, onClose, onSaved }: Props) {
             </div>
           ) : (
             <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">Link do YouTube</label>
-              <input value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="https://youtube.com/watch?v=..." className="w-full px-3 py-2 bg-background border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Vídeo</label>
+              <label className="flex items-center gap-2 px-3 py-4 border border-dashed border-input rounded-lg cursor-pointer hover:bg-muted/50 transition-colors text-sm text-muted-foreground text-center justify-center mb-2">
+                <Upload className="w-4 h-4" />
+                {videoFile ? videoFile.name : "Enviar vídeo para Cloudflare"}
+                <input type="file" accept="video/*" className="hidden" onChange={(e) => setVideoFile(e.target.files?.[0] || null)} />
+              </label>
+              <input value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="Ou cole link YouTube/Vimeo/Cloudflare..." className="w-full px-3 py-2 bg-background border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
             </div>
           )}
         </div>

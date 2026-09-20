@@ -34,9 +34,17 @@ export function useReportData() {
     const [imRes, mvRes] = await Promise.all([
       supabase
         .from("imoveis")
-        .select("id, titulo, cidade, bairro, tipo, padrao, preco, corretor_nome, proprietario, empreendimento, quartos, vista_mar, updated_at, status, edificio_id, condominio_id, plataforma_venda, data_venda, edificios:edificio_id(nome), condominios:condominio_id(nome)")
+        .select(`
+          id, user_id, titulo, cidade, bairro, tipo, padrao, preco, comissao,
+          corretor_id, corretor_nome, proprietario, empreendimento, quartos, vista_mar,
+          created_at, updated_at, status, edificio_id, condominio_id, empreendimento_id,
+          plataforma_venda, data_venda,
+          edificios:edificio_id(nome),
+          condominios:condominio_id(nome),
+          empreendimentos:empreendimento_id(nome)
+        `)
         .ilike("status", "%vendid%")
-        .order("updated_at", { ascending: false })
+        .order("data_venda", { ascending: false, nullsFirst: false })
         .limit(5000),
       // Agenciamentos com status = vendido entram como vendas no relatório principal
       (supabase as any)
@@ -47,6 +55,31 @@ export function useReportData() {
         .limit(5000),
     ]);
 
+    if (imRes.error) {
+      console.error("Erro ao carregar vendas de imóveis", imRes.error);
+    }
+    if (mvRes.error) {
+      console.error("Erro ao carregar agenciamentos vendidos", mvRes.error);
+    }
+
+    const imRows = (imRes.data || []) as any[];
+    const profileIds = [
+      ...new Set(
+        imRows
+          .flatMap((row) => [row.corretor_id, row.user_id])
+          .filter(Boolean),
+      ),
+    ];
+    const { data: profiles } = profileIds.length
+      ? await supabase.from("profiles").select("user_id, full_name, email").in("user_id", profileIds)
+      : { data: [] as any[] };
+    const profileByUser = new Map(((profiles as any[]) || []).map((profile) => [profile.user_id, profile]));
+
+    const safeDate = (...values: Array<string | null | undefined>) => {
+      const found = values.find((value) => value && !Number.isNaN(new Date(value).getTime()));
+      return found ? new Date(found).toISOString() : new Date().toISOString();
+    };
+
     const real: RealSaleRecord[] = (imRes.data || []).map((row: any) => ({
       id: row.id,
       propertyTitle: row.titulo || "Sem título",
@@ -55,15 +88,22 @@ export function useReportData() {
       owner: row.proprietario || "Sem proprietário",
       type: row.tipo || "Outros",
       segment: row.padrao || "Médio Padrão",
-      broker: row.corretor_nome || "Sem corretor",
+      broker:
+        row.corretor_nome ||
+        profileByUser.get(row.corretor_id)?.full_name ||
+        profileByUser.get(row.user_id)?.full_name ||
+        profileByUser.get(row.corretor_id)?.email ||
+        profileByUser.get(row.user_id)?.email ||
+        "Sem corretor",
       price: Number(row.preco) || 0,
-      date: row.data_venda || row.updated_at || new Date().toISOString(),
-      empreendimento: row.empreendimento || "",
+      date: safeDate(row.data_venda, row.updated_at, row.created_at),
+      empreendimento: row.empreendimento || row.empreendimentos?.nome || "",
       edificio: row.edificios?.nome || "",
       condominio: row.condominios?.nome || "",
       bedrooms: row.quartos || 0,
       seaView: row.vista_mar || false,
       isManual: false,
+      commission: row.comissao ? (Number(row.preco) || 0) * (Number(row.comissao) || 0) / 100 : 0,
       platform: row.plataforma_venda || "",
     }));
 
@@ -82,9 +122,7 @@ export function useReportData() {
       segment: row.padrao || "Médio Padrão",
       broker: "—",
       price: Number(row.valor) || 0,
-      date: row.data_atualizacao || row.data_inclusao
-        ? new Date(row.data_atualizacao || row.data_inclusao).toISOString()
-        : new Date().toISOString(),
+      date: safeDate(row.data_atualizacao, row.data_inclusao, row.updated_at, row.created_at),
       empreendimento: row.imovel || "",
       edificio: row.imovel || "",
       condominio: "",

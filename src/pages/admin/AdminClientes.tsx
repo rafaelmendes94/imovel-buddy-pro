@@ -127,7 +127,7 @@ export default function AdminClientes() {
       toast({ title: "Erro", description: error.message, variant: "destructive" });
       return;
     }
-    toast({ title: "Pagamento simulado", description: "Assinatura ativada por 30 dias." });
+    toast({ title: "Pagamento simulado", description: "Assinatura ativada conforme o ciclo do plano." });
     fetchData();
   };
 

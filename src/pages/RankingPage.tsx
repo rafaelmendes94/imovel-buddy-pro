@@ -1,14 +1,14 @@
-import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect, useMemo } from "react";
 import {
   Trophy, Award, Medal, Star, ArrowLeft, Home, DollarSign,
-  TrendingUp, Users, ChevronRight, Crown, Flame, Zap, Loader2, X, MapPin, Calendar
+  TrendingUp, Users, Crown, Flame, Zap, Loader2, MapPin, Calendar, Filter, RotateCcw
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { onSalesChanged } from "@/lib/salesRegistry";
+import { useSmartBack } from "@/lib/useSmartBack";
 
 function formatCurrency(value: number) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 0 });
@@ -119,15 +119,23 @@ interface SaleRow {
   created_at: string;
   imagens: string[] | null;
   brokerId: string;
+  brokerName: string;
+  brokerPhoto: string | null;
 }
 
+type PeriodFilter = "all" | "month" | "quarter" | "year";
+type SortFilter = "vgv" | "count" | "ticket";
+
 export default function RankingPage() {
-  const [ranking, setRanking] = useState<BrokerRank[]>([]);
-  const [totalVGV, setTotalVGV] = useState(0);
-  const [totalSold, setTotalSold] = useState(0);
+  const goBack = useSmartBack("/dashboard");
   const [loading, setLoading] = useState(true);
   const [allSales, setAllSales] = useState<SaleRow[]>([]);
   const [selectedBroker, setSelectedBroker] = useState<BrokerRank | null>(null);
+  const [filterType, setFilterType] = useState("Todos");
+  const [filterCity, setFilterCity] = useState("Todas");
+  const [filterPeriod, setFilterPeriod] = useState<PeriodFilter>("all");
+  const [filterYear, setFilterYear] = useState("Todos");
+  const [sortBy, setSortBy] = useState<SortFilter>("vgv");
 
   useEffect(() => {
     loadRanking();
@@ -138,9 +146,11 @@ export default function RankingPage() {
     const { data: soldProperties } = await supabase
       .from("imoveis")
       .select("id, titulo, tipo, cidade, bairro, preco, data_venda, created_at, updated_at, imagens, corretor_nome, corretor_id, user_id")
-      .ilike("status", "%vendid%");
+      .ilike("status", "%vendid%")
+      .order("data_venda", { ascending: false, nullsFirst: false });
 
     if (!soldProperties || soldProperties.length === 0) {
+      setAllSales([]);
       setLoading(false);
       return;
     }
@@ -148,7 +158,7 @@ export default function RankingPage() {
     const userIds = new Set<string>();
     soldProperties.forEach(p => {
       const id = p.corretor_id || p.user_id;
-      userIds.add(id);
+      if (id) userIds.add(id);
     });
 
     const { data: profiles } = await (supabase as any)
@@ -161,19 +171,12 @@ export default function RankingPage() {
       profileMap[p.user_id] = { name: p.full_name, avatar: p.avatar_url };
     });
 
-    const salesMap: Record<string, { count: number; value: number; name: string; photo: string | null; userId: string }> = {};
     const salesRows: SaleRow[] = [];
 
     soldProperties.forEach(p => {
-      const brokerId = p.corretor_id || p.user_id;
+      const brokerId = p.corretor_id || p.user_id || "sem-corretor";
       const brokerName = p.corretor_nome || profileMap[brokerId]?.name || "Corretor";
       const brokerPhoto = profileMap[brokerId]?.avatar || null;
-
-      if (!salesMap[brokerId]) {
-        salesMap[brokerId] = { count: 0, value: 0, name: brokerName, photo: brokerPhoto, userId: brokerId };
-      }
-      salesMap[brokerId].count++;
-      salesMap[brokerId].value += Number(p.preco) || 0;
 
       salesRows.push({
         id: p.id,
@@ -187,21 +190,80 @@ export default function RankingPage() {
         updated_at: p.updated_at,
         imagens: p.imagens,
         brokerId,
+        brokerName,
+        brokerPhoto,
       });
     });
 
-    const sorted = Object.values(salesMap).sort((a, b) => b.value - a.value);
-
-    setRanking(sorted);
     setAllSales(salesRows);
-    setTotalVGV(soldProperties.reduce((s, p) => s + (Number(p.preco) || 0), 0));
-    setTotalSold(soldProperties.length);
     setLoading(false);
+  };
+
+  const years = useMemo(() => {
+    const set = new Set(allSales.map((sale) => new Date(sale.data_venda || sale.updated_at || sale.created_at).getFullYear()).filter(Boolean));
+    set.add(new Date().getFullYear());
+    return [...set].sort((a, b) => b - a);
+  }, [allSales]);
+
+  const types = useMemo(() => [...new Set(allSales.map((sale) => sale.tipo).filter(Boolean))].sort(), [allSales]);
+  const cities = useMemo(() => [...new Set(allSales.map((sale) => sale.cidade).filter(Boolean))].sort(), [allSales]);
+
+  const filteredSales = useMemo(() => {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfQuarter = new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3, 1);
+    const startOfYear = new Date(now.getFullYear(), 0, 1);
+
+    return allSales.filter((sale) => {
+      if (filterType !== "Todos" && sale.tipo !== filterType) return false;
+      if (filterCity !== "Todas" && sale.cidade !== filterCity) return false;
+      const date = new Date(sale.data_venda || sale.updated_at || sale.created_at);
+      if (filterYear !== "Todos" && date.getFullYear() !== Number(filterYear)) return false;
+      if (filterPeriod === "month" && date < startOfMonth) return false;
+      if (filterPeriod === "quarter" && date < startOfQuarter) return false;
+      if (filterPeriod === "year" && date < startOfYear) return false;
+      return true;
+    });
+  }, [allSales, filterCity, filterPeriod, filterType, filterYear]);
+
+  const ranking = useMemo(() => {
+    const salesMap: Record<string, BrokerRank> = {};
+    filteredSales.forEach((sale) => {
+      if (!salesMap[sale.brokerId]) {
+        salesMap[sale.brokerId] = {
+          count: 0,
+          value: 0,
+          name: sale.brokerName,
+          photo: sale.brokerPhoto,
+          userId: sale.brokerId,
+        };
+      }
+      salesMap[sale.brokerId].count += 1;
+      salesMap[sale.brokerId].value += Number(sale.preco) || 0;
+    });
+
+    return Object.values(salesMap).sort((a, b) => {
+      if (sortBy === "count") return b.count - a.count || b.value - a.value;
+      if (sortBy === "ticket") return (b.value / Math.max(b.count, 1)) - (a.value / Math.max(a.count, 1));
+      return b.value - a.value || b.count - a.count;
+    });
+  }, [filteredSales, sortBy]);
+
+  const totalVGV = useMemo(() => filteredSales.reduce((sum, sale) => sum + sale.preco, 0), [filteredSales]);
+  const totalSold = filteredSales.length;
+  const activeFilters = [filterType !== "Todos", filterCity !== "Todas", filterPeriod !== "all", filterYear !== "Todos", sortBy !== "vgv"].filter(Boolean).length;
+  const clearFilters = () => {
+    setFilterType("Todos");
+    setFilterCity("Todas");
+    setFilterPeriod("all");
+    setFilterYear("Todos");
+    setSortBy("vgv");
   };
 
   const brokerSales = selectedBroker
     ? allSales
         .filter(s => s.brokerId === selectedBroker.userId)
+        .filter(s => filteredSales.some((sale) => sale.id === s.id))
         .sort((a, b) => new Date(b.updated_at || b.data_venda || b.created_at).getTime() - new Date(a.updated_at || a.data_venda || a.created_at).getTime())
     : [];
 
@@ -242,7 +304,7 @@ export default function RankingPage() {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-gray-950/90 backdrop-blur-xl border-b border-gray-800">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
-          <Link to="/site" className="flex items-center gap-2 text-gray-400 hover:text-amber-400 transition-colors">
+          <button onClick={goBack} className="flex items-center gap-2 text-gray-400 hover:text-amber-400 transition-colors">
             <ArrowLeft className="w-4 h-4" />
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-amber-400 flex items-center justify-center">
@@ -250,7 +312,7 @@ export default function RankingPage() {
               </div>
               <span className="text-lg font-extrabold text-white">MV <span className="text-amber-400">Broker</span></span>
             </div>
-          </Link>
+          </button>
           <div className="flex items-center gap-2 text-amber-400">
             <Trophy className="w-5 h-5" />
             <span className="text-sm font-bold uppercase tracking-wider">Ranking Oficial</span>
@@ -328,6 +390,91 @@ export default function RankingPage() {
               <p className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider sm:tracking-widest font-bold leading-tight">Corretores</p>
             </div>
           </motion.div>
+        </div>
+      </section>
+
+      <section className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 mb-10">
+        <div className="rounded-2xl border border-gray-800 bg-gray-900/80 p-4 shadow-2xl shadow-black/20 backdrop-blur-xl">
+          <div className="flex items-center justify-between gap-3 flex-wrap mb-3">
+            <div className="flex items-center gap-2 text-amber-400">
+              <Filter className="w-4 h-4" />
+              <p className="text-xs font-bold uppercase tracking-wider">Filtros do ranking</p>
+            </div>
+            {activeFilters > 0 && (
+              <button
+                onClick={clearFilters}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-gray-700 px-3 py-1.5 text-xs font-semibold text-gray-300 hover:border-amber-400/50 hover:text-amber-300"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                Limpar ({activeFilters})
+              </button>
+            )}
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            <label className="space-y-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Período</span>
+              <select
+                value={filterPeriod}
+                onChange={(event) => setFilterPeriod(event.target.value as PeriodFilter)}
+                className="h-10 w-full rounded-xl border border-gray-700 bg-gray-950 px-3 text-sm text-white outline-none focus:border-amber-400"
+              >
+                <option value="all">Todo período</option>
+                <option value="month">Mês atual</option>
+                <option value="quarter">Trimestre atual</option>
+                <option value="year">Ano atual</option>
+              </select>
+            </label>
+
+            <label className="space-y-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Ano</span>
+              <select
+                value={filterYear}
+                onChange={(event) => setFilterYear(event.target.value)}
+                className="h-10 w-full rounded-xl border border-gray-700 bg-gray-950 px-3 text-sm text-white outline-none focus:border-amber-400"
+              >
+                <option value="Todos">Todos</option>
+                {years.map((year) => <option key={year} value={year}>{year}</option>)}
+              </select>
+            </label>
+
+            <label className="space-y-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Tipo</span>
+              <select
+                value={filterType}
+                onChange={(event) => setFilterType(event.target.value)}
+                className="h-10 w-full rounded-xl border border-gray-700 bg-gray-950 px-3 text-sm text-white outline-none focus:border-amber-400"
+              >
+                <option value="Todos">Todos</option>
+                {types.map((type) => <option key={type} value={type}>{type}</option>)}
+              </select>
+            </label>
+
+            <label className="space-y-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Cidade</span>
+              <select
+                value={filterCity}
+                onChange={(event) => setFilterCity(event.target.value)}
+                className="h-10 w-full rounded-xl border border-gray-700 bg-gray-950 px-3 text-sm text-white outline-none focus:border-amber-400"
+              >
+                <option value="Todas">Todas</option>
+                {cities.map((city) => <option key={city} value={city}>{city}</option>)}
+              </select>
+            </label>
+
+            <label className="space-y-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Ordenar por</span>
+              <select
+                value={sortBy}
+                onChange={(event) => setSortBy(event.target.value as SortFilter)}
+                className="h-10 w-full rounded-xl border border-gray-700 bg-gray-950 px-3 text-sm text-white outline-none focus:border-amber-400"
+              >
+                <option value="vgv">Maior VGV</option>
+                <option value="count">Mais vendas</option>
+                <option value="ticket">Ticket médio</option>
+              </select>
+            </label>
+          </div>
         </div>
       </section>
 

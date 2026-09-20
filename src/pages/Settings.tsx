@@ -2,6 +2,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { BackButton } from "@/components/BackButton";
 import { Building2, CreditCard, Bell, Shield, KeyRound, Palette, Eye, EyeOff, Globe, Copy, Loader2, CheckCircle, XCircle, User, Phone, Image } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
@@ -15,16 +16,18 @@ import { useAuth } from "@/hooks/useAuth";
 import { uploadImageToCloudflare } from "@/lib/cloudflareImages";
 
 export default function Settings() {
+  const navigate = useNavigate();
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [showSiteConfig, setShowSiteConfig] = useState(false);
   const [showAsaasDialog, setShowAsaasDialog] = useState(false);
   const [showCloudflareDialog, setShowCloudflareDialog] = useState(false);
   const [showProfileDialog, setShowProfileDialog] = useState(false);
+  const [showNotificationsDialog, setShowNotificationsDialog] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [changing, setChanging] = useState(false);
   const { toast } = useToast();
-  const { isSuperAdmin } = useAuth();
+  const { user, isSuperAdmin, isAdminStaff, isBroker } = useAuth();
 
   // Asaas state
   const [asaasKey, setAsaasKey] = useState("");
@@ -50,6 +53,12 @@ export default function Settings() {
   const [profileAvatar, setProfileAvatar] = useState("");
   const [ratingsPublic, setRatingsPublic] = useState(true);
   const [savingProfile, setSavingProfile] = useState(false);
+  const [notifyLeads, setNotifyLeads] = useState(true);
+  const [notifyPayments, setNotifyPayments] = useState(true);
+  const [notifySystem, setNotifySystem] = useState(true);
+
+  const siteConfigType = isBroker ? "broker_page" : "main_site";
+  const siteConfigOwnerId = isBroker ? user?.id : undefined;
 
   useEffect(() => {
     if (showAsaasDialog) loadAsaasSettings();
@@ -62,6 +71,30 @@ export default function Settings() {
   useEffect(() => {
     if (showProfileDialog) loadProfile();
   }, [showProfileDialog]);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    try {
+      const raw = localStorage.getItem(`mvconnect-notifications-${user.id}`);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      setNotifyLeads(parsed.leads !== false);
+      setNotifyPayments(parsed.payments !== false);
+      setNotifySystem(parsed.system !== false);
+    } catch {
+      // Prefer defaults if local preferences are corrupted.
+    }
+  }, [user?.id]);
+
+  const handleSaveNotifications = () => {
+    if (!user?.id) return;
+    localStorage.setItem(
+      `mvconnect-notifications-${user.id}`,
+      JSON.stringify({ leads: notifyLeads, payments: notifyPayments, system: notifySystem }),
+    );
+    toast({ title: "Notificações salvas!" });
+    setShowNotificationsDialog(false);
+  };
 
   const loadProfile = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -85,8 +118,14 @@ export default function Settings() {
     if (!user) { setSavingProfile(false); return; }
     const { error } = await supabase
       .from("profiles")
-      .update({ full_name: profileName, phone: profilePhone, avatar_url: profileAvatar, ratings_public: ratingsPublic } as any)
-      .eq("user_id", user.id);
+      .upsert({
+        user_id: user.id,
+        email: user.email,
+        full_name: profileName.trim() || user.email || "Usuário",
+        phone: profilePhone.trim() || null,
+        avatar_url: profileAvatar || null,
+        ratings_public: ratingsPublic,
+      } as any, { onConflict: "user_id" });
     if (error) {
       toast({ title: "Erro", description: error.message, variant: "destructive" });
     } else {
@@ -236,11 +275,9 @@ export default function Settings() {
       setChanging(false);
       return;
     }
-    const res = await supabase.functions.invoke("reset-password", {
-      body: { target_user_id: user.id, new_password: newPassword },
-    });
-    if (res.error || res.data?.error) {
-      toast({ title: "Erro", description: res.data?.error || res.error?.message, variant: "destructive" });
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) {
+      toast({ title: "Erro", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Senha alterada com sucesso!" });
       setShowPasswordDialog(false);
@@ -261,19 +298,19 @@ export default function Settings() {
       icon: Building2,
       title: "Dados da Imobiliária",
       description: "Nome, CNPJ, endereço e informações de contato",
-      onClick: undefined,
+      onClick: () => setShowSiteConfig(true),
     },
     {
       icon: CreditCard,
       title: "Plano e Assinatura",
       description: "Gerencie seu plano, pagamentos e faturamento",
-      onClick: undefined,
+      onClick: () => navigate(isSuperAdmin || isAdminStaff ? "/admin/planos" : "/painel/assinatura"),
     },
     {
       icon: Bell,
       title: "Notificações",
       description: "Alertas de novos leads, vendas e atividades",
-      onClick: undefined,
+      onClick: () => setShowNotificationsDialog(true),
     },
     {
       icon: KeyRound,
@@ -285,7 +322,7 @@ export default function Settings() {
       icon: Shield,
       title: "Segurança",
       description: "Autenticação e permissões de acesso",
-      onClick: undefined,
+      onClick: () => setShowPasswordDialog(true),
     },
     {
       icon: Palette,
@@ -360,6 +397,43 @@ export default function Settings() {
               />
               <Button onClick={handleChangePassword} disabled={changing} className="w-full">
                 {changing ? "Alterando..." : "Alterar Senha"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Notifications Dialog */}
+        <Dialog open={showNotificationsDialog} onOpenChange={setShowNotificationsDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Bell className="w-5 h-5" /> Notificações
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between rounded-lg border p-3">
+                <div>
+                  <Label className="text-sm">Novos leads e contatos</Label>
+                  <p className="text-xs text-muted-foreground">Avisos de interessados e mensagens recebidas.</p>
+                </div>
+                <Switch checked={notifyLeads} onCheckedChange={setNotifyLeads} />
+              </div>
+              <div className="flex items-center justify-between rounded-lg border p-3">
+                <div>
+                  <Label className="text-sm">Pagamentos e assinatura</Label>
+                  <p className="text-xs text-muted-foreground">Vencimentos, atrasos e mudanças no plano.</p>
+                </div>
+                <Switch checked={notifyPayments} onCheckedChange={setNotifyPayments} />
+              </div>
+              <div className="flex items-center justify-between rounded-lg border p-3">
+                <div>
+                  <Label className="text-sm">Avisos do sistema</Label>
+                  <p className="text-xs text-muted-foreground">Atualizações, importações e alertas administrativos.</p>
+                </div>
+                <Switch checked={notifySystem} onCheckedChange={setNotifySystem} />
+              </div>
+              <Button onClick={handleSaveNotifications} className="w-full">
+                Salvar notificações
               </Button>
             </div>
           </DialogContent>
@@ -625,8 +699,10 @@ export default function Settings() {
         <SiteConfigDialog
           open={showSiteConfig}
           onOpenChange={setShowSiteConfig}
-          configType="main_site"
-          title="Aparência do Site Público"
+          configType={siteConfigType}
+          ownerId={siteConfigOwnerId}
+          showProfilePhoto={isBroker}
+          title={isBroker ? "Dados e Aparência da Página Pública" : "Aparência do Site Público"}
         />
       </div>
     </AppLayout>

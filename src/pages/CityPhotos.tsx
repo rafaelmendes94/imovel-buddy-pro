@@ -30,7 +30,11 @@ export interface GalleryItem {
 }
 
 export default function CityPhotos() {
-  const { isSuperAdmin } = useAuth();
+  const { isSuperAdmin, isAdminStaff, hasModuleAccess } = useAuth();
+  const canCreate = isSuperAdmin || (isAdminStaff && hasModuleAccess("fotos_cidade", "create"));
+  const canEdit = isSuperAdmin || (isAdminStaff && hasModuleAccess("fotos_cidade", "edit"));
+  const canDelete = isSuperAdmin || (isAdminStaff && hasModuleAccess("fotos_cidade", "delete"));
+  const canManage = canCreate || canEdit || canDelete;
   const [galleries, setGalleries] = useState<CityGallery[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedGallery, setSelectedGallery] = useState<CityGallery | null>(null);
@@ -84,6 +88,7 @@ export default function CityPhotos() {
   useEffect(() => { fetchGalleries(); }, [fetchGalleries]);
 
   const handleDelete = async (id: string) => {
+    if (!canDelete) { toast.error("Sem permissão para excluir galeria"); return; }
     const { error } = await supabase.from("city_galleries").delete().eq("id", id);
     if (error) { toast.error("Erro ao excluir galeria"); return; }
     toast.success("Galeria excluída");
@@ -91,6 +96,7 @@ export default function CityPhotos() {
   };
 
   const handleEdit = (g: CityGallery) => {
+    if (!canEdit) { toast.error("Sem permissão para editar galeria"); return; }
     setEditingGallery(g);
     setShowForm(true);
   };
@@ -111,7 +117,9 @@ export default function CityPhotos() {
         <CityGalleryDetail
           gallery={selectedGallery}
           onBack={() => { setSelectedGallery(null); fetchGalleries(); }}
-          isSuperAdmin={isSuperAdmin}
+          isSuperAdmin={canManage}
+          canCreate={canCreate}
+          canDelete={canDelete}
         />
       </AppLayout>
     );
@@ -126,7 +134,7 @@ export default function CityPhotos() {
             <h1 className="text-2xl font-bold text-foreground">Fotos da Cidade</h1>
             <p className="text-sm text-muted-foreground mt-1">{filteredGalleries.length} galerias</p>
           </div>
-          {isSuperAdmin && (
+          {canCreate && (
             <button
               onClick={() => { setEditingGallery(null); setShowForm(true); }}
               className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors self-start"
@@ -174,7 +182,9 @@ export default function CityPhotos() {
         ) : (
           <CityGalleryGrid
             galleries={filteredGalleries}
-            isSuperAdmin={isSuperAdmin}
+            isSuperAdmin={canEdit || canDelete}
+            canEdit={canEdit}
+            canDelete={canDelete}
             onSelect={setSelectedGallery}
             onEdit={handleEdit}
             onDelete={handleDelete}

@@ -6,6 +6,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { cleanBox, cleanUnidade, normalizePosicaoSolar, titleCase } from "@/lib/importMvImoveis";
+import { normalizePropertyLocationByType, normalizePropertyType, usesQuadraLote } from "@/lib/propertyTypeRules";
 
 export interface PdfPageText {
   page: number;
@@ -159,8 +160,6 @@ export async function extractImoveisFromChunk(text: string): Promise<AiImovel[]>
 /* ------------------------------------------------------- Normalização MV */
 
 const EMP_PREFIX = /^(ed\.?|edif[íi]cio|res(idencial)?\.?|cond(om[íi]nio)?\.?|lot(eamento)?\.?)\s+/i;
-const QUADRA_LOTE_TIPOS = ["Casa", "Sobrado", "Terreno", "Lote", "Condomínio"];
-
 /** "Ed. Paris Palace 607" → { empreendimento: "Paris Palace", unidade: "607" } */
 function splitEmpreendimentoUnidade(raw: string) {
   let s = txt(raw).replace(EMP_PREFIX, "").trim();
@@ -221,8 +220,8 @@ export interface NormalizedImovel {
 }
 
 export function normalizeAiImovel(ai: AiImovel): NormalizedImovel {
-  const tipo = txt(ai.tipo) || "Apartamento";
-  const quadraLoteTipo = QUADRA_LOTE_TIPOS.includes(tipo);
+  const tipo = normalizePropertyType(txt(ai.tipo) || "Apartamento");
+  const quadraLoteTipo = usesQuadraLote(tipo);
 
   let empreendimento = txt(ai.empreendimento).replace(EMP_PREFIX, "").trim();
   let unidade = cleanUnidade(txt(ai.unidade));
@@ -258,7 +257,11 @@ export function normalizeAiImovel(ai: AiImovel): NormalizedImovel {
 
   const cidade = titleCase(txt(ai.cidade));
   const bairro = titleCase(txt(ai.bairro));
-  const numero = txt(ai.numero);
+  const loc = normalizePropertyLocationByType({ tipo, unidade, quadra, lote, numero: txt(ai.numero) });
+  unidade = loc.unidade;
+  quadra = loc.quadra;
+  lote = loc.lote;
+  const numero = loc.numero;
   const rua = txt(ai.endereco);
   const endereco = [rua, numero].filter(Boolean).join(", ");
 

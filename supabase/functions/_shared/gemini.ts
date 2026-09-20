@@ -21,12 +21,17 @@ export async function getGeminiKey() {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     if (url && serviceKey) {
       const supabase = createClient(url, serviceKey);
-      const { data } = await supabase
+      const { data: rows } = await supabase
         .from("system_settings")
-        .select("value")
-        .eq("key", "gemini_api_key")
-        .maybeSingle();
-      const key = data?.value?.trim();
+        .select("key,value")
+        .in("key", ["ai_use_external", "ai_external_key", "gemini_api_key"]);
+      const settings = Object.fromEntries(
+        (rows || []).map((row: { key?: string; value?: string | null }) => [row.key, row.value || ""]),
+      ) as Record<string, string>;
+      const useExternal = settings.ai_use_external === "true";
+      const key = (useExternal ? settings.ai_external_key : settings.gemini_api_key)?.trim()
+        || settings.gemini_api_key?.trim()
+        || settings.ai_external_key?.trim();
       if (key) return key;
     }
   } catch {

@@ -8,11 +8,12 @@ export interface SystemOption {
   sort_order: number;
 }
 
-export function useSystemOptions(category: string) {
+export function useSystemOptions(category: string, fallbackValues: string[] = []) {
   const [options, setOptions] = useState<SystemOption[]>([]);
   const [loading, setLoading] = useState(true);
 
   const load = async () => {
+    setLoading(true);
     const { data } = await supabase
       .from("system_options")
       .select("*")
@@ -24,7 +25,7 @@ export function useSystemOptions(category: string) {
 
   useEffect(() => { load(); }, [category]);
 
-  const values = options.map(o => o.value);
+  const values = options.length > 0 ? options.map(o => o.value) : fallbackValues;
 
   return { options, values, loading, reload: load };
 }

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { PLACEHOLDER_IMAGE } from "@/lib/placeholderImage";
@@ -14,6 +14,7 @@ import {
   type ImovelContact,
 } from "@/lib/propertyEvents";
 import { useToast } from "@/hooks/use-toast";
+import { useSmartBack } from "@/lib/useSmartBack";
 import {
   Heart,
   MessageCircle,
@@ -73,8 +74,10 @@ export default function Feed() {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const goBack = useSmartBack("/dashboard");
   const [items, setItems] = useState<FeedImovel[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [favorites, setFavorites] = useState<string[]>([]);
   const [contactFor, setContactFor] = useState<FeedImovel | null>(null);
   const [contact, setContact] = useState<ImovelContact | null>(null);
@@ -92,20 +95,44 @@ export default function Feed() {
 
   useEffect(() => {
     (async () => {
-      const [{ data }, { data: cor }, { data: profs }] = await Promise.all([
-        supabase
-          .from("imoveis")
-          .select(
-            "id, titulo, tipo, preco, quartos, suites, box, vagas, area, cidade, bairro, empreendimento, condicao, imagens, link_video, corretor_nome, corretor_id, corretor_cadastro_id, imobiliaria_nome"
-          )
-          .eq("ativo_site", true)
-          .eq("status", "Disponível")
-          .order("created_at", { ascending: false })
-          .limit(60),
-        (supabase as any).from("corretores").select("id, nome, foto_url, creci").eq("ativo", true),
-        (supabase as any).from("public_broker_profiles").select("user_id, full_name, avatar_url"),
+      setLoading(true);
+      setLoadError("");
+      const { data, error } = await supabase
+        .from("imoveis")
+        .select(
+          "id, titulo, tipo, preco, quartos, suites, box, vagas, area, cidade, bairro, empreendimento, condicao, imagens, link_video, corretor_nome, corretor_id, corretor_cadastro_id, imobiliaria_nome"
+        )
+        .eq("ativo_site", true)
+        .eq("status", "Disponível")
+        .order("created_at", { ascending: false })
+        .limit(60);
+
+      if (error) {
+        console.error("Erro ao carregar feed de imóveis", error);
+        setLoadError(error.message || "Não foi possível carregar o feed.");
+        setItems([]);
+        setLoading(false);
+        return;
+      }
+
+      const imoveis = ((data as any[]) || []) as FeedImovel[];
+      setItems(imoveis);
+
+      const cadastroIds = Array.from(new Set(imoveis.map((item) => item.corretor_cadastro_id).filter(Boolean)));
+      const profileIds = Array.from(new Set(imoveis.map((item) => item.corretor_id).filter(Boolean)));
+
+      const [{ data: cor, error: corError }, { data: profs, error: profsError }] = await Promise.all([
+        cadastroIds.length
+          ? (supabase as any).from("corretores").select("id, nome, foto_url, creci").in("id", cadastroIds)
+          : Promise.resolve({ data: [] as any[], error: null }),
+        profileIds.length
+          ? (supabase as any).from("public_broker_profiles").select("user_id, full_name, avatar_url").in("user_id", profileIds)
+          : Promise.resolve({ data: [] as any[], error: null }),
       ]);
-      setItems(((data as any[]) || []) as FeedImovel[]);
+
+      if (corError) console.warn("Erro ao carregar corretores do feed", corError);
+      if (profsError) console.warn("Erro ao carregar perfis do feed", profsError);
+
       const corMap: Record<string, BrokerProfile> = {};
       ((cor as any[]) || []).forEach((c) => {
         corMap[c.id] = { nome: c.nome, avatar: c.foto_url || null, imobiliaria: null, creci: c.creci || null };
@@ -268,15 +295,26 @@ export default function Feed() {
   return (
     <div className="fixed inset-0 bg-black text-white">
       <header className="absolute top-0 left-0 right-0 z-30 flex items-center gap-3 px-4 pt-[max(12px,env(safe-area-inset-top))] pb-3 bg-gradient-to-b from-black/70 to-transparent">
-        <Link to="/" className="p-2 -ml-2 rounded-full active:opacity-60" aria-label="Voltar">
+        <button onClick={goBack} className="p-2 -ml-2 rounded-full active:opacity-60" aria-label="Voltar">
           <ArrowLeft className="w-5 h-5" />
-        </Link>
+        </button>
         <h1 className="text-sm font-semibold tracking-wide">FEED DE IMÓVEIS</h1>
       </header>
 
       {loading ? (
         <div className="h-full flex items-center justify-center">
           <Loader2 className="w-6 h-6 animate-spin text-white/70" />
+        </div>
+      ) : loadError ? (
+        <div className="h-full flex flex-col items-center justify-center gap-3 px-8 text-center">
+          <p className="text-white/90 text-sm font-semibold">Erro ao carregar o feed</p>
+          <p className="text-white/60 text-xs">{loadError}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-2 rounded-full bg-white px-5 py-2 text-sm font-semibold text-black"
+          >
+            Tentar novamente
+          </button>
         </div>
       ) : cards.length === 0 ? (
         <div className="h-full flex flex-col items-center justify-center gap-2 px-8 text-center">

@@ -18,6 +18,7 @@ import {
   extractImoveisFromChunk, normalizeAiImovel, readPdf,
   type NormalizedImovel,
 } from "@/lib/pdfTabelaImport";
+import { PROPERTY_TYPE_OPTIONS } from "@/lib/propertyTypeRules";
 
 type Step = "upload" | "reading" | "review" | "importing" | "result";
 
@@ -32,7 +33,7 @@ interface Item {
   missing: string[];
 }
 
-const TIPOS = ["Apartamento", "Casa", "Sobrado", "Cobertura", "Terreno", "Lote", "Condomínio", "Loft", "Comercial"];
+const TIPOS = [...PROPERTY_TYPE_OPTIONS];
 
 export function ImportPdfTabelaBeta({
   open,

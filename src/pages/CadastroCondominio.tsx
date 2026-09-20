@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -17,7 +17,8 @@ import { MediaGalleryUpload } from '@/components/MediaGalleryUpload';
 import { uploadImageToCloudflare } from '@/lib/cloudflareImages';
 import { formatProperName } from '@/lib/nameFormat';
 
-const typeOptions = ["Vertical", "Horizontal", "Misto"];
+const DEFAULT_TYPE_OPTIONS = ["Vertical", "Horizontal", "Misto"];
+const DEFAULT_AMENIDADES_OPTIONS = ["Piscina", "Academia", "Salão de Festas", "Playground", "Quadra", "Churrasqueira", "Segurança 24h", "Portaria", "Área Verde", "Sauna", "Spa"];
 
 function SectionHeader({ icon: Icon, title }: { icon: any; title: string }) {
   return (
@@ -44,13 +45,17 @@ const initialForm = {
 export default function CadastroCondominio() {
   const { id: editId } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isSuperAdmin, isAdminStaff, hasModuleAccess } = useAuth();
   const { toast } = useToast();
-  const { values: infraOptions } = useSystemOptions("infraestrutura");
+  const { values: typeOptions } = useSystemOptions("tipo_condominio", DEFAULT_TYPE_OPTIONS);
+  const { values: amenidadesOptions } = useSystemOptions("amenidades_condominio", DEFAULT_AMENIDADES_OPTIONS);
   const [form, setForm] = useState(initialForm);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(!!editId);
   const [uploading, setUploading] = useState(false);
+  const canCreate = isSuperAdmin || (isAdminStaff && hasModuleAccess("condominios", "create"));
+  const canEdit = isSuperAdmin || (isAdminStaff && hasModuleAccess("condominios", "edit"));
+  const canSubmit = editId ? canEdit : canCreate;
 
   useEffect(() => {
     if (editId) {
@@ -85,6 +90,10 @@ export default function CadastroCondominio() {
   const handleUploadImplantacao = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
+    if (!canSubmit) {
+      toast({ title: "Sem permissão para enviar arquivo", variant: "destructive" });
+      return;
+    }
     setUploading(true);
     try {
       if (file.type.startsWith('image/')) {
@@ -106,6 +115,10 @@ export default function CadastroCondominio() {
   };
 
   const handleSubmit = async () => {
+    if (!canSubmit) {
+      toast({ title: "Sem permissão para salvar condomínios", variant: "destructive" });
+      return;
+    }
     if (!form.nome || !user) return;
     setSaving(true);
     const payload: any = {
@@ -140,6 +153,7 @@ export default function CadastroCondominio() {
     bairro: form.bairro, cidade: form.cidade, estado: form.estado, latitude: form.latitude, longitude: form.longitude,
   };
 
+  if (!canSubmit) return <Navigate to="/condominios" replace />;
   if (loading) return <AppLayout><div className="flex items-center justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div></AppLayout>;
 
   return (
@@ -199,7 +213,7 @@ export default function CadastroCondominio() {
 
         <section>
           <SectionHeader icon={Building2} title="Amenidades / Infraestrutura" />
-          <InfraToggle label="Selecione as amenidades" options={infraOptions.length > 0 ? infraOptions : ["Piscina", "Academia", "Salão de Festas", "Playground", "Quadra", "Churrasqueira", "Segurança 24h", "Portaria", "Área Verde", "Sauna", "Spa"]} selected={form.amenidades} onChange={(sel) => setForm(f => ({ ...f, amenidades: sel }))} allowCustom />
+          <InfraToggle label="Selecione as amenidades" options={amenidadesOptions} selected={form.amenidades} onChange={(sel) => setForm(f => ({ ...f, amenidades: sel }))} allowCustom />
         </section>
 
         <section>

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { BackButton } from "@/components/BackButton";
+import { SaasClientsAdmin } from "@/components/admin/SaasClientsAdmin";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -288,6 +289,8 @@ export default function Imobiliarias() {
             </div>
           </div>
         </div>
+
+        <SaasClientsAdmin type="imobiliaria" />
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <div className="flex items-center justify-between gap-3 flex-wrap">

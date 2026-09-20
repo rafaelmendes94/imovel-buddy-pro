@@ -48,7 +48,8 @@ const allNavItems: NavItem[] = [
   { icon: FileText, label: "Relatórios", path: "/relatorios", group: "FINANCEIRO" }, // admin
   { icon: Table2, label: "Tabelas", path: "/tabelas", group: "FINANCEIRO", module: "tabelas" },
 
-  { icon: LayoutTemplate, label: "Gerador de Tabela", path: "/ferramentas/gerador-tabela", group: "FERRAMENTAS", always: true },
+  { icon: LayoutTemplate, label: "Gerador de Tabela", path: "/ferramentas/gerador-tabela", group: "FERRAMENTAS", module: "tabelas" },
+  { icon: ShoppingBag, label: "Brick", path: "/brick", group: "FERRAMENTAS", module: "brick" },
 
   { icon: Camera, label: "Fotos da Cidade", path: "/fotos-cidade", group: "MÍDIA", module: "fotos" },
   { icon: Clapperboard, label: "Material Extra", path: "/videomaker", group: "MÍDIA", module: "videomaker" },

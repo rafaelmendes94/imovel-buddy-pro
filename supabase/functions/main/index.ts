@@ -112,11 +112,72 @@ const cloudflareDirectUpload = async (req: Request) => {
   });
 };
 
+const cloudflareStreamDirectUpload = async (req: Request) => {
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+  const userId = await authedUserId(req, supabaseUrl, anonKey);
+  if (!userId) return json({ error: "Unauthorized" }, 401);
+
+  const body = await req.json().catch(() => ({}));
+  const supabase = createClient(supabaseUrl, getServiceKey());
+  const settings = await loadSettings(supabase, [
+    "cloudflare_account_id",
+    "cloudflare_stream_token",
+    "cloudflare_images_token",
+  ]);
+
+  const accountId = settings.cloudflare_account_id || Deno.env.get("CLOUDFLARE_ACCOUNT_ID");
+  const apiToken =
+    settings.cloudflare_stream_token ||
+    settings.cloudflare_images_token ||
+    Deno.env.get("CLOUDFLARE_STREAM_TOKEN") ||
+    Deno.env.get("CLOUDFLARE_IMAGES_TOKEN");
+
+  if (!accountId || !apiToken) {
+    return json({
+      error: "Cloudflare Stream não configurado. Informe Account ID e API Token com permissão de Stream.",
+    }, 400);
+  }
+
+  const response = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/stream/direct_upload`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      maxDurationSeconds: Math.max(1, Number(body?.maxDurationSeconds || 3600)),
+      requireSignedURLs: false,
+      meta: {
+        name: body?.filename || "video",
+        folder: body?.folder || "",
+        source: body?.source || "mv-connect",
+        user_id: userId,
+      },
+    }),
+  });
+
+  const data = await response.json().catch(() => null);
+  if (!response.ok || !data?.success || !data?.result?.uploadURL || !data?.result?.uid) {
+    console.error("Cloudflare Stream direct upload error:", data);
+    return json({ error: "Erro ao criar upload no Cloudflare Stream", details: data }, 500);
+  }
+
+  const uid = data.result.uid as string;
+  return json({
+    uid,
+    uploadURL: data.result.uploadURL,
+    iframeUrl: `https://iframe.videodelivery.net/${uid}`,
+    thumbnailUrl: `https://videodelivery.net/${uid}/thumbnails/thumbnail.jpg?time=1s`,
+  });
+};
+
 const DEFAULT_STAFF_PERMISSIONS = {
   dashboard_admin: { view: false, create: false, edit: false, delete: false },
   funcionarios: { view: false, create: false, edit: false, delete: false },
   clientes: { view: false, create: false, edit: false, delete: false },
   planos: { view: false, create: false, edit: false, delete: false },
+  brick: { view: false, create: false, edit: false, delete: false },
   dashboard: { view: false, create: false, edit: false, delete: false },
   relatorios: { view: false, create: false, edit: false, delete: false },
   site_editor: { view: false, create: false, edit: false, delete: false },
@@ -256,6 +317,8 @@ async function asaasCheckout(req: Request) {
   };
   const nextDueDate = new Date();
   nextDueDate.setDate(nextDueDate.getDate() + 1);
+  const dueDateStr = nextDueDate.toISOString().split("T")[0];
+  const dueDateIso = `${dueDateStr}T12:00:00.000Z`;
 
   const subscriptionRes = await fetch(`${baseUrl}/v3/subscriptions`, {
     method: "POST",
@@ -264,7 +327,7 @@ async function asaasCheckout(req: Request) {
       customer: customerId,
       billingType: "UNDEFINED",
       value: Number(plan.price),
-      nextDueDate: nextDueDate.toISOString().split("T")[0],
+      nextDueDate: dueDateStr,
       cycle: cycleMap[plan.billing_cycle] || "MONTHLY",
       description: `MV BROKER CONNECT - ${plan.name}`,
       externalReference: JSON.stringify({ user_id: userId, plan_id }),
@@ -289,6 +352,10 @@ async function asaasCheckout(req: Request) {
       await supabase.from("subscriptions").update({
         plan_id,
         status: "pending_payment",
+        current_period_start: new Date().toISOString(),
+        current_period_end: dueDateIso,
+        blocked_at: null,
+        trial_ends_at: null,
         asaas_subscription_id: subscriptionData.id,
       }).eq("id", existingSub.id);
     } else {
@@ -297,6 +364,7 @@ async function asaasCheckout(req: Request) {
         plan_id,
         status: "pending_payment",
         current_period_start: new Date().toISOString(),
+        current_period_end: dueDateIso,
         asaas_subscription_id: subscriptionData.id,
       });
     }
@@ -413,7 +481,7 @@ async function asaasWebhook(req: Request) {
 
   const { data: existingSub } = await supabase
     .from("subscriptions")
-    .select("id, current_period_end")
+    .select("id, current_period_end, blocked_at")
     .eq("user_id", externalRef.user_id)
     .order("created_at", { ascending: false })
     .limit(1)
@@ -458,7 +526,7 @@ async function asaasWebhook(req: Request) {
     const shouldBlock = periodEnd && (periodEnd.getTime() + 7 * 86400000 < now.getTime());
     await supabase.from("subscriptions").update({
       status: shouldBlock ? "blocked" : "overdue",
-      blocked_at: shouldBlock ? now.toISOString() : null,
+      blocked_at: shouldBlock ? now.toISOString() : existingSub.blocked_at || null,
     }).eq("id", existingSub.id);
   } else if ((event === "PAYMENT_REFUNDED" || event === "PAYMENT_DELETED") && existingSub) {
     await supabase.from("subscriptions").update({ status: "cancelled" }).eq("id", existingSub.id);
@@ -597,6 +665,7 @@ serve(async (req: Request) => {
     if (fn === "admin-create-staff") return await adminCreateStaff(req);
     if (fn === "reset-password") return await resetPassword(req);
     if (fn === "cloudflare-direct-upload") return await cloudflareDirectUpload(req);
+    if (fn === "cloudflare-stream-direct-upload") return await cloudflareStreamDirectUpload(req);
     if (fn === "property-feed") return await propertyFeed(req);
     if (fn === "generate-description") return await generateDescription(req);
     if (fn === "property-valuation") return await propertyValuation(req);

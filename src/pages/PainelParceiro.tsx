@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { MediaGalleryUpload } from "@/components/MediaGalleryUpload";
 import { toast } from "sonner";
 import {
   Handshake, ExternalLink, LogOut, Star, MessageSquare, Crown, Loader2, Save,
@@ -57,7 +58,7 @@ export default function PainelParceiro() {
 
   const load = async () => {
     if (!user) return;
-    const [{ data: p }, { data: rs }] = await Promise.all([
+    const [{ data: p, error: partnerError }, { data: rs, error: ratingsError }] = await Promise.all([
       supabase.from("partners").select("*").eq("user_id", user.id).maybeSingle(),
       (async () => {
         const { data: own } = await supabase.from("partners").select("id").eq("user_id", user.id).maybeSingle();
@@ -69,6 +70,8 @@ export default function PainelParceiro() {
           .order("created_at", { ascending: false });
       })(),
     ]);
+    if (partnerError) toast.error(`Erro ao carregar parceiro: ${partnerError.message}`);
+    if (ratingsError) toast.error(`Erro ao carregar avaliações: ${ratingsError.message}`);
     setPartner((p as any) || null);
     setRatings((rs as any) || []);
     setLoading(false);
@@ -184,8 +187,30 @@ export default function PainelParceiro() {
               <Label>Descrição</Label>
               <Textarea rows={3} value={partner.description || ""} onChange={e => setPartner({ ...partner, description: e.target.value })} />
             </div>
-            <div><Label>Logo (URL)</Label><Input value={partner.logo_url || ""} onChange={e => setPartner({ ...partner, logo_url: e.target.value })} /></div>
-            <div><Label>Capa (URL)</Label><Input value={partner.cover_url || ""} onChange={e => setPartner({ ...partner, cover_url: e.target.value })} /></div>
+            <div className="md:col-span-2">
+              <Label>Logo</Label>
+              <MediaGalleryUpload
+                label="Enviar logo ou colar URL"
+                values={partner.logo_url ? [partner.logo_url] : []}
+                onChange={(values) => setPartner({ ...partner, logo_url: values[values.length - 1] || "" })}
+                folder="partners/logos"
+                kind="image"
+                multiple={false}
+                allowUrl
+              />
+            </div>
+            <div className="md:col-span-2">
+              <Label>Capa</Label>
+              <MediaGalleryUpload
+                label="Enviar capa ou colar URL"
+                values={partner.cover_url ? [partner.cover_url] : []}
+                onChange={(values) => setPartner({ ...partner, cover_url: values[values.length - 1] || "" })}
+                folder="partners/covers"
+                kind="image"
+                multiple={false}
+                allowUrl
+              />
+            </div>
             <div><Label>Cidade</Label><Input value={partner.city || ""} onChange={e => setPartner({ ...partner, city: e.target.value })} /></div>
             <div><Label>Endereço</Label><Input value={partner.address || ""} onChange={e => setPartner({ ...partner, address: e.target.value })} /></div>
             <div><Label>Telefone / WhatsApp</Label><Input value={partner.phone || ""} onChange={e => setPartner({ ...partner, phone: e.target.value })} /></div>

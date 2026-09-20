@@ -10,7 +10,6 @@ import { Switch } from "@/components/ui/switch";
 import { Brain, Save, Loader2, Eye, EyeOff, Zap, CheckCircle2, AlertCircle } from "lucide-react";
 
 const AI_MODELS = [
-  { id: "google/gemini-3-flash-preview", label: "Gemini 3 Flash (Rápido)", desc: "Equilibrado — rápido e eficiente" },
   { id: "google/gemini-2.5-flash", label: "Gemini 2.5 Flash", desc: "Boa qualidade, baixo custo" },
   { id: "google/gemini-2.5-pro", label: "Gemini 2.5 Pro (Premium)", desc: "Máxima qualidade, mais lento" },
   { id: "google/gemini-2.5-flash-lite", label: "Gemini 2.5 Flash Lite", desc: "Ultra rápido, tarefas simples" },
@@ -19,7 +18,7 @@ const AI_MODELS = [
 ];
 
 export default function AdminIA() {
-  const [model, setModel] = useState("google/gemini-3-flash-preview");
+  const [model, setModel] = useState("google/gemini-2.5-flash");
   const [externalKey, setExternalKey] = useState("");
   const [useExternal, setUseExternal] = useState(false);
   const [showKey, setShowKey] = useState(false);
@@ -33,11 +32,12 @@ export default function AdminIA() {
 
   const loadSettings = async () => {
     setLoading(true);
-    const { data } = await supabase.from("system_settings").select("*").in("key", ["ai_model", "ai_external_key", "ai_use_external"]);
+    const { data } = await supabase.from("system_settings").select("*").in("key", ["ai_model", "ai_external_key", "ai_use_external", "gemini_api_key"]);
     if (data) {
       data.forEach(row => {
         if (row.key === "ai_model") setModel(row.value);
         if (row.key === "ai_external_key") setExternalKey(row.value);
+        if (row.key === "gemini_api_key") setExternalKey(prev => prev || row.value);
         if (row.key === "ai_use_external") setUseExternal(row.value === "true");
       });
     }
@@ -58,6 +58,7 @@ export default function AdminIA() {
     await Promise.all([
       saveSetting("ai_model", model),
       saveSetting("ai_external_key", externalKey),
+      saveSetting("gemini_api_key", externalKey),
       saveSetting("ai_use_external", String(useExternal)),
     ]);
     toast({ title: "Configurações de IA salvas ✅" });
@@ -128,7 +129,7 @@ export default function AdminIA() {
               </div>
               <p className="text-xs text-muted-foreground">
                 O sistema utiliza o provedor configurado no servidor para gerar descrições e analisar dados.
-                Você pode opcionalmente configurar uma chave própria do Google Gemini para controle de custos e limites independentes.
+                Ao ativar a chave externa, as funções passam a usar diretamente o Google Gemini configurado abaixo.
               </p>
             </div>
 
@@ -159,7 +160,7 @@ export default function AdminIA() {
                 <div>
                   <h2 className="font-semibold text-card-foreground">API Key Externa (Opcional)</h2>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Use sua própria chave do Google Gemini para limites e custos independentes
+                    Use uma chave do Google Gemini para limites e custos independentes
                   </p>
                 </div>
                 <div className="flex items-center gap-2">

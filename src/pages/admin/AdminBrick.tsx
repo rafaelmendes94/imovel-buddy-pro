@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { formatCurrency } from "@/data/mockData";
 import {
   Search, Trash2, ShoppingBag, Loader2, Eye, CheckCircle2,
@@ -33,6 +34,9 @@ const categorias = ["Eletrônicos", "Móveis", "Veículos", "Roupas", "Esportes"
 
 export default function AdminBrick() {
   const { toast } = useToast();
+  const { isSuperAdmin, hasModuleAccess } = useAuth();
+  const canEditBrick = isSuperAdmin || hasModuleAccess("brick", "edit");
+  const canDeleteBrick = isSuperAdmin || hasModuleAccess("brick", "delete");
   const [items, setItems] = useState<BrickItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -230,12 +234,16 @@ export default function AdminBrick() {
                           <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => { setViewItem(item); setImgIdx(0); }}>
                             <Eye className="w-4 h-4" />
                           </Button>
-                          <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => handleToggleSold(item)}>
-                            <CheckCircle2 className={cn("w-4 h-4", item.vendido ? "text-amber-500" : "text-emerald-500")} />
-                          </Button>
-                          <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => handleDelete(item.id)}>
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
+                          {canEditBrick && (
+                            <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => handleToggleSold(item)}>
+                              <CheckCircle2 className={cn("w-4 h-4", item.vendido ? "text-amber-500" : "text-emerald-500")} />
+                            </Button>
+                          )}
+                          {canDeleteBrick && (
+                            <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => handleDelete(item.id)}>
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
                         </div>
                       </td>
                     </tr>

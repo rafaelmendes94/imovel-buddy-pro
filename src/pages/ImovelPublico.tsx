@@ -101,9 +101,18 @@ function youtubeEmbed(url: string) {
   return m ? `https://www.youtube.com/embed/${m[1]}` : null;
 }
 
+function cloudflareStreamEmbed(url: string) {
+  const m =
+    url.match(/iframe\.videodelivery\.net\/([A-Za-z0-9_-]+)/) ||
+    url.match(/videodelivery\.net\/([A-Za-z0-9_-]+)\/(?:manifest|downloads|thumbnails)/) ||
+    url.match(/watch\.cloudflarestream\.com\/([A-Za-z0-9_-]+)/) ||
+    url.match(/cloudflarestream\.com\/([A-Za-z0-9_-]+)\//);
+  return m ? `https://iframe.videodelivery.net/${m[1]}` : null;
+}
+
 export default function ImovelPublico() {
   const { id } = useParams<{ id: string }>();
-  const { user, loading: authLoading, isSuperAdmin, isAdminStaff } = useAuth();
+  const { user, loading: authLoading, isSuperAdmin, isAdminStaff, hasModuleAccess } = useAuth();
   const [imovel, setImovel] = useState<ImovelRow | null>(null);
   const [brokerProfile, setBrokerProfile] = useState<PublicBrokerProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -128,7 +137,11 @@ export default function ImovelPublico() {
         setNotFound(true);
       } else {
         const row = data as unknown as ImovelRow;
-        const mayViewHidden = !!user?.id && (row.user_id === user.id || isSuperAdmin || isAdminStaff);
+        const mayViewHidden = !!user?.id && (
+          row.user_id === user.id ||
+          isSuperAdmin ||
+          (isAdminStaff && hasModuleAccess("imoveis", "view"))
+        );
         if (!row.ativo_site && !mayViewHidden) {
           setNotFound(true);
           setLoading(false);
@@ -164,7 +177,7 @@ export default function ImovelPublico() {
       }
       setLoading(false);
     })();
-  }, [id, user, authLoading, isSuperAdmin, isAdminStaff]);
+  }, [id, user, authLoading, isSuperAdmin, isAdminStaff, hasModuleAccess]);
 
   useEffect(() => {
     if (!imovel) return;
@@ -186,9 +199,14 @@ export default function ImovelPublico() {
 
   const images = useMemo(() => imovel?.imagens?.filter(Boolean) || [], [imovel]);
   const yt = imovel?.link_video ? youtubeEmbed(imovel.link_video) : null;
-  const isMp4 = !!imovel?.link_video && !yt && /\.(mp4|webm|mov)(\?|$)/i.test(imovel.link_video);
+  const cfVideo = imovel?.link_video ? cloudflareStreamEmbed(imovel.link_video) : null;
+  const isMp4 = !!imovel?.link_video && !yt && !cfVideo && /\.(mp4|webm|mov)(\?|$)/i.test(imovel.link_video);
   const hasVideo = !!imovel?.link_video;
-  const canEdit = !!imovel && !!user?.id && (user.id === imovel.user_id || isSuperAdmin || isAdminStaff);
+  const canEdit = !!imovel && !!user?.id && (
+    user.id === imovel.user_id ||
+    isSuperAdmin ||
+    (isAdminStaff && hasModuleAccess("imoveis", "edit"))
+  );
 
   const fullAddress = imovel
     ? [
@@ -602,6 +620,8 @@ export default function ImovelPublico() {
             <div className="aspect-video w-full rounded-xl overflow-hidden bg-foreground">
               {yt ? (
                 <iframe src={yt} title="Vídeo do imóvel" className="w-full h-full" allow="accelerometer; autoplay; encrypted-media; picture-in-picture" allowFullScreen />
+              ) : cfVideo ? (
+                <iframe src={cfVideo} title="Vídeo do imóvel" className="w-full h-full" allow="accelerometer; autoplay; encrypted-media; picture-in-picture" allowFullScreen />
               ) : isMp4 ? (
                 <video src={imovel.link_video!} className="w-full h-full" controls playsInline />
               ) : (

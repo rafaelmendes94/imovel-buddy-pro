@@ -42,11 +42,11 @@ const parsePreco = (s: any) => {
 const normalizeTipo = (t: string) => {
   const v = String(t || "").trim().toUpperCase();
   if (v === "AP" || v.includes("APART")) return "Apartamento";
-  if (v.includes("CASA")) return "Casa";
-  if (v.includes("SOBRADO")) return "Sobrado";
-  if (v.includes("LOTE") || v.includes("TERRENO")) return "Terreno";
-  if (v.includes("COMERC")) return "Comercial";
-  return v || "Apartamento";
+  if ((v.includes("CASA") || v.includes("SOBRADO")) && v.includes("COND")) return "Casa em condominio";
+  if ((v.includes("LOTE") || v.includes("TERRENO")) && v.includes("COND")) return "Lote em condominio";
+  if (v.includes("CASA") || v.includes("SOBRADO")) return "Casa";
+  if (v.includes("LOTE") || v.includes("TERRENO") || v.includes("COND")) return "Lote";
+  return "Apartamento";
 };
 
 export const mapLegacyRow = (row: any, userId: string) => {

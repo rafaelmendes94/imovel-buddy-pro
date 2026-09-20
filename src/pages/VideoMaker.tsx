@@ -22,6 +22,7 @@ import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 // Material types & client types
 const materialTypes = [
@@ -122,9 +123,13 @@ type MaterialRecordRow = {
   created_at: string;
 };
 
-function InlineEdit({ value, onSave, type = "text", className = "", formatDisplay }: { value: string | number; onSave: (v: string) => void; type?: string; className?: string; formatDisplay?: (v: string | number) => string }) {
+function InlineEdit({ value, onSave, type = "text", className = "", formatDisplay, disabled = false }: { value: string | number; onSave: (v: string) => void; type?: string; className?: string; formatDisplay?: (v: string | number) => string; disabled?: boolean }) {
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState(String(value));
+
+  if (disabled) {
+    return <span className={cn("px-1.5 py-0.5 rounded", className)}>{formatDisplay ? formatDisplay(value) : value}</span>;
+  }
 
   if (!editing) {
     return (
@@ -152,6 +157,7 @@ function InlineEdit({ value, onSave, type = "text", className = "", formatDispla
 }
 
 export default function VideoMaker() {
+  const { isSuperAdmin, isAdminStaff, isBroker, hasModuleAccess } = useAuth();
   const [jobs, setJobs] = useState<VideoJob[]>([]);
   const [finance, setFinance] = useState<FinanceEntry[]>([]);
   const [events, setEvents] = useState<AgendaEvent[]>([]);
@@ -175,6 +181,10 @@ export default function VideoMaker() {
   const [newJob, setNewJob] = useState({ property: "", client: "", address: "", value: "", dueDate: "", notes: "", status: "gravar" as VideoJob["status"], materialType: "vr" as MaterialType, clientType: "assinante" as ClientType });
   const [newEvent, setNewEvent] = useState({ title: "", date: "", time: "", endTime: "", type: "gravacao" as AgendaEvent["type"], notes: "", location: "", property: "", client: "", clientValue: "", editorCost: "", materialType: "vr" as MaterialType, clientType: "assinante" as ClientType });
   const [newFinance, setNewFinance] = useState({ property: "", client: "", clientValue: "", editorCost: "", dueDate: "", status: "pendente" as FinanceEntry["status"], materialType: "vr" as MaterialType, clientType: "assinante" as ClientType });
+
+  const canCreate = isSuperAdmin || isBroker || (isAdminStaff && hasModuleAccess("material_extra", "create"));
+  const canEdit = isSuperAdmin || isBroker || (isAdminStaff && hasModuleAccess("material_extra", "edit"));
+  const canDelete = isSuperAdmin || isBroker || (isAdminStaff && hasModuleAccess("material_extra", "delete"));
 
   const loadRecords = useCallback(async () => {
     setLoading(true);
@@ -241,6 +251,9 @@ export default function VideoMaker() {
   }, [loadRecords]);
 
   const saveRecord = useCallback(async <T extends Record<string, any>>(recordType: MaterialRecordType, data: T, id?: string) => {
+    if (id && !canEdit) throw new Error("Sem permissão para editar Material Extra");
+    if (!id && !canCreate) throw new Error("Sem permissão para criar Material Extra");
+
     if (id) {
       const { error } = await supabase
         .from("material_extra_records")
@@ -258,12 +271,13 @@ export default function VideoMaker() {
 
     if (error) throw error;
     return (inserted as any).id as string;
-  }, []);
+  }, [canCreate, canEdit]);
 
   const deleteRecord = useCallback(async (id: string) => {
+    if (!canDelete) throw new Error("Sem permissão para excluir Material Extra");
     const { error } = await supabase.from("material_extra_records").delete().eq("id", id);
     if (error) throw error;
-  }, []);
+  }, [canDelete]);
 
   const patchRecord = useCallback(async <T extends { id: string }>(recordType: MaterialRecordType, item: T, patch: Partial<T>) => {
     const updated = { ...item, ...patch };
@@ -610,7 +624,7 @@ export default function VideoMaker() {
           <TabsContent value="kanban" className="space-y-4">
             <div className="flex justify-end">
               <Dialog open={jobDialogOpen} onOpenChange={(o) => { setJobDialogOpen(o); if (!o) { setEditingJob(null); setNewJob({ property: "", client: "", address: "", value: "", dueDate: "", notes: "", status: "gravar", materialType: "vr", clientType: "assinante" }); } }}>
-                <DialogTrigger asChild><Button size="sm" className="gap-1.5"><Plus className="w-4 h-4" /> Novo Trabalho</Button></DialogTrigger>
+                {canCreate && <DialogTrigger asChild><Button size="sm" className="gap-1.5"><Plus className="w-4 h-4" /> Novo Trabalho</Button></DialogTrigger>}
                 <DialogContent className="max-w-md">
                   <DialogHeader><DialogTitle>{editingJob ? "Editar Trabalho" : "Novo Trabalho"}</DialogTitle></DialogHeader>
                   <div className="space-y-3">
@@ -646,13 +660,13 @@ export default function VideoMaker() {
                     </div>
                     <div className="space-y-2">
                       {colJobs.map(job => (
-                        <Card key={job.id} draggable onDragStart={e => handleDragStart(e, job.id)} onDragEnd={handleDragEnd} className={cn("cursor-grab active:cursor-grabbing border-border/50 hover:border-accent/40 transition-all duration-200 hover:shadow-md", draggedJobId === job.id && "opacity-40 scale-95 rotate-1")}>
+                        <Card key={job.id} draggable={canEdit} onDragStart={e => canEdit && handleDragStart(e, job.id)} onDragEnd={handleDragEnd} className={cn(canEdit ? "cursor-grab active:cursor-grabbing" : "cursor-default", "border-border/50 hover:border-accent/40 transition-all duration-200 hover:shadow-md", draggedJobId === job.id && "opacity-40 scale-95 rotate-1")}>
                           <CardContent className="p-3 space-y-2">
                             <div className="flex items-start justify-between gap-1">
                               <div className="flex items-center gap-1.5 min-w-0"><GripVertical className="w-3.5 h-3.5 text-muted-foreground/50 flex-shrink-0" /><p className="text-sm font-medium text-foreground leading-tight truncate">{job.property}</p></div>
                               <div className="flex gap-0.5 flex-shrink-0">
-                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleEditJob(job)}><Edit className="w-3 h-3" /></Button>
-                                <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => handleDeleteJob(job.id)}><Trash2 className="w-3 h-3" /></Button>
+                                {canEdit && <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleEditJob(job)}><Edit className="w-3 h-3" /></Button>}
+                                {canDelete && <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => handleDeleteJob(job.id)}><Trash2 className="w-3 h-3" /></Button>}
                               </div>
                             </div>
                             <p className="text-xs text-muted-foreground">{job.client}</p>
@@ -666,10 +680,10 @@ export default function VideoMaker() {
                               {job.dueDate && <span className="text-[10px] text-muted-foreground">{format(new Date(job.dueDate + "T12:00:00"), "dd/MM")}</span>}
                             </div>
                             {job.notes && <p className="text-[11px] text-muted-foreground/60 truncate">{job.notes}</p>}
-                            <div className="flex gap-1 pt-1 md:hidden">
+                            {canEdit && <div className="flex gap-1 pt-1 md:hidden">
                               {colIdx > 0 && <Button variant="outline" size="sm" className="h-6 text-[10px] flex-1 gap-0.5" onClick={() => moveJob(job.id, "prev")}><ChevronLeft className="w-3 h-3" /> {kanbanColumns[colIdx - 1].label}</Button>}
                               {colIdx < statusOrder.length - 1 && <Button variant="outline" size="sm" className="h-6 text-[10px] flex-1 gap-0.5" onClick={() => moveJob(job.id, "next")}>{kanbanColumns[colIdx + 1].label} <ChevronRight className="w-3 h-3" /></Button>}
-                            </div>
+                            </div>}
                           </CardContent>
                         </Card>
                       ))}

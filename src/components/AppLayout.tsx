@@ -18,7 +18,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     (isBroker && brokerModules.includes(moduleKey));
   const bottomItems = useAdmin
     ? [
-        { label: "Painel", icon: Home, path: "/dashboard" },
+        ...(canSee("dashboard_admin") ? [{ label: "Painel", icon: Home, path: "/dashboard" }] : []),
         ...(canSee("imoveis") ? [{ label: "Imóveis", icon: Building2, path: "/imoveis", matchPaths: ["/imoveis", "/cadastro-imovel"] }] : []),
         { label: "Buscar", icon: Search, path: "/todos-imoveis" },
         ...(canSee("corretores") ? [{ label: "Corretores", icon: Users, path: "/corretores" }] : []),

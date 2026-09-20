@@ -107,13 +107,43 @@ export function AuthGuard({ children, requiredRoles, allowBlocked = false, allow
 }
 
 export function ModuleGuard({ children, adminModule, brokerModule, adminOnly = false }: ModuleGuardProps) {
-  const { isSuperAdmin, isAdminStaff, isBroker, subscription, hasModuleAccess } = useAuth();
+  const { isSuperAdmin, isAdminStaff, isBroker, subscription, staffPermissions, hasModuleAccess } = useAuth();
+
+  const firstAllowedAdminPath = () => {
+    const modulePaths: Record<string, string> = {
+      dashboard_admin: "/dashboard",
+      clientes: "/admin/clientes",
+      planos: "/admin/planos",
+      brick: "/admin/brick",
+      relatorios: "/relatorios",
+      site_editor: "/site-editor",
+      imoveis: "/imoveis",
+      edificios: "/edificios",
+      condominios: "/condominios",
+      fotos_cidade: "/fotos-cidade",
+      avaliacoes: "/avaliacoes",
+      financeiro: "/financeiro",
+      tabelas: "/tabelas",
+      contratos: "/contratos",
+      material_extra: "/videomaker",
+      corretores: "/corretores",
+      imobiliarias: "/imobiliarias",
+      configuracoes: "/configuracoes",
+    };
+
+    const entry = Object.entries(modulePaths).find(([moduleKey]) => {
+      const perms = staffPermissions?.[moduleKey];
+      return !!perms?.view;
+    });
+
+    return entry?.[1] || "/login";
+  };
 
   if (isSuperAdmin) return <>{children}</>;
 
   if (isAdminStaff) {
-    if (!adminModule) return <Navigate to="/dashboard" replace />;
-    return hasModuleAccess(adminModule) ? <>{children}</> : <Navigate to="/dashboard" replace />;
+    if (!adminModule) return <Navigate to={firstAllowedAdminPath()} replace />;
+    return hasModuleAccess(adminModule) ? <>{children}</> : <Navigate to={firstAllowedAdminPath()} replace />;
   }
 
   if (adminOnly) return <Navigate to={isBroker ? "/painel" : "/dashboard"} replace />;

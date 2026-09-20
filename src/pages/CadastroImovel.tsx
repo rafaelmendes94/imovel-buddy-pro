@@ -25,13 +25,13 @@ import { InfraToggle } from '@/components/InfraToggle';
 import { useSystemOptions } from '@/hooks/useSystemOptions';
 import {
   Building2, MapPin, BedDouble, Bath, Car, Ruler, User, Phone, DollarSign,
-  Percent, Gift, Home, Sparkles, Save, Image, Plus, X, Loader2,
+  Percent, Gift, Home, Sparkles, Save, Image, Plus, X, Loader2, Upload,
   Hash, FileText, Eye, Key, Calendar, Building, Fence, Landmark, Search, Brain, Wand2,
   Play, FolderDown, History, Clock, Download, CheckCircle2, Ban, ChevronLeft, ChevronRight, Star, GripVertical
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { resolvePropertyBrokerName } from '@/lib/propertyFlow';
-import { uploadImageToCloudflare } from '@/lib/cloudflareImages';
+import { uploadImageToCloudflare, uploadVideoToCloudflare } from '@/lib/cloudflareImages';
 
 const statusConfig: Record<string, { label: string; color: string; bg: string; border: string; icon: typeof Home }> = {
   "Disponível": { label: "Ativo", color: "text-emerald-500", bg: "bg-emerald-500/10", border: "border-emerald-500/30", icon: Home },
@@ -40,13 +40,24 @@ const statusConfig: Record<string, { label: string; color: string; bg: string; b
   "Alugado":    { label: "Alugado", color: "text-blue-500", bg: "bg-blue-500/10", border: "border-blue-500/30", icon: Key },
   "Suspenso":   { label: "Suspenso", color: "text-gray-500", bg: "bg-gray-500/10", border: "border-gray-500/30", icon: Ban },
 };
+const getStatusConfig = (status: string) => statusConfig[status] || {
+  label: status,
+  color: "text-slate-500",
+  bg: "bg-slate-500/10",
+  border: "border-slate-500/30",
+  icon: Home,
+};
 import { format } from 'date-fns';
 
-const tiposImovel = ["Apartamento", "Casa", "Comercial", "Terreno", "Lote", "Condomínio"];
-const statusOptions = ["Disponível", "Vendido", "Reservado", "Alugado", "Suspenso"];
-const condicaoOptions = ["Mobiliado", "Semi-mobiliado", "Vazio", "Decorado"];
-const ownerTypeOptions = ["Construtora", "Investidor", "Particular", "Adm Comercial", "Exclusividade"];
-const padraoOptions = ["Econômico", "Médio Padrão", "Alto Padrão", "Luxo"];
+const DEFAULT_TIPOS_IMOVEL = ["Apartamento", "Casa", "Comercial", "Terreno", "Lote", "Condomínio"];
+const DEFAULT_STATUS_OPTIONS = ["Disponível", "Vendido", "Reservado", "Alugado", "Suspenso"];
+const DEFAULT_CONDICAO_OPTIONS = ["Mobiliado", "Semi-mobiliado", "Vazio", "Decorado"];
+const DEFAULT_OWNER_TYPE_OPTIONS = ["Construtora", "Investidor", "Particular", "Adm Comercial", "Exclusividade"];
+const DEFAULT_PADRAO_OPTIONS = ["Econômico", "Médio Padrão", "Alto Padrão", "Luxo"];
+const DEFAULT_INFRA_OPTIONS = ["Piscina", "Academia", "Salão de Festas", "Playground", "Quadra", "Churrasqueira", "Segurança 24h", "Portaria", "Elevador", "Estacionamento"];
+const DEFAULT_POSICAO_PREDIO_OPTIONS = ["Frente", "Fundos", "Lateral", "Esquina"];
+const DEFAULT_POSICAO_SOLAR_OPTIONS = ["Nascente", "Poente", "Norte", "Sul"];
+const DEFAULT_VISTA_OPTIONS = ["Mar", "Cidade", "Lagoa", "Montanha"];
 const destaqueCategoriaOptions = [
   { value: "none", label: "Sem destaque" },
   { value: "apartamentos", label: "Apartamentos" },
@@ -57,7 +68,7 @@ const destaqueCategoriaOptions = [
   { value: "decorados", label: "Decorados" },
   { value: "vista-mar", label: "Vista Mar" },
 ];
-const paymentConditionOptions = [
+const DEFAULT_PAYMENT_CONDITION_OPTIONS = [
   "À Vista", "Parcelamento 12x", "Parcelamento 24x", "Parcelamento 36x",
   "Parcelamento 48x", "Parcelamento 60x", "Parcelamento 120x",
   "Financiamento Bancário", "FGTS", "Dação", "Permuta", "Consórcio"
@@ -344,6 +355,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [pdfGen, setPdfGen] = useState(false);
   const [pdfInfo, setPdfInfo] = useState('');
+  const [videoUploading, setVideoUploading] = useState(false);
 
   /** Gera a apresentação em PDF com TODAS as fotos e grava a URL no campo Fotos PDF. */
   const generateFotosPdf = async () => {
@@ -416,15 +428,46 @@ export function ImovelForm({ editId }: { editId?: string }) {
       setPdfGen(false);
     }
   };
-  const { values: infraOptions } = useSystemOptions("infraestrutura");
-  const { values: posicaoPredioOptions } = useSystemOptions("posicao_predio");
-  const { values: posicaoSolarOptions } = useSystemOptions("posicao_solar");
-  const { values: vistaOptions } = useSystemOptions("vista");
+  const { values: tiposImovel } = useSystemOptions("tipo_imovel", DEFAULT_TIPOS_IMOVEL);
+  const { values: statusOptions } = useSystemOptions("status_imovel", DEFAULT_STATUS_OPTIONS);
+  const { values: condicaoOptions } = useSystemOptions("condicao_imovel", DEFAULT_CONDICAO_OPTIONS);
+  const { values: padraoOptions } = useSystemOptions("padrao_imovel", DEFAULT_PADRAO_OPTIONS);
+  const { values: ownerTypeOptions } = useSystemOptions("tipo_proprietario", DEFAULT_OWNER_TYPE_OPTIONS);
+  const { values: paymentConditionOptions } = useSystemOptions("condicoes_pagamento", DEFAULT_PAYMENT_CONDITION_OPTIONS);
+  const { values: infraOptions } = useSystemOptions("infraestrutura", DEFAULT_INFRA_OPTIONS);
+  const { values: posicaoPredioOptions } = useSystemOptions("posicao_predio", DEFAULT_POSICAO_PREDIO_OPTIONS);
+  const { values: posicaoSolarOptions } = useSystemOptions("posicao_solar", DEFAULT_POSICAO_SOLAR_OPTIONS);
+  const { values: vistaOptions } = useSystemOptions("vista", DEFAULT_VISTA_OPTIONS);
   const [logs, setLogs] = useState<any[]>([]);
   const [logsLoading, setLogsLoading] = useState(false);
 
   const isEdit = !!editId;
   const set = (field: keyof FormData, value: any) => setForm(prev => ({ ...prev, [field]: value }));
+
+  const handleVideoUpload = async (file: File | undefined) => {
+    if (!file) return;
+    if (!user) {
+      toast({ title: "Faça login para enviar vídeo", variant: "destructive" });
+      return;
+    }
+    setVideoUploading(true);
+    try {
+      const url = await uploadVideoToCloudflare(file, {
+        folder: `imoveis/${form.codigo || editId || "novo"}/videos`,
+        source: "cadastro-imovel-video",
+      });
+      set("linkVideo", url);
+      toast({ title: "Vídeo enviado para Cloudflare ✅" });
+    } catch (error: any) {
+      toast({
+        title: "Erro ao enviar vídeo",
+        description: error?.message || "Falha no upload para Cloudflare.",
+        variant: "destructive",
+      });
+    } finally {
+      setVideoUploading(false);
+    }
+  };
 
   // Adiciona o valor digitado no campo de Box ao estado do formulário (string, preserva "1.11", "A12", etc.)
   const addBoxFromInput = (input: HTMLInputElement | null) => {
@@ -989,7 +1032,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
           <Label className="text-xs flex items-center gap-1">Status do Imóvel</Label>
           <div className="flex flex-wrap gap-1.5">
             {statusOptions.map((s) => {
-              const cfg = statusConfig[s];
+              const cfg = getStatusConfig(s);
               const Icon = cfg.icon;
               const active = form.status === s;
               return (
@@ -1215,19 +1258,19 @@ export function ImovelForm({ editId }: { editId?: string }) {
           <QuickPick label="Condição" options={condicaoOptions} value={form.condicao} onChange={(v) => set('condicao', String(v))} />
           <QuickPick
             label="Posição no Prédio"
-            options={posicaoPredioOptions.length ? posicaoPredioOptions : ["Frente", "Fundos", "Lateral", "Esquina"]}
+            options={posicaoPredioOptions}
             value={form.posicaoPredio}
             onChange={(v) => set('posicaoPredio', String(v))}
           />
           <QuickPick
             label="Posição Solar"
-            options={posicaoSolarOptions.length ? posicaoSolarOptions : ["Nascente", "Poente", "Norte", "Sul"]}
+            options={posicaoSolarOptions}
             value={form.posicaoSolar}
             onChange={(v) => set('posicaoSolar', String(v))}
           />
           <QuickPick
             label="Vista"
-            options={vistaOptions.length ? vistaOptions : ["Mar", "Cidade", "Lagoa", "Montanha"]}
+            options={vistaOptions}
             value={form.vista}
             onChange={(v) => set('vista', String(v))}
           />
@@ -1317,7 +1360,27 @@ export function ImovelForm({ editId }: { editId?: string }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><Play className="w-3.5 h-3.5" /> Link do Vídeo</Label>
-            <Input placeholder="https://youtube.com/..." value={form.linkVideo} onChange={e => set('linkVideo', e.target.value)} />
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Input
+                placeholder="https://youtube.com/... ou Cloudflare Stream"
+                value={form.linkVideo}
+                onChange={e => set('linkVideo', e.target.value)}
+              />
+              <label className="inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md border border-input bg-background text-sm font-medium hover:bg-accent hover:text-accent-foreground cursor-pointer whitespace-nowrap">
+                {videoUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                {videoUploading ? "Enviando..." : "Enviar vídeo"}
+                <input
+                  type="file"
+                  accept="video/*"
+                  className="hidden"
+                  disabled={videoUploading}
+                  onChange={(e) => {
+                    handleVideoUpload(e.target.files?.[0]);
+                    e.target.value = '';
+                  }}
+                />
+              </label>
+            </div>
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1"><FolderDown className="w-3.5 h-3.5" /> Link Material Completo</Label>

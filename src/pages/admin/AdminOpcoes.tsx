@@ -15,15 +15,22 @@ interface SystemOption {
 }
 
 const CATEGORIES = [
-  { key: "infraestrutura", label: "Infraestrutura (Edifícios/Empreendimentos)", color: "bg-blue-500/10 text-blue-500" },
-  { key: "amenidades_condominio", label: "Amenidades (Condomínios)", color: "bg-green-500/10 text-green-500" },
   { key: "tipo_imovel", label: "Tipo de Imóvel", color: "bg-purple-500/10 text-purple-500" },
   { key: "status_imovel", label: "Status do Imóvel", color: "bg-amber-500/10 text-amber-500" },
   { key: "condicao_imovel", label: "Condição do Imóvel", color: "bg-orange-500/10 text-orange-500" },
   { key: "padrao_imovel", label: "Padrão do Imóvel", color: "bg-rose-500/10 text-rose-500" },
+  { key: "tipo_proprietario", label: "Tipo de Proprietário", color: "bg-lime-500/10 text-lime-500" },
+  { key: "condicoes_pagamento", label: "Condições de Pagamento", color: "bg-emerald-500/10 text-emerald-500" },
   { key: "posicao_predio", label: "Posição no Prédio", color: "bg-cyan-500/10 text-cyan-500" },
   { key: "posicao_solar", label: "Posição Solar", color: "bg-yellow-500/10 text-yellow-500" },
   { key: "vista", label: "Vista", color: "bg-indigo-500/10 text-indigo-500" },
+  { key: "infraestrutura", label: "Infraestrutura (Edifícios/Loteamentos)", color: "bg-blue-500/10 text-blue-500" },
+  { key: "amenidades_condominio", label: "Amenidades (Condomínios)", color: "bg-green-500/10 text-green-500" },
+  { key: "tipo_condominio", label: "Tipo de Condomínio", color: "bg-teal-500/10 text-teal-500" },
+  { key: "tipo_empreendimento", label: "Tipo de Loteamento/Empreendimento", color: "bg-sky-500/10 text-sky-500" },
+  { key: "status_empreendimento", label: "Status de Loteamento/Empreendimento", color: "bg-violet-500/10 text-violet-500" },
+  { key: "status_edificio", label: "Status de Edifício", color: "bg-fuchsia-500/10 text-fuchsia-500" },
+  { key: "gallery_tipo", label: "Categorias do Banco de Imagens", color: "bg-slate-500/10 text-slate-500" },
   // { key: "categoria_brick", label: "Categorias do Brick", color: "bg-teal-500/10 text-teal-500" }, // oculto
 ];
 

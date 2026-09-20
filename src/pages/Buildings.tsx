@@ -49,8 +49,11 @@ export default function Buildings() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user, isSuperAdmin, isAdminStaff } = useAuth();
-  const canManage = isSuperAdmin || isAdminStaff;
+  const { user, isSuperAdmin, isAdminStaff, hasModuleAccess } = useAuth();
+  const canCreate = isSuperAdmin || (isAdminStaff && hasModuleAccess("edificios", "create"));
+  const canEdit = isSuperAdmin || (isAdminStaff && hasModuleAccess("edificios", "edit"));
+  const canDelete = isSuperAdmin || (isAdminStaff && hasModuleAccess("edificios", "delete"));
+  const canManage = canCreate || canEdit || canDelete;
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [importing, setImporting] = useState(false);
 
@@ -77,6 +80,7 @@ export default function Buildings() {
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (!canCreate) { toast({ title: "Sem permissão para importar edifícios", variant: "destructive" }); return; }
     if (!user) { toast({ title: "Faça login para importar", variant: "destructive" }); return; }
     setImporting(true);
     try {
@@ -130,6 +134,10 @@ export default function Buildings() {
   );
 
   const handleDelete = async (id: string) => {
+    if (!canDelete) {
+      toast({ title: "Sem permissão para excluir edifícios", variant: "destructive" });
+      return;
+    }
     await supabase.from("edificios").delete().eq("id", id);
     toast({ title: "Edifício excluído" });
     loadData();
@@ -146,16 +154,16 @@ export default function Buildings() {
           </div>
           {canManage && (
             <div className="flex flex-wrap items-center gap-2 self-start">
-              <button onClick={downloadTemplate} className="flex items-center gap-2 px-3 py-2.5 rounded-lg border border-border bg-card text-foreground text-sm font-medium hover:bg-muted transition-colors">
+              {canCreate && <button onClick={downloadTemplate} className="flex items-center gap-2 px-3 py-2.5 rounded-lg border border-border bg-card text-foreground text-sm font-medium hover:bg-muted transition-colors">
                 <Download className="w-4 h-4" /> Modelo Excel
-              </button>
-              <button onClick={() => fileInputRef.current?.click()} disabled={importing} className="flex items-center gap-2 px-3 py-2.5 rounded-lg border border-border bg-card text-foreground text-sm font-medium hover:bg-muted transition-colors disabled:opacity-60">
+              </button>}
+              {canCreate && <button onClick={() => fileInputRef.current?.click()} disabled={importing} className="flex items-center gap-2 px-3 py-2.5 rounded-lg border border-border bg-card text-foreground text-sm font-medium hover:bg-muted transition-colors disabled:opacity-60">
                 {importing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />} Importar Excel
-              </button>
+              </button>}
               <input ref={fileInputRef} type="file" accept=".xlsx,.xls,.csv" onChange={handleImport} className="hidden" />
-              <button onClick={() => navigate("/cadastro-edificio")} className="flex items-center gap-2 px-4 py-2.5 rounded-lg gradient-gold text-primary text-sm font-semibold hover:opacity-90 transition-opacity">
+              {canCreate && <button onClick={() => navigate("/cadastro-edificio")} className="flex items-center gap-2 px-4 py-2.5 rounded-lg gradient-gold text-primary text-sm font-semibold hover:opacity-90 transition-opacity">
                 <Plus className="w-4 h-4" /> Novo Edifício
-              </button>
+              </button>}
             </div>
           )}
         </div>
@@ -174,10 +182,10 @@ export default function Buildings() {
                 <div className="relative h-44 overflow-hidden">
                   <img src={building.imagem_url || "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&h=300&fit=crop"} alt={building.nome} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   <span className={cn("absolute top-3 left-3 px-2.5 py-1 rounded-md text-[11px] font-semibold border", statusColors[building.status] || "bg-muted text-muted-foreground")}>{building.status}</span>
-                  {canManage && (
+                  {(canEdit || canDelete) && (
                     <div className="absolute top-3 right-3 flex gap-1.5">
-                      <button onClick={(e) => { e.stopPropagation(); navigate(`/editar-edificio/${building.id}`); }} className="w-7 h-7 rounded-md bg-card/90 backdrop-blur-sm flex items-center justify-center hover:bg-card transition-colors"><Edit className="w-3.5 h-3.5 text-foreground" /></button>
-                      <button onClick={(e) => { e.stopPropagation(); handleDelete(building.id); }} className="w-7 h-7 rounded-md bg-card/90 backdrop-blur-sm flex items-center justify-center hover:bg-destructive/90 transition-colors"><Trash2 className="w-3.5 h-3.5 text-foreground" /></button>
+                      {canEdit && <button onClick={(e) => { e.stopPropagation(); navigate(`/editar-edificio/${building.id}`); }} className="w-7 h-7 rounded-md bg-card/90 backdrop-blur-sm flex items-center justify-center hover:bg-card transition-colors"><Edit className="w-3.5 h-3.5 text-foreground" /></button>}
+                      {canDelete && <button onClick={(e) => { e.stopPropagation(); handleDelete(building.id); }} className="w-7 h-7 rounded-md bg-card/90 backdrop-blur-sm flex items-center justify-center hover:bg-destructive/90 transition-colors"><Trash2 className="w-3.5 h-3.5 text-foreground" /></button>}
                     </div>
                   )}
                 </div>

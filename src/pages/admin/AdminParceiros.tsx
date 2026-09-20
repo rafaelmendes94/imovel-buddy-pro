@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { MediaGalleryUpload } from "@/components/MediaGalleryUpload";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Search, Handshake, ExternalLink } from "lucide-react";
 
@@ -56,10 +57,16 @@ export default function AdminParceiros() {
   const [form, setForm] = useState(emptyPartner);
 
   const fetchPartners = async () => {
-    const { data } = await supabase
+    setLoading(true);
+    const { data, error } = await supabase
       .from("partners")
       .select("*")
       .order("sort_order", { ascending: true });
+    if (error) {
+      toast.error(`Erro ao carregar parceiros: ${error.message}`);
+      setLoading(false);
+      return;
+    }
     setPartners((data as any) || []);
     setLoading(false);
   };
@@ -87,11 +94,11 @@ export default function AdminParceiros() {
 
     if (editing) {
       const { error } = await supabase.from("partners").update(payload as any).eq("id", editing.id);
-      if (error) { toast.error("Erro ao atualizar"); return; }
+      if (error) { toast.error(`Erro ao atualizar: ${error.message}`); return; }
       toast.success("Parceiro atualizado");
     } else {
       const { error } = await supabase.from("partners").insert(payload as any);
-      if (error) { toast.error("Erro ao criar"); return; }
+      if (error) { toast.error(`Erro ao criar: ${error.message}`); return; }
       toast.success("Parceiro criado");
     }
     setDialogOpen(false);
@@ -100,7 +107,11 @@ export default function AdminParceiros() {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Excluir este parceiro?")) return;
-    await supabase.from("partners").delete().eq("id", id);
+    const { error } = await supabase.from("partners").delete().eq("id", id);
+    if (error) {
+      toast.error(`Erro ao excluir: ${error.message}`);
+      return;
+    }
     toast.success("Parceiro excluído");
     fetchPartners();
   };
@@ -240,13 +251,29 @@ export default function AdminParceiros() {
                 <Label>Descrição</Label>
                 <Textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3} />
               </div>
-              <div>
-                <Label>URL do Logo</Label>
-                <Input value={form.logo_url} onChange={e => setForm(f => ({ ...f, logo_url: e.target.value }))} placeholder="https://..." />
+              <div className="md:col-span-2">
+                <Label>Logo</Label>
+                <MediaGalleryUpload
+                  label="Enviar logo ou colar URL"
+                  values={form.logo_url ? [form.logo_url] : []}
+                  onChange={(values) => setForm(f => ({ ...f, logo_url: values[values.length - 1] || "" }))}
+                  folder="partners/logos"
+                  kind="image"
+                  multiple={false}
+                  allowUrl
+                />
               </div>
-              <div>
-                <Label>URL da Capa</Label>
-                <Input value={form.cover_url} onChange={e => setForm(f => ({ ...f, cover_url: e.target.value }))} placeholder="https://..." />
+              <div className="md:col-span-2">
+                <Label>Capa</Label>
+                <MediaGalleryUpload
+                  label="Enviar capa ou colar URL"
+                  values={form.cover_url ? [form.cover_url] : []}
+                  onChange={(values) => setForm(f => ({ ...f, cover_url: values[values.length - 1] || "" }))}
+                  folder="partners/covers"
+                  kind="image"
+                  multiple={false}
+                  allowUrl
+                />
               </div>
               <div>
                 <Label>Cidade</Label>

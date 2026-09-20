@@ -75,8 +75,9 @@ const coverOf = (c: CondoRow) =>
 
 export default function Condominiums() {
   const navigate = useNavigate();
-  const { isSuperAdmin, isAdminStaff } = useAuth();
-  const canManage = isSuperAdmin || isAdminStaff;
+  const { isSuperAdmin, isAdminStaff, hasModuleAccess } = useAuth();
+  const canCreate = isSuperAdmin || (isAdminStaff && hasModuleAccess("condominios", "create"));
+  const canManage = canCreate || isSuperAdmin || (isAdminStaff && (hasModuleAccess("condominios", "edit") || hasModuleAccess("condominios", "delete")));
 
   const [condos, setCondos] = useState<CondoRow[]>([]);
   const [imoveis, setImoveis] = useState<MetricImovel[]>([]);
@@ -287,7 +288,7 @@ export default function Condominiums() {
             <h1 className="text-2xl font-bold text-foreground">Condomínios</h1>
             <p className="text-sm text-muted-foreground mt-1">Gerencie e visualize os condomínios cadastrados</p>
           </div>
-          {canManage && (
+          {canCreate && (
             <Button onClick={() => navigate("/cadastro-condominio")} className="self-start">
               <Plus className="w-4 h-4 mr-2" /> Novo Condomínio
             </Button>

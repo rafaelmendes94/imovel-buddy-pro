@@ -9,38 +9,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
-
-// ── Single source of truth for all modules ──
-const ADMIN_MODULES = [
-  { key: "dashboard_admin", label: "Dashboard Admin" },
-  { key: "funcionarios", label: "Funcionários" },
-  { key: "clientes", label: "Clientes" },
-  { key: "planos", label: "Planos" },
-] as const;
-
-const OPERATIONAL_MODULES = [
-  { key: "dashboard", label: "Dashboard" },
-  { key: "relatorios", label: "Relatórios" },
-  { key: "site_editor", label: "Site" },
-  { key: "imoveis", label: "Imóveis" },
-  { key: "edificios", label: "Edifícios" },
-  { key: "condominios", label: "Condomínios" },
-  { key: "fotos_cidade", label: "Fotos da Cidade" },
-  { key: "avaliacoes", label: "Avaliações" },
-  { key: "financeiro", label: "Financeiro" },
-  { key: "tabelas", label: "Tabelas" },
-  { key: "contratos", label: "Contratos" },
-  { key: "material_extra", label: "Material Extra" },
-  { key: "corretores", label: "Corretores" },
-  { key: "imobiliarias", label: "Imobiliárias" },
-  { key: "configuracoes", label: "Configurações" },
-] as const;
-
-const ALL_MODULES = [...ADMIN_MODULES, ...OPERATIONAL_MODULES];
-
-type ActionKey = "view" | "create" | "edit" | "delete";
-type ModulePerms = Record<ActionKey, boolean>;
-type PermissionsMap = Record<string, ModulePerms>;
+import {
+  ADMIN_PERMISSION_MODULES,
+  OPERATIONAL_PERMISSION_MODULES,
+  buildDefaultPermissions,
+  ensureAllPermissions,
+  type ActionKey,
+  type PermissionsMap,
+} from "@/lib/moduleCatalog";
 
 const ACTION_LABELS: { key: ActionKey; label: string }[] = [
   { key: "view", label: "Ver" },
@@ -49,19 +25,8 @@ const ACTION_LABELS: { key: ActionKey; label: string }[] = [
   { key: "delete", label: "Excluir" },
 ];
 
-/** Ensures every module has an entry — auto-maps new modules */
-function ensureAllModules(perms: PermissionsMap): PermissionsMap {
-  const result = { ...perms };
-  for (const mod of ALL_MODULES) {
-    if (!result[mod.key]) {
-      result[mod.key] = { view: false, create: false, edit: false, delete: false };
-    }
-  }
-  return result;
-}
-
 function buildEmptyPerms(): PermissionsMap {
-  return ensureAllModules({});
+  return buildDefaultPermissions();
 }
 
 function countActive(perms: PermissionsMap): number {
@@ -92,7 +57,7 @@ export default function AdminCargos() {
       setRoles(data.map((r: any) => ({
         id: r.id,
         name: r.name,
-        permissions: ensureAllModules((r.permissions as PermissionsMap) || {}),
+        permissions: ensureAllPermissions((r.permissions as PermissionsMap) || {}),
       })));
     }
     setLoading(false);
@@ -154,13 +119,14 @@ export default function AdminCargos() {
   const toggleAll = async (id: string) => {
     const role = roles.find(r => r.id === id);
     if (!role) return;
-    const allOn = ALL_MODULES.every(m => {
+    const allModules = [...ADMIN_PERMISSION_MODULES, ...OPERATIONAL_PERMISSION_MODULES];
+    const allOn = allModules.every(m => {
       const p = role.permissions[m.key];
       return p && p.view && p.create && p.edit && p.delete;
     });
     const val = !allOn;
     const updated: PermissionsMap = {};
-    ALL_MODULES.forEach(m => { updated[m.key] = { view: val, create: val, edit: val, delete: val }; });
+    allModules.forEach(m => { updated[m.key] = { view: val, create: val, edit: val, delete: val }; });
     setRoles(prev => prev.map(r => r.id === id ? { ...r, permissions: updated } : r));
     await supabase.from("job_roles").update({ permissions: updated } as any).eq("id", id);
   };
@@ -264,7 +230,7 @@ export default function AdminCargos() {
                             {active} permissões ativas
                           </Badge>
                           <Badge variant="outline" className="text-xs text-muted-foreground">
-                            {ALL_MODULES.length} módulos
+                            {ADMIN_PERMISSION_MODULES.length + OPERATIONAL_PERMISSION_MODULES.length} módulos
                           </Badge>
                         </div>
                       </div>
@@ -331,7 +297,7 @@ export default function AdminCargos() {
                         <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
                           Módulos de Administração
                         </h4>
-                        {renderTable(ADMIN_MODULES, role)}
+                        {renderTable(ADMIN_PERMISSION_MODULES, role)}
                       </div>
 
                       {/* Operational Modules */}
@@ -339,7 +305,7 @@ export default function AdminCargos() {
                         <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
                           Módulos Operacionais
                         </h4>
-                        {renderTable(OPERATIONAL_MODULES, role)}
+                        {renderTable(OPERATIONAL_PERMISSION_MODULES, role)}
                       </div>
                     </div>
                   )}

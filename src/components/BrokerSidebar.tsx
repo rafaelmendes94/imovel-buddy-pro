@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Building2, Camera, ClipboardCheck, Wallet, Table2,
-  FileSignature, Clapperboard, Users, CreditCard, LogOut, Home, Building, Fence, Globe, Rss, Zap,
+  FileSignature, Clapperboard, Users, CreditCard, LogOut, Home, Building, Fence, Globe, Rss, Zap, ShoppingBag,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -16,9 +16,11 @@ const allModules: Record<string, { icon: React.ComponentType<{ className?: strin
   avaliacoes: { icon: ClipboardCheck, label: "Avaliações", path: "/painel/avaliacoes" },
   financeiro: { icon: Wallet, label: "Financeiro", path: "/painel/financeiro" },
   tabelas: { icon: Table2, label: "Tabelas", path: "/painel/tabelas" },
+  gerador_tabela: { icon: Table2, label: "Gerador de Tabela", path: "/painel/gerador-tabela" },
   contratos: { icon: FileSignature, label: "Contratos", path: "/painel/contratos" },
   videomaker: { icon: Clapperboard, label: "Material Extra", path: "/painel/videomaker" },
   corretores: { icon: Users, label: "Corretores", path: "/painel/corretores" },
+  brick: { icon: ShoppingBag, label: "Brick", path: "/brick" },
 };
 
 export function BrokerSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
@@ -31,7 +33,7 @@ export function BrokerSidebar({ onNavigate }: { onNavigate?: () => void } = {}) 
     { icon: LayoutDashboard, label: "Dashboard", path: "/painel" },
     { icon: Zap, label: "Cadastro Rápido", path: "/painel/cadastro-rapido" },
     ...enabledModules
-      .map(m => allModules[m as string])
+      .flatMap(m => m === "tabelas" ? [allModules.tabelas, allModules.gerador_tabela] : [allModules[m as string]])
       .filter(Boolean),
     { icon: Rss, label: "Feeds XML", path: "/painel/feeds-xml" },
     { icon: CreditCard, label: "Assinatura", path: "/painel/assinatura" },

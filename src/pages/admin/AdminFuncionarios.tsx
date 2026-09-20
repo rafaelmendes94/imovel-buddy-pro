@@ -10,32 +10,16 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  ADMIN_PERMISSION_MODULES,
+  OPERATIONAL_PERMISSION_MODULES,
+  buildDefaultPermissions,
+  ensureAllPermissions,
+  type ActionKey,
+  type PermissionsMap,
+} from "@/lib/moduleCatalog";
 
-const DEFAULT_PERMISSIONS = {
-  dashboard_admin: { view: false, create: false, edit: false, delete: false },
-  funcionarios: { view: false, create: false, edit: false, delete: false },
-  clientes: { view: false, create: false, edit: false, delete: false },
-  planos: { view: false, create: false, edit: false, delete: false },
-  dashboard: { view: false, create: false, edit: false, delete: false },
-  relatorios: { view: false, create: false, edit: false, delete: false },
-  site_editor: { view: false, create: false, edit: false, delete: false },
-  imoveis: { view: false, create: false, edit: false, delete: false },
-  edificios: { view: false, create: false, edit: false, delete: false },
-  condominios: { view: false, create: false, edit: false, delete: false },
-  fotos_cidade: { view: false, create: false, edit: false, delete: false },
-  avaliacoes: { view: false, create: false, edit: false, delete: false },
-  financeiro: { view: false, create: false, edit: false, delete: false },
-  tabelas: { view: false, create: false, edit: false, delete: false },
-  contratos: { view: false, create: false, edit: false, delete: false },
-  material_extra: { view: false, create: false, edit: false, delete: false },
-  corretores: { view: false, create: false, edit: false, delete: false },
-  imobiliarias: { view: false, create: false, edit: false, delete: false },
-  configuracoes: { view: false, create: false, edit: false, delete: false },
-};
-
-type ModuleKey = keyof typeof DEFAULT_PERMISSIONS;
-type ActionKey = "view" | "create" | "edit" | "delete";
-type PermissionsMap = Record<ModuleKey, Record<ActionKey, boolean>>;
+type ModuleKey = string;
 
 const FUNCTION_TITLES = [
   "Gerente Administrativo",
@@ -46,31 +30,6 @@ const FUNCTION_TITLES = [
   "Suporte Técnico",
   "Marketing",
   "Outro",
-];
-
-const ADMIN_MODULES: { key: ModuleKey; label: string }[] = [
-  { key: "dashboard_admin", label: "Dashboard Admin" },
-  { key: "funcionarios", label: "Funcionários" },
-  { key: "clientes", label: "Clientes" },
-  { key: "planos", label: "Planos" },
-];
-
-const OPERATIONAL_MODULES: { key: ModuleKey; label: string }[] = [
-  { key: "dashboard", label: "Dashboard" },
-  { key: "relatorios", label: "Relatórios" },
-  { key: "site_editor", label: "Site" },
-  { key: "imoveis", label: "Imóveis" },
-  { key: "edificios", label: "Edifícios" },
-  { key: "condominios", label: "Condomínios" },
-  { key: "fotos_cidade", label: "Fotos da Cidade" },
-  { key: "avaliacoes", label: "Avaliações" },
-  { key: "financeiro", label: "Financeiro" },
-  { key: "tabelas", label: "Tabelas" },
-  { key: "contratos", label: "Contratos" },
-  { key: "material_extra", label: "Material Extra" },
-  { key: "corretores", label: "Corretores" },
-  { key: "imobiliarias", label: "Imobiliárias" },
-  { key: "configuracoes", label: "Configurações" },
 ];
 
 const ACTION_LABELS: { key: ActionKey; label: string }[] = [
@@ -88,14 +47,22 @@ interface StaffMember {
   function_title: string;
 }
 
+interface JobRole {
+  id: string;
+  name: string;
+  permissions: PermissionsMap;
+}
+
 export default function AdminFuncionarios() {
   const [staff, setStaff] = useState<StaffMember[]>([]);
+  const [jobRoles, setJobRoles] = useState<JobRole[]>([]);
   const [loading, setLoading] = useState(true);
   const [newEmail, setNewEmail] = useState("");
   const [newName, setNewName] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [newFunction, setNewFunction] = useState("");
   const [newCustomFunction, setNewCustomFunction] = useState("");
+  const [newRoleId, setNewRoleId] = useState("");
   const [creating, setCreating] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [expandedUser, setExpandedUser] = useState<string | null>(null);
@@ -127,7 +94,17 @@ export default function AdminFuncionarios() {
   };
 
   const fetchStaff = async () => {
-    const { data: roles } = await supabase.from("user_roles").select("user_id").eq("role", "admin_staff");
+    const [{ data: roles }, { data: roleTemplates }] = await Promise.all([
+      supabase.from("user_roles").select("user_id").eq("role", "admin_staff"),
+      supabase.from("job_roles").select("*").order("name"),
+    ]);
+
+    setJobRoles(((roleTemplates as any[]) || []).map((role) => ({
+      id: role.id,
+      name: role.name,
+      permissions: ensureAllPermissions(role.permissions),
+    })));
+
     if (!roles || roles.length === 0) { setStaff([]); setLoading(false); return; }
 
     const userIds = roles.map(r => r.user_id);
@@ -141,7 +118,7 @@ export default function AdminFuncionarios() {
       return {
         user_id: uid,
         profile: profilesRes.data?.find(p => p.user_id === uid) || null,
-        permissions: (permRow as any)?.permissions || { ...DEFAULT_PERMISSIONS },
+        permissions: ensureAllPermissions((permRow as any)?.permissions),
         permRowId: permRow?.id || null,
         function_title: (permRow as any)?.function_title || "",
       };
@@ -158,13 +135,14 @@ export default function AdminFuncionarios() {
     setCreating(true);
 
     const finalFunction = newFunction === "Outro" ? newCustomFunction : newFunction;
+    const selectedRole = jobRoles.find((role) => role.id === newRoleId);
 
     const { data, error } = await supabase.functions.invoke("admin-create-staff", {
       body: {
         full_name: newName,
         email: newEmail,
         password: newPassword,
-        function_title: finalFunction,
+        function_title: selectedRole?.name || finalFunction,
       },
     });
 
@@ -174,10 +152,36 @@ export default function AdminFuncionarios() {
       return;
     }
 
+    if (selectedRole && data?.user_id) {
+      await supabase
+        .from("staff_permissions")
+        .update({
+          function_title: selectedRole.name,
+          permissions: selectedRole.permissions,
+        } as any)
+        .eq("user_id", data.user_id);
+    }
+
     toast({ title: "Funcionário criado!" });
-    setNewEmail(""); setNewName(""); setNewPassword(""); setNewFunction(""); setNewCustomFunction("");
+    setNewEmail(""); setNewName(""); setNewPassword(""); setNewFunction(""); setNewCustomFunction(""); setNewRoleId("");
     setDialogOpen(false); setCreating(false);
     fetchStaff();
+  };
+
+  const applyJobRole = async (userId: string, roleId: string) => {
+    const role = jobRoles.find((item) => item.id === roleId);
+    if (!role) return;
+    const permissions = ensureAllPermissions(role.permissions);
+    setStaff(prev => prev.map(s => s.user_id === userId ? {
+      ...s,
+      function_title: role.name,
+      permissions,
+    } : s));
+    await supabase
+      .from("staff_permissions")
+      .update({ function_title: role.name, permissions } as any)
+      .eq("user_id", userId);
+    toast({ title: "Cargo aplicado", description: `Permissões de ${role.name} aplicadas ao funcionário.` });
   };
 
   const updateFunctionTitle = async (userId: string, title: string) => {
@@ -217,14 +221,14 @@ export default function AdminFuncionarios() {
     const member = staff.find(s => s.user_id === userId);
     if (!member) return;
 
-    const allModules = [...Object.keys(DEFAULT_PERMISSIONS)] as ModuleKey[];
+    const allModules = Object.keys(buildDefaultPermissions()) as ModuleKey[];
     const allTrue = allModules.every(mk => {
       const m = member.permissions[mk];
       return m.view && m.create && m.edit && m.delete;
     });
     const newVal = !allTrue;
 
-    const updated = {} as PermissionsMap;
+    const updated = buildDefaultPermissions();
     allModules.forEach(mk => {
       updated[mk] = { view: newVal, create: newVal, edit: newVal, delete: newVal };
     });
@@ -308,9 +312,22 @@ export default function AdminFuncionarios() {
                 
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium text-foreground">Função</label>
+                  {jobRoles.length > 0 && (
+                    <Select value={newRoleId || "manual"} onValueChange={(v) => setNewRoleId(v === "manual" ? "" : v)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Cargo com permissões" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="manual">Definir manualmente</SelectItem>
+                        {jobRoles.map(role => (
+                          <SelectItem key={role.id} value={role.id}>{role.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                   <Select value={newFunction} onValueChange={setNewFunction}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Selecione a função" />
+                      <SelectValue placeholder={newRoleId ? "Cargo selecionado acima" : "Selecione a função"} />
                     </SelectTrigger>
                     <SelectContent>
                       {FUNCTION_TITLES.map(f => (
@@ -324,6 +341,11 @@ export default function AdminFuncionarios() {
                       value={newCustomFunction}
                       onChange={e => setNewCustomFunction(e.target.value)}
                     />
+                  )}
+                  {newRoleId && (
+                    <p className="text-xs text-muted-foreground">
+                      O funcionário será criado com as permissões do cargo selecionado.
+                    </p>
                   )}
                 </div>
 
@@ -467,6 +489,23 @@ export default function AdminFuncionarios() {
                             {s.function_title || "Nenhuma função definida — clique em editar para definir."}
                           </p>
                         )}
+                        {jobRoles.length > 0 && (
+                          <div className="mt-3 flex flex-col sm:flex-row sm:items-center gap-2">
+                            <Select onValueChange={(roleId) => applyJobRole(s.user_id, roleId)}>
+                              <SelectTrigger className="sm:max-w-xs">
+                                <SelectValue placeholder="Aplicar cargo e permissões" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {jobRoles.map(role => (
+                                  <SelectItem key={role.id} value={role.id}>{role.name}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <p className="text-xs text-muted-foreground">
+                              Substitui as permissões atuais pelo modelo do cargo.
+                            </p>
+                          </div>
+                        )}
                       </div>
 
                       {/* Admin Section */}
@@ -474,7 +513,7 @@ export default function AdminFuncionarios() {
                         <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
                           Módulos de Administração
                         </h4>
-                        {renderPermissionTable(ADMIN_MODULES, s)}
+                        {renderPermissionTable(ADMIN_PERMISSION_MODULES, s)}
                       </div>
 
                       {/* Operational Section */}
@@ -482,7 +521,7 @@ export default function AdminFuncionarios() {
                         <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
                           Módulos Operacionais
                         </h4>
-                        {renderPermissionTable(OPERATIONAL_MODULES, s)}
+                        {renderPermissionTable(OPERATIONAL_PERMISSION_MODULES, s)}
                       </div>
                     </div>
                   )}

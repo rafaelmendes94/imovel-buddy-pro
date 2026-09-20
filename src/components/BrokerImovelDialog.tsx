@@ -13,8 +13,9 @@ import { Loader2, Save, Building2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EmpreendimentoPicker } from "@/components/EmpreendimentoPicker";
 import { tipoFromImovel, type EmpreendimentoRecord, type EmpreendimentoTipo } from "@/lib/empreendimentos";
+import { PROPERTY_TYPE_OPTIONS, normalizePropertyLocationByType, usesNumero, usesQuadraLote, usesUnidade } from "@/lib/propertyTypeRules";
 
-const TIPOS = ["Apartamento", "Casa", "Comercial", "Terreno", "Lote", "Cobertura", "Sala", "Condomínio"];
+const TIPOS = [...PROPERTY_TYPE_OPTIONS];
 const FINALIDADES = ["Venda", "Aluguel", "Venda e Aluguel"];
 const STATUS = ["Disponível", "Reservado", "Vendido", "Alugado"];
 const POSICOES_SOLAR = ["Leste (manhã)", "Oeste (tarde)", "Norte", "Sul"];
@@ -260,9 +261,11 @@ export function BrokerImovelDialog({ open, onOpenChange, imovel, ownerId, ownerN
     return Object.keys(e).length === 0;
   };
 
-  const buildPayload = () => ({
+  const buildPayload = () => {
+    const loc = normalizePropertyLocationByType(form);
+    return {
     titulo: form.titulo.trim(),
-    tipo: form.tipo,
+    tipo: loc.tipo,
     finalidade: form.finalidade,
     status: form.status,
     preco: parseBrNumber(form.preco),
@@ -271,12 +274,12 @@ export function BrokerImovelDialog({ open, onOpenChange, imovel, ownerId, ownerN
     cidade: form.cidade.trim(),
     bairro: form.bairro.trim(),
     endereco: form.endereco.trim(),
-    numero: form.numero.trim(),
+    numero: loc.numero.trim(),
     cep: form.cep.trim(),
     estado: form.estado.trim(),
-    quadra: form.quadra.trim(),
-    lote: form.lote.trim(),
-    unidade: form.unidade.trim(),
+    quadra: loc.quadra.trim(),
+    lote: loc.lote.trim(),
+    unidade: loc.unidade.trim(),
     empreendimento: form.empreendimento.trim(),
     edificio_id: empLink?.tipo === "edificio" ? empLink.id : null,
     condominio_id: empLink?.tipo === "condominio" ? empLink.id : null,
@@ -306,7 +309,8 @@ export function BrokerImovelDialog({ open, onOpenChange, imovel, ownerId, ownerN
     destaque_home: form.destaque_home,
     condicoes_pagamento: form.condicoes_pagamento,
     imagens: form.imagens,
-  });
+  };
+  };
 
   const submit = async () => {
     if (saving) return;
@@ -345,9 +349,11 @@ export function BrokerImovelDialog({ open, onOpenChange, imovel, ownerId, ownerN
   };
 
   const showQuadraLote = useMemo(
-    () => ["Casa", "Terreno", "Lote", "Condomínio"].includes(form.tipo),
+    () => usesQuadraLote(form.tipo),
     [form.tipo],
   );
+  const showUnidade = useMemo(() => usesUnidade(form.tipo), [form.tipo]);
+  const showNumero = useMemo(() => usesNumero(form.tipo), [form.tipo]);
 
   const err = (k: string) => errors[k] && <p className="text-[11px] font-medium text-destructive">{errors[k]}</p>;
 
@@ -392,7 +398,10 @@ export function BrokerImovelDialog({ open, onOpenChange, imovel, ownerId, ownerN
               <div className="space-y-1.5">
                 <Label className="text-xs">Tipo *</Label>
                 <div className="flex flex-wrap gap-1.5">
-                  {TIPOS.map((t) => <Toggle key={t} label={t} value={form.tipo === t} onToggle={() => set("tipo", t)} />)}
+                  {TIPOS.map((t) => <Toggle key={t} label={t} value={form.tipo === t} onToggle={() => {
+                    const loc = normalizePropertyLocationByType({ tipo: t, unidade: form.unidade, numero: form.numero, quadra: form.quadra, lote: form.lote });
+                    setForm((prev) => ({ ...prev, tipo: loc.tipo, unidade: loc.unidade, numero: loc.numero, quadra: loc.quadra, lote: loc.lote }));
+                  }} />)}
                 </div>
                 {err("tipo")}
               </div>
@@ -411,10 +420,12 @@ export function BrokerImovelDialog({ open, onOpenChange, imovel, ownerId, ownerN
                 </div>
               </div>
               <EmpreendimentoPicker value={empLink} onChange={handleEmpreendimento} />
-              <div className="space-y-1.5">
-                <Label className="text-xs">Unidade / Referência</Label>
-                <Input value={form.unidade} onChange={(e) => set("unidade", e.target.value)} placeholder="Ex: 1203" />
-              </div>
+              {showUnidade && (
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Unidade</Label>
+                  <Input value={form.unidade} onChange={(e) => set("unidade", e.target.value)} placeholder="Ex: 1203" />
+                </div>
+              )}
               {showQuadraLote && (
                 <>
                   <div className="space-y-1.5">
@@ -427,10 +438,12 @@ export function BrokerImovelDialog({ open, onOpenChange, imovel, ownerId, ownerN
                   </div>
                 </>
               )}
-              <div className="space-y-1.5">
-                <Label className="text-xs">Box / Vaga (número)</Label>
-                <Input value={form.box} onChange={(e) => set("box", e.target.value)} placeholder="Ex: 1.11, A12" />
-              </div>
+              {showNumero && (
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Numero</Label>
+                  <Input value={form.numero} onChange={(e) => set("numero", e.target.value)} placeholder="Numero" />
+                </div>
+              )}
             </div>
           </div>
 

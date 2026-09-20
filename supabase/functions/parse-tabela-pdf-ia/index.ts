@@ -12,7 +12,7 @@ const IMOVEL_FIELDS = {
   pagina: { type: "integer", description: "Número da página do PDF onde este imóvel aparece" },
   titulo: { type: "string", description: "Título curto: empreendimento + unidade quando houver" },
   empreendimento: { type: "string", description: "Nome do edifício/condomínio/loteamento SEM prefixos 'Ed.', 'Edifício', 'Residencial' e SEM a unidade" },
-  tipo: { type: "string", description: "Apartamento, Casa, Sobrado, Cobertura, Terreno, Lote, Sala Comercial, Loft..." },
+  tipo: { type: "string", description: "Use somente: Apartamento, Casa, Casa em condominio, Lote, Lote em condominio. Terreno deve virar Lote." },
   unidade: {
     type: "string",
     description:
@@ -54,7 +54,8 @@ const SYSTEM = [
   "Você extrai imóveis de TABELAS/CATÁLOGOS de imobiliárias brasileiras (texto extraído de PDF) para importação em lote num CRM.",
   "Retorne um ARRAY com UM item por imóvel. Uma página pode conter VÁRIOS imóveis (cards) e um imóvel pode ocupar várias páginas — use o contexto para separar corretamente.",
   "Nunca invente cidade, bairro, endereço, CEP, telefone, preço ou área. Omita o que não estiver no texto.",
-  "REGRAS: unidade só com o identificador, sem prefixos (AP/Apto/Apartamento). Quadra e lote vão em 'quadra'/'lote' e NUNCA em 'unidade'.",
+  "TIPO deve ser exatamente um destes: Apartamento, Casa, Casa em condominio, Lote, Lote em condominio. Terreno deve virar Lote.",
+  "REGRAS: Apartamento usa somente unidade. Casa usa somente numero. Casa em condominio usa quadra e lote. Lote usa quadra e lote. Lote em condominio usa quadra, lote e numero. Quadra e lote NUNCA vão em unidade.",
   "'Q06/L44' => quadra '06', lote '44'. 'J-09' em loteamento/condomínio => quadra 'J', lote '09'. 'T22/205' em torre => empreendimento com torre T22 e unidade '205'.",
   "Casas de rua: número do endereço vai em 'numero', jamais em 'unidade'.",
   "Box: 'Box 88 + Box 89' => box '88 e 89' e vagas 2. 'sem box' => vagas 0 e box vazio. '1 vaga' => vagas 1 e box vazio.",

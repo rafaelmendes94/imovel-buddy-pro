@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -12,10 +12,11 @@ import { QuickPick } from '@/components/QuickPick';
 import { CepAutoFill, type AddressData } from '@/components/CepAutoFill';
 import { InfraToggle } from '@/components/InfraToggle';
 import { useSystemOptions } from '@/hooks/useSystemOptions';
-import { Building, MapPin, Layers, Save, Image, Loader2, Building2, FileText, Video, FolderDown, Camera, Plus } from 'lucide-react';
+import { Building, MapPin, Layers, Save, Image, Loader2, Building2, FileText, Video, FolderDown, Camera } from 'lucide-react';
 import { MediaGalleryUpload } from '@/components/MediaGalleryUpload';
 
-const statusOptions = ["Lançamento", "Em construção", "Pronto"];
+const DEFAULT_STATUS_OPTIONS = ["Lançamento", "Em construção", "Pronto"];
+const DEFAULT_INFRA_OPTIONS = ["Piscina", "Academia", "Salão de Festas", "Playground", "Quadra", "Churrasqueira", "Segurança 24h", "Portaria", "Elevador", "Estacionamento"];
 
 function SectionHeader({ icon: Icon, title }: { icon: any; title: string }) {
   return (
@@ -38,12 +39,17 @@ const initialForm = {
 export default function CadastroEdificio() {
   const { id: editId } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isSuperAdmin, isAdminStaff, hasModuleAccess } = useAuth();
   const { toast } = useToast();
-  const { values: infraOptions } = useSystemOptions("infraestrutura");
+  const { values: infraOptions } = useSystemOptions("infraestrutura", DEFAULT_INFRA_OPTIONS);
+  const { values: statusOptions } = useSystemOptions("status_edificio", DEFAULT_STATUS_OPTIONS);
   const [form, setForm] = useState(initialForm);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(!!editId);
+
+  const canCreate = isSuperAdmin || (isAdminStaff && hasModuleAccess("edificios", "create"));
+  const canEdit = isSuperAdmin || (isAdminStaff && hasModuleAccess("edificios", "edit"));
+  const canSubmit = editId ? canEdit : canCreate;
 
   useEffect(() => {
     if (editId) {
@@ -54,7 +60,7 @@ export default function CadastroEdificio() {
             status: data.status || 'Lançamento', cep: data.cep || '', endereco: data.endereco || '',
             numero: data.numero || '', complemento: data.complemento || '', bairro: data.bairro || '',
             cidade: data.cidade || '', estado: data.estado || '', andares: data.andares || 0,
-            total_unidades: data.total_unidades || 0, unidades_por_andar: (data as any).unidades_por_andar || 0, descricao: '', infraestrutura: data.infraestrutura || [],
+            total_unidades: data.total_unidades || 0, unidades_por_andar: (data as any).unidades_por_andar || 0, descricao: (data as any).descricao || '', infraestrutura: data.infraestrutura || [],
             imagem_url: data.imagem_url || '', latitude: data.latitude ? String(data.latitude) : '',
             longitude: data.longitude ? String(data.longitude) : '',
             fotos_infra: (data as any).fotos_infra || [],
@@ -69,6 +75,10 @@ export default function CadastroEdificio() {
   }, [editId]);
 
   const handleSubmit = async () => {
+    if (!canSubmit) {
+      toast({ title: "Sem permissão para salvar edifícios", variant: "destructive" });
+      return;
+    }
     if (!form.nome || !user) return;
     setSaving(true);
     const payload: any = {
@@ -76,6 +86,7 @@ export default function CadastroEdificio() {
       status: form.status, cep: form.cep, endereco: form.endereco, numero: form.numero,
       complemento: form.complemento, bairro: form.bairro, cidade: form.cidade, estado: form.estado,
       andares: form.andares, total_unidades: form.total_unidades, unidades_por_andar: form.unidades_por_andar, infraestrutura: form.infraestrutura,
+      descricao: form.descricao,
       imagem_url: form.imagem_url,
       latitude: parseFloat(form.latitude) || 0, longitude: parseFloat(form.longitude) || 0,
       fotos_infra: form.fotos_infra, fotos_empreendimento: form.fotos_empreendimento,
@@ -97,6 +108,7 @@ export default function CadastroEdificio() {
     bairro: form.bairro, cidade: form.cidade, estado: form.estado, latitude: form.latitude, longitude: form.longitude,
   };
 
+  if (!canSubmit) return <Navigate to="/edificios" replace />;
   if (loading) return <AppLayout><div className="flex items-center justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div></AppLayout>;
 
   return (
@@ -158,7 +170,7 @@ export default function CadastroEdificio() {
 
         <section>
           <SectionHeader icon={Building2} title="Infraestrutura" />
-          <InfraToggle label="Selecione a infraestrutura" options={infraOptions.length > 0 ? infraOptions : ["Piscina", "Academia", "Salão de Festas", "Playground", "Quadra", "Churrasqueira", "Segurança 24h", "Portaria", "Elevador", "Estacionamento"]} selected={form.infraestrutura} onChange={(sel) => setForm(f => ({ ...f, infraestrutura: sel }))} allowCustom />
+          <InfraToggle label="Selecione a infraestrutura" options={infraOptions} selected={form.infraestrutura} onChange={(sel) => setForm(f => ({ ...f, infraestrutura: sel }))} allowCustom />
         </section>
 
         <section>

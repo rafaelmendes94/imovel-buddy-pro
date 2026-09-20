@@ -10,7 +10,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   const { isSuperAdmin, hasModuleAccess } = useAuth();
   const canSee = (moduleKey: string) => isSuperAdmin || hasModuleAccess(moduleKey);
   const bottomItems = [
-    { label: "Painel", icon: LayoutDashboard, path: "/dashboard" },
+    ...(canSee("dashboard_admin") ? [{ label: "Painel", icon: LayoutDashboard, path: "/dashboard" }] : []),
     ...(canSee("imoveis") ? [{ label: "Imóveis", icon: Building2, path: "/imoveis" }] : []),
     ...(canSee("clientes") ? [{ label: "Clientes", icon: Users, path: "/admin/clientes" }] : []),
     ...(canSee("planos") ? [{ label: "Planos", icon: CreditCard, path: "/admin/planos" }] : []),

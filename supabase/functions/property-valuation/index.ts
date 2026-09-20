@@ -8,6 +8,58 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const getServiceKey = () => {
+  const secretKeys = Deno.env.get("SUPABASE_SECRET_KEYS");
+  if (secretKeys) {
+    try {
+      const parsed = JSON.parse(secretKeys);
+      if (parsed?.default) return parsed.default as string;
+    } catch {
+      // Fallback below.
+    }
+  }
+  return Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+};
+
+async function canUseValuation(supabaseAdmin: any, userId: string) {
+  const { data: rolesData } = await supabaseAdmin
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId);
+  const roles = (rolesData || []).map((row: any) => row.role);
+  if (roles.includes("super_admin")) return true;
+
+  if (roles.includes("admin_staff")) {
+    const { data: staff } = await supabaseAdmin
+      .from("staff_permissions")
+      .select("permissions")
+      .eq("user_id", userId)
+      .maybeSingle();
+    const perms = staff?.permissions?.avaliacoes;
+    return !!(perms?.view || perms?.create);
+  }
+
+  if (!roles.includes("broker")) return false;
+
+  const { data: effSubRows } = await supabaseAdmin.rpc("get_effective_subscription", { _user_id: userId });
+  const effSub = Array.isArray(effSubRows) ? effSubRows[0] : null;
+  if (!effSub?.plan_id) return false;
+
+  const status = String(effSub.status || "");
+  const trialExpired =
+    status === "trial" &&
+    effSub.trial_ends_at &&
+    new Date(effSub.trial_ends_at).getTime() < Date.now();
+  if (["pending_payment", "blocked", "cancelled"].includes(status) || trialExpired) return false;
+
+  const { data: plan } = await supabaseAdmin
+    .from("plans")
+    .select("modules")
+    .eq("id", effSub.plan_id)
+    .maybeSingle();
+  return Array.isArray(plan?.modules) && plan.modules.includes("avaliacoes");
+}
+
 const toolSchema = {
   type: "function" as const,
   function: {
@@ -157,6 +209,11 @@ export async function handler(req: Request) {
     const { data: claimsData, error: authErr } = await authClient.auth.getClaims(authHeader.replace("Bearer ", ""));
     if (authErr || !claimsData?.claims) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const userId = claimsData.claims.sub as string;
+    const supabaseAdmin = createClient(Deno.env.get("SUPABASE_URL")!, getServiceKey());
+    if (!await canUseValuation(supabaseAdmin, userId)) {
+      return new Response(JSON.stringify({ error: "Sem permissão para usar Avaliações de Imóveis." }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const { propertyData, existingProperties, currentPrice } = await req.json();

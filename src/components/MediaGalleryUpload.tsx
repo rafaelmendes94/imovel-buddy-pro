@@ -5,7 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Loader2, Upload, X, Plus, FileText, Video as VideoIcon, ExternalLink } from 'lucide-react';
-import { uploadImageToCloudflare } from '@/lib/cloudflareImages';
+import { uploadImageToCloudflare, uploadVideoToCloudflare } from '@/lib/cloudflareImages';
 
 type Kind = 'image' | 'video' | 'file';
 
@@ -59,7 +59,7 @@ export function MediaGalleryUpload({
   const handleFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
     if (!user) {
-      toast({ title: 'Faça login para enviar fotos', variant: 'destructive' });
+      toast({ title: 'Faça login para enviar arquivos', variant: 'destructive' });
       return;
     }
     setUploading(true);
@@ -68,6 +68,9 @@ export function MediaGalleryUpload({
       try {
         if (file.type.startsWith('image/')) {
           const url = await uploadImageToCloudflare(file, { folder, source: 'media-gallery' });
+          uploaded.push(url);
+        } else if (file.type.startsWith('video/')) {
+          const url = await uploadVideoToCloudflare(file, { folder, source: 'media-gallery-video' });
           uploaded.push(url);
         } else {
           const ext = (file.name.split('.').pop() || 'bin').toLowerCase();
@@ -129,7 +132,7 @@ export function MediaGalleryUpload({
             <Input
               value={urlInput}
               onChange={(e) => setUrlInput(e.target.value)}
-              placeholder={kind === 'video' ? 'Cole link do YouTube/Vimeo...' : 'Cole uma URL...'}
+              placeholder={kind === 'video' ? 'Cole link do YouTube/Vimeo/Cloudflare...' : 'Cole uma URL...'}
               className="h-9 text-xs"
               onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addUrl(); } }}
             />
@@ -143,7 +146,7 @@ export function MediaGalleryUpload({
       {values && values.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
           {values.map((url, idx) => {
-            const isVideoUrl = /youtube\.com|youtu\.be|vimeo\.com|\.mp4($|\?)|\.webm($|\?)|\.mov($|\?)/i.test(url);
+            const isVideoUrl = /youtube\.com|youtu\.be|vimeo\.com|videodelivery\.net|cloudflarestream\.com|\.m3u8($|\?)|\.mp4($|\?)|\.webm($|\?)|\.mov($|\?)/i.test(url);
             const isPdf = /\.pdf($|\?)/i.test(url);
             const isImage = kind === 'image' || /\.(jpg|jpeg|png|webp|gif|avif)($|\?)/i.test(url);
             return (

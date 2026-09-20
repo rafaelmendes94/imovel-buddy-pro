@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-type Kind = "file" | "youtube" | "vimeo" | null;
+type Kind = "file" | "youtube" | "vimeo" | "cloudflare" | null;
 
 interface ParsedVideo {
   kind: Kind;
@@ -25,6 +25,13 @@ export function parseVideoLink(raw?: string | null): ParsedVideo {
 
   const vm = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
   if (vm) return { kind: "vimeo", src: url, id: vm[1] };
+
+  const cf =
+    url.match(/iframe\.videodelivery\.net\/([A-Za-z0-9_-]+)/) ||
+    url.match(/videodelivery\.net\/([A-Za-z0-9_-]+)\/(?:manifest|downloads|thumbnails)/) ||
+    url.match(/watch\.cloudflarestream\.com\/([A-Za-z0-9_-]+)/) ||
+    url.match(/cloudflarestream\.com\/([A-Za-z0-9_-]+)\//);
+  if (cf) return { kind: "cloudflare", src: `https://iframe.videodelivery.net/${cf[1]}`, id: cf[1] };
 
   return { kind: null, src: url };
 }
@@ -90,14 +97,16 @@ export function FeedVideo({ link, poster, alt, active, onClick }: FeedVideoProps
         />
       )}
 
-      {(parsed.kind === "youtube" || parsed.kind === "vimeo") && !failed && active && (
+      {(parsed.kind === "youtube" || parsed.kind === "vimeo" || parsed.kind === "cloudflare") && !failed && active && (
         <iframe
           key={parsed.id}
           title={alt}
           src={
             parsed.kind === "youtube"
               ? `https://www.youtube.com/embed/${parsed.id}?autoplay=1&mute=1&loop=1&playlist=${parsed.id}&controls=0&modestbranding=1&rel=0&playsinline=1&iv_load_policy=3`
-              : `https://player.vimeo.com/video/${parsed.id}?autoplay=1&muted=1&loop=1&background=1`
+              : parsed.kind === "vimeo"
+              ? `https://player.vimeo.com/video/${parsed.id}?autoplay=1&muted=1&loop=1&background=1`
+              : `${parsed.src}?autoplay=true&muted=true&loop=true&controls=false`
           }
           allow="autoplay; encrypted-media; picture-in-picture"
           allowFullScreen

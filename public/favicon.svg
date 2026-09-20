@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="MV Broker Connect">
+  <rect width="64" height="64" rx="14" fill="#0f172a"/>
+  <path d="M14 47V20h7.4l10.5 15.9L42.5 20H50v27h-7.2V31.6L34.9 43h-6L21 31.7V47H14Z" fill="#fff"/>
+  <path d="M15 15h5v4h-5v-4Zm9-3h5v7h-5v-7Zm10 4h5v3h-5v-3Zm10-5h5v8h-5v-8Z" fill="#0ea5e9"/>
+  <path d="M14 51h36" stroke="#0ea5e9" stroke-width="4" stroke-linecap="round"/>
+</svg>

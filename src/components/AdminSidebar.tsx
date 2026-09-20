@@ -16,13 +16,14 @@ import logoImg from "@/assets/logo.png";
 
 const adminItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard", moduleKey: "dashboard_admin" },
-  { icon: UserCog, label: "Funcionários", path: "/admin/funcionarios", moduleKey: "funcionarios" },
-  { icon: Briefcase, label: "Cargos e Funções", path: "/admin/cargos", moduleKey: "funcionarios" },
+  { icon: UserCog, label: "Funcionários", path: "/admin/funcionarios", moduleKey: "funcionarios", superOnly: true },
+  { icon: Briefcase, label: "Cargos e Funções", path: "/admin/cargos", moduleKey: "funcionarios", superOnly: true },
   { icon: CreditCard, label: "Planos", path: "/admin/planos", moduleKey: "planos" },
-  { icon: Settings, label: "Opções do Sistema", path: "/admin/opcoes", moduleKey: "dashboard_admin" },
-  { icon: Brain, label: "Configuração IA", path: "/admin/ia", moduleKey: "dashboard_admin" },
-  { icon: CreditCard, label: "Asaas / Pagamentos", path: "/admin/asaas", moduleKey: "dashboard_admin" },
-  { icon: Handshake, label: "Parceiros", path: "/admin/parceiros", moduleKey: "dashboard_admin" },
+  { icon: ShoppingBag, label: "Brick", path: "/admin/brick", moduleKey: "brick" },
+  { icon: Settings, label: "Opções do Sistema", path: "/admin/opcoes", moduleKey: "dashboard_admin", superOnly: true },
+  { icon: Brain, label: "Configuração IA", path: "/admin/ia", moduleKey: "dashboard_admin", superOnly: true },
+  { icon: CreditCard, label: "Asaas / Pagamentos", path: "/admin/asaas", moduleKey: "dashboard_admin", superOnly: true },
+  { icon: Handshake, label: "Parceiros", path: "/admin/parceiros", moduleKey: "dashboard_admin", superOnly: true },
   { icon: Users, label: "Corretores", path: "/corretores", moduleKey: "corretores" },
   { icon: Landmark, label: "Imobiliárias", path: "/imobiliarias", moduleKey: "imobiliarias" },
 ];
@@ -44,10 +45,9 @@ const operationalItems = [
   { icon: FileSignature, label: "Contratos", path: "/contratos", moduleKey: "contratos" },
   { icon: Clapperboard, label: "Material Extra", path: "/videomaker", moduleKey: "material_extra" },
   { icon: Settings, label: "Configurações", path: "/configuracoes", moduleKey: "configuracoes" },
-  // { icon: ShoppingBag, label: "Brick", path: "/admin/brick", moduleKey: "brick" }, // oculto
 ];
 
-type Item = typeof adminItems[0];
+type Item = (typeof adminItems)[number];
 
 /** Reorderable list of sidebar links (drag with mouse or the grip handle). */
 function DraggableNav({
@@ -182,7 +182,9 @@ function DraggableNav({
 export function AdminSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
   const { signOut, profile, isSuperAdmin, hasModuleAccess } = useAuth();
 
-  const visibleAdmin = isSuperAdmin ? adminItems : adminItems.filter(i => hasModuleAccess(i.moduleKey));
+  const visibleAdmin = isSuperAdmin
+    ? adminItems
+    : adminItems.filter(i => !("superOnly" in i && i.superOnly) && hasModuleAccess(i.moduleKey));
   const visibleOps = isSuperAdmin ? operationalItems : operationalItems.filter(i => hasModuleAccess(i.moduleKey));
 
   const userId = profile?.id || "anon";

@@ -4,12 +4,14 @@ import { Edit, Trash2, ImageIcon } from "lucide-react";
 interface Props {
   galleries: CityGallery[];
   isSuperAdmin: boolean;
+  canEdit?: boolean;
+  canDelete?: boolean;
   onSelect: (g: CityGallery) => void;
   onEdit: (g: CityGallery) => void;
   onDelete: (id: string) => void;
 }
 
-export function CityGalleryGrid({ galleries, isSuperAdmin, onSelect, onEdit, onDelete }: Props) {
+export function CityGalleryGrid({ galleries, isSuperAdmin, canEdit = isSuperAdmin, canDelete = isSuperAdmin, onSelect, onEdit, onDelete }: Props) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {galleries.map((g) => (
@@ -27,20 +29,20 @@ export function CityGalleryGrid({ galleries, isSuperAdmin, onSelect, onEdit, onD
               </div>
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-            {isSuperAdmin && (
+            {(canEdit || canDelete) && (
               <div className="absolute top-2 right-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button
+                {canEdit && <button
                   onClick={(e) => { e.stopPropagation(); onEdit(g); }}
                   className="w-7 h-7 rounded-md bg-card/90 backdrop-blur-sm flex items-center justify-center hover:bg-card"
                 >
                   <Edit className="w-3.5 h-3.5 text-foreground" />
-                </button>
-                <button
+                </button>}
+                {canDelete && <button
                   onClick={(e) => { e.stopPropagation(); onDelete(g.id); }}
                   className="w-7 h-7 rounded-md bg-card/90 backdrop-blur-sm flex items-center justify-center hover:bg-destructive/90"
                 >
                   <Trash2 className="w-3.5 h-3.5 text-foreground" />
-                </button>
+                </button>}
               </div>
             )}
           </div>

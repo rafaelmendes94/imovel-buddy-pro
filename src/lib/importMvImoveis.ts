@@ -1,6 +1,7 @@
 // Contrato oficial de dados: Dicionario_Importacao_MV_Broker.xlsx (abas Mapeamento, Regras, Exemplos).
 // Mapeia o layout normalizado "MV" para os campos EXISTENTES da tabela imoveis.
 // Nenhuma coluna nova é criada no banco; auditoria vive em import_logs.
+import { normalizePropertyLocationByType } from "@/lib/propertyTypeRules";
 
 export const MV_COLUMN_MAP: Record<string, string> = {
   source_id: "auditoria (import_logs)",
@@ -122,17 +123,16 @@ export const normalizeEmpreendimento = (row: any) => {
 export const normalizeMvTipo = (row: any) => {
   const v = deaccent(`${txt(row.property_type)} ${txt(row.property_type_raw)}`).toUpperCase();
   if (v.includes("APART") || /\bAPTO?\b/.test(v) || /\bAP\b/.test(v)) return "Apartamento";
+  if ((v.includes("SOBRADO") || v.includes("CASA")) && v.includes("COND")) return "Casa em condominio";
+  if (v.includes("LOTE") && v.includes("COND")) return "Lote em condominio";
   if (v.includes("SOBRADO") || v.includes("CASA")) return "Casa";
-  if (v.includes("COND")) return "Condomínio";
-  if (v.includes("LOTE")) return "Lote";
-  if (v.includes("TERRENO")) return "Terreno";
-  if (v.includes("COMERC") || v.includes("SALA") || v.includes("LOJA")) return "Comercial";
+  if (v.includes("LOTE") || v.includes("TERRENO") || v.includes("COND")) return "Lote";
   return "";
 };
 
-const isLoteType = (tipo: string) => tipo === "Lote" || tipo === "Terreno" || tipo === "Condomínio";
+const isLoteType = (tipo: string) => tipo === "Lote" || tipo === "Lote em condominio";
 /** Tipos cuja referência pode ser "Quadra/Lote" (inclui casas de condomínio). */
-const isQuadraLoteType = (tipo: string) => isLoteType(tipo) || tipo === "Casa" || tipo === "Sobrado";
+const isQuadraLoteType = (tipo: string) => isLoteType(tipo) || tipo === "Casa em condominio";
 
 /** AP:1304 / APTO 1304 / UNIDADE 1304 → 1304 · preserva sufixos reais (309 A). */
 export const cleanUnidade = (ref: string) => {
@@ -320,6 +320,7 @@ export const mapMvRow = (row: any, userId: string, estado = DEFAULT_IMPORT_ESTAD
   const createdAt = parseExcelDate(row.included_at);
   const updatedAt = parseExcelDate(row.updated_at);
   const numero = txt(row.street_number) || txt(row.number);
+  const loc = normalizePropertyLocationByType({ tipo, unidade, quadra: split.quadra, lote: split.lote, numero, complemento: txt(row.complemento) });
   const rua = bairroLooksLikeStreet(row) && !txt(row.street_raw) ? txt(row.neighborhood) : txt(row.street_raw);
   const endereco = [rua || txt(row.location_raw), numero].filter(Boolean).join(", ");
   const bairro = bairroLooksLikeStreet(row) ? "" : titleCase(row.neighborhood);
@@ -332,14 +333,14 @@ export const mapMvRow = (row: any, userId: string, estado = DEFAULT_IMPORT_ESTAD
     tipo,
     status: "Disponível",
     empreendimento: emp,
-    unidade,
-    quadra: split.quadra,
-    lote: split.lote,
+    unidade: loc.unidade,
+    quadra: loc.quadra,
+    lote: loc.lote,
     box: cleanBox(row.parking_raw),
     cidade: titleCase(row.city),
     bairro,
     endereco,
-    numero,
+    numero: loc.numero,
     estado,
     preco: normalizePreco(row),
     quartos: int(row.bedrooms),

@@ -17,10 +17,47 @@ export async function handler(req: Request) {
     if (!authHeader?.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
-    const authClient = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: authHeader } } });
-    const { data: claimsData, error: authErr } = await authClient.auth.getClaims(authHeader.replace("Bearer ", ""));
-    if (authErr || !claimsData?.claims) {
+    const token = authHeader.replace("Bearer ", "");
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const authClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: authHeader } } });
+    const { data: userData, error: authErr } = await authClient.auth.getUser(token);
+    const authUser = userData?.user;
+    if (authErr || !authUser) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("SUPABASE_SERVICE_KEY");
+    const db = createClient(
+      supabaseUrl,
+      serviceKey || Deno.env.get("SUPABASE_ANON_KEY")!,
+      serviceKey ? undefined : { global: { headers: { Authorization: authHeader } } },
+    );
+
+    const [rolesRes, staffRes, subscriptionRes] = await Promise.all([
+      db.from("user_roles").select("role").eq("user_id", authUser.id),
+      db.from("staff_permissions").select("permissions").eq("user_id", authUser.id).maybeSingle(),
+      db.rpc("get_effective_subscription", { _user_id: authUser.id }),
+    ]);
+
+    const roles = ((rolesRes.data as Array<{ role: string }> | null) || []).map((r) => r.role);
+    const isSuperAdmin = roles.includes("super_admin");
+    const isAdminStaff = roles.includes("admin_staff");
+    const staffPermissions = (staffRes.data as { permissions?: Record<string, { view?: boolean; create?: boolean }> } | null)?.permissions;
+
+    let hasContractsModule = false;
+    const effectiveSubscription = Array.isArray(subscriptionRes.data) ? subscriptionRes.data[0] : null;
+    if (effectiveSubscription?.plan_id) {
+      const { data: plan } = await db
+        .from("plans")
+        .select("modules")
+        .eq("id", effectiveSubscription.plan_id)
+        .maybeSingle();
+      hasContractsModule = Array.isArray((plan as any)?.modules) && (plan as any).modules.includes("contratos");
+    }
+
+    const staffCanUseContracts = isAdminStaff && !!(staffPermissions?.contratos?.view || staffPermissions?.contratos?.create);
+    if (!isSuperAdmin && !staffCanUseContracts && !hasContractsModule) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const { templateType, fields } = await req.json();

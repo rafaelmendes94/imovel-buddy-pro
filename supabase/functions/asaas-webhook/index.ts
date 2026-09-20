@@ -201,7 +201,7 @@ serve(async (req) => {
     } else if (event === "PAYMENT_OVERDUE") {
       const { data: existingSub } = await supabase
         .from("subscriptions")
-        .select("id, current_period_end")
+        .select("id, current_period_end, blocked_at")
         .eq("user_id", externalRef.user_id)
         .order("created_at", { ascending: false })
         .limit(1)
@@ -212,7 +212,7 @@ serve(async (req) => {
         const shouldBlock = periodEnd && (periodEnd.getTime() + 7 * 86400000 < now.getTime());
         await supabase.from("subscriptions").update({
           status: shouldBlock ? "blocked" : "overdue",
-          blocked_at: shouldBlock ? now.toISOString() : null,
+          blocked_at: shouldBlock ? now.toISOString() : (existingSub as any).blocked_at || null,
         }).eq("id", existingSub.id);
       }
     } else if (event === "PAYMENT_REFUNDED" || event === "PAYMENT_DELETED") {

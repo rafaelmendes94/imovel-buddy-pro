@@ -128,6 +128,16 @@ const PLATFORM_COLORS: Record<string, string> = {
   "ImóvelWeb": "bg-green-500",
 };
 
+const safePercent = (value: number, min: number, max: number) => {
+  if (!Number.isFinite(value) || !Number.isFinite(min) || !Number.isFinite(max) || max <= min) return 50;
+  return Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100));
+};
+
+const safeDiscountPercent = (marketValue: number, quickSaleValue: number) => {
+  if (!Number.isFinite(marketValue) || marketValue <= 0) return 0;
+  return ((marketValue - quickSaleValue) / marketValue) * 100;
+};
+
 interface PropertyOption {
   id: string;
   titulo: string;
@@ -367,9 +377,11 @@ export default function Avaliacoes() {
       if (data.error) throw new Error(data.error);
       setResult(data);
       toast.success("Avaliação concluída!");
-    } catch (err) {
+    } catch (err: any) {
       console.error("Valuation error:", err);
-      toast.error("Erro ao gerar avaliação. Tente novamente.");
+      toast.error("Erro ao gerar avaliação", {
+        description: err?.message || "Tente novamente.",
+      });
     } finally {
       setLoading(false);
     }
@@ -518,7 +530,7 @@ export default function Avaliacoes() {
                     <Zap className="w-6 h-6 text-orange-500 mx-auto mb-2" />
                     <p className="text-xs text-muted-foreground">Venda Rápida</p>
                     <p className="text-xl font-bold text-orange-500 mt-1">{formatCurrency(result.quickSaleValue)}</p>
-                    <p className="text-[10px] text-muted-foreground mt-1">{(((result.marketValue - result.quickSaleValue) / result.marketValue) * 100).toFixed(0)}% abaixo</p>
+                    <p className="text-[10px] text-muted-foreground mt-1">{safeDiscountPercent(result.marketValue, result.quickSaleValue).toFixed(0)}% abaixo</p>
                   </div>
                   <div className="elevated-card rounded-xl p-5 text-center">
                     <div className="flex items-center justify-center gap-1 mb-2">{trendIcon}<span className="text-xs font-medium capitalize">{result.externalAnalysis.marketTrend}</span></div>
@@ -623,7 +635,10 @@ export default function Avaliacoes() {
                     </h3>
                     <div className="space-y-3">
                       {result.platformBreakdown.map((pb, i) => {
-                        const maxPrice = Math.max(...result.platformBreakdown!.map(p => p.maxPrice));
+                        const maxPrice = Math.max(1, ...result.platformBreakdown!.map(p => Number(p.maxPrice) || 0));
+                        const left = Math.min(100, Math.max(0, ((Number(pb.minPrice) || 0) / maxPrice) * 100));
+                        const width = Math.max(2, Math.min(100 - left, (((Number(pb.maxPrice) || 0) - (Number(pb.minPrice) || 0)) / maxPrice) * 100));
+                        const avgLeft = Math.min(100, Math.max(0, ((Number(pb.avgPrice) || 0) / maxPrice) * 100));
                         return (
                           <div key={i} className="space-y-1">
                             <div className="flex items-center justify-between text-xs">
@@ -635,8 +650,8 @@ export default function Avaliacoes() {
                               <span className="text-muted-foreground">{formatCurrency(pb.avgPrice)} média</span>
                             </div>
                             <div className="relative h-2 bg-muted rounded-full overflow-hidden">
-                              <div className={`absolute h-full rounded-full ${PLATFORM_COLORS[pb.name] || "bg-accent"} opacity-30`} style={{ left: `${(pb.minPrice / maxPrice) * 100}%`, width: `${((pb.maxPrice - pb.minPrice) / maxPrice) * 100}%` }} />
-                              <div className={`absolute h-full w-1.5 rounded-full ${PLATFORM_COLORS[pb.name] || "bg-accent"}`} style={{ left: `${(pb.avgPrice / maxPrice) * 100}%` }} />
+                              <div className={`absolute h-full rounded-full ${PLATFORM_COLORS[pb.name] || "bg-accent"} opacity-30`} style={{ left: `${left}%`, width: `${width}%` }} />
+                              <div className={`absolute h-full w-1.5 rounded-full ${PLATFORM_COLORS[pb.name] || "bg-accent"}`} style={{ left: `${avgLeft}%` }} />
                             </div>
                             <div className="flex justify-between text-[10px] text-muted-foreground">
                               <span>{formatCurrency(pb.minPrice)}</span>
@@ -721,7 +736,7 @@ export default function Avaliacoes() {
                   <div className="relative h-3 bg-muted rounded-full overflow-hidden">
                     <div className="absolute h-full bg-gradient-to-r from-green-500 via-accent to-red-500 rounded-full" style={{ width: "100%" }} />
                     <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-card border-2 border-accent rounded-full" style={{
-                      left: `${Math.min(100, Math.max(0, ((result.marketValue - result.externalAnalysis.zapMinPrice) / (result.externalAnalysis.zapMaxPrice - result.externalAnalysis.zapMinPrice)) * 100))}%`,
+                      left: `${safePercent(result.marketValue, result.externalAnalysis.zapMinPrice, result.externalAnalysis.zapMaxPrice)}%`,
                     }} />
                   </div>
                   <p className="text-[10px] text-muted-foreground text-center mt-1">Posição do valor de mercado na faixa externa</p>

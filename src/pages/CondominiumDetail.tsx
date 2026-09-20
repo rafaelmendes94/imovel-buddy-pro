@@ -29,8 +29,8 @@ export default function CondominiumDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const handleBack = useSmartBack("/condominios");
-  const { isSuperAdmin, isAdminStaff } = useAuth();
-  const canManage = isSuperAdmin || isAdminStaff;
+  const { isSuperAdmin, isAdminStaff, hasModuleAccess } = useAuth();
+  const canManage = isSuperAdmin || (isAdminStaff && hasModuleAccess("condominios", "edit"));
 
   const [condo, setCondo] = useState<any>(null);
   const [imoveis, setImoveis] = useState<any[]>([]);

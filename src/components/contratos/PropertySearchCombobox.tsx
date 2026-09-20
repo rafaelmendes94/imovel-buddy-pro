@@ -2,13 +2,14 @@ import { useState, useEffect, useRef } from "react";
 import { Search, Building2, MapPin, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface PropertyResult {
   id: string;
   titulo: string;
   endereco: string;
   cidade: string;
-  preco: number;
+  preco: number | null;
   proprietario: string | null;
   empreendimento: string | null;
   unidade: string | null;
@@ -37,11 +38,18 @@ export function PropertySearchCombobox({ onSelect }: PropertySearchComboboxProps
     }
     const timer = setTimeout(async () => {
       setLoading(true);
-      const { data } = await supabase
+      const safeSearch = search.replace(/[%,]/g, " ").trim();
+      const { data, error } = await supabase
         .from("imoveis")
         .select("id, titulo, endereco, cidade, preco, proprietario, empreendimento, unidade, quartos, vagas, bairro, descricao")
-        .or(`titulo.ilike.%${search}%,endereco.ilike.%${search}%,empreendimento.ilike.%${search}%`)
+        .or(`titulo.ilike.%${safeSearch}%,endereco.ilike.%${safeSearch}%,empreendimento.ilike.%${safeSearch}%`)
         .limit(8);
+      if (error) {
+        toast.error("Erro ao buscar imóveis para o contrato.");
+        setResults([]);
+        setLoading(false);
+        return;
+      }
       setResults((data as PropertyResult[]) || []);
       setIsOpen(true);
       setLoading(false);
@@ -115,7 +123,10 @@ export function PropertySearchCombobox({ onSelect }: PropertySearchComboboxProps
             >
               <p className="text-sm font-medium text-foreground truncate">{p.titulo}</p>
               <p className="text-xs text-muted-foreground truncate">
-                {p.endereco}, {p.cidade} — R$ {p.preco.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                {[p.endereco, p.cidade].filter(Boolean).join(", ")}
+                {p.preco != null && Number.isFinite(Number(p.preco))
+                  ? ` — R$ ${Number(p.preco).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
+                  : ""}
               </p>
             </button>
           ))}

@@ -13,11 +13,19 @@ function isImageUrl(url: string) {
   return /\.(jpg|jpeg|png|webp|gif|avif)($|\?)/i.test(url);
 }
 function isVideoUrl(url: string) {
-  return /youtube\.com|youtu\.be|vimeo\.com|\.mp4($|\?)|\.webm($|\?)|\.mov($|\?)/i.test(url);
+  return /youtube\.com|youtu\.be|vimeo\.com|videodelivery\.net|cloudflarestream\.com|\.m3u8($|\?)|\.mp4($|\?)|\.webm($|\?)|\.mov($|\?)/i.test(url);
 }
 function youtubeEmbed(url: string) {
   const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/);
   return m ? `https://www.youtube.com/embed/${m[1]}` : null;
+}
+function cloudflareThumb(url: string) {
+  const m =
+    url.match(/iframe\.videodelivery\.net\/([A-Za-z0-9_-]+)/) ||
+    url.match(/videodelivery\.net\/([A-Za-z0-9_-]+)\/(?:manifest|downloads|thumbnails)/) ||
+    url.match(/watch\.cloudflarestream\.com\/([A-Za-z0-9_-]+)/) ||
+    url.match(/cloudflarestream\.com\/([A-Za-z0-9_-]+)\//);
+  return m ? `https://videodelivery.net/${m[1]}/thumbnails/thumbnail.jpg?time=1s` : null;
 }
 
 export function MediaGalleryView({ title, icon: Icon, items, kind = 'image', emptyText }: MediaGalleryViewProps) {
@@ -49,6 +57,7 @@ export function MediaGalleryView({ title, icon: Icon, items, kind = 'image', emp
           const isImg = (kind === 'image' || isImageUrl(url)) && !isVideoUrl(url);
           const isVid = isVideoUrl(url);
           const yt = isVid ? youtubeEmbed(url) : null;
+          const cfThumb = isVid ? cloudflareThumb(url) : null;
           const isPdf = /\.pdf($|\?)/i.test(url);
           if (isImg) {
             const imgIdx = images.indexOf(url);
@@ -63,6 +72,8 @@ export function MediaGalleryView({ title, icon: Icon, items, kind = 'image', emp
               <a key={idx} href={url} target="_blank" rel="noopener noreferrer" className="relative group rounded-lg overflow-hidden border border-border bg-muted/30 aspect-square flex flex-col items-center justify-center gap-1 p-2 hover:bg-muted/50 transition-colors">
                 {yt ? (
                   <img src={`https://img.youtube.com/vi/${yt.split('/').pop()}/hqdefault.jpg`} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                ) : cfThumb ? (
+                  <img src={cfThumb} alt="" className="absolute inset-0 w-full h-full object-cover" />
                 ) : null}
                 <div className="relative z-10 w-12 h-12 rounded-full bg-black/60 flex items-center justify-center">
                   <VideoIcon className="w-5 h-5 text-white" />

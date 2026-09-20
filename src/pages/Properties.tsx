@@ -420,7 +420,11 @@ let propertiesCache: Property[] | null = null;
 
 export default function Properties() {
   const navigate = useNavigate();
-  const { user, subscription, isSuperAdmin, isAdminStaff } = useAuth();
+  const { user, subscription, isSuperAdmin, isAdminStaff, hasModuleAccess } = useAuth();
+  const canCreateImoveis = isSuperAdmin || (isAdminStaff && hasModuleAccess("imoveis", "create"));
+  const canEditImoveis = isSuperAdmin || (isAdminStaff && hasModuleAccess("imoveis", "edit"));
+  const canDeleteImoveis = isSuperAdmin || (isAdminStaff && hasModuleAccess("imoveis", "delete"));
+  const canBulkSelectImoveis = canEditImoveis || canDeleteImoveis;
   const [currentImoveis, setCurrentImoveis] = useState(0);
   const [importOpen, setImportOpen] = useState(false);
   const [pdfImportOpen, setPdfImportOpen] = useState(false);
@@ -524,18 +528,46 @@ export default function Properties() {
     const fetchProperties = async () => {
       const { data, error } = await supabase
         .from("imoveis")
-        .select("*, edificios(nome), condominios(nome), empreendimentos(nome)")
+        .select("*")
         .order("created_at", { ascending: false });
 
       if (error) {
+        console.error("Erro ao carregar imóveis", error);
         toast.error("Erro ao carregar imóveis");
         if (!propertiesCache) setPropertyList([]);
         setLoadingProperties(false);
         return;
       }
 
+      const rows = data || [];
+      const byId = async (table: "edificios" | "condominios" | "empreendimentos", ids: string[]) => {
+        if (!ids.length) return new Map<string, string>();
+        const { data: related, error: relatedError } = await (supabase as any)
+          .from(table)
+          .select("id, nome")
+          .in("id", ids);
+        if (relatedError) {
+          console.warn(`Não foi possível carregar ${table}`, relatedError);
+          return new Map<string, string>();
+        }
+        return new Map(((related as any[]) || []).map((item) => [item.id, item.nome || ""]));
+      };
+
+      const edificioNames = await byId(
+        "edificios",
+        Array.from(new Set(rows.map((r: any) => r.edificio_id).filter(Boolean))),
+      );
+      const condominioNames = await byId(
+        "condominios",
+        Array.from(new Set(rows.map((r: any) => r.condominio_id).filter(Boolean))),
+      );
+      const empreendimentoNames = await byId(
+        "empreendimentos",
+        Array.from(new Set(rows.map((r: any) => r.empreendimento_id).filter(Boolean))),
+      );
+
       // Carrega profiles dos cadastrantes (donos do user_id)
-      const ownerIds = Array.from(new Set((data || []).map((r: any) => r.user_id).filter(Boolean)));
+      const ownerIds = Array.from(new Set(rows.map((r: any) => r.user_id).filter(Boolean)));
       const profilesById: Record<string, { full_name: string; phone: string | null; avatar_url: string | null }> = {};
       if (ownerIds.length) {
         const { data: profs } = await (supabase as any)
@@ -548,7 +580,7 @@ export default function Properties() {
       }
       const normalizePhone = (v: string) => (v || "").replace(/\D/g, "");
 
-      const mapped: Property[] = (data || []).map((row, index) => {
+      const mapped: Property[] = rows.map((row, index) => {
         const owner = profilesById[(row as any).user_id];
         return {
         id: row.id,
@@ -581,7 +613,12 @@ export default function Properties() {
         seaView: row.vista_mar || false,
         acceptsExchange: row.aceita_permuta || false,
         paymentConditions: row.condicoes_pagamento || [],
-        empreendimento: row.empreendimento || (row as any).edificios?.nome || (row as any).condominios?.nome || (row as any).empreendimentos?.nome || "",
+        empreendimento:
+          row.empreendimento ||
+          edificioNames.get((row as any).edificio_id) ||
+          condominioNames.get((row as any).condominio_id) ||
+          empreendimentoNames.get((row as any).empreendimento_id) ||
+          "",
         edificioId: (row as any).edificio_id || "",
         condominioId: (row as any).condominio_id || "",
         empreendimentoId: (row as any).empreendimento_id || "",
@@ -1018,7 +1055,7 @@ export default function Properties() {
                 )}
               </div>
               <div className="flex flex-row flex-wrap sm:flex-col items-center sm:items-end gap-2 sm:gap-0.5">
-                {(isSuperAdmin || isAdminStaff) && (
+                {canCreateImoveis && (
                   <button
                     onClick={() => setImportOpen(true)}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-secondary text-secondary-foreground hover:bg-muted transition-colors mb-1"
@@ -1480,7 +1517,7 @@ export default function Properties() {
               <Heart className="w-3.5 h-3.5 fill-current" /> Minha Lista ({favoriteIds.length})
             </button>
           )}
-          {(isSuperAdmin || isAdminStaff) && view !== "map" && (
+          {canBulkSelectImoveis && view !== "map" && (
             <div className="flex items-center gap-2 ml-auto">
               <label className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-card border border-border text-sm font-medium text-foreground cursor-pointer hover:bg-muted transition-colors">
                 <input
@@ -1528,11 +1565,12 @@ export default function Properties() {
                 onFilterByTitle={(title) => { setSearch(title.split(" ").slice(0, 2).join(" ")); setActiveCategory("todos"); }}
                 onFilterByCondition={(cond) => { setFilterCondition(cond); setShowFilters(true); setActiveCategory("todos"); }}
                 onFilterByOwner={(owner) => { setFilterOwner(owner); setShowFilters(true); setActiveCategory("todos"); }}
-                canManage={isSuperAdmin || isAdminStaff || property.userId === user?.id}
+                canManage={canEditImoveis || property.userId === user?.id}
+                canDelete={canDeleteImoveis || property.userId === user?.id}
                 onDelete={(id) => setDeleteConfirmId(id)}
                 isSelected={selectedIds.has(property.id)}
                 onToggleSelection={toggleSelection}
-                showSelector={isSuperAdmin || isAdminStaff}
+                showSelector={canBulkSelectImoveis}
               />
             ))}
           </div>
@@ -1558,11 +1596,13 @@ export default function Properties() {
                 onNavigateToContract={handleNavigateToContract}
                 onQuickUpdate={handleQuickUpdate}
                 onDuplicate={handleDuplicate}
-                canManage={isSuperAdmin || isAdminStaff || property.userId === user?.id}
+                canManage={canEditImoveis || property.userId === user?.id}
+                canDelete={canDeleteImoveis || property.userId === user?.id}
+                canDuplicate={canCreateImoveis || property.userId === user?.id}
                 onDelete={(id) => setDeleteConfirmId(id)}
                 isSelected={selectedIds.has(property.id)}
                 onToggleSelection={toggleSelection}
-                showSelector={isSuperAdmin || isAdminStaff}
+                showSelector={canBulkSelectImoveis}
               />
             ))}
           </div>
@@ -2070,7 +2110,7 @@ function ImageCarousel({ images: rawImages, alt }: { images?: string[]; alt: str
 }
 
 // ---- Status Bar ----
-function StatusBar({ currentStatus, onChangeStatus }: { currentStatus: Property["status"]; onChangeStatus: (status: Property["status"]) => void }) {
+function StatusBar({ currentStatus, onChangeStatus, disabled = false }: { currentStatus: Property["status"]; onChangeStatus: (status: Property["status"]) => void; disabled?: boolean }) {
   return (
     <div className="flex gap-1.5">
       {allStatuses.filter(s => s !== "Reservado").map((status) => {
@@ -2078,7 +2118,19 @@ function StatusBar({ currentStatus, onChangeStatus }: { currentStatus: Property[
         const Icon = config.icon;
         const isActive = status === currentStatus;
         return (
-          <button key={status} onClick={(e) => { e.stopPropagation(); onChangeStatus(status); }} className={cn("flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-semibold border transition-all duration-200", isActive ? `${config.bg} ${config.color} ${config.border} shadow-sm` : "bg-muted/50 text-muted-foreground border-transparent hover:bg-muted")}>
+          <button
+            key={status}
+            disabled={disabled}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (!disabled) onChangeStatus(status);
+            }}
+            className={cn(
+              "flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-semibold border transition-all duration-200",
+              isActive ? `${config.bg} ${config.color} ${config.border} shadow-sm` : "bg-muted/50 text-muted-foreground border-transparent hover:bg-muted",
+              disabled && "cursor-default opacity-80 hover:bg-muted/50"
+            )}
+          >
             <Icon className="w-3 h-3" /> {statusLabels[status]}
           </button>
         );
@@ -2152,7 +2204,7 @@ function SoldCelebration() {
 // ---- PropertyCard (enhanced) ----
 function PropertyCard({
   property, onStatusChange, onSelect, onViewTerm, isFavorited, onToggleFavorite, isInRoute, onToggleRoute, onFilterByTitle, onFilterByCondition, onDelete, canManage = true,
-  isSelected, onToggleSelection, showSelector,
+  canDelete = canManage, isSelected, onToggleSelection, showSelector,
 }: {
   property: Property;
   onStatusChange: (id: string, status: Property["status"]) => void;
@@ -2167,6 +2219,7 @@ function PropertyCard({
   onFilterByOwner?: (owner: string) => void;
   onDelete?: (id: string) => void;
   canManage?: boolean;
+  canDelete?: boolean;
   isSelected?: boolean;
   onToggleSelection?: (id: string) => void;
   showSelector?: boolean;
@@ -2379,8 +2432,9 @@ function PropertyCard({
 
         {/* Edit + Delete + Status */}
         <div className="flex items-center gap-2 pt-2 border-t border-border">
-          {canManage && (
+          {(canManage || canDelete) && (
             <>
+              {canManage && (
               <Link
                 to={`/editar-imovel/${property.id}`}
                 onClick={(e) => e.stopPropagation()}
@@ -2388,16 +2442,19 @@ function PropertyCard({
               >
                 <Pencil className="w-3 h-3" /> Editar
               </Link>
+              )}
+              {canDelete && (
               <button
                 onClick={(e) => { e.stopPropagation(); onDelete?.(property.id); }}
                 className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-destructive/10 text-destructive text-[11px] font-bold hover:bg-destructive/20 transition-colors"
               >
                 <Trash2 className="w-3 h-3" /> Excluir
               </button>
+              )}
             </>
           )}
           <div className="flex-1">
-            <StatusBar currentStatus={property.status} onChangeStatus={handleStatusChange} />
+            <StatusBar currentStatus={property.status} onChangeStatus={handleStatusChange} disabled={!canManage} />
           </div>
         </div>
       </div>
@@ -2610,7 +2667,7 @@ const cleanEmpreendimentoName = (name: string) => name.replace(/^(Ed\.\s*|Cond\.
 // ---- PropertyRow (redesigned) ----
 function PropertyRow({
   property, onStatusChange, onSelect, isFavorited, onToggleFavorite, isInRoute, onToggleRoute, onFilterByTitle, onFilterByCondition, onFilterByOwner, onPriceChange, allProperties, onDealLabelChange, onNavigateToValuation, onNavigateToContract, onQuickUpdate, onDuplicate, onDelete, canManage = true,
-  isSelected, onToggleSelection, showSelector,
+  canDelete = canManage, canDuplicate = canManage, isSelected, onToggleSelection, showSelector,
 }: {
   property: Property;
   onStatusChange: (id: string, status: Property["status"]) => void;
@@ -2631,6 +2688,8 @@ function PropertyRow({
   onDuplicate?: (id: string) => void;
   onDelete?: (id: string) => void;
   canManage?: boolean;
+  canDelete?: boolean;
+  canDuplicate?: boolean;
   isSelected?: boolean;
   onToggleSelection?: (id: string) => void;
   showSelector?: boolean;
@@ -3003,9 +3062,15 @@ function PropertyRow({
               const cfg = statusConfig[s];
               const active = s === property.status;
               return (
-                <button key={s} onClick={() => handleStatusChange(s)}
+                <button
+                  key={s}
+                  disabled={!canManage}
+                  onClick={() => {
+                    if (canManage) handleStatusChange(s);
+                  }}
                   className={cn("px-1 py-0.5 rounded text-[7px] font-bold uppercase tracking-wide transition-all",
-                    active ? `${cfg.bg} ${cfg.color} ${cfg.border} border` : "text-muted-foreground hover:bg-muted"
+                    active ? `${cfg.bg} ${cfg.color} ${cfg.border} border` : "text-muted-foreground hover:bg-muted",
+                    !canManage && "cursor-default opacity-80 hover:bg-transparent"
                   )}
                 >{statusLabels[s]}</button>
               );
@@ -3065,11 +3130,13 @@ function PropertyRow({
             }}
             className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors" title="Compartilhar no WhatsApp"
           ><Share2 className="w-3.5 h-3.5 text-foreground" /></button>
-          <button
-            onClick={() => onDuplicate?.(property.id)}
-            className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors" title="Duplicar imóvel"
-          ><Copy className="w-3.5 h-3.5 text-foreground" /></button>
-          {canManage && (
+          {canDuplicate && (
+            <button
+              onClick={() => onDuplicate?.(property.id)}
+              className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors" title="Duplicar imóvel"
+            ><Copy className="w-3.5 h-3.5 text-foreground" /></button>
+          )}
+          {canDelete && (
             <button
               onClick={() => onDelete?.(property.id)}
               className="w-8 h-8 rounded-lg bg-destructive/10 flex items-center justify-center hover:bg-destructive/20 transition-colors" title="Excluir imóvel"

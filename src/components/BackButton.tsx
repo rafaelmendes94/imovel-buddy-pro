@@ -1,7 +1,7 @@
 import { ArrowLeft } from "lucide-react";
 import { useSmartBack } from "@/lib/useSmartBack";
 
-export function BackButton({ fallback = "/" }: { fallback?: string }) {
+export function BackButton({ fallback = "/dashboard" }: { fallback?: string }) {
   const handleBack = useSmartBack(fallback);
 
   return (

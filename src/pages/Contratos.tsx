@@ -10,10 +10,12 @@ import { toast } from "sonner";
 import { templates, ContractTemplate, TemplateGrid } from "@/components/contratos/ContractTemplates";
 import { PropertySearchCombobox } from "@/components/contratos/PropertySearchCombobox";
 import { DocumentViewer } from "@/components/contratos/DocumentViewer";
+import { useAuth } from "@/hooks/useAuth";
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-contract`;
 
 export default function Contratos() {
+  const { session } = useAuth();
   const [searchParams] = useSearchParams();
   const [selectedTemplate, setSelectedTemplate] = useState<ContractTemplate | null>(null);
   const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
@@ -76,7 +78,7 @@ export default function Contratos() {
     titulo: string;
     endereco: string;
     cidade: string;
-    preco: number;
+    preco: number | null;
     proprietario: string | null;
     empreendimento: string | null;
     unidade: string | null;
@@ -89,8 +91,11 @@ export default function Contratos() {
     if (property.descricao) prefill["Descrição do Imóvel"] = property.descricao;
     else prefill["Descrição do Imóvel"] = property.titulo;
     prefill["Endereço do Imóvel"] = property.endereco;
-    prefill["Valor da Venda"] = property.preco.toLocaleString("pt-BR", { minimumFractionDigits: 2 });
-    prefill["Valor de Venda Autorizado"] = property.preco.toLocaleString("pt-BR", { minimumFractionDigits: 2 });
+    if (property.preco != null && Number.isFinite(Number(property.preco))) {
+      const formattedPrice = Number(property.preco).toLocaleString("pt-BR", { minimumFractionDigits: 2 });
+      prefill["Valor da Venda"] = formattedPrice;
+      prefill["Valor de Venda Autorizado"] = formattedPrice;
+    }
     if (property.proprietario) {
       prefill["Nome do Vendedor"] = property.proprietario;
       prefill["Nome do Proprietário"] = property.proprietario;
@@ -128,11 +133,18 @@ export default function Contratos() {
     setIsEditing(false);
 
     try {
+      const accessToken = session?.access_token;
+      if (!accessToken) {
+        toast.error("Faça login novamente para gerar o documento.");
+        setIsGenerating(false);
+        return;
+      }
+
       const resp = await fetch(CHAT_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
           templateType: selectedTemplate.id,

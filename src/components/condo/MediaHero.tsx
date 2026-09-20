@@ -6,6 +6,7 @@ import { PLACEHOLDER_IMAGE } from "@/lib/placeholderImage";
 const ALLOWED_EMBED_HOSTS = [
   "youtube.com", "www.youtube.com", "youtu.be", "youtube-nocookie.com", "www.youtube-nocookie.com",
   "player.vimeo.com", "vimeo.com",
+  "iframe.videodelivery.net", "videodelivery.net", "watch.cloudflarestream.com",
   "my.matterport.com", "matterport.com",
   "kuula.co", "www.kuula.co",
   "momento360.com", "www.momento360.com",
@@ -31,12 +32,22 @@ function vimeoId(url: string) {
   const m = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
   return m?.[1] || null;
 }
+function cloudflareId(url: string) {
+  const m =
+    url.match(/iframe\.videodelivery\.net\/([A-Za-z0-9_-]+)/) ||
+    url.match(/videodelivery\.net\/([A-Za-z0-9_-]+)\/(?:manifest|downloads|thumbnails)/) ||
+    url.match(/watch\.cloudflarestream\.com\/([A-Za-z0-9_-]+)/) ||
+    url.match(/cloudflarestream\.com\/([A-Za-z0-9_-]+)\//);
+  return m?.[1] || null;
+}
 
 export function videoEmbedUrl(url: string): string | null {
   const yt = youtubeId(url);
   if (yt) return `https://www.youtube-nocookie.com/embed/${yt}?autoplay=1&rel=0`;
   const vm = vimeoId(url);
   if (vm) return `https://player.vimeo.com/video/${vm}?autoplay=1`;
+  const cf = cloudflareId(url);
+  if (cf) return `https://iframe.videodelivery.net/${cf}?autoplay=true`;
   return null;
 }
 
@@ -46,7 +57,9 @@ export function isFileVideo(url: string) {
 
 export function autoVideoThumb(url: string): string | null {
   const yt = youtubeId(url);
-  return yt ? `https://img.youtube.com/vi/${yt}/maxresdefault.jpg` : null;
+  if (yt) return `https://img.youtube.com/vi/${yt}/maxresdefault.jpg`;
+  const cf = cloudflareId(url);
+  return cf ? `https://videodelivery.net/${cf}/thumbnails/thumbnail.jpg?time=1s` : null;
 }
 
 interface VideoBlockProps {

@@ -15,8 +15,9 @@ import { useSystemOptions } from '@/hooks/useSystemOptions';
 import { Landmark, MapPin, Layers, Save, Image, Loader2, Building2, FileText, Calendar, Video, Eye, Plus, X, Camera, FolderDown } from 'lucide-react';
 import { MediaGalleryUpload } from '@/components/MediaGalleryUpload';
 
-const statusOptions = ["Lançamento", "Em construção", "Pronto", "Em vendas"];
-const tipoOptions = ["Residencial", "Comercial", "Misto", "Loteamento"];
+const DEFAULT_STATUS_OPTIONS = ["Lançamento", "Em construção", "Pronto", "Em vendas"];
+const DEFAULT_TIPO_OPTIONS = ["Residencial", "Comercial", "Misto", "Loteamento"];
+const DEFAULT_INFRA_OPTIONS = ["Piscina", "Academia", "Salão de Festas", "Playground", "Quadra", "Churrasqueira", "Segurança 24h", "Portaria", "Elevador", "Estacionamento"];
 
 function SectionHeader({ icon: Icon, title }: { icon: any; title: string }) {
   return (
@@ -43,7 +44,9 @@ export default function CadastroEmpreendimento() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
-  const { values: infraOptions } = useSystemOptions("infraestrutura");
+  const { values: infraOptions } = useSystemOptions("infraestrutura", DEFAULT_INFRA_OPTIONS);
+  const { values: tipoOptions } = useSystemOptions("tipo_empreendimento", DEFAULT_TIPO_OPTIONS);
+  const { values: statusOptions } = useSystemOptions("status_empreendimento", DEFAULT_STATUS_OPTIONS);
   const [form, setForm] = useState(initialForm);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(!!editId);
@@ -168,7 +171,7 @@ export default function CadastroEmpreendimento() {
 
         <section>
           <SectionHeader icon={Building2} title="Infraestrutura" />
-          <InfraToggle label="Selecione a infraestrutura" options={infraOptions.length > 0 ? infraOptions : ["Piscina", "Academia", "Salão de Festas", "Playground", "Quadra", "Churrasqueira", "Segurança 24h", "Portaria", "Elevador", "Estacionamento"]} selected={form.infraestrutura} onChange={(sel) => setForm(f => ({ ...f, infraestrutura: sel }))} allowCustom />
+          <InfraToggle label="Selecione a infraestrutura" options={infraOptions} selected={form.infraestrutura} onChange={(sel) => setForm(f => ({ ...f, infraestrutura: sel }))} allowCustom />
         </section>
 
         <section>

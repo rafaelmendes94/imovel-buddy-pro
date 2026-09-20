@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toSlug } from "@/lib/utils";
+import { normalizePropertyType } from "@/lib/propertyTypeRules";
 
 interface SiteProperty {
   id: string;
@@ -362,7 +363,7 @@ export default function AllProperties() {
     const matchBedrooms = !filterBedrooms || p.bedrooms >= parseInt(filterBedrooms);
     const matchPriceMin = !filterPriceMin || p.price >= parseInt(filterPriceMin);
     const matchPriceMax = !filterPriceMax || p.price <= parseInt(filterPriceMax);
-    const matchType = !filterType || p.type === filterType;
+    const matchType = !filterType || normalizePropertyType(p.type) === filterType;
     const matchCondition = !filterCondition || (
       Array.isArray(p.paymentConditions) && p.paymentConditions.some(c => c.toLowerCase().includes(filterCondition.toLowerCase()))
     );
@@ -487,8 +488,9 @@ export default function AllProperties() {
                   <option value="">Todos</option>
                   <option value="Apartamento">Apartamento</option>
                   <option value="Casa">Casa</option>
-                  <option value="Terreno">Terreno</option>
-                  <option value="Comercial">Comercial</option>
+                  <option value="Casa em condominio">Casa em condominio</option>
+                  <option value="Lote">Lote</option>
+                  <option value="Lote em condominio">Lote em condominio</option>
                 </select>
               </div>
               <div>

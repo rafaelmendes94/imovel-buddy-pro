@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MediaGalleryView } from "@/components/MediaGalleryView";
 import { useSmartBack } from "@/lib/useSmartBack";
+import { useAuth } from "@/hooks/useAuth";
 
 const statusColors: Record<string, string> = {
   "Em construção": "bg-warning/10 text-warning border-warning/30",
@@ -32,6 +33,8 @@ export default function BuildingDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const handleBack = useSmartBack("/edificios");
+  const { isSuperAdmin, isAdminStaff, hasModuleAccess } = useAuth();
+  const canEdit = isSuperAdmin || (isAdminStaff && hasModuleAccess("edificios", "edit"));
   const [building, setBuilding] = useState<any>(null);
   const [imoveis, setImoveis] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -101,9 +104,9 @@ export default function BuildingDetail() {
             <button onClick={shareWhatsApp} className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-success text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity">
               <Share2 className="w-4 h-4" /> WhatsApp
             </button>
-            <button onClick={() => navigate(`/editar-edificio/${building.id}`)} className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-accent text-accent-foreground text-sm font-semibold hover:opacity-90 transition-opacity">
+            {canEdit && <button onClick={() => navigate(`/editar-edificio/${building.id}`)} className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-accent text-accent-foreground text-sm font-semibold hover:opacity-90 transition-opacity">
               <Edit className="w-4 h-4" /> Editar
-            </button>
+            </button>}
           </div>
         </div>
 
@@ -172,7 +175,7 @@ export default function BuildingDetail() {
                     const imgs = im.imagens && im.imagens.length > 0 ? im.imagens : [PLACEHOLDER_IMAGE];
                     const conditions = im.condicoes_pagamento || [];
                     return (
-                      <div key={im.id} onClick={() => navigate(`/editar-imovel/${im.id}`)} className="elevated-card rounded-xl overflow-hidden cursor-pointer group flex flex-col">
+                      <div key={im.id} onClick={() => navigate(`/imovel/${im.id}`)} className="elevated-card rounded-xl overflow-hidden cursor-pointer group flex flex-col">
                         <div className="relative h-44 overflow-hidden">
                           <img src={imgs[0]} alt={im.titulo} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />

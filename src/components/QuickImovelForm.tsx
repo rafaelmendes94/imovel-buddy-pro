@@ -12,8 +12,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, Zap, Video, FolderOpen } from "lucide-react";
 import { EmpreendimentoPicker } from "@/components/EmpreendimentoPicker";
 import type { EmpreendimentoRecord } from "@/lib/empreendimentos";
+import { PROPERTY_TYPE_OPTIONS, normalizePropertyType } from "@/lib/propertyTypeRules";
 
-const tipos = ["Apartamento", "Casa", "Comercial", "Terreno", "Lote", "Condomínio"];
+const tipos = [...PROPERTY_TYPE_OPTIONS];
 
 interface QuickImovelFormProps {
   onSaved?: () => void;
@@ -72,7 +73,7 @@ export function QuickImovelForm({ onSaved, onCancel, defaultCidade = "", cancelL
   const applyAI = (u: Record<string, any>) => {
     const str = (v: any) => (v === undefined || v === null ? "" : String(v));
     if (u.titulo) setTitulo(str(u.titulo));
-    if (u.tipo && tipos.includes(str(u.tipo))) setTipo(str(u.tipo));
+    if (u.tipo) setTipo(normalizePropertyType(str(u.tipo)));
     if (u.cidade) setCidade(str(u.cidade));
     if (u.bairro) setBairro(str(u.bairro));
     if (u.endereco) setEndereco(str(u.endereco));

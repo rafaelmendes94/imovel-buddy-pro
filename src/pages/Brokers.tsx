@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { SiteConfigDialog } from "@/components/SiteConfigDialog";
+import { SaasClientsAdmin } from "@/components/admin/SaasClientsAdmin";
 import { useAuth } from "@/hooks/useAuth";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -280,6 +281,8 @@ export default function Brokers() {
             Novo Corretor
           </button>
         </div>
+
+        <SaasClientsAdmin type="corretor" />
 
         {isSuperAdmin && (
           <div className="elevated-card rounded-xl p-5 space-y-4 border-2 border-primary/30">

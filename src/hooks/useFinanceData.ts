@@ -4,7 +4,7 @@ import { isoDate, nextDueDate, toDate } from "@/lib/finance";
 
 export interface FinSubscriber {
   id: string;
-  source?: "legacy" | "subscription";
+  source?: "legacy" | "subscription" | "profile";
   subscription_id?: string | null;
   legacy_subscriber_id?: string | null;
   name: string;
@@ -100,7 +100,7 @@ export function useFinanceData() {
   const [actor, setActor] = useState<{ id: string | null; name: string }>({ id: null, name: "Administrador" });
 
   const fetchAll = useCallback(async () => {
-    const [subRes, payRes, memRes, planRes, logRes, userRes, realSubRes, realPayRes] = await Promise.all([
+    const [subRes, payRes, memRes, planRes, logRes, userRes, realSubRes, realPayRes, clientProfilesRes] = await Promise.all([
       supabase.from("subscribers").select("*").order("name"),
       supabase.from("payments").select("*").order("due_date", { ascending: false }),
       supabase.from("subscriber_brokers").select("*").order("name"),
@@ -109,6 +109,10 @@ export function useFinanceData() {
       supabase.auth.getUser(),
       supabase.from("subscriptions").select("*, plans(*)").order("created_at", { ascending: false }),
       supabase.from("subscription_payments").select("*").order("created_at", { ascending: false }),
+      supabase
+        .from("profiles")
+        .select("user_id, full_name, email, phone, account_type, created_at, approval_status, rejection_reason")
+        .in("account_type", ["corretor", "imobiliaria"]),
     ]);
 
     const legacySubscribers = ((subRes.data as any[]) || []).map((sub) => ({ ...sub, source: "legacy" as const }));
@@ -125,7 +129,7 @@ export function useFinanceData() {
     const { data: profilesData } = userIds.length
       ? await supabase
           .from("profiles")
-          .select("user_id, full_name, email, phone, account_type, created_at")
+          .select("user_id, full_name, email, phone, account_type, created_at, approval_status, rejection_reason")
           .in("user_id", userIds)
       : { data: [] as any[] };
 
@@ -170,6 +174,43 @@ export function useFinanceData() {
         cancelled_at: sub.status === "cancelled" ? sub.current_period_end || null : legacy?.cancelled_at || null,
       };
     });
+
+    const subscribedUserIds = new Set(realSubscriptions.map((sub) => sub.user_id).filter(Boolean));
+    const legacyOwnerIds = new Set(legacySubscribers.map((sub) => sub.owner_user_id).filter(Boolean));
+    const profileSubscribers: FinSubscriber[] = (((clientProfilesRes.data as any[]) || [])
+      .filter((profile) => profile.user_id && !subscribedUserIds.has(profile.user_id) && !legacyOwnerIds.has(profile.user_id))
+      .map((profile) => ({
+        id: profile.user_id,
+        source: "profile" as const,
+        subscription_id: null,
+        legacy_subscriber_id: null,
+        name: profile.full_name || profile.email || "Cliente sem nome",
+        email: profile.email || null,
+        phone: profile.phone || null,
+        creci: null,
+        plan: "monthly",
+        status:
+          profile.approval_status === "pending"
+            ? "pending_approval"
+            : profile.approval_status === "rejected" && String(profile.rejection_reason || "").startsWith("Cancelado:")
+              ? "cancelled"
+              : profile.approval_status === "rejected"
+                ? "blocked"
+                : "without_plan",
+        notes: null,
+        created_at: profile.created_at,
+        plan_id: null,
+        subscriber_type: profile.account_type || "corretor",
+        owner_user_id: profile.user_id,
+        due_day: null,
+        next_due_date: null,
+        start_date: profile.created_at?.slice(0, 10) || null,
+        document: null,
+        city: null,
+        blocked_at: null,
+        cancel_reason: profile.approval_status === "rejected" ? profile.rejection_reason || "Cadastro recusado" : null,
+        cancelled_at: null,
+      })));
 
     const realPaymentRows: FinPayment[] = realPayments.map((payment) => {
       const sub = realSubscriptions.find((item) => item.id === payment.subscription_id);
@@ -230,6 +271,7 @@ export function useFinanceData() {
     const realUserIds = new Set(realSubscriptions.map((sub) => sub.user_id).filter(Boolean));
     const subscribersData = [
       ...subscriptionSubscribers,
+      ...profileSubscribers,
       ...legacySubscribers.filter((sub) => !sub.owner_user_id || !realUserIds.has(sub.owner_user_id)),
     ];
     const paymentsData = [...realPaymentRows, ...syntheticPayments, ...legacyPayments].sort((a, b) =>
@@ -261,6 +303,9 @@ export function useFinanceData() {
       metadata: Record<string, any> = {},
       paymentId?: string | null,
     ) => {
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(subscriberId)) {
+        return;
+      }
       await supabase.from("financial_activity_logs").insert({
         subscriber_id: subscriberId,
         payment_id: paymentId ?? null,
@@ -285,6 +330,32 @@ export function useFinanceData() {
   );
 
   const subscriptionIdOf = (sub: FinSubscriber) => sub.subscription_id || (sub.source === "subscription" ? sub.id : null);
+
+  const createOrUpdateSubscription = useCallback(
+    async (sub: FinSubscriber, planId: string, nextDueDate?: string | null) => {
+      if (!sub.owner_user_id) return null;
+
+      const { data: subscriptionId, error } = await supabase.rpc("create_trial_subscription", {
+        _user_id: sub.owner_user_id,
+        _plan_id: planId,
+      });
+      if (error) throw error;
+
+      const patch: Record<string, any> = {};
+      if (nextDueDate) patch.current_period_end = `${nextDueDate}T12:00:00`;
+      if (Object.keys(patch).length && subscriptionId) {
+        await supabase.from("subscriptions").update(patch as any).eq("id", subscriptionId as string);
+      }
+
+      await supabase
+        .from("profiles")
+        .update({ approval_status: "approved", approved_at: new Date().toISOString(), approved_by: actor.id } as any)
+        .eq("user_id", sub.owner_user_id);
+
+      return subscriptionId as string | null;
+    },
+    [actor.id],
+  );
 
   const advanceSubscription = useCallback(
     async (sub: FinSubscriber, baseDate: string, amount: number, paidAt: string, paymentId?: string) => {
@@ -412,6 +483,12 @@ export function useFinanceData() {
       discount_amount?: number;
     }) => {
       const sub = subscribers.find((item) => item.id === input.subscriber_id);
+      if (sub?.source === "profile") {
+        if (!sub.plan_id) throw new Error("Vincule um plano antes de lançar pagamento para este cadastro.");
+        await createOrUpdateSubscription(sub, sub.plan_id, input.paid_at);
+        await fetchAll();
+        return;
+      }
       if (sub?.source === "subscription") {
         const paidAt = input.is_courtesy ? `${input.paid_at}T12:00:00` : new Date(`${input.paid_at}T12:00:00`).toISOString();
         await advanceSubscription(sub, input.paid_at, input.amount, paidAt);
@@ -454,7 +531,7 @@ export function useFinanceData() {
       );
       await fetchAll();
     },
-    [actor, advanceSubscription, fetchAll, logEvent, subscribers],
+    [actor, advanceSubscription, createOrUpdateSubscription, fetchAll, logEvent, subscribers],
   );
 
   const createCharge = useCallback(
@@ -512,8 +589,12 @@ export function useFinanceData() {
             )
             .eq("id", sub.legacy_subscriber_id);
         }
-      } else
-      if (blocked) {
+      } else if (sub.source === "profile") {
+        await supabase
+          .from("profiles")
+          .update({ approval_status: blocked ? "rejected" : "approved", rejection_reason: blocked ? "Acesso bloqueado pelo administrador" : null } as any)
+          .eq("user_id", sub.owner_user_id);
+      } else if (blocked) {
         const group = members.filter((m) => m.subscriber_id === sub.id);
         await Promise.all(
           group.map((m) =>
@@ -597,13 +678,29 @@ export function useFinanceData() {
           if (legacyPatch.next_due_date === "") legacyPatch.next_due_date = null;
           await supabase.from("subscribers").update(legacyPatch as any).eq("id", sub.legacy_subscriber_id);
         }
+      } else if (sub.source === "profile") {
+        const profilePatch: Record<string, any> = {};
+        if (patch.subscriber_type !== undefined) profilePatch.account_type = patch.subscriber_type;
+        if (patch.name !== undefined) profilePatch.full_name = patch.name;
+        if (patch.email !== undefined) profilePatch.email = patch.email;
+        if (patch.phone !== undefined) profilePatch.phone = patch.phone;
+        if (Object.keys(profilePatch).length && sub.owner_user_id) {
+          await supabase.from("profiles").update(profilePatch as any).eq("user_id", sub.owner_user_id);
+        }
+        if (patch.plan_id) {
+          await createOrUpdateSubscription(
+            { ...sub, owner_user_id: sub.owner_user_id, plan_id: patch.plan_id, subscriber_type: patch.subscriber_type || sub.subscriber_type },
+            patch.plan_id,
+            patch.next_due_date,
+          );
+        }
       } else {
         await supabase.from("subscribers").update(patch as any).eq("id", sub.id);
       }
       await logEvent(sub.id, eventType, description || "Cadastro atualizado", patch);
       await fetchAll();
     },
-    [fetchAll, logEvent],
+    [createOrUpdateSubscription, fetchAll, logEvent],
   );
 
   const cancelSubscription = useCallback(
@@ -619,6 +716,11 @@ export function useFinanceData() {
             .update({ status: "cancelled", cancel_reason: reason, cancelled_at: new Date().toISOString() } as any)
             .eq("id", sub.legacy_subscriber_id);
         }
+      } else if (sub.source === "profile") {
+        await supabase
+          .from("profiles")
+          .update({ approval_status: "rejected", rejection_reason: `Cancelado: ${reason}` } as any)
+          .eq("user_id", sub.owner_user_id);
       } else {
         await supabase
           .from("subscribers")

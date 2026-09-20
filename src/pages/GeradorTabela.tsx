@@ -94,6 +94,7 @@ export default function GeradorTabela() {
     if (!user) return;
     const { data } = await (supabase.from("tabela_apresentacoes") as any)
       .select("*")
+      .eq("user_id", user.id)
       .order("updated_at", { ascending: false });
     setSaved((data as SavedTable[]) || []);
   }, [user]);
@@ -201,7 +202,7 @@ export default function GeradorTabela() {
       settings,
     };
     const q = savedId
-      ? (supabase.from("tabela_apresentacoes") as any).update(payload).eq("id", savedId)
+      ? (supabase.from("tabela_apresentacoes") as any).update(payload).eq("id", savedId).eq("user_id", user.id)
       : (supabase.from("tabela_apresentacoes") as any).insert(payload);
     const { error } = await q;
     setSavingTable(false);
@@ -222,7 +223,8 @@ export default function GeradorTabela() {
 
   const deleteSaved = async (id: string) => {
     if (!confirm("Excluir esta apresentação salva?")) return;
-    const { error } = await (supabase.from("tabela_apresentacoes") as any).delete().eq("id", id);
+    if (!user) return toast.error("Faça login para excluir");
+    const { error } = await (supabase.from("tabela_apresentacoes") as any).delete().eq("id", id).eq("user_id", user.id);
     if (error) return toast.error("Erro ao excluir");
     if (savedId === id) setSavedId(null);
     setSaved(s => s.filter(t => t.id !== id));

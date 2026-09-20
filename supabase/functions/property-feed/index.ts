@@ -43,38 +43,131 @@ function cdata(s: unknown) {
   return `<![CDATA[${String(s ?? "").replace(/\]\]>/g, "]]]]><![CDATA[>")}]]>`;
 }
 
+function norm(s: string) {
+  return (s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
+
+function normalizePropertyType(tipo: string) {
+  const t = norm(tipo);
+  if (t.includes("apart") || t.includes("apto") || t.includes("cobert") || t.includes("studio") || t.includes("flat")) return "Apartamento";
+  if ((t.includes("casa") || t.includes("sobrad")) && (t.includes("cond") || t.includes("horizontal"))) return "Casa em condominio";
+  if ((t.includes("lote") || t.includes("terren")) && (t.includes("cond") || t.includes("fechado"))) return "Lote em condominio";
+  if (t.includes("lote") || t.includes("terren")) return "Lote";
+  if (t.includes("casa") || t.includes("sobrad")) return "Casa";
+  return "Apartamento";
+}
+
+function firstText(...values: unknown[]) {
+  return values.map((v) => String(v ?? "").trim()).find(Boolean) || "";
+}
+
+function linkedEntityValue(p: any, field: string) {
+  return firstText(
+    p.edificios?.[field],
+    p.edificio?.[field],
+    p.condominios?.[field],
+    p.condominio?.[field],
+    p.empreendimentos?.[field],
+    p.empreendimento?.[field],
+    p.loteamentos?.[field],
+    p.loteamento?.[field],
+  );
+}
+
+function propertyAddressField(p: any, field: string) {
+  return firstText(p[field], linkedEntityValue(p, field));
+}
+
+function propertyStreet(p: any) {
+  return firstText(p.endereco, p.logradouro, linkedEntityValue(p, "endereco"), linkedEntityValue(p, "logradouro"));
+}
+
+function propertyCode(p: any) {
+  return firstText(p.codigo_interno, p.codigo, p.id);
+}
+
+function propertyStatus(p: any) {
+  return firstText(p.status, p.status_imovel);
+}
+
+function propertyAreaTotal(p: any) {
+  return Number(p.area || p.area_total || 0);
+}
+
+function propertyBedrooms(p: any) {
+  return Number(p.quartos || p.dormitorios || 0);
+}
+
+function propertyLocation(p: any) {
+  const tipo = normalizePropertyType(firstText(p.tipo, p.tipo_imovel, p.titulo));
+  const parsed = parseQuadraLoteReference([p.unidade, p.complemento].filter(Boolean).join(" - "));
+  const quadra = p.quadra || parsed.quadra || "";
+  const unidadeAsLot = quadra && !p.lote ? cleanInternalReference(p.unidade) : "";
+  const lote = p.lote || parsed.lote || (/^[A-Za-z0-9]{1,5}$/.test(unidadeAsLot) ? unidadeAsLot : "");
+  const consumedComplemento = usesQuadraLote(tipo) && hasInternalLocationReference(p.complemento);
+  const propertyNumber = firstText(p.numero);
+  const inheritedAddressNumber = linkedEntityValue(p, "numero");
+  return {
+    tipo,
+    unidade: tipo === "Apartamento" ? p.unidade || "" : "",
+    numero: tipo === "Apartamento" ? propertyNumber || inheritedAddressNumber : tipo === "Casa" || tipo === "Lote em condominio" ? propertyNumber : "",
+    quadra: usesQuadraLote(tipo) ? quadra : "",
+    lote: usesQuadraLote(tipo) ? lote : "",
+    complemento: consumedComplemento ? "" : p.complemento || "",
+  };
+}
+
+function usesQuadraLote(tipo: string) {
+  return tipo === "Casa em condominio" || tipo === "Lote" || tipo === "Lote em condominio";
+}
+
+function cleanInternalReference(value: unknown) {
+  return String(value ?? "")
+    .trim()
+    .replace(/^(?:ap(?:to|artamento)?\s*\/\s*)?(?:ap(?:to|artamento)?|unid(?:ade)?|un)\s*[/.:\-–]?\s*/i, "")
+    .replace(/^n?[ºo°]\s*/i, "")
+    .trim();
+}
+
+function hasInternalLocationReference(value: unknown) {
+  const v = norm(String(value ?? ""));
+  return /\b(qd|quadra|lt|lote|apto|apartamento|unidade|un)\b/.test(v);
+}
+
+function parseQuadraLoteReference(value: string) {
+  const text = norm(value);
+  const result = { quadra: "", lote: "" };
+  const quadraMatch = text.match(/\b(?:q(?:uadra)?|qd)\s*[.:/-]?\s*([a-z0-9]{1,5})\b/);
+  const loteMatch = text.match(/\b(?:l(?:ote)?|lt)\s*[.:/-]?\s*([a-z0-9]{1,5})\b/);
+  const unidadeMatch =
+    text.match(/\b(?:unid(?:ade)?|un)\s*[/.:\-–]?\s*([a-z0-9]{1,5})\b/) ||
+    text.match(/\bap(?:to|artamento)?(?:\s*\/\s*(?:unid(?:ade)?|un))?\s*[/.:\-–]?\s*([a-z0-9]{1,5})\b/);
+  const compactMatch = text.match(/\b([a-z]{1,3}|\d{1,3})\s*[-/]\s*(\d{1,5}[a-z]?)\b/);
+  if (quadraMatch) result.quadra = quadraMatch[1].toUpperCase();
+  if (loteMatch) result.lote = loteMatch[1].toUpperCase();
+  if (!result.quadra && compactMatch) result.quadra = compactMatch[1].toUpperCase();
+  if (!result.lote && compactMatch) result.lote = compactMatch[2].toUpperCase();
+  if (!result.lote && result.quadra && unidadeMatch) result.lote = unidadeMatch[1].toUpperCase();
+  return result;
+}
+
 // Map internal "tipo" → VRSync PropertyType / PropertySubType
 function vrsyncType(tipo: string): { type: string; sub: string } {
-  const t = (tipo || "").toLowerCase();
-  if (t.includes("apart") || t.includes("cobert") || t.includes("flat") || t.includes("studio") || t.includes("kit"))
+  const normalized = normalizePropertyType(tipo);
+  if (normalized === "Apartamento")
     return { type: "Residential", sub: "Apartment" };
-  if (t.includes("casa") && t.includes("cond")) return { type: "Residential", sub: "Home" };
-  if (t.includes("casa") || t.includes("sobrad")) return { type: "Residential", sub: "Home" };
-  if (t.includes("terren") || t.includes("lote")) return { type: "Residential", sub: "ResidentialAllotmentLand" };
-  if (t.includes("sala") || t.includes("comerc") || t.includes("loja")) return { type: "Commercial", sub: "CommercialBuilding" };
-  if (t.includes("galp") || t.includes("indust")) return { type: "Commercial", sub: "Industrial" };
-  if (t.includes("rural") || t.includes("fazend") || t.includes("chac") || t.includes("sit"))
-    return { type: "Residential", sub: "Farm" };
+  if (normalized === "Casa" || normalized === "Casa em condominio") return { type: "Residential", sub: "Home" };
+  if (normalized === "Lote" || normalized === "Lote em condominio") return { type: "Residential", sub: "ResidentialAllotmentLand" };
   return { type: "Residential", sub: "Apartment" };
 }
 
 // Map internal "tipo" → Imovelweb TipoImovel
 function imovelwebType(tipo: string): string {
-  const t = (tipo || "").toLowerCase();
-  if (t.includes("apart")) return "Apartamento";
-  if (t.includes("cobert")) return "Cobertura";
-  if (t.includes("casa")) return "Casa";
-  if (t.includes("sobrad")) return "Sobrado";
-  if (t.includes("terren") || t.includes("lote")) return "Terreno";
-  if (t.includes("sala")) return "Sala Comercial";
-  if (t.includes("loja")) return "Loja";
-  if (t.includes("galp")) return "Galpão";
-  if (t.includes("rural") || t.includes("fazend")) return "Fazenda";
-  if (t.includes("chac")) return "Chácara";
-  if (t.includes("sit")) return "Sítio";
-  if (t.includes("flat")) return "Flat";
-  if (t.includes("studio") || t.includes("kit")) return "Studio";
-  return "Outros";
+  const normalized = normalizePropertyType(tipo);
+  if (normalized === "Apartamento") return "Apartamento";
+  if (normalized === "Casa" || normalized === "Casa em condominio") return "Casa";
+  if (normalized === "Lote" || normalized === "Lote em condominio") return "Terreno";
+  return "Apartamento";
 }
 
 function normalizePhone(p: string) {
@@ -85,7 +178,8 @@ function normalizePhone(p: string) {
 
 function buildVrsync(properties: any[], contact: { name: string; email: string; phone: string }) {
   const items = properties.map((p) => {
-    const { type, sub } = vrsyncType(p.tipo);
+    const loc = propertyLocation(p);
+    const { type, sub } = vrsyncType(loc.tipo);
     const images = Array.isArray(p.imagens) ? p.imagens.filter(Boolean) : [];
     const media = images
       .map(
@@ -102,16 +196,21 @@ function buildVrsync(properties: any[], contact: { name: string; email: string; 
       .join("");
     return `
     <Listing>
-      <ListID>${esc(p.id)}</ListID>
+      <ListID>${esc(propertyCode(p))}</ListID>
       <Title>${esc(p.titulo)}</Title>
       <TransactionType>For Sale</TransactionType>
       <ListPrice currency="BRL">${Number(p.preco || 0)}</ListPrice>
       <PropertyType>${type}</PropertyType>
       <PropertySubType>${sub}</PropertySubType>
+      <TipoImovel>${esc(loc.tipo)}</TipoImovel>
+      <Unidade>${esc(loc.unidade)}</Unidade>
+      <Quadra>${esc(loc.quadra)}</Quadra>
+      <Lote>${esc(loc.lote)}</Lote>
+      <Numero>${esc(loc.numero)}</Numero>
       <Details>
-        <LivingArea unit="square metres">${Number(p.area_privativa || p.area || 0)}</LivingArea>
-        <LotArea unit="square metres">${Number(p.area || 0)}</LotArea>
-        <Bedrooms>${Number(p.quartos || 0)}</Bedrooms>
+        <LivingArea unit="square metres">${Number(p.area_privativa || propertyAreaTotal(p) || 0)}</LivingArea>
+        <LotArea unit="square metres">${propertyAreaTotal(p)}</LotArea>
+        <Bedrooms>${propertyBedrooms(p)}</Bedrooms>
         <Bathrooms>${Number(p.banheiros || 0)}</Bathrooms>
         <Garage type="Parking Space">${Number(p.vagas || 0)}</Garage>
         <Description>${cdata(p.descricao || p.titulo)}</Description>
@@ -119,11 +218,11 @@ function buildVrsync(properties: any[], contact: { name: string; email: string; 
       </Details>
       <Location displayAddress="Neighborhood">
         <Country>BR</Country>
-        <State>${esc(p.estado)}</State>
-        <City>${esc(p.cidade)}</City>
-        <Neighborhood>${esc(p.bairro)}</Neighborhood>
-        <Address>${esc([p.endereco, p.numero].filter(Boolean).join(", "))}</Address>
-        <PostalCode>${esc(p.cep)}</PostalCode>
+        <State>${esc(propertyAddressField(p, "estado"))}</State>
+        <City>${esc(propertyAddressField(p, "cidade"))}</City>
+        <Neighborhood>${esc(propertyAddressField(p, "bairro"))}</Neighborhood>
+        <Address>${esc([propertyStreet(p), loc.numero].filter(Boolean).join(", "))}</Address>
+        <PostalCode>${esc(propertyAddressField(p, "cep"))}</PostalCode>
         <Latitude>${Number(p.latitude || 0)}</Latitude>
         <Longitude>${Number(p.longitude || 0)}</Longitude>
       </Location>
@@ -145,6 +244,7 @@ function buildVrsync(properties: any[], contact: { name: string; email: string; 
 
 function buildImovelweb(properties: any[], contact: { name: string; email: string; phone: string }) {
   const items = properties.map((p) => {
+    const loc = propertyLocation(p);
     const images = Array.isArray(p.imagens) ? p.imagens.filter(Boolean) : [];
     const fotos = images
       .map((url: string, i: number) => {
@@ -154,25 +254,29 @@ function buildImovelweb(properties: any[], contact: { name: string; email: strin
       .join("");
     return `
     <Imovel>
-      <CodigoImovel>${esc(p.id)}</CodigoImovel>
-      <TipoImovel>${esc(imovelwebType(p.tipo))}</TipoImovel>
+      <CodigoImovel>${esc(propertyCode(p))}</CodigoImovel>
+      <TipoImovel>${esc(imovelwebType(loc.tipo))}</TipoImovel>
+      <TipoPadraoMV>${esc(loc.tipo)}</TipoPadraoMV>
       <SubTipoImovel>${esc(p.padrao || "Padrão")}</SubTipoImovel>
       <TituloImovel>${esc(p.titulo)}</TituloImovel>
       <Observacao>${cdata(p.descricao || "")}</Observacao>
       <Modelo>Venda</Modelo>
-      <Cidade>${esc(p.cidade)}</Cidade>
-      <UF>${esc(p.estado)}</UF>
-      <Bairro>${esc(p.bairro)}</Bairro>
-      <CEP>${esc(p.cep)}</CEP>
-      <Endereco>${esc(p.endereco)}</Endereco>
-      <Numero>${esc(p.numero)}</Numero>
-      <Complemento>${esc(p.complemento)}</Complemento>
+      <Cidade>${esc(propertyAddressField(p, "cidade"))}</Cidade>
+      <UF>${esc(propertyAddressField(p, "estado"))}</UF>
+      <Bairro>${esc(propertyAddressField(p, "bairro"))}</Bairro>
+      <CEP>${esc(propertyAddressField(p, "cep"))}</CEP>
+      <Endereco>${esc(propertyStreet(p))}</Endereco>
+      <Numero>${esc(loc.numero)}</Numero>
+      <Unidade>${esc(loc.unidade)}</Unidade>
+      <Quadra>${esc(loc.quadra)}</Quadra>
+      <Lote>${esc(loc.lote)}</Lote>
+      <Complemento>${esc(loc.complemento)}</Complemento>
       <Latitude>${Number(p.latitude || 0)}</Latitude>
       <Longitude>${Number(p.longitude || 0)}</Longitude>
       <PrecoVenda>${Number(p.preco || 0)}</PrecoVenda>
-      <AreaUtil>${Number(p.area_privativa || p.area || 0)}</AreaUtil>
-      <AreaTotal>${Number(p.area || 0)}</AreaTotal>
-      <QtdDormitorios>${Number(p.quartos || 0)}</QtdDormitorios>
+      <AreaUtil>${Number(p.area_privativa || propertyAreaTotal(p) || 0)}</AreaUtil>
+      <AreaTotal>${propertyAreaTotal(p)}</AreaTotal>
+      <QtdDormitorios>${propertyBedrooms(p)}</QtdDormitorios>
       <QtdSuites>0</QtdSuites>
       <QtdBanheiros>${Number(p.banheiros || 0)}</QtdBanheiros>
       <QtdVagas>${Number(p.vagas || 0)}</QtdVagas>
@@ -189,6 +293,40 @@ function buildImovelweb(properties: any[], contact: { name: string; email: strin
   <Imoveis>${items.join("")}
   </Imoveis>
 </Carga>`;
+}
+
+async function loadLinkedEntities(supabase: any, table: string, ids: string[]) {
+  const uniqueIds = [...new Set(ids.filter(Boolean))];
+  if (!uniqueIds.length) return new Map<string, any>();
+
+  const { data, error } = await supabase
+    .from(table)
+    .select("id, numero, logradouro")
+    .in("id", uniqueIds);
+
+  if (error) {
+    console.error(`property-feed ${table} query error`, error);
+    return new Map<string, any>();
+  }
+
+  return new Map((data || []).map((item: any) => [item.id, item]));
+}
+
+async function enrichPropertiesWithLinkedAddresses(supabase: any, properties: any[]) {
+  const [edificios, condominios, empreendimentos, loteamentos] = await Promise.all([
+    loadLinkedEntities(supabase, "edificios", properties.map((p) => p.edificio_id)),
+    loadLinkedEntities(supabase, "condominios", properties.map((p) => p.condominio_id)),
+    loadLinkedEntities(supabase, "empreendimentos", properties.map((p) => p.empreendimento_id)),
+    loadLinkedEntities(supabase, "loteamentos", properties.map((p) => p.loteamento_id)),
+  ]);
+
+  return properties.map((p) => ({
+    ...p,
+    edificios: p.edificio_id ? edificios.get(p.edificio_id) : undefined,
+    condominios: p.condominio_id ? condominios.get(p.condominio_id) : undefined,
+    empreendimentos: p.empreendimento_id ? empreendimentos.get(p.empreendimento_id) : undefined,
+    loteamentos: p.loteamento_id ? loteamentos.get(p.loteamento_id) : undefined,
+  }));
 }
 
 export async function handler(req: Request) {
@@ -211,7 +349,7 @@ export async function handler(req: Request) {
     // Resolve slug → profile (broker or agency owner)
     const { data: profiles, error: profilesError } = await supabase
       .from("profiles")
-      .select("user_id, full_name, email, phone, account_type")
+      .select("id, full_name, phone")
       .not("full_name", "is", null)
       .range(0, 9999);
     if (profilesError) {
@@ -225,31 +363,27 @@ export async function handler(req: Request) {
     }
 
     // Collect user_ids: the owner + any brokers under this agency
-    const ids = new Set<string>([match.user_id]);
-    const { data: agencyBrokers } = await supabase
-      .from("profiles")
-      .select("user_id")
-      .eq("agency_id", match.user_id);
-    (agencyBrokers || []).forEach((b: any) => ids.add(b.user_id));
+    const ids = new Set<string>([match.id]);
 
     // Check active subscription via RPC
-    const { data: hasSub } = await supabase.rpc("imovel_owner_has_active_sub", { _owner: match.user_id });
+    const { data: hasSub } = await supabase.rpc("imovel_owner_has_active_sub", { _owner: match.id });
 
     let properties: any[] = [];
     if (hasSub) {
       const { data } = await supabase
         .from("imoveis")
         .select("*")
-        .in("user_id", Array.from(ids))
+        .in("corretor_id", Array.from(ids))
         .eq("ativo_site", true)
         .eq("publicar_xml", true)
-        .neq("status", "Vendido");
+        .neq("status_imovel", "Vendido");
       properties = data || [];
+      properties = await enrichPropertiesWithLinkedAddresses(supabase, properties);
     }
 
     const contact = {
       name: match.full_name || "",
-      email: match.email || "",
+      email: "",
       phone: normalizePhone(match.phone || ""),
     };
 

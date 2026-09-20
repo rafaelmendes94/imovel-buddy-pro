@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Sparkles, Loader2, Wand2, ChevronDown, ChevronUp } from 'lucide-react';
 import { normalizeUnidade, normalizeBox, extractUnitBoxFromText } from '@/lib/aiImovelFields';
 import { findEmpreendimentoByName, empreendimentoAddressFields } from '@/lib/empreendimentos';
+import { normalizePropertyLocationByType, preferredEmpreendimentoTiposForPropertyType } from '@/lib/propertyTypeRules';
 
 const NUMBER_FIELDS = ['preco', 'precoParcelado', 'comissao', 'bonus', 'area', 'areaPrivativa'];
 const INT_FIELDS = ['quartos', 'suites', 'banheiros', 'lavabo', 'vagas', 'elevadores'];
@@ -94,7 +95,8 @@ export function AIImovelImport({ onApply, currentArrays = {} }: AIImovelImportPr
       const nomeEmp = String(fields.empreendimento ?? updates.empreendimento ?? '').trim();
       if (nomeEmp) {
         try {
-          const rec = await findEmpreendimentoByName(nomeEmp);
+          const preferredTipos = preferredEmpreendimentoTiposForPropertyType(updates.tipo ?? fields.tipo);
+          const rec = await findEmpreendimentoByName(nomeEmp, preferredTipos);
           if (rec) {
             const addr = empreendimentoAddressFields(rec);
             for (const [k, v] of Object.entries(addr)) {
@@ -108,6 +110,14 @@ export function AIImovelImport({ onApply, currentArrays = {} }: AIImovelImportPr
           console.warn('lookup empreendimento falhou', err);
         }
       }
+
+      const normalizedLocation = normalizePropertyLocationByType(updates);
+      updates.tipo = normalizedLocation.tipo;
+      updates.unidade = normalizedLocation.unidade;
+      updates.numero = normalizedLocation.numero;
+      updates.quadra = normalizedLocation.quadra;
+      updates.lote = normalizedLocation.lote;
+      updates.complemento = normalizedLocation.complemento;
 
       if (count === 0) {
         toast({ title: 'Nada identificado', description: 'A IA não encontrou informações reconhecíveis no texto.' });

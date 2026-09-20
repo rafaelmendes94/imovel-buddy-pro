@@ -84,9 +84,24 @@ type FieldKey =
   | "cidade"
   | "estado"
   | "cep"
-  | "descricao";
+  | "descricao"
+  | "empreendimento"
+  | "proprietario"
+  | "telefone"
+  | "email"
+  | "latitude"
+  | "longitude"
+  | "video"
+  | "url";
 
 const STORAGE_KEY = "mv-connect:testador-xml:v2";
+const LEGACY_STORAGE_KEYS = [
+  STORAGE_KEY,
+  "mv-connect:testador-xml:v1",
+  "mv-connect:testador-xml",
+  "mvbrokerconnect:testador-xml",
+  "testador-xml",
+];
 
 const EMPTY_STATE: XmlState = { batches: [], properties: [] };
 
@@ -109,6 +124,14 @@ const FIELD_DEFS: Array<{ key: FieldKey; label: string; tags: string[] }> = [
   { key: "estado", label: "UF", tags: ["State", "UF", "Estado"] },
   { key: "cep", label: "CEP", tags: ["PostalCode", "CEP", "Cep"] },
   { key: "descricao", label: "Descrição", tags: ["Description", "Descricao", "Descrição", "Observacoes", "Observações"] },
+  { key: "empreendimento", label: "Empreendimento", tags: ["DevelopmentName", "Empreendimento", "CondominiumName", "CondominioNome", "BuildingName", "NomeEmpreendimento"] },
+  { key: "proprietario", label: "Proprietário", tags: ["Owner", "Proprietario", "Proprietário", "OwnerName", "NomeProprietario"] },
+  { key: "telefone", label: "Telefone", tags: ["Phone", "Telefone", "Celular", "ContactPhone", "OwnerPhone"] },
+  { key: "email", label: "E-mail", tags: ["Email", "E-mail", "ContactEmail", "OwnerEmail"] },
+  { key: "latitude", label: "Latitude", tags: ["Latitude", "Lat"] },
+  { key: "longitude", label: "Longitude", tags: ["Longitude", "Lng", "Lon"] },
+  { key: "video", label: "Vídeo", tags: ["Video", "VideoUrl", "VideoURL", "VirtualTour", "TourVirtual"] },
+  { key: "url", label: "URL", tags: ["URL", "Url", "Link", "ListingUrl", "DetailsUrl"] },
 ];
 
 const REQUIRED_FIELDS: FieldKey[] = ["codigo", "titulo", "tipo", "preco", "cidade", "bairro", "endereco"];
@@ -237,7 +260,7 @@ function findRawFields(root: Element) {
       };
     })
     .filter(Boolean)
-    .slice(0, 80) as XmlField[];
+    .slice(0, 500) as XmlField[];
 }
 
 function extractUrlsFromText(value: string) {
@@ -340,13 +363,81 @@ function parseXml(xmlText: string, fileName: string): XmlState {
   };
 }
 
+function emptyField(label = ""): XmlField {
+  return { label, value: "" };
+}
+
+function normalizeStoredProperty(property: Partial<ParsedProperty>, fallbackBatchId: string, index: number): ParsedProperty {
+  const rawFields = Array.isArray(property.rawFields) ? property.rawFields : [];
+  const existingFields = (property.fields || {}) as Partial<Record<FieldKey, XmlField>>;
+  const fields = FIELD_DEFS.reduce((acc, def) => {
+    const existing = existingFields[def.key];
+    acc[def.key] = existing && typeof existing.value === "string" ? { ...existing, label: def.label } : emptyField(def.label);
+    return acc;
+  }, {} as Record<FieldKey, XmlField>);
+  const missing = REQUIRED_FIELDS.filter((key) => !fields[key]?.value);
+  const batchId = property.batchId || fallbackBatchId;
+  const code = fields.codigo.value || `${property.fileName || "xml"}-${index + 1}`;
+  return {
+    id: property.id || `${batchId}-${index}-${code}`.replace(/\s+/g, "-"),
+    batchId,
+    fileName: property.fileName || "xml-importado.xml",
+    importedAt: property.importedAt || new Date().toISOString(),
+    index: property.index || index + 1,
+    sourceNode: property.sourceNode || "Listing",
+    fields,
+    photos: Array.isArray(property.photos) ? property.photos : [],
+    features: Array.isArray(property.features) ? property.features : [],
+    rawFields,
+    missing,
+  };
+}
+
+function normalizeStoredState(parsed: Partial<XmlState>): XmlState {
+  if (!Array.isArray(parsed.properties)) return EMPTY_STATE;
+  const firstBatchId = Array.isArray(parsed.batches) && parsed.batches[0]?.id ? parsed.batches[0].id : crypto.randomUUID();
+  const properties = parsed.properties.map((property, index) => normalizeStoredProperty(property, firstBatchId, index));
+  const activeBatches = new Map<string, ParsedBatch>();
+  if (Array.isArray(parsed.batches)) {
+    for (const batch of parsed.batches) {
+      if (!batch?.id) continue;
+      activeBatches.set(batch.id, {
+        id: batch.id,
+        fileName: batch.fileName || "xml-importado.xml",
+        importedAt: batch.importedAt || new Date().toISOString(),
+        total: properties.filter((property) => property.batchId === batch.id).length || batch.total || 0,
+        rootNode: batch.rootNode || "XML",
+      });
+    }
+  }
+  for (const property of properties) {
+    if (activeBatches.has(property.batchId)) continue;
+    activeBatches.set(property.batchId, {
+      id: property.batchId,
+      fileName: property.fileName,
+      importedAt: property.importedAt,
+      total: properties.filter((item) => item.batchId === property.batchId).length,
+      rootNode: "XML",
+    });
+  }
+  return {
+    batches: Array.from(activeBatches.values()).filter((batch) => batch.total > 0),
+    properties,
+  };
+}
+
 function getStoredState() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return EMPTY_STATE;
-    const parsed = JSON.parse(raw) as XmlState;
-    if (!Array.isArray(parsed.properties) || !Array.isArray(parsed.batches)) return EMPTY_STATE;
-    return parsed;
+    for (const key of LEGACY_STORAGE_KEYS) {
+      const raw = localStorage.getItem(key);
+      if (!raw) continue;
+      const state = normalizeStoredState(JSON.parse(raw) as Partial<XmlState>);
+      if (state.properties.length > 0) {
+        if (key !== STORAGE_KEY) localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        return state;
+      }
+    }
+    return EMPTY_STATE;
   } catch {
     return EMPTY_STATE;
   }
@@ -757,6 +848,7 @@ function XmlPropertyPreview({
   const detailRows = [
     ["Código do imóvel", property.fields.codigo.value],
     ["Tipo do imóvel", property.fields.tipo.value],
+    ["Empreendimento", property.fields.empreendimento.value],
     ["Preço", currency(property.fields.preco.value) || property.fields.preco.value],
     ["Condomínio", currency(property.fields.condominio.value) || property.fields.condominio.value],
     ["Área privativa", areaLabel(property.fields.area_privativa.value)],
@@ -768,6 +860,13 @@ function XmlPropertyPreview({
     ["Cidade", [property.fields.cidade.value, property.fields.estado.value].filter(Boolean).join(" - ")],
     ["Bairro", property.fields.bairro.value],
     ["CEP", property.fields.cep.value],
+    ["Proprietário", property.fields.proprietario.value],
+    ["Telefone", property.fields.telefone.value],
+    ["E-mail", property.fields.email.value],
+    ["Latitude", property.fields.latitude.value],
+    ["Longitude", property.fields.longitude.value],
+    ["Vídeo", property.fields.video.value],
+    ["URL", property.fields.url.value],
   ].filter(([, value]) => value);
 
   return (
@@ -937,6 +1036,35 @@ function XmlPropertyPreview({
           </div>
         </CardContent>
       </Card>
+
+      {property.rawFields.length > 0 && (
+        <Card className="rounded-2xl">
+          <CardContent className="p-4 sm:p-6">
+            <h3 className="text-base font-bold text-foreground">Todos os dados lidos do XML</h3>
+            <p className="text-xs text-muted-foreground">Lista completa dos campos encontrados no imóvel, mantendo os dados como vieram do arquivo.</p>
+            <div className="mt-4 max-h-[520px] overflow-auto rounded-lg border">
+              <table className="w-full min-w-[720px] text-left text-xs">
+                <thead className="sticky top-0 bg-muted text-muted-foreground">
+                  <tr>
+                    <th className="px-3 py-2 font-semibold">Tag</th>
+                    <th className="px-3 py-2 font-semibold">Caminho</th>
+                    <th className="px-3 py-2 font-semibold">Valor</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {property.rawFields.map((field, index) => (
+                    <tr key={`${field.source?.path || field.label}-${index}`} className="bg-background align-top">
+                      <td className="whitespace-nowrap px-3 py-2 font-medium text-foreground">{field.label}</td>
+                      <td className="px-3 py-2 text-muted-foreground">{field.source?.path || "-"}</td>
+                      <td className="max-w-xl break-words px-3 py-2 text-foreground">{field.value || "-"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
