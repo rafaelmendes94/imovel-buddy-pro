@@ -136,6 +136,18 @@ const App = () => (
             <Route path="/painel/assinatura" element={<AuthGuard requiredRoles={["broker"]} allowBlocked><BrokerAssinatura /></AuthGuard>} />
             <Route path="/painel/feeds-xml" element={<AuthGuard requiredRoles={["broker"]}><BrokerXmlFeeds /></AuthGuard>} />
             <Route path="/painel/cadastro-rapido" element={<AuthGuard requiredRoles={["broker"]}><BrokerCadastroRapido /></AuthGuard>} />
+            <Route path="/painel/imoveis" element={protectedRoute(<Properties />, { adminModule: "imoveis", brokerModule: "imoveis" })} />
+            <Route path="/painel/mapas" element={protectedRoute(<Maps />, { adminModule: "imoveis", brokerModule: "imoveis" })} />
+            <Route path="/painel/edificios" element={protectedRoute(<Buildings />, { adminModule: "edificios", brokerModule: "edificios" })} />
+            <Route path="/painel/edificios/:id" element={protectedRoute(<BuildingDetail />, { adminModule: "edificios", brokerModule: "edificios" })} />
+            <Route path="/painel/condominios" element={protectedRoute(<Condominiums />, { adminModule: "condominios", brokerModule: "condominios" })} />
+            <Route path="/painel/condominios/:id" element={protectedRoute(<CondominiumDetail />, { adminModule: "condominios", brokerModule: "condominios" })} />
+            <Route path="/painel/mapas-condominio" element={protectedRoute(<MapasCondominio />, { adminModule: "condominios", brokerModule: "condominios" })} />
+            <Route path="/painel/fotos-cidade" element={protectedRoute(<CityPhotos />, { adminModule: "fotos_cidade", brokerModule: "fotos" })} />
+            <Route path="/painel/site" element={protectedRoute(<Site />, { adminModule: "site_editor", brokerModule: "site" })} />
+            <Route path="/painel/corretores" element={protectedRoute(<CadastroCorretores />, { adminModule: "corretores", brokerModule: "corretores" })} />
+            <Route path="/painel/brick" element={protectedRoute(<Brick />, { adminModule: "brick", brokerModule: "brick" })} />
+            <Route path="/painel/financeiro" element={protectedRoute(<Financeiro />, { adminModule: "financeiro", brokerModule: "financeiro" })} />
             <Route path="/painel-parceiro" element={<AuthGuard requiredRoles={["partner"]}><PainelParceiro /></AuthGuard>} />
 
             {/* Legacy routes - now require auth */}

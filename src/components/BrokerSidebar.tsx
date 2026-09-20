@@ -20,7 +20,7 @@ const allModules: Record<string, { icon: React.ComponentType<{ className?: strin
   contratos: { icon: FileSignature, label: "Contratos", path: "/painel/contratos" },
   videomaker: { icon: Clapperboard, label: "Material Extra", path: "/painel/videomaker" },
   corretores: { icon: Users, label: "Corretores", path: "/painel/corretores" },
-  brick: { icon: ShoppingBag, label: "Brick", path: "/brick" },
+  brick: { icon: ShoppingBag, label: "Brick", path: "/painel/brick" },
 };
 
 export function BrokerSidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
