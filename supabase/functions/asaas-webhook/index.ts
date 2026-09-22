@@ -105,8 +105,8 @@ serve(async (req) => {
         const apiKey = settingsMap["asaas_api_key"];
         const environment = settingsMap["asaas_environment"] || "sandbox";
         const baseUrl = environment === "production"
-          ? "https://api.asaas.com/api"
-          : "https://sandbox.asaas.com/api";
+          ? "https://api.asaas.com"
+          : "https://sandbox.asaas.com";
 
         const subRes = await fetch(`${baseUrl}/v3/subscriptions/${payment.subscription}`, {
           headers: { "access_token": apiKey },

@@ -57,8 +57,8 @@ serve(async (req) => {
     if (!apiKey) return json({ error: "Informe a API Key do Asaas." }, 400);
 
     const baseUrl = environment === "production"
-      ? "https://api.asaas.com/api"
-      : "https://sandbox.asaas.com/api";
+      ? "https://api.asaas.com"
+      : "https://sandbox.asaas.com";
 
     const testRes = await fetch(`${baseUrl}/v3/customers?limit=1&offset=0`, {
       method: "GET",

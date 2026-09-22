@@ -57,8 +57,8 @@ serve(async (req) => {
     }
 
     const baseUrl = environment === "production"
-      ? "https://api.asaas.com/api"
-      : "https://sandbox.asaas.com/api";
+      ? "https://api.asaas.com"
+      : "https://sandbox.asaas.com";
 
     // Get plan details
     const { data: plan, error: planError } = await supabase
