@@ -524,11 +524,25 @@ export default function BrokerSite() {
   }
 
   const isOwner = !!currentUserId && ((!!brokerId && currentUserId === brokerId) || isSuperAdmin);
+  const canManageBrokerProperties = isSuperAdmin;
   const manageOwnerId = brokerId || slug || currentUserId || "";
 
-  const openNewProperty = () => { setEditing(null); setFormOpen(true); };
+  const denyPropertyManagement = () => toast.error("Corretores não podem cadastrar ou editar imóveis.");
+
+  const openNewProperty = () => {
+    if (!canManageBrokerProperties) {
+      denyPropertyManagement();
+      return;
+    }
+    setEditing(null);
+    setFormOpen(true);
+  };
 
   const openEditProperty = async (p: DBProperty) => {
+    if (!canManageBrokerProperties) {
+      denyPropertyManagement();
+      return;
+    }
     const { data, error } = await supabase.from("imoveis").select("*").eq("id", p.id).maybeSingle();
     if (error || !data) {
       toast.error("Não foi possível carregar os dados do imóvel." + (error ? ` (${error.message})` : ""));
@@ -540,6 +554,11 @@ export default function BrokerSite() {
 
   const confirmDelete = async () => {
     if (!deleteTarget) return;
+    if (!canManageBrokerProperties) {
+      denyPropertyManagement();
+      setDeleteTarget(null);
+      return;
+    }
     setDeleting(true);
     const { error } = await supabase.from("imoveis").delete().eq("id", deleteTarget.id);
     setDeleting(false);
@@ -560,6 +579,10 @@ export default function BrokerSite() {
   };
 
   const handleReactivate = async (property: DBProperty) => {
+    if (!canManageBrokerProperties) {
+      denyPropertyManagement();
+      return;
+    }
     setReactivatingId(property.id);
     const res = await reactivateProperty(property.id);
     setReactivatingId(null);
@@ -772,7 +795,7 @@ export default function BrokerSite() {
                   >
                     <FileDown className="h-4 w-4" /> Gerar PDF dos imóveis
                   </button>
-                  {isOwner && (
+                  {canManageBrokerProperties && (
                     <button
                       onClick={openNewProperty}
                       className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-indigo-600 px-5 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-105"
@@ -908,7 +931,7 @@ export default function BrokerSite() {
           <div className="space-y-2">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">Portfólio atual</p>
             <h2 className="text-3xl font-black text-foreground">Imóveis em carteira</h2>
-            {isOwner && (
+            {canManageBrokerProperties && (
               <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-dashed border-accent/50 bg-accent/5 p-4">
                 <div>
                   <p className="text-sm font-bold text-foreground">Gerenciar imóveis</p>
@@ -940,7 +963,7 @@ export default function BrokerSite() {
                   </div>
                 </div>
                 <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                  {items.map((property) => <PropertyCard key={property.id} p={property} brokerName={brokerName} whatsapp={whatsapp} onOpen={(selected) => navigate(`/imovel/${selected.id}`)} isOwner={isOwner} onUpdated={handlePropertyUpdated} onEdit={openEditProperty} onDelete={setDeleteTarget} />)}
+                  {items.map((property) => <PropertyCard key={property.id} p={property} brokerName={brokerName} whatsapp={whatsapp} onOpen={(selected) => navigate(`/imovel/${selected.id}`)} isOwner={canManageBrokerProperties} onUpdated={handlePropertyUpdated} onEdit={openEditProperty} onDelete={setDeleteTarget} />)}
                 </div>
               </section>
             ))
@@ -980,7 +1003,7 @@ export default function BrokerSite() {
                         {property.quartos > 0 && <span className="flex items-center gap-1"><BedDouble className="h-4 w-4" />{property.quartos}</span>}
                         {property.vagas > 0 && <span className="flex items-center gap-1"><Car className="h-4 w-4" />{property.vagas}</span>}
                       </div>
-                      {isOwner && (
+                      {canManageBrokerProperties && (
                         <button
                           type="button"
                           disabled={reactivatingId === property.id}
@@ -1024,7 +1047,7 @@ export default function BrokerSite() {
           </DialogContent>
         </Dialog>
 
-        {isOwner && (
+        {canManageBrokerProperties && (
           <button
             type="button"
             onClick={openNewProperty}
@@ -1036,7 +1059,7 @@ export default function BrokerSite() {
           </button>
         )}
 
-        {isOwner && (
+        {canManageBrokerProperties && (
           <BrokerImovelDialog
             open={formOpen}
             onOpenChange={(v) => { setFormOpen(v); if (!v) setEditing(null); }}

@@ -336,7 +336,7 @@ function computeChanges(original: FormData, current: FormData): { field: string;
 
 export function ImovelForm({ editId }: { editId?: string }) {
   const { toast } = useToast();
-  const { user, profile, isSuperAdmin } = useAuth();
+  const { user, profile, isSuperAdmin, isAdminStaff, hasModuleAccess } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(!!editId);
@@ -442,6 +442,9 @@ export function ImovelForm({ editId }: { editId?: string }) {
   const [logsLoading, setLogsLoading] = useState(false);
 
   const isEdit = !!editId;
+  const canCreateImoveis = isSuperAdmin || (isAdminStaff && hasModuleAccess("imoveis", "create"));
+  const canEditImoveis = isSuperAdmin || (isAdminStaff && hasModuleAccess("imoveis", "edit"));
+  const canSubmitImovel = isEdit ? canEditImoveis : canCreateImoveis;
   const set = (field: keyof FormData, value: any) => setForm(prev => ({ ...prev, [field]: value }));
 
   const handleVideoUpload = async (file: File | undefined) => {
@@ -494,6 +497,16 @@ export function ImovelForm({ editId }: { editId?: string }) {
     }));
   }, [editId, isSuperAdmin, profile]);
 
+  useEffect(() => {
+    if (!user || canSubmitImovel) return;
+    toast({
+      title: "Acesso negado",
+      description: "Seu perfil não pode criar ou editar imóveis.",
+      variant: "destructive",
+    });
+    navigate('/imoveis', { replace: true });
+  }, [user, canSubmitImovel, navigate, toast]);
+
   // Super admin: load brokers list
   useEffect(() => {
     if (!isSuperAdmin) return;
@@ -528,9 +541,9 @@ export function ImovelForm({ editId }: { editId?: string }) {
         navigate('/imoveis');
         return;
       }
-      if (!isSuperAdmin && user && data.user_id !== user.id) {
-        toast({ title: "Acesso negado", description: "Você só pode editar imóveis cadastrados em seu nome.", variant: "destructive" });
-        navigate('/imoveis');
+      if (!canEditImoveis) {
+        toast({ title: "Acesso negado", description: "Seu perfil não pode editar imóveis.", variant: "destructive" });
+        navigate('/imoveis', { replace: true });
         return;
       }
       const { data: ownerProfile } = data.user_id
@@ -636,7 +649,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
       setLoadingData(false);
     };
     load();
-  }, [editId]);
+  }, [editId, canEditImoveis, navigate, toast]);
 
   // Load logs for edit mode
   useEffect(() => {
@@ -749,6 +762,15 @@ export function ImovelForm({ editId }: { editId?: string }) {
     e.preventDefault();
     if (!user) {
       toast({ title: "Erro", description: "Você precisa estar logado.", variant: "destructive" });
+      return;
+    }
+    if (!canSubmitImovel) {
+      toast({
+        title: "Acesso negado",
+        description: "Seu perfil não pode criar ou editar imóveis.",
+        variant: "destructive",
+      });
+      navigate('/imoveis', { replace: true });
       return;
     }
     if (!form.titulo.trim()) {

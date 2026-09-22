@@ -24,9 +24,10 @@ interface QuickImovelFormProps {
 }
 
 export function QuickImovelForm({ onSaved, onCancel, defaultCidade = "", cancelLabel = "Cancelar" }: QuickImovelFormProps) {
-  const { user, profile } = useAuth();
+  const { user, profile, isSuperAdmin, isAdminStaff, hasModuleAccess } = useAuth();
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
+  const canCreateImoveis = isSuperAdmin || (isAdminStaff && hasModuleAccess("imoveis", "create"));
 
   const [titulo, setTitulo] = useState("");
   const [tipo, setTipo] = useState("Apartamento");
@@ -96,6 +97,10 @@ export function QuickImovelForm({ onSaved, onCancel, defaultCidade = "", cancelL
       toast({ title: "Faça login para cadastrar", variant: "destructive" });
       return;
     }
+    if (!canCreateImoveis) {
+      toast({ title: "Acesso negado", description: "Seu perfil não pode cadastrar imóveis.", variant: "destructive" });
+      return;
+    }
     if (!titulo.trim() || !cidade.trim()) {
       toast({ title: "Preencha título e cidade", variant: "destructive" });
       return;
@@ -139,6 +144,20 @@ export function QuickImovelForm({ onSaved, onCancel, defaultCidade = "", cancelL
     reset();
     onSaved?.();
   };
+
+  if (!canCreateImoveis) {
+    return (
+      <div className="elevated-card rounded-xl p-5 space-y-2">
+        <p className="font-semibold text-foreground">Cadastro bloqueado</p>
+        <p className="text-sm text-muted-foreground">Seu perfil não pode cadastrar ou editar imóveis.</p>
+        {onCancel && (
+          <Button type="button" variant="outline" onClick={onCancel}>
+            {cancelLabel}
+          </Button>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

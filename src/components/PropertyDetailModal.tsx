@@ -94,12 +94,11 @@ function StatusSelectWithConfirm({ currentStatus, onConfirm }: { currentStatus: 
 }
 
 export function PropertyDetailModal({ property, onClose, allProperties, brokerInfo, onSelectSimilar, onUpdateProperty, onFilterByTitle, onFilterByCondition }: PropertyDetailModalProps) {
-  const { user, isSuperAdmin, isAdminStaff, hasModuleAccess } = useAuth();
-  // Edição só liberada no painel do corretor (/imoveis) e somente para dono ou admin.
+  const { isSuperAdmin, isAdminStaff, hasModuleAccess } = useAuth();
+  // Edição só liberada no painel /imoveis para super admin ou equipe com permissão.
   // No site público (/site, /corretor/:slug, /construtora/:slug, /, etc.) edição fica bloqueada.
   const isEditableRoute = typeof window !== "undefined" && window.location.pathname.startsWith("/imoveis");
-  const isOwner = !!property && !!user?.id && property.userId === user.id;
-  const canEdit = isEditableRoute && !!property && (isSuperAdmin || (isAdminStaff && hasModuleAccess("imoveis", "edit")) || isOwner);
+  const canEdit = isEditableRoute && !!property && (isSuperAdmin || (isAdminStaff && hasModuleAccess("imoveis", "edit")));
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [showVideo, setShowVideo] = useState(false);
@@ -259,6 +258,10 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
 
   // Wrapper to track changes
   const updateProperty = (updated: Property) => {
+    if (!canEdit) {
+      toast.error("Sem permissão para editar imóveis.");
+      return;
+    }
     if (onUpdateProperty) {
       onUpdateProperty(updated);
       setHasChanges(true);
@@ -390,6 +393,13 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
 
   // -- Editable field component --
   const EditableField = ({ field, value, label, type = "text", className = "" }: { field: string; value: string | number; label?: string; type?: string; className?: string }) => {
+    if (!canEdit) {
+      return (
+        <span className={className}>
+          {type === "number" && field === "price" ? formatCurrency(Number(value)) : value}
+        </span>
+      );
+    }
     if (editingField === field) {
       return (
         <div className="flex items-center gap-1.5">
@@ -443,15 +453,19 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
                 <EditableField field="code" value={property.code} label="código" />
               </span>
             )}
-            <StatusSelectWithConfirm
-              currentStatus={property.status}
-              onConfirm={(newStatus) => {
-                if (onUpdateProperty) {
+            {canEdit ? (
+              <StatusSelectWithConfirm
+                currentStatus={property.status}
+                onConfirm={(newStatus) => {
                   updateProperty({ ...property, status: newStatus as Property["status"] });
                   toast.success("Status atualizado!");
-                }
-              }}
-            />
+                }}
+              />
+            ) : (
+              <span className={cn("px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide flex-shrink-0", statusColors[property.status] || "bg-muted/400 text-white")}>
+                {property.status}
+              </span>
+            )}
           </div>
           {/* Action buttons in header */}
           <TooltipProvider delayDuration={200}>
@@ -780,7 +794,7 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
             );
 
             if (blockId === "identificacao") {
-              const isEditing = editingBlock === "identificacao";
+              const isEditing = canEdit && editingBlock === "identificacao";
               const isEdificio = property.type === "Apartamento" || property.type === "Comercial";
 
               const idFields: FieldConfig[] = [
@@ -824,9 +838,11 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
                       <span className="cursor-grab active:cursor-grabbing mr-1 text-muted-foreground/50 hover:text-muted-foreground">⠿</span>
                       <span className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center"><Hash className="w-3.5 h-3.5 text-primary" /></span> <span className="text-foreground">Identificação</span>
                     </p>
-                    <button onClick={() => setEditingBlock(isEditing ? null : "identificacao")} className={cn("p-1.5 rounded-lg transition-colors", isEditing ? "bg-primary/20 text-primary" : "hover:bg-muted text-muted-foreground")}>
-                      <Pencil className="w-3.5 h-3.5" />
-                    </button>
+                    {canEdit && (
+                      <button onClick={() => setEditingBlock(isEditing ? null : "identificacao")} className={cn("p-1.5 rounded-lg transition-colors", isEditing ? "bg-primary/20 text-primary" : "hover:bg-muted text-muted-foreground")}>
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
                   <DraggableFieldGrid storageKey="fields-identificacao" fields={idFields} columns={4} editing={isEditing} />
                 </div>
@@ -834,7 +850,7 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
             }
 
             if (blockId === "valor") {
-              const isEditingValor = editingBlock === "valor";
+              const isEditingValor = canEdit && editingBlock === "valor";
               const valorFields: FieldConfig[] = [
                 { id: "price", label: "Valor do Imóvel", render: () => isEditingValor ? <span className="flex items-center gap-1"><span className="text-sm font-bold text-muted-foreground">R$</span><EditableField field="price" value={property.price} label="valor" type="number" /></span> : <span className="text-sm font-bold text-foreground">{formatCurrency(property.price)}</span> },
                 { id: "priceInstallment", label: "Valor Promocional", render: () => isEditingValor ? <span className="flex items-center gap-1"><span className="text-sm font-bold text-muted-foreground">R$</span><EditableField field="priceInstallment" value={property.priceInstallment || 0} label="valor promocional" type="number" /></span> : <span className="text-sm font-medium text-foreground">{property.priceInstallment ? formatCurrency(property.priceInstallment) : "—"}</span> },
@@ -851,9 +867,11 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
                       <span className="cursor-grab active:cursor-grabbing mr-1 text-muted-foreground/50 hover:text-muted-foreground">⠿</span>
                       <span className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center"><DollarSign className="w-3.5 h-3.5 text-emerald-600" /></span> <span className="text-foreground">Valor e Condições</span>
                     </p>
-                    <button onClick={() => setEditingBlock(isEditingValor ? null : "valor")} className={cn("p-1.5 rounded-lg transition-colors", isEditingValor ? "bg-primary/20 text-primary" : "hover:bg-muted text-muted-foreground")}>
-                      <Pencil className="w-3.5 h-3.5" />
-                    </button>
+                    {canEdit && (
+                      <button onClick={() => setEditingBlock(isEditingValor ? null : "valor")} className={cn("p-1.5 rounded-lg transition-colors", isEditingValor ? "bg-primary/20 text-primary" : "hover:bg-muted text-muted-foreground")}>
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
                   <DraggableFieldGrid storageKey="fields-valor" fields={valorFields} editing={isEditingValor} />
 
@@ -937,8 +955,9 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
             }
 
             if (blockId === "proprietario") {
+              const isEditingProprietario = canEdit && editingBlock === "proprietario";
               const propFields: FieldConfig[] = [
-                { id: "owner", label: "Proprietário", render: () => editingBlock === "proprietario" ? (
+                { id: "owner", label: "Proprietário", render: () => isEditingProprietario ? (
                   <div className="w-full space-y-1.5">
                     <select value={property.owner || ""} onChange={(e) => { if (!onUpdateProperty) return; const selectedOwner = e.target.value; if (!selectedOwner) { updateProperty({ ...property, owner: undefined, ownerPhone: undefined, ownerType: undefined }); return; } const ref = allProperties.find(p => p.owner === selectedOwner && p.id !== property.id); if (ref) { updateProperty({ ...property, owner: selectedOwner, ownerPhone: ref.ownerPhone || property.ownerPhone, ownerType: ref.ownerType || property.ownerType }); toast.success(`Dados do proprietário "${selectedOwner}" aplicados!`); } else { updateProperty({ ...property, owner: selectedOwner }); } }} className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
                       <option value="">Selecione</option>
@@ -947,8 +966,8 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
                     <input type="text" placeholder="Ou digite um novo..." className="w-full px-3 py-1.5 rounded-lg border border-input text-xs bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring" onKeyDown={(e) => { if (e.key === "Enter" && onUpdateProperty) { const val = (e.target as HTMLInputElement).value.trim(); if (val) { updateProperty({ ...property, owner: val }); toast.success(`Proprietário "${val}" definido!`); (e.target as HTMLInputElement).value = ""; } } }} />
                   </div>
                 ) : <span className="text-sm font-medium text-foreground">{property.owner || "—"}</span> },
-                { id: "ownerPhone", label: "Telefone", render: () => editingBlock === "proprietario" ? <EditableField field="ownerPhone" value={property.ownerPhone || ""} label="telefone" /> : <span className="text-sm font-medium text-foreground">{property.ownerPhone || "—"}</span> },
-                { id: "ownerType", label: "Tipo Proprietário", render: () => editingBlock === "proprietario" ? (
+                { id: "ownerPhone", label: "Telefone", render: () => isEditingProprietario ? <EditableField field="ownerPhone" value={property.ownerPhone || ""} label="telefone" /> : <span className="text-sm font-medium text-foreground">{property.ownerPhone || "—"}</span> },
+                { id: "ownerType", label: "Tipo Proprietário", render: () => isEditingProprietario ? (
                   <select value={property.ownerType || ""} onChange={(e) => { if (onUpdateProperty) { updateProperty({ ...property, ownerType: (e.target.value || undefined) as Property["ownerType"] }); toast.success("Tipo atualizado!"); } }} className="w-full px-3 py-2 rounded-lg border border-input text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
                     <option value="">Selecione</option>
                     <option value="Particular">Particular</option>
@@ -958,9 +977,9 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
                     <option value="Exclusividade">Exclusividade</option>
                   </select>
                 ) : <span className="text-sm font-medium text-foreground">{property.ownerType || "—"}</span> },
-                { id: "keysLocation", label: "Chaves do Imóvel", render: () => editingBlock === "proprietario" ? <EditableField field="keysLocation" value={property.keysLocation || ""} label="chaves" /> : <span className="text-sm font-medium text-foreground">{property.keysLocation || "—"}</span> },
-                { id: "exclusivity", label: "Exclusividade", render: () => editingBlock === "proprietario" ? <EditableField field="exclusivityTerm" value={property.exclusivityTerm || ""} label="exclusividade" /> : <span className="text-sm font-medium text-foreground">{property.exclusivityTerm || "—"}</span> },
-                { id: "broker", label: "Corretor", render: () => editingBlock === "proprietario" ? <EditableField field="broker" value={property.broker} label="corretor" /> : <span className="text-sm font-medium text-foreground">{property.broker}</span> },
+                { id: "keysLocation", label: "Chaves do Imóvel", render: () => isEditingProprietario ? <EditableField field="keysLocation" value={property.keysLocation || ""} label="chaves" /> : <span className="text-sm font-medium text-foreground">{property.keysLocation || "—"}</span> },
+                { id: "exclusivity", label: "Exclusividade", render: () => isEditingProprietario ? <EditableField field="exclusivityTerm" value={property.exclusivityTerm || ""} label="exclusividade" /> : <span className="text-sm font-medium text-foreground">{property.exclusivityTerm || "—"}</span> },
+                { id: "broker", label: "Corretor", render: () => isEditingProprietario ? <EditableField field="broker" value={property.broker} label="corretor" /> : <span className="text-sm font-medium text-foreground">{property.broker}</span> },
               ];
 
               return blockWrapper("proprietario",
@@ -980,18 +999,20 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
                           <FileText className="w-3.5 h-3.5" /> Exclusividade
                         </button>
                       )}
-                      <button onClick={() => setEditingBlock(editingBlock === "proprietario" ? null : "proprietario")} className={cn("p-1.5 rounded-lg transition-colors", editingBlock === "proprietario" ? "bg-primary/20 text-primary" : "hover:bg-muted text-muted-foreground")}>
-                        <Pencil className="w-3.5 h-3.5" />
-                      </button>
+                      {canEdit && (
+                        <button onClick={() => setEditingBlock(isEditingProprietario ? null : "proprietario")} className={cn("p-1.5 rounded-lg transition-colors", isEditingProprietario ? "bg-primary/20 text-primary" : "hover:bg-muted text-muted-foreground")}>
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
+                      )}
                     </div>
                   </div>
-                  <DraggableFieldGrid storageKey="fields-proprietario" fields={propFields} editing={editingBlock === "proprietario"} />
+                  <DraggableFieldGrid storageKey="fields-proprietario" fields={propFields} editing={isEditingProprietario} />
                 </div>
               );
             }
 
             if (blockId === "caracteristicas") {
-              const isEditingCaract = editingBlock === "caracteristicas";
+              const isEditingCaract = canEdit && editingBlock === "caracteristicas";
               const allCaracteristicas = [
                 { group: "Terreno / Lote", items: ["Beira Lago", "Beira Rio", "Beira Mar", "Terreno Seco", "Terreno Alagadiço", "Murado", "Cercado", "Esquina", "Frente p/ Rua", "Plano", "Aclive", "Declive", "Aterrado"] },
                 { group: "Documentação", items: ["Escriturado", "Financiável", "Registro de Imóveis", "IPTU em Dia", "Matrícula Atualizada"] },
@@ -1063,9 +1084,11 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
                       <span className="cursor-grab active:cursor-grabbing mr-1 text-muted-foreground/50 hover:text-muted-foreground">⠿</span>
                       <span className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center"><Building2 className="w-3.5 h-3.5 text-primary" /></span> <span className="text-foreground">Características do Imóvel</span>
                     </p>
-                    <button onClick={() => setEditingBlock(isEditingCaract ? null : "caracteristicas")} className={cn("p-1.5 rounded-lg transition-colors", isEditingCaract ? "bg-primary/20 text-primary" : "hover:bg-muted text-muted-foreground")}>
-                      <Pencil className="w-3.5 h-3.5" />
-                    </button>
+                    {canEdit && (
+                      <button onClick={() => setEditingBlock(isEditingCaract ? null : "caracteristicas")} className={cn("p-1.5 rounded-lg transition-colors", isEditingCaract ? "bg-primary/20 text-primary" : "hover:bg-muted text-muted-foreground")}>
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
                   <DraggableFieldGrid storageKey="fields-caracteristicas" fields={caractFields} columns={4} editing={isEditingCaract} />
 
@@ -1137,15 +1160,17 @@ export function PropertyDetailModal({ property, onClose, allProperties, brokerIn
                 <p className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
                   <span className="w-7 h-7 rounded-lg bg-amber-500/10 flex items-center justify-center"><FileText className="w-3.5 h-3.5 text-amber-600" /></span> <span className="text-foreground">Descrição</span>
                 </p>
-                <button
-                  onClick={() => setEditingField(editingField === "description" ? null : "description")}
-                  className={cn("p-1.5 rounded-lg transition-colors", editingField === "description" ? "bg-primary/20 text-primary" : "hover:bg-muted text-muted-foreground")}
-                  title="Editar descrição"
-                >
-                  <Pencil className="w-3.5 h-3.5" />
-                </button>
+                {canEdit && (
+                  <button
+                    onClick={() => setEditingField(editingField === "description" ? null : "description")}
+                    className={cn("p-1.5 rounded-lg transition-colors", editingField === "description" ? "bg-primary/20 text-primary" : "hover:bg-muted text-muted-foreground")}
+                    title="Editar descrição"
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
-              {editingField === "description" ? (
+              {canEdit && editingField === "description" ? (
                 <div className="space-y-2">
                   <textarea
                     value={editValues.description ?? property.description}

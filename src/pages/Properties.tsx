@@ -417,8 +417,8 @@ const getSavedCategoryOrder = (): typeof defaultCategories => {
 
 export default function Properties() {
   const navigate = useNavigate();
-  const { user, subscription, isSuperAdmin, isAdminStaff, isBroker, hasModuleAccess } = useAuth();
-  const canCreateImoveis = isSuperAdmin || isBroker || (isAdminStaff && hasModuleAccess("imoveis", "create"));
+  const { user, subscription, isSuperAdmin, isAdminStaff, hasModuleAccess } = useAuth();
+  const canCreateImoveis = isSuperAdmin || (isAdminStaff && hasModuleAccess("imoveis", "create"));
   const canEditImoveis = isSuperAdmin || (isAdminStaff && hasModuleAccess("imoveis", "edit"));
   const canDeleteImoveis = isSuperAdmin || (isAdminStaff && hasModuleAccess("imoveis", "delete"));
   const canBulkSelectImoveis = canEditImoveis || canDeleteImoveis;
@@ -730,6 +730,10 @@ export default function Properties() {
     newStatus: Property["status"],
     extra: Record<string, any> = {}
   ) => {
+    if (!canEditImoveis) {
+      toast.error("Sem permissão para editar imóveis.");
+      return false;
+    }
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(propertyId);
     if (isUuid) {
       const { error } = await supabase
@@ -793,6 +797,10 @@ export default function Properties() {
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const handleDelete = async (propertyId: string) => {
+    if (!canDeleteImoveis) {
+      toast.error("Sem permissão para excluir imóveis.");
+      return;
+    }
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(propertyId);
     if (isUuid) {
       const { error } = await supabase.from("imoveis").delete().eq("id", propertyId);
@@ -804,6 +812,10 @@ export default function Properties() {
   };
 
   const handleBulkDelete = async () => {
+    if (!canDeleteImoveis) {
+      toast.error("Sem permissão para excluir imóveis.");
+      return;
+    }
     const ids = Array.from(selectedIds);
     const uuids = ids.filter((id) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id));
     if (uuids.length === 0) {
@@ -824,11 +836,19 @@ export default function Properties() {
   };
 
   const handlePriceChange = (propertyId: string, field: "price" | "priceInstallment", value: number) => {
+    if (!canEditImoveis) {
+      toast.error("Sem permissão para editar imóveis.");
+      return;
+    }
     setPropertyList((prev) => prev.map((p) => (p.id === propertyId ? { ...p, [field]: value } : p)));
     toast.success("Valor atualizado!");
   };
 
   const handleDealLabelChange = (propertyId: string, label: Property["dealLabel"]) => {
+    if (!canEditImoveis) {
+      toast.error("Sem permissão para editar imóveis.");
+      return;
+    }
     setPropertyList((prev) => prev.map((p) => (p.id === propertyId ? { ...p, dealLabel: label } : p)));
     toast.success(label ? `Classificado como "${label}"` : "Classificação removida");
   };
@@ -879,6 +899,10 @@ export default function Properties() {
   };
 
   const handleQuickUpdate = (id: string) => {
+    if (!canEditImoveis) {
+      toast.error("Sem permissão para editar imóveis.");
+      return;
+    }
     setPropertyList((prev) =>
       prev.map((p) => (p.id === id ? { ...p, updatedAt: new Date().toISOString() } : p))
     );
@@ -886,6 +910,10 @@ export default function Properties() {
   };
 
   const handleDuplicate = (id: string) => {
+    if (!canCreateImoveis) {
+      toast.error("Sem permissão para criar imóveis.");
+      return;
+    }
     const original = propertyList.find(p => p.id === id);
     if (!original) return;
     const newId = `dup-${Date.now()}`;
@@ -1071,31 +1099,35 @@ export default function Properties() {
                 >
                   <Download className="w-3.5 h-3.5" /> <span className="hidden sm:inline">{exportingXls ? "Gerando..." : "Exportar"}</span> XLS
                 </button>
-                <button
-                  onClick={() => setPdfImportOpen(true)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-card border border-input text-muted-foreground hover:bg-muted hover:text-foreground transition-colors mb-1"
-                  title="Importar imóveis de uma tabela em PDF (BETA)"
-                >
-                  <FlaskConical className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Importar tabela</span> PDF
-                  <span className="text-[9px] font-bold px-1 py-0.5 rounded bg-primary/10 text-primary">BETA</span>
-                </button>
-                <button
-                  onClick={() => {
-                    if (limitReached) {
-                      toast.error(`Limite de ${maxImoveis} imóveis atingido. Faça upgrade do plano.`);
-                      return;
-                    }
-                    navigate("/cadastro-imovel");
-                  }}
-                  disabled={limitReached}
-                  className={cn(
-                    "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-opacity",
-                    limitReached ? "bg-muted text-muted-foreground cursor-not-allowed" : "gradient-gold text-primary hover:opacity-90"
-                  )}
-                  title={limitReached ? "Limite atingido — faça upgrade" : "Novo imóvel"}
-                >
-                  <Plus className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Novo</span> Imóvel
-                </button>
+                {canCreateImoveis && (
+                  <button
+                    onClick={() => setPdfImportOpen(true)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-card border border-input text-muted-foreground hover:bg-muted hover:text-foreground transition-colors mb-1"
+                    title="Importar imóveis de uma tabela em PDF (BETA)"
+                  >
+                    <FlaskConical className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Importar tabela</span> PDF
+                    <span className="text-[9px] font-bold px-1 py-0.5 rounded bg-primary/10 text-primary">BETA</span>
+                  </button>
+                )}
+                {canCreateImoveis && (
+                  <button
+                    onClick={() => {
+                      if (limitReached) {
+                        toast.error(`Limite de ${maxImoveis} imóveis atingido. Faça upgrade do plano.`);
+                        return;
+                      }
+                      navigate("/cadastro-imovel");
+                    }}
+                    disabled={limitReached}
+                    className={cn(
+                      "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-opacity",
+                      limitReached ? "bg-muted text-muted-foreground cursor-not-allowed" : "gradient-gold text-primary hover:opacity-90"
+                    )}
+                    title={limitReached ? "Limite atingido — faça upgrade" : "Novo imóvel"}
+                  >
+                    <Plus className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Novo</span> Imóvel
+                  </button>
+                )}
                 {maxImoveis > 0 && (
                   <span className={cn("text-[10px] font-medium", limitReached ? "text-destructive" : "text-muted-foreground")}>
                     {currentImoveis} de {maxImoveis} imóveis
@@ -1564,8 +1596,8 @@ export default function Properties() {
                 onFilterByTitle={(title) => { setSearch(title.split(" ").slice(0, 2).join(" ")); setActiveCategory("todos"); }}
                 onFilterByCondition={(cond) => { setFilterCondition(cond); setShowFilters(true); setActiveCategory("todos"); }}
                 onFilterByOwner={(owner) => { setFilterOwner(owner); setShowFilters(true); setActiveCategory("todos"); }}
-                canManage={canEditImoveis || property.userId === user?.id}
-                canDelete={canDeleteImoveis || property.userId === user?.id}
+                canManage={canEditImoveis}
+                canDelete={canDeleteImoveis}
                 onDelete={(id) => setDeleteConfirmId(id)}
                 isSelected={selectedIds.has(property.id)}
                 onToggleSelection={toggleSelection}
@@ -1595,9 +1627,9 @@ export default function Properties() {
                 onNavigateToContract={handleNavigateToContract}
                 onQuickUpdate={handleQuickUpdate}
                 onDuplicate={handleDuplicate}
-                canManage={canEditImoveis || property.userId === user?.id}
-                canDelete={canDeleteImoveis || property.userId === user?.id}
-                canDuplicate={canCreateImoveis || property.userId === user?.id}
+                canManage={canEditImoveis}
+                canDelete={canDeleteImoveis}
+                canDuplicate={canCreateImoveis}
                 onDelete={(id) => setDeleteConfirmId(id)}
                 isSelected={selectedIds.has(property.id)}
                 onToggleSelection={toggleSelection}
@@ -2491,13 +2523,14 @@ function RowCarousel({ images }: { images: string[] }) {
 }
 
 // ---- Inline Price Editor ----
-function InlinePrice({ value, onChange, className }: { value: number; onChange: (v: number) => void; className?: string }) {
+function InlinePrice({ value, onChange, className, editable = true }: { value: number; onChange: (v: number) => void; className?: string; editable?: boolean }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   const startEdit = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (!editable) return;
     setDraft(String(value));
     setEditing(true);
   };
@@ -2529,9 +2562,9 @@ function InlinePrice({ value, onChange, className }: { value: number; onChange: 
 
   return (
     <span
-      className={cn("cursor-pointer hover:opacity-70 transition-opacity", className)}
+      className={cn(editable && "cursor-pointer hover:opacity-70 transition-opacity", className)}
       onClick={startEdit}
-      title="Clique para editar o valor"
+      title={editable ? "Clique para editar o valor" : undefined}
     >
       {formatCurrency(value)}
     </span>
@@ -2793,10 +2826,12 @@ function PropertyRow({
             {property.code && (
               <span className="text-[11px] font-black text-muted-foreground bg-muted px-2 py-0.5 rounded flex-shrink-0">{property.code}</span>
             )}
-            <div className="flex items-center gap-1 flex-shrink-0 ml-auto">
-              <SiteToggleButton propertyId={property.id} field="ativo_site" icon={Globe} activeColor="text-emerald-500 bg-emerald-500/10" title="Ativo no Site" showLabel={false} />
-              <DestaqueSelector propertyId={property.id} compact />
-            </div>
+            {canManage && (
+              <div className="flex items-center gap-1 flex-shrink-0 ml-auto">
+                <SiteToggleButton propertyId={property.id} field="ativo_site" icon={Globe} activeColor="text-emerald-500 bg-emerald-500/10" title="Ativo no Site" showLabel={false} />
+                <DestaqueSelector propertyId={property.id} compact />
+              </div>
+            )}
           </div>
 
           {/* Row 2: Empreendimento + Units */}
@@ -2911,7 +2946,7 @@ function PropertyRow({
             <span className="text-[11px] font-black text-primary uppercase tracking-wider">Valor do Imóvel</span>
           </div>
           <div className="flex items-center gap-1">
-            <InlinePrice value={property.price} onChange={(v) => onPriceChange?.(property.id, "price", v)} className="text-[22px] font-black text-emerald-500 drop-shadow-sm" />
+            <InlinePrice value={property.price} onChange={(v) => onPriceChange?.(property.id, "price", v)} editable={canManage} className="text-[22px] font-black text-emerald-500 drop-shadow-sm" />
             {(() => {
               const original = null as Property | null;
               if (!original || original.price === property.price) return null;
@@ -2924,7 +2959,7 @@ function PropertyRow({
           {/* Promotional price */}
           {property.priceInstallment && (
             <div className="mt-0.5">
-              <InlinePrice value={property.priceInstallment} onChange={(v) => onPriceChange?.(property.id, "priceInstallment", v)} className="text-[14px] font-bold text-red-500" />
+              <InlinePrice value={property.priceInstallment} onChange={(v) => onPriceChange?.(property.id, "priceInstallment", v)} editable={canManage} className="text-[14px] font-bold text-red-500" />
               <span className="text-[8px] text-muted-foreground uppercase font-semibold tracking-wider ml-1">Valor Promocional</span>
             </div>
           )}
@@ -3044,13 +3079,15 @@ function PropertyRow({
             <div className="flex items-center justify-between gap-1">
               <span className="flex items-center gap-0.5"><CalendarClock className="w-3 h-3" /> Atualização</span>
               <div className="flex items-center gap-1.5">
-                <button
-                  onClick={(e) => { e.stopPropagation(); onQuickUpdate?.(property.id); }}
-                  title="Atualizar data agora"
-                  className="w-5 h-5 rounded-full bg-emerald-500/15 text-emerald-500 flex items-center justify-center hover:bg-emerald-500/30 transition-colors border border-emerald-500/30"
-                >
-                  <RefreshCw className="w-3 h-3" />
-                </button>
+                {canManage && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onQuickUpdate?.(property.id); }}
+                    title="Atualizar data agora"
+                    className="w-5 h-5 rounded-full bg-emerald-500/15 text-emerald-500 flex items-center justify-center hover:bg-emerald-500/30 transition-colors border border-emerald-500/30"
+                  >
+                    <RefreshCw className="w-3 h-3" />
+                  </button>
+                )}
                 <span className={cn("font-semibold", updateColor)}>{updatedFormatted}</span>
               </div>
             </div>

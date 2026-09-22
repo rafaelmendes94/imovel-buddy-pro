@@ -203,7 +203,6 @@ export default function ImovelPublico() {
   const isMp4 = !!imovel?.link_video && !yt && !cfVideo && /\.(mp4|webm|mov)(\?|$)/i.test(imovel.link_video);
   const hasVideo = !!imovel?.link_video;
   const canEdit = !!imovel && !!user?.id && (
-    user.id === imovel.user_id ||
     isSuperAdmin ||
     (isAdminStaff && hasModuleAccess("imoveis", "edit"))
   );
