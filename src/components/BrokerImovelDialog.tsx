@@ -569,9 +569,18 @@ export function BrokerImovelDialog({ open, onOpenChange, imovel, ownerId, ownerN
               kind="image"
               reorderable
             />
+            <MediaGalleryUpload
+              label="Vídeo do imóvel"
+              values={form.link_video ? [form.link_video] : []}
+              onChange={(next) => set("link_video", next[0] || "")}
+              folder="imoveis/portfolio-corretor/videos"
+              kind="video"
+              multiple={false}
+              allowUrl
+            />
+            {err("link_video")}
             <div className="grid gap-4 sm:grid-cols-2">
               {([
-                ["Link do vídeo", "link_video", "https://youtube.com/..."],
                 ["Link do tour 360", "link_360", "https://..."],
                 ["Link do material / PDF", "link_material", "https://..."],
                 ["Link das fotos (Drive)", "drive_fotos_url", "https://drive.google.com/..."],

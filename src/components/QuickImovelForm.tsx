@@ -229,8 +229,16 @@ export function QuickImovelForm({ onSaved, onCancel, defaultCidade = "", cancelL
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <Label className="text-xs flex items-center gap-1.5"><Video className="w-3.5 h-3.5" /> Link do vídeo</Label>
-            <Input value={linkVideo} onChange={(e) => setLinkVideo(e.target.value)} placeholder="https://youtube.com/..." />
+            <Label className="text-xs flex items-center gap-1.5"><Video className="w-3.5 h-3.5" /> Vídeo do imóvel</Label>
+            <MediaGalleryUpload
+              label="Enviar vídeo ou colar URL"
+              values={linkVideo ? [linkVideo] : []}
+              onChange={(next) => setLinkVideo(next[0] || "")}
+              folder="imoveis/cadastro-rapido/videos"
+              kind="video"
+              multiple={false}
+              allowUrl
+            />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs flex items-center gap-1.5"><FolderOpen className="w-3.5 h-3.5" /> Link do Drive (baixar fotos)</Label>

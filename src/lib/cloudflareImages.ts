@@ -13,21 +13,15 @@ type DirectUploadResponse = {
   details?: unknown;
 };
 
-const cleanPathPart = (value: string) =>
-  value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-zA-Z0-9._-]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .toLowerCase();
-
 const errorDetail = (payload: DirectUploadResponse | null | undefined, fallback: string) => {
   const details = payload?.details as any;
   const cloudflareMessage =
     details?.errors?.[0]?.message ||
+    details?.errors?.[0]?.code ||
     details?.messages?.[0]?.message ||
     details?.error ||
-    details?.message;
+    details?.message ||
+    (typeof details === "string" ? details : "");
   return payload?.error || cloudflareMessage || fallback;
 };
 
@@ -61,50 +55,19 @@ const invokeUploadFunction = async (name: string, body: Record<string, unknown>)
   return payload || {};
 };
 
-const uploadImageToSupabaseFallback = async (file: File, options: UploadOptions = {}) => {
-  const folder = cleanPathPart(options.folder || "uploads") || "uploads";
-  const baseName = cleanPathPart(file.name.replace(/\.[^.]+$/, "")) || "imagem";
-  const ext = cleanPathPart(file.name.split(".").pop() || "jpg") || "jpg";
-  const path = `${folder}/${Date.now()}-${crypto.randomUUID()}-${baseName}.${ext}`;
-
-  const { error } = await supabase.storage.from("site-assets").upload(path, file, {
-    cacheControl: "31536000",
-    upsert: false,
-    contentType: file.type || "image/jpeg",
-  });
-
-  if (error) {
-    throw new Error(`Cloudflare falhou e o fallback do Supabase também falhou: ${error.message}`);
-  }
-
-  const { data } = supabase.storage.from("site-assets").getPublicUrl(path);
-  if (!data.publicUrl) {
-    throw new Error("Upload enviado, mas não foi possível gerar URL pública.");
-  }
-
-  return data.publicUrl;
-};
-
 export async function uploadImageToCloudflare(file: File, options: UploadOptions = {}) {
   if (!file.type.startsWith("image/")) {
     throw new Error("Cloudflare Images aceita apenas arquivos de imagem.");
   }
 
-  let data: DirectUploadResponse;
-  try {
-    data = await invokeUploadFunction("cloudflare-direct-upload", {
-      filename: file.name,
-      folder: options.folder || "",
-      source: options.source || "mv-connect",
-    });
-  } catch (err) {
-    console.warn("Cloudflare Images indisponível, usando fallback Supabase Storage:", err);
-    return uploadImageToSupabaseFallback(file, options);
-  }
+  const data = await invokeUploadFunction("cloudflare-direct-upload", {
+    filename: file.name,
+    folder: options.folder || "",
+    source: options.source || "mv-connect",
+  });
 
   if (!data.uploadURL || !data.deliveryUrl) {
-    console.warn("Cloudflare Images não retornou URL válida, usando fallback Supabase Storage:", data);
-    return uploadImageToSupabaseFallback(file, options);
+    throw new Error(errorDetail(data, "Cloudflare Images não retornou URL válida para upload."));
   }
 
   const form = new FormData();
@@ -117,8 +80,7 @@ export async function uploadImageToCloudflare(file: File, options: UploadOptions
   const uploadResult = await response.json().catch(() => null);
 
   if (!response.ok || uploadResult?.success === false) {
-    console.warn("Cloudflare recusou o upload, usando fallback Supabase Storage:", uploadResult);
-    return uploadImageToSupabaseFallback(file, options);
+    throw new Error(uploadResult?.errors?.[0]?.message || "Cloudflare recusou o upload da imagem.");
   }
 
   const variants = Array.isArray(uploadResult?.result?.variants) ? uploadResult.result.variants : [];
