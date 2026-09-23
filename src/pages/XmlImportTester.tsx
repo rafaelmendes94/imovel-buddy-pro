@@ -109,7 +109,7 @@ const FIELD_CONFIGS: FieldConfig[] = [
   { key: "contatoNome", label: "Contato", tags: ["NomeContato", "Name", "Contato"] },
   { key: "contatoEmail", label: "E-mail", tags: ["EmailContato", "Email"] },
   { key: "contatoTelefone", label: "Telefone", tags: ["TelefoneContato", "Telephone", "Phone", "Telefone"] },
-  { key: "atualizadoEm", label: "Atualizado em", tags: ["DataAtualizacao", "UpdatedAt", "ModificationTimestamp"] },
+  { key: "atualizadoEm", label: "Atualizado em", tags: ["DataAtualizacao", "UpdatedAt", "updatedAt", "ModificationTimestamp"] },
 ];
 
 const REQUIRED_KEYS = ["codigo", "titulo", "tipo", "preco", "cidade", "bairro", "endereco"];

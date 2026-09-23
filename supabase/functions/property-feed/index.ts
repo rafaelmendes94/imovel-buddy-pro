@@ -39,6 +39,13 @@ function esc(s: unknown) {
     .replace(/'/g, "&apos;");
 }
 
+function xmlUpdatedAt(p: any) {
+  const raw = p.updated_at || p.updatedAt || p.created_at || p.createdAt || Date.now();
+  const date = new Date(raw);
+  if (Number.isNaN(date.getTime())) return new Date().toISOString().slice(0, 10);
+  return date.toISOString().slice(0, 10);
+}
+
 function cdata(s: unknown) {
   return `<![CDATA[${String(s ?? "").replace(/\]\]>/g, "]]]]><![CDATA[>")}]]>`;
 }
@@ -197,6 +204,7 @@ function buildVrsync(properties: any[], contact: { name: string; email: string; 
     return `
     <Listing>
       <ListID>${esc(propertyCode(p))}</ListID>
+      <updatedAt>${esc(xmlUpdatedAt(p))}</updatedAt>
       <Title>${esc(p.titulo)}</Title>
       <TransactionType>For Sale</TransactionType>
       <ListPrice currency="BRL">${Number(p.preco || 0)}</ListPrice>
@@ -255,6 +263,7 @@ function buildImovelweb(properties: any[], contact: { name: string; email: strin
     return `
     <Imovel>
       <CodigoImovel>${esc(propertyCode(p))}</CodigoImovel>
+      <updatedAt>${esc(xmlUpdatedAt(p))}</updatedAt>
       <TipoImovel>${esc(imovelwebType(loc.tipo))}</TipoImovel>
       <TipoPadraoMV>${esc(loc.tipo)}</TipoPadraoMV>
       <SubTipoImovel>${esc(p.padrao || "Padrão")}</SubTipoImovel>

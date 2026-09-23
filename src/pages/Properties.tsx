@@ -62,6 +62,13 @@ const xmlPortals: { name: XmlPortal; description: string }[] = [
 const escapeXml = (s: string) =>
   s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
 
+const xmlUpdatedAt = (p: Property): string => {
+  const raw = p.updatedAt || p.createdAt || new Date().toISOString();
+  const date = new Date(raw);
+  if (Number.isNaN(date.getTime())) return new Date().toISOString().slice(0, 10);
+  return date.toISOString().slice(0, 10);
+};
+
 const mapPropertyType = (type: string): string => {
   const map: Record<string, string> = {
     Apartamento: "Residential / Apartment",
@@ -122,6 +129,7 @@ const photosCnm = (images: string[]) =>
 function generateZapXml(properties: Property[]): string {
   const items = properties.map((p) => `    <Imovel>
       <CodigoImovel>${escapeXml(p.id.slice(0, 50))}</CodigoImovel>
+      <updatedAt>${escapeXml(xmlUpdatedAt(p))}</updatedAt>
       <TipoImovel>${escapeXml(p.type)}</TipoImovel>
       <SubTipoImovel>${escapeXml(p.type)}</SubTipoImovel>
       <CategoriaImovel>Padrão</CategoriaImovel>
@@ -160,6 +168,7 @@ function generateVrSyncXml(properties: Property[]): string {
   const now = new Date().toISOString().slice(0, 19);
   const items = properties.map((p) => `    <Listing>
       <ListingID>${escapeXml(p.id.slice(0, 50))}</ListingID>
+      <updatedAt>${escapeXml(xmlUpdatedAt(p))}</updatedAt>
       <Title><![CDATA[${p.title}]]></Title>
       <TransactionType>For Sale</TransactionType>
       <PublicationType>STANDARD</PublicationType>
@@ -214,6 +223,7 @@ ${items}
 function generateOlxXml(properties: Property[]): string {
   const items = properties.map((p) => `    <Imovel>
       <CodigoImovel>${escapeXml(p.id.slice(0, 20))}</CodigoImovel>
+      <updatedAt>${escapeXml(xmlUpdatedAt(p))}</updatedAt>
       <TituloAnuncio><![CDATA[${p.title.slice(0, 90)}]]></TituloAnuncio>
       <SubTipoImovel>${mapSubTipoOlx(p.type)}</SubTipoImovel>
       <Cidade>${escapeXml(p.city)}</Cidade>
@@ -292,6 +302,7 @@ function generateChavesNaMaoXml(properties: Property[]): string {
       <descritivo><![CDATA[${p.description || p.title}]]></descritivo>
 ${photosCnm(p.images)}
       <data_atualizacao>${p.updatedAt || ""}</data_atualizacao>
+      <updatedAt>${escapeXml(xmlUpdatedAt(p))}</updatedAt>
       <latitude>${p.lat}</latitude>
       <longitude>${p.lng}</longitude>
       <video>${p.linkVideo || ""}</video>
@@ -314,6 +325,7 @@ ${items}
 function generateGenericXml(properties: Property[]): string {
   const items = properties.map((p) => `    <Imovel>
       <Codigo>${escapeXml(p.id)}</Codigo>
+      <updatedAt>${escapeXml(xmlUpdatedAt(p))}</updatedAt>
       <Titulo><![CDATA[${p.title}]]></Titulo>
       <TipoImovel>${escapeXml(p.type)}</TipoImovel>
       <Status>${escapeXml(p.status)}</Status>
