@@ -74,9 +74,9 @@ serve(async (req: Request) => {
     const accountHash = settings.cloudflare_images_hash || Deno.env.get("CLOUDFLARE_IMAGES_HASH");
     const variant = settings.cloudflare_images_variant || Deno.env.get("CLOUDFLARE_IMAGES_VARIANT") || "public";
 
-    if (!accountId || !apiToken || !accountHash) {
+    if (!accountId || !apiToken) {
       return json({
-        error: "Cloudflare Images não configurado. Informe Account ID, API Token e Account Hash.",
+        error: "Cloudflare Images não configurado. Informe Account ID e API Token.",
       }, 400);
     }
 
@@ -99,7 +99,7 @@ serve(async (req: Request) => {
     return json({
       id: imageId,
       uploadURL: data.result.uploadURL,
-      deliveryUrl: `https://imagedelivery.net/${accountHash}/${imageId}/${variant}`,
+      ...(accountHash ? { deliveryUrl: `https://imagedelivery.net/${accountHash}/${imageId}/${variant}` } : {}),
     });
   } catch (error) {
     console.error("cloudflare-direct-upload error:", error);

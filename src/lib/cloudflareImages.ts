@@ -66,7 +66,7 @@ export async function uploadImageToCloudflare(file: File, options: UploadOptions
     source: options.source || "mv-connect",
   });
 
-  if (!data.uploadURL || !data.deliveryUrl) {
+  if (!data.uploadURL) {
     throw new Error(errorDetail(data, "Cloudflare Images não retornou URL válida para upload."));
   }
 
@@ -89,7 +89,8 @@ export async function uploadImageToCloudflare(file: File, options: UploadOptions
     return String(publicVariant || variants[0]);
   }
 
-  return String(data.deliveryUrl);
+  if (data.deliveryUrl) return String(data.deliveryUrl);
+  throw new Error("Cloudflare concluiu o upload, mas não retornou a URL pública da imagem.");
 }
 
 export async function uploadVideoToCloudflare(file: File, options: UploadOptions = {}) {
