@@ -28,6 +28,12 @@ verify_jwt = false
 [functions.asaas-test]
 verify_jwt = false
 
+[functions.cloudflare-direct-upload]
+verify_jwt = false
+
+[functions.cloudflare-stream-direct-upload]
+verify_jwt = false
+
 [functions.admin-create-staff]
 verify_jwt = false
 
