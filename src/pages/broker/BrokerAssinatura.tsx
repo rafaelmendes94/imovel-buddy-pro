@@ -1,10 +1,11 @@
 import { BrokerLayout } from "@/components/BrokerLayout";
 import { useAuth } from "@/hooks/useAuth";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CreditCard, Check, Crown } from "lucide-react";
+import { CreditCard, Check, Crown, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const statusLabels: Record<string, string> = {
@@ -33,9 +34,12 @@ const cycleLabel = (cycle: string) =>
 
 export default function BrokerAssinatura() {
   const { subscription, user, profile } = useAuth();
+  const [searchParams] = useSearchParams();
   const [plans, setPlans] = useState<any[]>([]);
   const [loadingCheckout, setLoadingCheckout] = useState<string | null>(null);
+  const autoCheckoutRef = useRef(false);
   const { toast } = useToast();
+  const selectedPlanId = searchParams.get("plan_id") || window.localStorage.getItem("mv_connect_pending_plan_id");
 
   useEffect(() => {
     const accountType = profile?.account_type || user?.user_metadata?.account_type || "corretor";
@@ -52,7 +56,8 @@ export default function BrokerAssinatura() {
       if (error) throw error;
 
       if (data?.invoiceUrl) {
-        window.open(data.invoiceUrl, "_blank");
+        window.localStorage.removeItem("mv_connect_pending_plan_id");
+        window.location.href = data.invoiceUrl;
       } else if (data?.error) {
         toast({ title: "Checkout não disponível", description: data.error, variant: "destructive" });
       } else {
@@ -64,10 +69,32 @@ export default function BrokerAssinatura() {
     setLoadingCheckout(null);
   };
 
+  useEffect(() => {
+    if (!selectedPlanId || !user || autoCheckoutRef.current) return;
+    autoCheckoutRef.current = true;
+    handleCheckout(selectedPlanId);
+  }, [selectedPlanId, user]);
+
+  const visiblePlans = selectedPlanId ? plans.filter((plan) => plan.id === selectedPlanId) : plans;
+
   return (
     <BrokerLayout>
       <div className="p-4 sm:p-6 space-y-5 sm:space-y-6">
-        <h1 className="text-2xl font-bold text-foreground">Minha Assinatura</h1>
+        <h1 className="text-2xl font-bold text-foreground">
+          {selectedPlanId ? "Abrindo checkout" : "Minha Assinatura"}
+        </h1>
+
+        {selectedPlanId && (
+          <div className="bg-card border border-border rounded-xl p-6 flex items-start gap-3">
+            <Loader2 className="w-5 h-5 text-accent animate-spin mt-0.5" />
+            <div>
+              <h2 className="font-semibold text-foreground">Preparando pagamento no Asaas</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Você escolheu o plano na tela anterior. Vamos abrir o checkout seguro automaticamente.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Current subscription */}
         {subscription && (
@@ -96,9 +123,11 @@ export default function BrokerAssinatura() {
 
         {/* Available plans */}
         <div>
-          <h2 className="text-lg font-semibold text-foreground mb-4">Planos disponíveis</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-4">
+            {selectedPlanId ? "Plano escolhido" : "Planos disponíveis"}
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {plans.map(plan => {
+            {visiblePlans.map(plan => {
               const isCurrent = subscription?.plan_id === plan.id;
               const modules = Array.isArray(plan.modules) ? plan.modules : [];
 

@@ -41,7 +41,7 @@ export default function Login() {
     if (requestedPath && requestedPath !== "/login") {
       navigate(requestedPath, { replace: true });
     } else if (pendingPlanId && !subscription) {
-      navigate(`/escolher-plano?plan_id=${pendingPlanId}`, { replace: true });
+      navigate(`/painel/assinatura?plan_id=${pendingPlanId}`, { replace: true });
     } else if (roles.includes("super_admin") || roles.includes("admin_staff")) {
       navigate("/dashboard", { replace: true });
     } else if (roles.includes("partner")) {

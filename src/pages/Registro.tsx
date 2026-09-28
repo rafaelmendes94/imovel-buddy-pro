@@ -152,7 +152,7 @@ export default function Registro() {
         description: err?.message || "Entre novamente para continuar o pagamento.",
         variant: "destructive",
       });
-      navigate(`/escolher-plano?plan_id=${selectedPlanId}`);
+      navigate(`/painel/assinatura?plan_id=${selectedPlanId}`);
     } finally {
       setLoading(false);
     }

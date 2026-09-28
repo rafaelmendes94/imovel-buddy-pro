@@ -113,7 +113,7 @@ export default function EscolherPlano() {
       return;
     }
 
-    window.open(data.invoiceUrl, "_blank");
+    window.location.href = data.invoiceUrl;
     window.localStorage.removeItem("mv_connect_pending_plan_id");
     navigate("/painel/assinatura");
   };

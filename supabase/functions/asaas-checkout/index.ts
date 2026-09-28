@@ -185,7 +185,7 @@ serve(async (req) => {
       headers: asaasHeaders,
       body: JSON.stringify({
         billingTypes: ["PIX", "CREDIT_CARD"],
-        chargeTypes: ["RECURRENT"],
+        chargeTypes: ["RECURRENT", "DETACHED"],
         minutesToExpire: 1440,
         externalReference: JSON.stringify({ user_id, plan_id }),
         callback: {
@@ -212,7 +212,8 @@ serve(async (req) => {
 
     if (!checkoutRes.ok) {
       console.error("Asaas checkout error:", checkoutData);
-      return json({ error: "Erro ao criar checkout recorrente no Asaas", details: checkoutData }, 500);
+      const description = checkoutData?.errors?.map((item: any) => item.description).filter(Boolean).join(" ");
+      return json({ error: description || "Erro ao criar checkout recorrente no Asaas", details: checkoutData });
     }
 
     return json({
