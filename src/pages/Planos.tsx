@@ -72,8 +72,7 @@ export default function Planos() {
 
   const handlePlanClick = async (plan: Plan) => {
     if (!user) {
-      const tipo = plan.plan_type === "parceiro" ? "parceiro" : "corretor";
-      navigate(`/registro?tipo=${tipo}&plan_id=${plan.id}`);
+      navigate(`/registro?plan_id=${plan.id}`);
       return;
     }
 

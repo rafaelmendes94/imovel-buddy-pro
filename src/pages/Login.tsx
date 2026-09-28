@@ -36,9 +36,12 @@ export default function Login() {
     const roles = rolesData?.map(r => r.role) || [];
     const subscription = Array.isArray(subscriptionData) ? subscriptionData[0] : null;
     const requestedPath = (location.state as any)?.from?.pathname;
+    const pendingPlanId = window.localStorage.getItem("mv_connect_pending_plan_id");
 
     if (requestedPath && requestedPath !== "/login") {
       navigate(requestedPath, { replace: true });
+    } else if (pendingPlanId && !subscription) {
+      navigate(`/escolher-plano?plan_id=${pendingPlanId}`, { replace: true });
     } else if (roles.includes("super_admin") || roles.includes("admin_staff")) {
       navigate("/dashboard", { replace: true });
     } else if (roles.includes("partner")) {
