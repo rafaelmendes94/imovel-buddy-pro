@@ -134,7 +134,7 @@ const App = () => (
 
             {/* Broker routes */}
             <Route path="/painel" element={<AuthGuard requiredRoles={["broker"]}><BrokerDashboard /></AuthGuard>} />
-            <Route path="/painel/assinatura" element={<AuthGuard requiredRoles={["broker"]} allowBlocked><BrokerAssinatura /></AuthGuard>} />
+            <Route path="/painel/assinatura" element={<AuthGuard requiredRoles={["broker"]} allowBlocked allowNoSubscription><BrokerAssinatura /></AuthGuard>} />
             <Route path="/painel/feeds-xml" element={<AuthGuard requiredRoles={["broker"]}><BrokerXmlFeeds /></AuthGuard>} />
             <Route path="/painel/cadastro-rapido" element={<AuthGuard requiredRoles={["broker"]}><BrokerCadastroRapido /></AuthGuard>} />
             <Route path="/painel/imoveis" element={protectedRoute(<Properties />, { adminModule: "imoveis", brokerModule: "imoveis" })} />

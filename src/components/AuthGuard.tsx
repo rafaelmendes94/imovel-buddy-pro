@@ -1,7 +1,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Clock, LogOut, XCircle } from "lucide-react";
+import { LogOut, XCircle } from "lucide-react";
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -50,27 +50,19 @@ export function AuthGuard({ children, requiredRoles, allowBlocked = false, allow
   const isStaff = isSuperAdmin || isAdminStaff;
 
   const approvalStatus = profile?.approval_status || "approved";
-  if (!isStaff && approvalStatus !== "approved") {
-    const rejected = approvalStatus === "rejected";
+  if (!isStaff && approvalStatus === "rejected" && !allowNoSubscription) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background px-4">
         <div className="w-full max-w-md bg-card border border-border rounded-2xl p-6 text-center shadow-sm">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-            {rejected ? <XCircle className="h-6 w-6 text-destructive" /> : <Clock className="h-6 w-6 text-warning" />}
+            <XCircle className="h-6 w-6 text-destructive" />
           </div>
           <h1 className="text-xl font-bold text-foreground">
-            {rejected ? "Cadastro não aprovado" : "Cadastro aguardando aprovação"}
+            Cadastro não aprovado
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            {rejected
-              ? profile?.rejection_reason || "Seu cadastro foi analisado, mas ainda não foi liberado para acesso."
-              : "Recebemos seu cadastro. A equipe MV Broker vai verificar os dados e liberar o acesso assim que estiver tudo certo."}
+            {profile?.rejection_reason || "Seu cadastro foi analisado, mas ainda não foi liberado para acesso."}
           </p>
-          {!rejected && (
-            <p className="mt-3 text-sm font-medium text-foreground">
-              Para aprovação mais rápida, mande uma mensagem no WhatsApp da MV Broker.
-            </p>
-          )}
           <Button variant="outline" className="mt-5 gap-2" onClick={signOut}>
             <LogOut className="h-4 w-4" />
             Sair

@@ -57,7 +57,7 @@ serve(async (req) => {
     const body = await req.json();
     console.log("Asaas webhook received:", JSON.stringify(body));
 
-    const { event, payment } = body;
+    const { event, payment, checkout } = body;
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -70,6 +70,7 @@ serve(async (req) => {
       "PAYMENT_OVERDUE",
       "PAYMENT_REFUNDED",
       "PAYMENT_DELETED",
+      "CHECKOUT_PAID",
     ];
 
     if (!paymentEvents.includes(event)) {
@@ -79,7 +80,7 @@ serve(async (req) => {
       });
     }
 
-    if (!payment?.externalReference) {
+    if (!payment?.externalReference && !payment?.subscription && !checkout?.externalReference) {
       console.log("No external reference, skipping");
       return new Response(JSON.stringify({ ok: true }), {
         status: 200,
@@ -89,10 +90,10 @@ serve(async (req) => {
 
     let externalRef: { user_id: string; plan_id: string };
     try {
-      externalRef = JSON.parse(payment.externalReference);
+      externalRef = JSON.parse(payment?.externalReference || checkout?.externalReference);
     } catch {
       // Try subscription-level externalReference
-      if (payment.subscription) {
+      if (payment?.subscription) {
         // Get Asaas settings
         const { data: settings } = await supabase
           .from("system_settings")
@@ -106,7 +107,7 @@ serve(async (req) => {
         const environment = settingsMap["asaas_environment"] || "sandbox";
         const baseUrl = environment === "production"
           ? "https://api.asaas.com"
-          : "https://sandbox.asaas.com";
+          : "https://api-sandbox.asaas.com";
 
         const subRes = await fetch(`${baseUrl}/v3/subscriptions/${payment.subscription}`, {
           headers: { "access_token": apiKey },
@@ -130,7 +131,7 @@ serve(async (req) => {
           });
         }
       } else {
-        console.error("Invalid externalReference:", payment.externalReference);
+        console.error("Invalid externalReference:", payment?.externalReference || checkout?.externalReference);
         return new Response(JSON.stringify({ ok: true }), {
           status: 200,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -148,8 +149,9 @@ serve(async (req) => {
       return new Date(now.getTime() + days * 86400000);
     };
 
-    if (event === "PAYMENT_CONFIRMED" || event === "PAYMENT_RECEIVED") {
+    if (event === "PAYMENT_CONFIRMED" || event === "PAYMENT_RECEIVED" || event === "CHECKOUT_PAID") {
       const periodEnd = await getPeriodEnd(externalRef.plan_id);
+      const asaasSubscriptionId = payment?.subscription || checkout?.subscription || checkout?.id || payment?.id;
 
       const { data: existingSub } = await supabase
         .from("subscriptions")
@@ -166,17 +168,19 @@ serve(async (req) => {
           current_period_start: now.toISOString(),
           current_period_end: periodEnd.toISOString(),
           blocked_at: null,
-          asaas_subscription_id: payment.subscription || String(payment.id),
+          asaas_subscription_id: asaasSubscriptionId ? String(asaasSubscriptionId) : null,
         }).eq("id", existingSub.id);
 
-        await recordAsaasPayment(supabase, {
-          subscription_id: existingSub.id,
-          amount: payment.value,
-          status: "approved",
-          asaas_payment_id: String(payment.id),
-          paid_at: now.toISOString(),
-          reference_period: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`,
-        });
+        if (payment?.id) {
+          await recordAsaasPayment(supabase, {
+            subscription_id: existingSub.id,
+            amount: payment.value,
+            status: "approved",
+            asaas_payment_id: String(payment.id),
+            paid_at: now.toISOString(),
+            reference_period: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`,
+          });
+        }
       } else {
         const { data: newSub } = await supabase.from("subscriptions").insert({
           user_id: externalRef.user_id,
@@ -184,10 +188,10 @@ serve(async (req) => {
           status: "active",
           current_period_start: now.toISOString(),
           current_period_end: periodEnd.toISOString(),
-          asaas_subscription_id: payment.subscription || String(payment.id),
+          asaas_subscription_id: asaasSubscriptionId ? String(asaasSubscriptionId) : null,
         }).select("id").single();
 
-        if (newSub) {
+        if (newSub && payment?.id) {
           await recordAsaasPayment(supabase, {
             subscription_id: newSub.id,
             amount: payment.value,
@@ -198,6 +202,15 @@ serve(async (req) => {
           });
         }
       }
+
+      await supabase
+        .from("profiles")
+        .update({
+          approval_status: "approved",
+          rejection_reason: null,
+          approved_at: now.toISOString(),
+        })
+        .eq("user_id", externalRef.user_id);
     } else if (event === "PAYMENT_OVERDUE") {
       const { data: existingSub } = await supabase
         .from("subscriptions")

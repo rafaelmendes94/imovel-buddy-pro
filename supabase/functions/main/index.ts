@@ -262,8 +262,8 @@ async function asaasCheckout(req: Request) {
   }
 
   const baseUrl = environment === "production"
-    ? "https://api.asaas.com/api"
-    : "https://sandbox.asaas.com/api";
+    ? "https://api.asaas.com"
+    : "https://api-sandbox.asaas.com";
 
   const { data: plan, error: planError } = await supabase
     .from("plans")
@@ -272,12 +272,44 @@ async function asaasCheckout(req: Request) {
     .single();
   if (planError || !plan) return json({ error: "Plano não encontrado" }, 404);
 
-  const { data: profile } = await supabase
+  let { data: profile } = await supabase
     .from("profiles")
     .select("*")
     .eq("user_id", userId)
-    .single();
-  if (!profile) return json({ error: "Perfil não encontrado" }, 404);
+    .maybeSingle();
+
+  if (!profile) {
+    const { data: authUser } = await supabase.auth.admin.getUserById(userId);
+    const meta = authUser?.user?.user_metadata || {};
+    const { data: insertedProfile, error: profileError } = await supabase
+      .from("profiles")
+      .insert({
+        user_id: userId,
+        full_name: meta.full_name || "",
+        email: authUser?.user?.email || "",
+        phone: meta.phone || null,
+        account_type: meta.account_type || plan.plan_type || "corretor",
+        approval_status: "pending",
+      })
+      .select("*")
+      .single();
+    if (profileError || !insertedProfile) {
+      return json({ error: "Perfil não encontrado", details: profileError }, 404);
+    }
+    profile = insertedProfile;
+  }
+
+  if (plan.plan_type && plan.plan_type !== "ambos" && profile.account_type !== plan.plan_type) {
+    await supabase.from("profiles").update({ account_type: plan.plan_type }).eq("user_id", userId);
+    profile = { ...profile, account_type: plan.plan_type };
+  }
+
+  await supabase
+    .from("user_roles")
+    .upsert({
+      user_id: userId,
+      role: profile.account_type === "parceiro" ? "partner" : "broker",
+    }, { onConflict: "user_id,role" });
 
   const asaasHeaders = { "Content-Type": "application/json", access_token: apiKey };
   const { data: billing } = await supabase
@@ -318,68 +350,75 @@ async function asaasCheckout(req: Request) {
   const nextDueDate = new Date();
   nextDueDate.setDate(nextDueDate.getDate() + 1);
   const dueDateStr = nextDueDate.toISOString().split("T")[0];
-  const dueDateIso = `${dueDateStr}T12:00:00.000Z`;
 
-  const subscriptionRes = await fetch(`${baseUrl}/v3/subscriptions`, {
+  const { data: existingSub } = await supabase
+    .from("subscriptions")
+    .select("id")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const pendingSubscription = {
+    user_id: userId,
+    plan_id,
+    status: "pending_payment",
+    current_period_start: new Date().toISOString(),
+    current_period_end: null,
+    blocked_at: null,
+    trial_ends_at: null,
+    asaas_subscription_id: null,
+  };
+
+  if (existingSub) {
+    await supabase.from("subscriptions").update(pendingSubscription).eq("id", existingSub.id);
+  } else {
+    await supabase.from("subscriptions").insert(pendingSubscription);
+  }
+
+  const checkoutOrigin =
+    req.headers.get("origin") ||
+    Deno.env.get("SITE_URL") ||
+    "https://mvbrokerconnect.com.br";
+
+  const checkoutRes = await fetch(`${baseUrl}/v3/checkouts`, {
     method: "POST",
     headers: asaasHeaders,
     body: JSON.stringify({
-      customer: customerId,
-      billingType: "UNDEFINED",
-      value: Number(plan.price),
-      nextDueDate: dueDateStr,
-      cycle: cycleMap[plan.billing_cycle] || "MONTHLY",
-      description: `MV BROKER CONNECT - ${plan.name}`,
+      billingTypes: ["PIX", "CREDIT_CARD"],
+      chargeTypes: ["RECURRENT"],
+      minutesToExpire: 1440,
       externalReference: JSON.stringify({ user_id: userId, plan_id }),
+      callback: {
+        successUrl: `${checkoutOrigin}/painel/assinatura?checkout=success`,
+        cancelUrl: `${checkoutOrigin}/painel/assinatura?checkout=cancelled`,
+        expiredUrl: `${checkoutOrigin}/painel/assinatura?checkout=expired`,
+      },
+      customer: customerId,
+      items: [
+        {
+          name: plan.name,
+          description: `MV BROKER CONNECT - ${plan.name}`,
+          quantity: 1,
+          value: Number(plan.price),
+        },
+      ],
+      subscription: {
+        cycle: cycleMap[plan.billing_cycle] || "MONTHLY",
+        nextDueDate: dueDateStr,
+      },
     }),
   });
-  const subscriptionData = await subscriptionRes.json();
-  if (!subscriptionRes.ok) {
-    console.error("Asaas subscription error:", subscriptionData);
-    return json({ error: "Erro ao criar assinatura no Asaas", details: subscriptionData }, 500);
+  const checkoutData = await checkoutRes.json();
+  if (!checkoutRes.ok) {
+    console.error("Asaas checkout error:", checkoutData);
+    return json({ error: "Erro ao criar checkout recorrente no Asaas", details: checkoutData }, 500);
   }
 
-  if (subscriptionData.id) {
-    const { data: existingSub } = await supabase
-      .from("subscriptions")
-      .select("id")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (existingSub) {
-      await supabase.from("subscriptions").update({
-        plan_id,
-        status: "pending_payment",
-        current_period_start: new Date().toISOString(),
-        current_period_end: dueDateIso,
-        blocked_at: null,
-        trial_ends_at: null,
-        asaas_subscription_id: subscriptionData.id,
-      }).eq("id", existingSub.id);
-    } else {
-      await supabase.from("subscriptions").insert({
-        user_id: userId,
-        plan_id,
-        status: "pending_payment",
-        current_period_start: new Date().toISOString(),
-        current_period_end: dueDateIso,
-        asaas_subscription_id: subscriptionData.id,
-      });
-    }
-  }
-
-  let invoiceUrl = null;
-  if (subscriptionData.id) {
-    const paymentsRes = await fetch(`${baseUrl}/v3/subscriptions/${subscriptionData.id}/payments`, {
-      headers: asaasHeaders,
-    });
-    const paymentsData = await paymentsRes.json();
-    invoiceUrl = paymentsData?.data?.[0]?.invoiceUrl || null;
-  }
-
-  return json({ invoiceUrl, subscription_id: subscriptionData.id });
+  return json({
+    invoiceUrl: checkoutData.link || checkoutData.url || (checkoutData.id ? `https://asaas.com/checkoutSession/show?id=${checkoutData.id}` : null),
+    checkout_id: checkoutData.id,
+  });
 }
 
 async function asaasTest(req: Request) {
@@ -404,8 +443,8 @@ async function asaasTest(req: Request) {
   if (!apiKey) return json({ error: "Informe a API Key do Asaas." }, 400);
 
   const baseUrl = environment === "production"
-    ? "https://api.asaas.com/api"
-    : "https://sandbox.asaas.com/api";
+    ? "https://api.asaas.com"
+    : "https://api-sandbox.asaas.com";
   const testRes = await fetch(`${baseUrl}/v3/customers?limit=1&offset=0`, {
     headers: {
       "Content-Type": "application/json",
@@ -433,17 +472,17 @@ async function asaasWebhook(req: Request) {
   }
 
   const body = await req.json();
-  const { event, payment } = body;
-  const paymentEvents = ["PAYMENT_CONFIRMED", "PAYMENT_RECEIVED", "PAYMENT_OVERDUE", "PAYMENT_REFUNDED", "PAYMENT_DELETED"];
+  const { event, payment, checkout } = body;
+  const paymentEvents = ["PAYMENT_CONFIRMED", "PAYMENT_RECEIVED", "PAYMENT_OVERDUE", "PAYMENT_REFUNDED", "PAYMENT_DELETED", "CHECKOUT_PAID"];
   if (!paymentEvents.includes(event)) return json({ ok: true });
-  if (!payment?.externalReference && !payment?.subscription) return json({ ok: true });
+  if (!payment?.externalReference && !payment?.subscription && !checkout?.externalReference) return json({ ok: true });
 
   const supabase = createClient(Deno.env.get("SUPABASE_URL")!, getServiceKey());
   let externalRef: { user_id: string; plan_id: string } | null = null;
 
-  if (payment.externalReference) {
+  if (payment?.externalReference || checkout?.externalReference) {
     try {
-      externalRef = JSON.parse(payment.externalReference);
+      externalRef = JSON.parse(payment?.externalReference || checkout?.externalReference);
     } catch {
       externalRef = null;
     }
@@ -454,8 +493,8 @@ async function asaasWebhook(req: Request) {
     const apiKey = settings.asaas_api_key;
     if (!apiKey) return json({ ok: true, skipped: "asaas_not_configured" });
     const baseUrl = settings.asaas_environment === "production"
-      ? "https://api.asaas.com/api"
-      : "https://sandbox.asaas.com/api";
+      ? "https://api.asaas.com"
+      : "https://api-sandbox.asaas.com";
     const subRes = await fetch(`${baseUrl}/v3/subscriptions/${payment.subscription}`, {
       headers: { access_token: apiKey },
     });
@@ -487,8 +526,9 @@ async function asaasWebhook(req: Request) {
     .limit(1)
     .maybeSingle();
 
-  if (event === "PAYMENT_CONFIRMED" || event === "PAYMENT_RECEIVED") {
+  if (event === "PAYMENT_CONFIRMED" || event === "PAYMENT_RECEIVED" || event === "CHECKOUT_PAID") {
     const periodEnd = await getPeriodEnd(externalRef.plan_id);
+    const asaasSubscriptionId = payment?.subscription || checkout?.subscription || checkout?.id || payment?.id;
     let subscriptionId = existingSub?.id;
     if (subscriptionId) {
       await supabase.from("subscriptions").update({
@@ -497,7 +537,7 @@ async function asaasWebhook(req: Request) {
         current_period_start: now.toISOString(),
         current_period_end: periodEnd.toISOString(),
         blocked_at: null,
-        asaas_subscription_id: payment.subscription || String(payment.id),
+        asaas_subscription_id: asaasSubscriptionId ? String(asaasSubscriptionId) : null,
       }).eq("id", subscriptionId);
     } else {
       const { data: newSub } = await supabase.from("subscriptions").insert({
@@ -506,12 +546,12 @@ async function asaasWebhook(req: Request) {
         status: "active",
         current_period_start: now.toISOString(),
         current_period_end: periodEnd.toISOString(),
-        asaas_subscription_id: payment.subscription || String(payment.id),
+        asaas_subscription_id: asaasSubscriptionId ? String(asaasSubscriptionId) : null,
       }).select("id").single();
       subscriptionId = newSub?.id;
     }
 
-    if (subscriptionId) {
+    if (subscriptionId && payment?.id) {
       await recordAsaasPayment(supabase, {
         subscription_id: subscriptionId,
         amount: payment.value,
@@ -521,6 +561,11 @@ async function asaasWebhook(req: Request) {
         reference_period: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`,
       });
     }
+    await supabase.from("profiles").update({
+      approval_status: "approved",
+      rejection_reason: null,
+      approved_at: now.toISOString(),
+    }).eq("user_id", externalRef.user_id);
   } else if (event === "PAYMENT_OVERDUE" && existingSub) {
     const periodEnd = existingSub.current_period_end ? new Date(existingSub.current_period_end) : null;
     const shouldBlock = periodEnd && (periodEnd.getTime() + 7 * 86400000 < now.getTime());
