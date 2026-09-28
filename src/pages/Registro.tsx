@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -13,10 +13,24 @@ export default function Registro() {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [accountType, setAccountType] = useState<"corretor" | "imobiliaria" | "parceiro">("corretor");
+  const [selectedPlanId, setSelectedPlanId] = useState("");
   const [loading, setLoading] = useState(false);
   const [emailEnviado, setEmailEnviado] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tipo = params.get("tipo");
+    const planId = params.get("plan_id") || params.get("plan");
+    if (tipo === "corretor" || tipo === "imobiliaria" || tipo === "parceiro") {
+      setAccountType(tipo);
+    }
+    if (planId) {
+      setSelectedPlanId(planId);
+      window.localStorage.setItem("mv_connect_pending_plan_id", planId);
+    }
+  }, []);
 
   const traduzErro = (msg: string) => {
     const m = msg.toLowerCase();
@@ -36,7 +50,12 @@ export default function Registro() {
       email,
       password,
       options: {
-        data: { full_name: fullName, phone, account_type: accountType },
+        data: {
+          full_name: fullName,
+          phone,
+          account_type: accountType,
+          selected_plan_id: selectedPlanId || undefined,
+        },
         emailRedirectTo: window.location.origin,
       },
     });
@@ -63,7 +82,7 @@ export default function Registro() {
       title: "Conta criada!",
       description: "Seu cadastro foi enviado para aprovação.",
     });
-    navigate("/escolher-plano");
+    navigate(selectedPlanId ? `/escolher-plano?plan_id=${selectedPlanId}` : "/escolher-plano");
   };
 
   if (emailEnviado) {

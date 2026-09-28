@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/data/mockData";
 import logoImg from "@/assets/logo.png";
 import sharkFriendlyIcon from "@/assets/shark-friendly.png";
@@ -49,8 +50,10 @@ const CYCLE_LABELS: Record<string, string> = {
 export default function Planos() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
+  const [checkoutPlanId, setCheckoutPlanId] = useState<string | null>(null);
   const [tab, setTab] = useState<"corretor" | "parceiro">("corretor");
   const { user, profile, signOut } = useAuth();
+  const { toast } = useToast();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -66,6 +69,42 @@ export default function Planos() {
     };
     fetchPlans();
   }, []);
+
+  const handlePlanClick = async (plan: Plan) => {
+    if (!user) {
+      const tipo = plan.plan_type === "parceiro" ? "parceiro" : "corretor";
+      navigate(`/registro?tipo=${tipo}&plan_id=${plan.id}`);
+      return;
+    }
+
+    setCheckoutPlanId(plan.id);
+    try {
+      const { data, error } = await supabase.functions.invoke("asaas-checkout", {
+        body: { plan_id: plan.id, user_id: user.id },
+      });
+
+      if (error) throw error;
+
+      if (data?.invoiceUrl) {
+        window.location.href = data.invoiceUrl;
+        return;
+      }
+
+      toast({
+        title: "Checkout não disponível",
+        description: data?.error || "Não foi possível abrir o checkout do Asaas para este plano.",
+        variant: "destructive",
+      });
+    } catch (err: any) {
+      toast({
+        title: "Erro no checkout",
+        description: err?.message || "Tente novamente em alguns instantes.",
+        variant: "destructive",
+      });
+    } finally {
+      setCheckoutPlanId(null);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -232,16 +271,22 @@ export default function Planos() {
                     ))}
                   </div>
 
-                  <Link
-                    to={user ? "/painel/assinatura" : "/registro"}
+                  <button
+                    type="button"
+                    disabled={checkoutPlanId === plan.id}
+                    onClick={() => handlePlanClick(plan)}
                     className={cn(
-                      "w-full py-3 rounded-xl text-white text-sm font-bold flex items-center justify-center gap-2 transition-all",
+                      "w-full py-3 rounded-xl text-white text-sm font-bold flex items-center justify-center gap-2 transition-all disabled:cursor-wait disabled:opacity-70",
                       colors.btn
                     )}
                   >
-                    {user ? "Gerenciar Plano" : "Começar Agora"}
+                    {checkoutPlanId === plan.id
+                      ? "Abrindo checkout..."
+                      : user
+                        ? "Assinar com Asaas"
+                        : "Começar Agora"}
                     <ArrowRight className="w-4 h-4" />
-                  </Link>
+                  </button>
                 </div>
               );
             })}
@@ -259,7 +304,7 @@ export default function Planos() {
           {[
             { q: "Posso trocar de plano depois?", a: "Sim! Você pode fazer upgrade ou downgrade a qualquer momento." },
             { q: "Existe período de teste?", a: "Sim, todos os planos oferecem período de teste gratuito para você experimentar a plataforma." },
-            { q: "Como funciona o pagamento?", a: "O pagamento é processado de forma segura via Mercado Pago, com renovação automática." },
+            { q: "Como funciona o pagamento?", a: "O pagamento é processado em uma página segura do Asaas, com opções de Pix e cartão." },
             { q: "Posso cancelar a qualquer momento?", a: "Sim, sem multas ou taxas de cancelamento. Você mantém acesso até o fim do período pago." },
           ].map((faq, i) => (
             <div key={i} className="bg-white rounded-xl border border-gray-200 p-5">

@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -24,11 +24,13 @@ interface Plan {
 export default function EscolherPlano() {
   const { user, signOut, refreshUserData } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectingId, setSelectingId] = useState<string | null>(null);
   const [accountType, setAccountType] = useState<string>("corretor");
+  const autoCheckoutRef = useRef(false);
 
   useEffect(() => {
     const load = async () => {
@@ -74,6 +76,7 @@ export default function EscolherPlano() {
     }
     await refreshUserData();
     toast({ title: "Plano ativado!", description: "Aproveite o MV BROKER CONNECT." });
+    window.localStorage.removeItem("mv_connect_pending_plan_id");
     setSelectingId(null);
     navigate(homePath, { replace: true });
   };
@@ -111,8 +114,23 @@ export default function EscolherPlano() {
     }
 
     window.open(data.invoiceUrl, "_blank");
+    window.localStorage.removeItem("mv_connect_pending_plan_id");
     navigate("/painel/assinatura");
   };
+
+  useEffect(() => {
+    if (loading || !user || autoCheckoutRef.current || plans.length === 0) return;
+    const pendingPlanId = searchParams.get("plan_id") || window.localStorage.getItem("mv_connect_pending_plan_id");
+    if (!pendingPlanId) return;
+    const plan = plans.find((item) => item.id === pendingPlanId);
+    if (!plan) return;
+    autoCheckoutRef.current = true;
+    if (plan.is_free) {
+      handleSelectFree(plan);
+    } else {
+      handleSelectPaid(plan);
+    }
+  }, [loading, plans, searchParams, user]);
 
   const cycleLabel = (c: string) =>
     c === "monthly" ? "/mês" : c === "quarterly" ? "/trim." : c === "semiannual" ? "/sem." : c === "annual" ? "/ano" : "";
