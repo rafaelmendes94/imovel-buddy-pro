@@ -350,8 +350,9 @@ async function asaasCheckout(req: Request) {
   const nextDueDate = new Date();
   nextDueDate.setDate(nextDueDate.getDate() + 1);
   const dueDateStr = nextDueDate.toISOString().split("T")[0];
+  const dueDateIso = `${dueDateStr}T12:00:00.000Z`;
 
-  const { data: existingSub } = await supabase
+  let { data: existingSub } = await supabase
     .from("subscriptions")
     .select("id")
     .eq("user_id", userId)
@@ -373,7 +374,12 @@ async function asaasCheckout(req: Request) {
   if (existingSub) {
     await supabase.from("subscriptions").update(pendingSubscription).eq("id", existingSub.id);
   } else {
-    await supabase.from("subscriptions").insert(pendingSubscription);
+    const { data: insertedSub } = await supabase
+      .from("subscriptions")
+      .insert(pendingSubscription)
+      .select("id")
+      .single();
+    existingSub = insertedSub;
   }
 
   const checkoutOrigin =
@@ -381,45 +387,56 @@ async function asaasCheckout(req: Request) {
     Deno.env.get("SITE_URL") ||
     "https://mvbrokerconnect.com.br";
 
-  const checkoutRes = await fetch(`${baseUrl}/v3/checkouts`, {
+  const subscriptionRes = await fetch(`${baseUrl}/v3/subscriptions`, {
     method: "POST",
     headers: asaasHeaders,
     body: JSON.stringify({
-      billingTypes: ["PIX", "CREDIT_CARD"],
-      chargeTypes: ["RECURRENT", "DETACHED"],
-      minutesToExpire: 1440,
+      customer: customerId,
+      billingType: "UNDEFINED",
+      value: Number(plan.price),
+      nextDueDate: dueDateStr,
+      cycle: cycleMap[plan.billing_cycle] || "MONTHLY",
+      description: `MV BROKER CONNECT - ${plan.name}`,
       externalReference: JSON.stringify({ user_id: userId, plan_id }),
       callback: {
         successUrl: `${checkoutOrigin}/painel/assinatura?checkout=success`,
-        cancelUrl: `${checkoutOrigin}/painel/assinatura?checkout=cancelled`,
-        expiredUrl: `${checkoutOrigin}/painel/assinatura?checkout=expired`,
-      },
-      customer: customerId,
-      items: [
-        {
-          name: plan.name,
-          description: `MV BROKER CONNECT - ${plan.name}`,
-          quantity: 1,
-          value: Number(plan.price),
-        },
-      ],
-      subscription: {
-        cycle: cycleMap[plan.billing_cycle] || "MONTHLY",
-        nextDueDate: dueDateStr,
       },
     }),
   });
-  const checkoutData = await checkoutRes.json();
-  if (!checkoutRes.ok) {
-    console.error("Asaas checkout error:", checkoutData);
-    const description = checkoutData?.errors?.map((item: any) => item.description).filter(Boolean).join(" ");
-    return json({ error: description || "Erro ao criar checkout recorrente no Asaas", details: checkoutData });
+  const subscriptionData = await subscriptionRes.json();
+  if (!subscriptionRes.ok) {
+    console.error("Asaas subscription error:", subscriptionData);
+    const description = subscriptionData?.errors?.map((item: any) => item.description).filter(Boolean).join(" ");
+    return json({ error: description || "Erro ao criar assinatura recorrente no Asaas", details: subscriptionData });
   }
 
-  return json({
-    invoiceUrl: checkoutData.link || checkoutData.url || (checkoutData.id ? `https://asaas.com/checkoutSession/show?id=${checkoutData.id}` : null),
-    checkout_id: checkoutData.id,
-  });
+  if (subscriptionData.id) {
+    const updatePayload = {
+      plan_id,
+      status: "pending_payment",
+      current_period_start: new Date().toISOString(),
+      current_period_end: dueDateIso,
+      blocked_at: null,
+      trial_ends_at: null,
+      asaas_subscription_id: subscriptionData.id,
+    };
+    if (existingSub) {
+      await supabase.from("subscriptions").update(updatePayload).eq("id", existingSub.id);
+    } else {
+      await supabase.from("subscriptions").insert({ user_id: userId, ...updatePayload });
+    }
+  }
+
+  let invoiceUrl = subscriptionData.invoiceUrl || subscriptionData.bankSlipUrl || null;
+  if (subscriptionData.id) {
+    const paymentsRes = await fetch(`${baseUrl}/v3/subscriptions/${subscriptionData.id}/payments`, {
+      headers: asaasHeaders,
+    });
+    const paymentsData = await paymentsRes.json();
+    invoiceUrl = paymentsData?.data?.[0]?.invoiceUrl || paymentsData?.data?.[0]?.bankSlipUrl || invoiceUrl;
+  }
+
+  return json({ invoiceUrl, subscription_id: subscriptionData.id });
 }
 
 async function asaasTest(req: Request) {
