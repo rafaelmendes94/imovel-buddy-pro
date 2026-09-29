@@ -43,6 +43,7 @@ const PLAN_COLORS = [
 const CYCLE_LABELS: Record<string, string> = {
   monthly: "/mês",
   quarterly: "/trimestre",
+  semiannual: "/semestre",
   annual: "/ano",
 };
 

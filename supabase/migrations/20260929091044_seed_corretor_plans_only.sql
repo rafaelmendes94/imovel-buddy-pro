@@ -17,7 +17,14 @@ DECLARE
 BEGIN
   UPDATE public.plans
   SET is_active = false
-  WHERE name NOT IN ('Plano 5 Imóveis', 'Plano 10 Imóveis', 'Plano 20 Imóveis');
+  WHERE name NOT IN (
+    'Plano 5 Imóveis',
+    'Plano 10 Imóveis',
+    'Plano 20 Imóveis',
+    'Plano 5 Imóveis Semestral',
+    'Plano 10 Imóveis Semestral',
+    'Plano 20 Imóveis Semestral'
+  );
 
   INSERT INTO public.plans (
     name, price, billing_cycle, trial_days, max_properties, max_brokers,
