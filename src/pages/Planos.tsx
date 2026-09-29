@@ -8,8 +8,7 @@ import logoImg from "@/assets/logo.png";
 import sharkFriendlyIcon from "@/assets/shark-friendly.png";
 import {
   Check, Star, Zap, Crown, Rocket, ArrowRight, Building2,
-  Users, ChevronDown, User, LayoutDashboard, Settings,
-  CreditCard, LogOut, Heart,
+  ChevronDown, User, LayoutDashboard, CreditCard, LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SharkAI } from "@/components/SharkAI";
@@ -51,7 +50,6 @@ export default function Planos() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const [checkoutPlanId, setCheckoutPlanId] = useState<string | null>(null);
-  const [tab, setTab] = useState<"corretor" | "parceiro">("corretor");
   const { user, profile, signOut } = useAuth();
   const { toast } = useToast();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -174,31 +172,12 @@ export default function Planos() {
           <span className="text-primary">para o seu negócio</span>
         </h1>
         <p className="text-gray-500 text-base sm:text-lg max-w-2xl mx-auto">
-          Gerencie seus imóveis, corretores e vendas com a plataforma mais completa do mercado imobiliário.
+          Planos mensais para corretores organizarem imóveis, contatos e vendas em uma plataforma simples e completa.
         </p>
       </section>
 
       {/* Plans Grid */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 pt-8">
-        <div className="flex justify-center mb-10">
-          <div className="inline-flex p-1 bg-gray-100 rounded-xl">
-            {([
-              { key: "corretor", label: "Corretor / Imobiliária" },
-              { key: "parceiro", label: "Parceiro" },
-            ] as const).map(t => (
-              <button
-                key={t.key}
-                onClick={() => setTab(t.key)}
-                className={cn(
-                  "px-5 py-2 rounded-lg text-sm font-semibold transition-all",
-                  tab === t.key ? "bg-white shadow text-primary" : "text-gray-600 hover:text-gray-900"
-                )}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
-        </div>
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3].map(i => (
@@ -206,9 +185,7 @@ export default function Planos() {
             ))}
           </div>
         ) : (() => {
-          const filtered = plans.filter(p =>
-            tab === "parceiro" ? p.plan_type === "parceiro" : p.plan_type !== "parceiro"
-          );
+          const filtered = plans.filter(p => p.plan_type === "corretor");
           if (filtered.length === 0) return <p className="text-center text-gray-500 py-16">Nenhum plano disponível no momento.</p>;
           return (
           <div className={cn(
@@ -264,7 +241,6 @@ export default function Planos() {
 
                   <div className="space-y-3 flex-1 mb-6">
                     <FeatureItem icon={Building2} text={`Até ${plan.max_properties} imóveis`} />
-                    <FeatureItem icon={Users} text={`Até ${plan.max_brokers} corretores`} />
                     {modules.map((mod, i) => (
                       <FeatureItem key={i} icon={Check} text={String(mod)} />
                     ))}

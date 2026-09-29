@@ -29,7 +29,7 @@ interface PlanForm {
 
 const emptyForm: PlanForm = {
   name: "", price: "", billing_cycle: "monthly", trial_days: "7",
-  max_properties: "50", max_brokers: "5", modules: [], plan_type: "corretor", is_free: false,
+  max_properties: "50", max_brokers: "1", modules: [], plan_type: "corretor", is_free: false,
   description: "", discount_percent: "0", notes: "",
 };
 
@@ -81,7 +81,7 @@ export default function AdminPlanos() {
       billing_cycle: form.billing_cycle as any,
       trial_days: form.is_free ? 0 : parseInt(form.trial_days),
       max_properties: parseInt(form.max_properties),
-      max_brokers: form.plan_type === "corretor" ? 1 : parseInt(form.max_brokers),
+      max_brokers: 1,
       modules: form.modules,
       plan_type: form.plan_type,
       is_free: form.is_free,
@@ -175,11 +175,10 @@ export default function AdminPlanos() {
               <div className="space-y-3 max-h-[60vh] overflow-y-auto">
                 <Input placeholder="Nome do plano" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} />
                 <div className="grid grid-cols-2 gap-3">
-                  <Select value={form.plan_type} onValueChange={v => setForm(p => ({ ...p, plan_type: v, max_brokers: v === "corretor" ? "1" : p.max_brokers }))}>
+                  <Select value={form.plan_type} onValueChange={v => setForm(p => ({ ...p, plan_type: v, max_brokers: "1" }))}>
                     <SelectTrigger><SelectValue placeholder="Tipo" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="corretor">Corretor</SelectItem>
-                      <SelectItem value="imobiliaria">Imobiliária</SelectItem>
                     </SelectContent>
                   </Select>
                   <Select value={form.billing_cycle} onValueChange={v => setForm(p => ({ ...p, billing_cycle: v }))}>
@@ -210,9 +209,6 @@ export default function AdminPlanos() {
                 <Input placeholder="Observações internas" value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} />
                 <div className="grid grid-cols-2 gap-3">
                   <Input type="number" placeholder="Máx imóveis" value={form.max_properties} onChange={e => setForm(p => ({ ...p, max_properties: e.target.value }))} />
-                  {form.plan_type === "imobiliaria" && (
-                    <Input type="number" placeholder="Máx corretores" value={form.max_brokers} onChange={e => setForm(p => ({ ...p, max_brokers: e.target.value }))} />
-                  )}
                 </div>
                 <div>
                   <p className="text-sm font-medium text-foreground mb-2">Módulos inclusos</p>
