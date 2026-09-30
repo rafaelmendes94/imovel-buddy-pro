@@ -429,16 +429,16 @@ const getSavedCategoryOrder = (): typeof defaultCategories => {
 
 export default function Properties() {
   const navigate = useNavigate();
-  const { user, subscription, isSuperAdmin, isAdminStaff, hasModuleAccess } = useAuth();
-  const canCreateImoveis = isSuperAdmin || (isAdminStaff && hasModuleAccess("imoveis", "create"));
-  const canEditImoveis = isSuperAdmin || (isAdminStaff && hasModuleAccess("imoveis", "edit"));
-  const canDeleteImoveis = isSuperAdmin || (isAdminStaff && hasModuleAccess("imoveis", "delete"));
+  const { user, subscription, isSuperAdmin, isAdminStaff, isBroker, hasModuleAccess } = useAuth();
+  const canCreateImoveis = isSuperAdmin || isBroker || (isAdminStaff && hasModuleAccess("imoveis", "create"));
+  const canEditImoveis = isSuperAdmin || isBroker || (isAdminStaff && hasModuleAccess("imoveis", "edit"));
+  const canDeleteImoveis = isSuperAdmin || isBroker || (isAdminStaff && hasModuleAccess("imoveis", "delete"));
   const canBulkSelectImoveis = canEditImoveis || canDeleteImoveis;
   const [currentImoveis, setCurrentImoveis] = useState(0);
   const [importOpen, setImportOpen] = useState(false);
   const [pdfImportOpen, setPdfImportOpen] = useState(false);
   const maxImoveis = subscription?.plan?.max_properties ?? 0;
-  const limitReached = !isSuperAdmin && !isAdminStaff && maxImoveis > 0 && currentImoveis >= maxImoveis;
+  const limitReached = isBroker && (maxImoveis <= 0 || currentImoveis >= maxImoveis);
 
   useEffect(() => {
     if (!user) return;
@@ -1140,7 +1140,7 @@ export default function Properties() {
                     <Plus className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Novo</span> Imóvel
                   </button>
                 )}
-                {maxImoveis > 0 && (
+                {isBroker && maxImoveis > 0 && (
                   <span className={cn("text-[10px] font-medium", limitReached ? "text-destructive" : "text-muted-foreground")}>
                     {currentImoveis} de {maxImoveis} imóveis
                   </span>

@@ -84,38 +84,8 @@ export default function EscolherPlano() {
   const handleSelectPaid = async (plan: Plan) => {
     if (!user) return;
     setSelectingId(plan.id);
-
-    const { error: subscriptionError } = await supabase.rpc("create_trial_subscription", {
-      _user_id: user.id,
-      _plan_id: plan.id,
-    });
-
-    if (subscriptionError) {
-      toast({ title: "Erro", description: subscriptionError.message, variant: "destructive" });
-      setSelectingId(null);
-      return;
-    }
-
-    await refreshUserData();
-
-    const { data, error } = await supabase.functions.invoke("asaas-checkout", {
-      body: { plan_id: plan.id, user_id: user.id },
-    });
-
-    setSelectingId(null);
-
-    if (error || !data?.invoiceUrl) {
-      toast({
-        title: "Pagamento indisponível",
-        description: data?.error || "Não foi possível abrir o checkout. Tente novamente.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    window.location.href = data.invoiceUrl;
-    window.localStorage.removeItem("mv_connect_pending_plan_id");
-    navigate("/painel/assinatura");
+    window.localStorage.setItem("mv_connect_pending_plan_id", plan.id);
+    navigate(`/checkout?plan_id=${plan.id}`);
   };
 
   useEffect(() => {

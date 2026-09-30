@@ -1,12 +1,11 @@
 import { BrokerLayout } from "@/components/BrokerLayout";
 import { useAuth } from "@/hooks/useAuth";
-import { useEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CreditCard, Check, Crown, Loader2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { CreditCard, Check, Crown } from "lucide-react";
 
 const statusLabels: Record<string, string> = {
   trial: "Trial",
@@ -37,8 +36,7 @@ export default function BrokerAssinatura() {
   const [searchParams] = useSearchParams();
   const [plans, setPlans] = useState<any[]>([]);
   const [loadingCheckout, setLoadingCheckout] = useState<string | null>(null);
-  const autoCheckoutRef = useRef(false);
-  const { toast } = useToast();
+  const navigate = useNavigate();
   const selectedPlanId = searchParams.get("plan_id") || window.localStorage.getItem("mv_connect_pending_plan_id");
 
   useEffect(() => {
@@ -46,34 +44,11 @@ export default function BrokerAssinatura() {
     supabase.from("plans").select("*").eq("is_active", true).eq("plan_type", accountType).then(({ data }) => setPlans(data || []));
   }, [profile, user]);
 
-  const handleCheckout = async (planId: string) => {
+  const handleCheckout = (planId: string) => {
     setLoadingCheckout(planId);
-    try {
-      const { data, error } = await supabase.functions.invoke("asaas-checkout", {
-        body: { plan_id: planId, user_id: user?.id },
-      });
-
-      if (error) throw error;
-
-      if (data?.invoiceUrl) {
-        window.localStorage.removeItem("mv_connect_pending_plan_id");
-        window.location.href = data.invoiceUrl;
-      } else if (data?.error) {
-        toast({ title: "Checkout não disponível", description: data.error, variant: "destructive" });
-      } else {
-        toast({ title: "Checkout não disponível", description: "Configure o Asaas nas configurações do sistema.", variant: "destructive" });
-      }
-    } catch (err: any) {
-      toast({ title: "Erro no checkout", description: err.message, variant: "destructive" });
-    }
-    setLoadingCheckout(null);
+    window.localStorage.setItem("mv_connect_pending_plan_id", planId);
+    navigate(`/checkout?plan_id=${planId}`);
   };
-
-  useEffect(() => {
-    if (!selectedPlanId || !user || autoCheckoutRef.current) return;
-    autoCheckoutRef.current = true;
-    handleCheckout(selectedPlanId);
-  }, [selectedPlanId, user]);
 
   const visiblePlans = selectedPlanId ? plans.filter((plan) => plan.id === selectedPlanId) : plans;
 
@@ -81,20 +56,8 @@ export default function BrokerAssinatura() {
     <BrokerLayout>
       <div className="p-4 sm:p-6 space-y-5 sm:space-y-6">
         <h1 className="text-2xl font-bold text-foreground">
-          {selectedPlanId ? "Abrindo checkout" : "Minha Assinatura"}
+          {selectedPlanId ? "Concluir assinatura" : "Minha Assinatura"}
         </h1>
-
-        {selectedPlanId && (
-          <div className="bg-card border border-border rounded-xl p-6 flex items-start gap-3">
-            <Loader2 className="w-5 h-5 text-accent animate-spin mt-0.5" />
-            <div>
-              <h2 className="font-semibold text-foreground">Preparando pagamento no Asaas</h2>
-              <p className="text-sm text-muted-foreground mt-1">
-                Você escolheu o plano na tela anterior. Vamos abrir o checkout seguro automaticamente.
-              </p>
-            </div>
-          </div>
-        )}
 
         {/* Current subscription */}
         {subscription && (
@@ -170,7 +133,7 @@ export default function BrokerAssinatura() {
                     onClick={() => handleCheckout(plan.id)}
                   >
                     <CreditCard className="w-4 h-4 mr-2" />
-                    {isCurrent ? "Plano atual" : loadingCheckout === plan.id ? "Redirecionando..." : "Assinar"}
+                    {isCurrent ? "Plano atual" : loadingCheckout === plan.id ? "Abrindo checkout..." : "Assinar"}
                   </Button>
                 </div>
               );

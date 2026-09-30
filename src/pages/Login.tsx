@@ -40,8 +40,8 @@ export default function Login() {
 
     if (requestedPath && requestedPath !== "/login") {
       navigate(requestedPath, { replace: true });
-    } else if (pendingPlanId && !subscription) {
-      navigate(`/painel/assinatura?plan_id=${pendingPlanId}`, { replace: true });
+    } else if (pendingPlanId && (!subscription || subscription.status === "pending_payment")) {
+      navigate(`/checkout?plan_id=${pendingPlanId}`, { replace: true });
     } else if (roles.includes("super_admin") || roles.includes("admin_staff")) {
       navigate("/dashboard", { replace: true });
     } else if (roles.includes("partner")) {

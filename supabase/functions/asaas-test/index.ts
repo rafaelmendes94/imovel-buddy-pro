@@ -58,7 +58,7 @@ serve(async (req) => {
 
     const baseUrl = environment === "production"
       ? "https://api.asaas.com"
-      : "https://sandbox.asaas.com";
+      : "https://api-sandbox.asaas.com";
 
     const testRes = await fetch(`${baseUrl}/v3/customers?limit=1&offset=0`, {
       method: "GET",

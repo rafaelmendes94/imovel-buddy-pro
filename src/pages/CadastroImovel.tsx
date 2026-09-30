@@ -336,7 +336,7 @@ function computeChanges(original: FormData, current: FormData): { field: string;
 
 export function ImovelForm({ editId }: { editId?: string }) {
   const { toast } = useToast();
-  const { user, profile, isSuperAdmin, isAdminStaff, hasModuleAccess } = useAuth();
+  const { user, profile, subscription, isSuperAdmin, isAdminStaff, isBroker, hasModuleAccess } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(!!editId);
@@ -442,8 +442,8 @@ export function ImovelForm({ editId }: { editId?: string }) {
   const [logsLoading, setLogsLoading] = useState(false);
 
   const isEdit = !!editId;
-  const canCreateImoveis = isSuperAdmin || (isAdminStaff && hasModuleAccess("imoveis", "create"));
-  const canEditImoveis = isSuperAdmin || (isAdminStaff && hasModuleAccess("imoveis", "edit"));
+  const canCreateImoveis = isSuperAdmin || isBroker || (isAdminStaff && hasModuleAccess("imoveis", "create"));
+  const canEditImoveis = isSuperAdmin || isBroker || (isAdminStaff && hasModuleAccess("imoveis", "edit"));
   const canSubmitImovel = isEdit ? canEditImoveis : canCreateImoveis;
   const set = (field: keyof FormData, value: any) => setForm(prev => ({ ...prev, [field]: value }));
 
@@ -780,6 +780,39 @@ export function ImovelForm({ editId }: { editId?: string }) {
     if (isSuperAdmin && !isEdit && !selectedBrokerId) {
       toast({ title: "Selecione o corretor", description: "Escolha de qual corretor é esse imóvel.", variant: "destructive" });
       return;
+    }
+
+    if (!isEdit && isBroker) {
+      const maxProperties = subscription?.plan?.max_properties ?? 0;
+      if (maxProperties <= 0) {
+        toast({
+          title: "Cadastro indisponível",
+          description: "Seu plano não possui uma quantidade de imóveis liberada.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { data: propertyCount, error: countError } = await supabase.rpc("count_imoveis_in_subscription", {
+        _user_id: user.id,
+      });
+      if (countError) {
+        toast({
+          title: "Não foi possível conferir o plano",
+          description: "Tente novamente antes de cadastrar o imóvel.",
+          variant: "destructive",
+        });
+        return;
+      }
+      if ((Number(propertyCount) || 0) >= maxProperties) {
+        toast({
+          title: "Limite do plano atingido",
+          description: `Seu plano permite até ${maxProperties} imóveis. Faça upgrade para cadastrar mais.`,
+          variant: "destructive",
+        });
+        navigate('/imoveis', { replace: true });
+        return;
+      }
     }
     setLoading(true);
 

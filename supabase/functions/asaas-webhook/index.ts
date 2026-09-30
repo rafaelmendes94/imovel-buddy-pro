@@ -6,6 +6,19 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const getServiceKey = () => {
+  const secretKeys = Deno.env.get("SUPABASE_SECRET_KEYS");
+  if (secretKeys) {
+    try {
+      const parsed = JSON.parse(secretKeys);
+      if (parsed?.default) return parsed.default as string;
+    } catch {
+      // Fallback below.
+    }
+  }
+  return Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+};
+
 async function recordAsaasPayment(supabase: any, payload: {
   subscription_id: string;
   amount: number;
@@ -60,8 +73,7 @@ serve(async (req) => {
     const { event, payment, checkout } = body;
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabase = createClient(supabaseUrl, getServiceKey());
 
     // Only process payment events
     const paymentEvents = [

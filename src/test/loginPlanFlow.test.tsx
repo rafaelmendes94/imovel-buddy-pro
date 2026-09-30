@@ -63,6 +63,7 @@ const buildQuery = (result: any) => {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  window.localStorage.clear();
   h.mockUser = { id: "user-123", user_metadata: { account_type: "corretor" } };
 });
 
@@ -139,6 +140,35 @@ describe("Fluxo Login → Escolher Plano → Painel", () => {
     });
   });
 
+  it("login com plano pendente abre o checkout, sem passar pelo dashboard", async () => {
+    window.localStorage.setItem("mv_connect_pending_plan_id", "plan-paid");
+    signInMock.mockResolvedValue({
+      data: { user: { id: "user-123" } },
+      error: null,
+    });
+    fromMock.mockImplementation(() => buildQuery({ data: [{ role: "broker" }], error: null }));
+    rpcMock.mockResolvedValue({
+      data: [{ id: "sub-pending", plan_id: "plan-paid", status: "pending_payment" }],
+      error: null,
+    });
+
+    render(
+      <MemoryRouter initialEntries={["/login"]}>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    fireEvent.change(screen.getByPlaceholderText(/seu@email/i), { target: { value: "broker@test.com" } });
+    fireEvent.change(screen.getByPlaceholderText("••••••••"), { target: { value: "senha123" } });
+    fireEvent.click(screen.getByRole("button", { name: /entrar/i }));
+
+    await waitFor(() => {
+      expect(navigateMock).toHaveBeenCalledWith("/checkout?plan_id=plan-paid", { replace: true });
+    });
+  });
+
   it("seleção de plano gratuito ativa assinatura e vai para /painel", async () => {
     const freePlan = {
       id: "plan-free",
@@ -178,6 +208,41 @@ describe("Fluxo Login → Escolher Plano → Painel", () => {
       });
       expect(refreshUserDataMock).toHaveBeenCalled();
       expect(navigateMock).toHaveBeenCalledWith("/painel", { replace: true });
+    });
+  });
+
+  it("seleção de plano pago abre o checkout sem criar trial", async () => {
+    const paidPlan = {
+      id: "plan-paid",
+      name: "Plano Profissional",
+      price: 199,
+      billing_cycle: "monthly",
+      trial_days: 0,
+      max_properties: 50,
+      max_brokers: 1,
+      modules: ["imoveis"],
+      is_free: false,
+      plan_type: "corretor",
+    };
+
+    fromMock.mockImplementation((table: string) => {
+      if (table === "profiles") return buildQuery({ data: { account_type: "corretor" }, error: null });
+      if (table === "plans") return buildQuery({ data: [paidPlan], error: null });
+      return buildQuery({ data: null, error: null });
+    });
+
+    render(
+      <MemoryRouter>
+        <EscolherPlano />
+      </MemoryRouter>
+    );
+
+    fireEvent.click(await screen.findByRole("button", { name: /assinar agora/i }));
+
+    await waitFor(() => {
+      expect(rpcMock).not.toHaveBeenCalledWith("create_trial_subscription", expect.anything());
+      expect(navigateMock).toHaveBeenCalledWith("/checkout?plan_id=plan-paid");
+      expect(window.localStorage.getItem("mv_connect_pending_plan_id")).toBe("plan-paid");
     });
   });
 });
