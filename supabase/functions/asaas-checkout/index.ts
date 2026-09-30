@@ -77,7 +77,7 @@ const getPixPayment = async (
   };
 };
 
-serve(async (req) => {
+export const handler = async (req: Request) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
@@ -355,4 +355,6 @@ serve(async (req) => {
     console.error("Asaas checkout error:", error);
     return json({ error: error instanceof Error ? error.message : String(error) }, 500);
   }
-});
+};
+
+if (import.meta.main) serve(handler);
