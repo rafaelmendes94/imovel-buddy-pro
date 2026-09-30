@@ -97,7 +97,10 @@ export default function MapasCondominio() {
                           <Download className="w-4 h-4" /> Baixar Mapa PDF
                         </a>
                       ) : (
-                        <span><Download className="w-4 h-4" /> Baixar Mapa PDF</span>
+                        <span className="inline-flex items-center justify-center gap-2">
+                          <Download className="w-4 h-4 shrink-0" />
+                          Baixar Mapa PDF
+                        </span>
                       )}
                     </Button>
                   </CardContent>
