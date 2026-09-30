@@ -186,7 +186,6 @@ export const handler = async (req: Request) => {
         body: JSON.stringify({
           name: profile.full_name || "Cliente",
           email: profile.email,
-          phone: profile.phone || undefined,
           cpfCnpj: cpfCnpj || undefined,
           externalReference: userId,
           notificationDisabled: false,
