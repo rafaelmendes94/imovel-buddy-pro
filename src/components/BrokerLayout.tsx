@@ -1,53 +1,11 @@
-import { useState } from "react";
-import { BrokerSidebar } from "./BrokerSidebar";
-import { Menu, Home, Building2, Zap, Users, MoreHorizontal } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { SubscriptionBanner } from "./SubscriptionBanner";
-import { MobileBottomNav } from "./MobileBottomNav";
+import { AppLayout } from "./AppLayout";
 
 export function BrokerLayout({ children }: { children: React.ReactNode }) {
-  const [mobileOpen, setMobileOpen] = useState(false);
-
   return (
-    <div className="flex min-h-screen bg-background">
-      <div className="hidden lg:block">
-        <BrokerSidebar />
-      </div>
-
-      {mobileOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden" onClick={() => setMobileOpen(false)} />
-      )}
-
-      <div className={cn(
-        "fixed inset-y-0 left-0 z-50 lg:hidden transition-transform duration-300",
-        mobileOpen ? "translate-x-0" : "-translate-x-full"
-      )}>
-        <BrokerSidebar onNavigate={() => setMobileOpen(false)} />
-      </div>
-
-      <main className="flex-1 overflow-auto min-w-0">
-        <div
-          className="lg:hidden sticky top-0 z-30 bg-background/90 backdrop-blur-xl border-b border-border px-4 py-3 flex items-center gap-3"
-          style={{ paddingTop: "calc(0.75rem + env(safe-area-inset-top))" }}
-        >
-          <button onClick={() => setMobileOpen(true)} className="p-2 rounded-xl active:bg-muted transition-colors -ml-2">
-            <Menu className="w-5 h-5 text-foreground" />
-          </button>
-          <span className="text-sm font-bold text-foreground">MV BROKER CONNECT</span>
-        </div>
-        <SubscriptionBanner />
-        <div className="pb-[76px] lg:pb-0">{children}</div>
-      </main>
-
-      <MobileBottomNav
-        items={[
-          { label: "Início", icon: Home, path: "/painel" },
-          { label: "Imóveis", icon: Building2, path: "/painel/imoveis" },
-          { label: "Cadastrar", icon: Zap, path: "/painel/cadastro-rapido" },
-          { label: "Corretores", icon: Users, path: "/painel/corretores" },
-          { label: "Menu", icon: MoreHorizontal, action: () => setMobileOpen(true) },
-        ]}
-      />
-    </div>
+    <AppLayout>
+      <SubscriptionBanner />
+      {children}
+    </AppLayout>
   );
 }

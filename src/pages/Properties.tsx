@@ -1062,22 +1062,22 @@ export default function Properties() {
         <div className="flex flex-col gap-3">
           <BackButton />
           {/* Action buttons row */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h1 className="text-lg sm:text-xl font-bold text-foreground flex items-center gap-2">
               <Building2 className="w-5 h-5 text-accent" /> Imóveis
             </h1>
-            <div className="flex flex-wrap gap-2 w-full sm:w-auto sm:flex-shrink-0">
+            <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center sm:justify-end lg:flex-nowrap">
 
               <button
                 onClick={() => navigate("/relatorios")}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-colors"
+                className="flex h-9 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg bg-primary px-3 text-xs font-bold text-primary-foreground transition-colors hover:bg-primary/90"
               >
                 <BarChart3 className="w-3.5 h-3.5" /> Relatórios
               </button>
-              <div className="relative" ref={xmlMenuRef}>
+              <div className="relative w-full sm:w-auto" ref={xmlMenuRef}>
                 <button
                   onClick={() => setShowXmlMenu(!showXmlMenu)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-card border border-input text-foreground text-xs font-medium hover:bg-muted transition-colors"
+                  className="flex h-9 w-full items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-input bg-card px-3 text-xs font-medium text-foreground transition-colors hover:bg-muted sm:w-auto"
                 >
                   <FileCode className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Exportar</span> XML <ChevronDown className="w-3 h-3" />
                 </button>
@@ -1093,11 +1093,11 @@ export default function Properties() {
                   </div>
                 )}
               </div>
-              <div className="flex flex-row flex-wrap sm:flex-col items-center sm:items-end gap-2 sm:gap-0.5">
+              <div className="contents">
                 {canCreateImoveis && (
                   <button
                     onClick={() => setImportOpen(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-secondary text-secondary-foreground hover:bg-muted transition-colors mb-1"
+                    className="flex h-9 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg bg-secondary px-3 text-xs font-semibold text-secondary-foreground transition-colors hover:bg-muted"
                     title="Importar planilha Excel"
                   >
                     <FolderDown className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Importar</span> Excel
@@ -1106,7 +1106,7 @@ export default function Properties() {
                 <button
                   onClick={handleExportXls}
                   disabled={exportingXls}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-secondary text-secondary-foreground hover:bg-muted transition-colors mb-1 disabled:opacity-50"
+                  className="flex h-9 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg bg-secondary px-3 text-xs font-semibold text-secondary-foreground transition-colors hover:bg-muted disabled:opacity-50"
                   title="Exportar imóveis em Excel (formato de importação MV)"
                 >
                   <Download className="w-3.5 h-3.5" /> <span className="hidden sm:inline">{exportingXls ? "Gerando..." : "Exportar"}</span> XLS
@@ -1114,7 +1114,7 @@ export default function Properties() {
                 {canCreateImoveis && (
                   <button
                     onClick={() => setPdfImportOpen(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-card border border-input text-muted-foreground hover:bg-muted hover:text-foreground transition-colors mb-1"
+                    className="flex h-9 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-input bg-card px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                     title="Importar imóveis de uma tabela em PDF (BETA)"
                   >
                     <FlaskConical className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Importar tabela</span> PDF
@@ -1132,7 +1132,7 @@ export default function Properties() {
                     }}
                     disabled={limitReached}
                     className={cn(
-                      "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-opacity",
+                      "flex h-9 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-3 text-xs font-semibold transition-opacity",
                       limitReached ? "bg-muted text-muted-foreground cursor-not-allowed" : "gradient-gold text-primary hover:opacity-90"
                     )}
                     title={limitReached ? "Limite atingido — faça upgrade" : "Novo imóvel"}
@@ -1141,7 +1141,7 @@ export default function Properties() {
                   </button>
                 )}
                 {isBroker && maxImoveis > 0 && (
-                  <span className={cn("text-[10px] font-medium", limitReached ? "text-destructive" : "text-muted-foreground")}>
+                  <span className={cn("col-span-2 text-right text-[10px] font-medium sm:basis-full lg:basis-auto", limitReached ? "text-destructive" : "text-muted-foreground")}>
                     {currentImoveis} de {maxImoveis} imóveis
                   </span>
                 )}

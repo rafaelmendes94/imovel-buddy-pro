@@ -32,6 +32,13 @@ import {
 import { cn } from '@/lib/utils';
 import { resolvePropertyBrokerName } from '@/lib/propertyFlow';
 import { uploadImageToCloudflare, uploadVideoToCloudflare } from '@/lib/cloudflareImages';
+import {
+  clearPropertyDraft,
+  fileToDataUrl,
+  loadPropertyDraftFiles,
+  savePropertyDraftFiles,
+  type PropertyDraft,
+} from '@/lib/propertyDraft';
 
 const statusConfig: Record<string, { label: string; color: string; bg: string; border: string; icon: typeof Home }> = {
   "Disponível": { label: "Ativo", color: "text-emerald-500", bg: "bg-emerald-500/10", border: "border-emerald-500/30", icon: Home },
@@ -356,6 +363,9 @@ export function ImovelForm({ editId }: { editId?: string }) {
   const [pdfGen, setPdfGen] = useState(false);
   const [pdfInfo, setPdfInfo] = useState('');
   const [videoUploading, setVideoUploading] = useState(false);
+  const [draftReady, setDraftReady] = useState(false);
+  const draftRestoredRef = useRef(false);
+  const draftKey = user ? `mv-connect:property-draft:${user.id}:${editId || 'new'}` : '';
 
   /** Gera a apresentação em PDF com TODAS as fotos e grava a URL no campo Fotos PDF. */
   const generateFotosPdf = async () => {
@@ -650,6 +660,67 @@ export function ImovelForm({ editId }: { editId?: string }) {
     };
     load();
   }, [editId, canEditImoveis, navigate, toast]);
+
+  // Restore the form and pending image files after an unexpected reload or tab suspension.
+  useEffect(() => {
+    if (!user || loadingData || draftRestoredRef.current || !draftKey) return;
+    draftRestoredRef.current = true;
+
+    (async () => {
+      try {
+        const raw = localStorage.getItem(draftKey);
+        if (!raw) return;
+        const draft = JSON.parse(raw) as PropertyDraft<FormData, PhotoRef>;
+        if (draft.version !== 1 || !draft.form) return;
+
+        const pendingFiles = await loadPropertyDraftFiles(draftKey).catch(() => []);
+        const previews = await Promise.all(pendingFiles.map(fileToDataUrl));
+        setForm(prev => ({ ...prev, ...draft.form }));
+        setSelectedBrokerId(draft.selectedBrokerId || '');
+        setExistingImages(Array.isArray(draft.existingImages) ? draft.existingImages : []);
+        setImages(pendingFiles);
+        setImagePreviews(previews);
+        setPhotoOrder(Array.isArray(draft.photoOrder) ? draft.photoOrder : []);
+        toast({
+          title: 'Rascunho restaurado',
+          description: 'Os dados que você estava cadastrando foram recuperados.',
+        });
+      } catch (error) {
+        console.error('Não foi possível restaurar o rascunho do imóvel', error);
+      } finally {
+        setDraftReady(true);
+      }
+    })();
+  }, [draftKey, loadingData, toast, user]);
+
+  // Keep a durable draft while typing. IndexedDB preserves File objects selected by the user.
+  useEffect(() => {
+    if (!draftReady || !draftKey) return;
+    const saveDraft = () => {
+      const draft: PropertyDraft<FormData, PhotoRef> = {
+        version: 1,
+        savedAt: new Date().toISOString(),
+        form,
+        selectedBrokerId,
+        existingImages,
+        photoOrder,
+      };
+      localStorage.setItem(draftKey, JSON.stringify(draft));
+      void savePropertyDraftFiles(draftKey, images).catch(error =>
+        console.error('Não foi possível salvar as imagens do rascunho', error),
+      );
+    };
+
+    const timer = window.setTimeout(saveDraft, 500);
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') saveDraft();
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => {
+      window.clearTimeout(timer);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  }, [draftKey, draftReady, existingImages, form, images, photoOrder, selectedBrokerId]);
 
   // Load logs for edit mode
   useEffect(() => {
@@ -947,6 +1018,7 @@ export function ImovelForm({ editId }: { editId?: string }) {
         toast({ title: "Sucesso! ✅", description: "Imóvel cadastrado com sucesso!" });
       }
 
+      if (draftKey) await clearPropertyDraft(draftKey);
       navigate('/imoveis');
     } catch (error: any) {
       toast({ title: isEdit ? "Erro ao atualizar" : "Erro ao cadastrar", description: error.message, variant: "destructive" });
