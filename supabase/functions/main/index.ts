@@ -8,6 +8,7 @@ import { handler as sharkAi } from "../shark-ai/index.ts";
 import { handler as parseImovelIa } from "../parse-imovel-ia/index.ts";
 import { handler as parseTabelaPdfIa } from "../parse-tabela-pdf-ia/index.ts";
 import { handler as asaasCheckoutCurrent } from "../asaas-checkout/index.ts";
+import { handler as asaasSyncStatus } from "../asaas-sync-status/index.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -723,6 +724,7 @@ serve(async (req: Request) => {
   try {
     const fn = getFunctionName(req);
     if (fn === "asaas-checkout") return await asaasCheckoutCurrent(req);
+    if (fn === "asaas-sync-status") return await asaasSyncStatus(req);
     if (fn === "asaas-test") return await asaasTest(req);
     if (fn === "asaas-webhook") return await asaasWebhook(req);
     if (fn === "admin-create-broker") return await adminCreateBroker(req);

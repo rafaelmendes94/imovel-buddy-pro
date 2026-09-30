@@ -74,6 +74,15 @@ export function PlanPaymentCheckout({
 
   const checkPayment = useCallback(async () => {
     if (!user) return false;
+    const { data: syncData } = await supabase.functions.invoke("asaas-sync-status");
+    if (syncData?.status === "active") {
+      window.localStorage.removeItem("mv_connect_pending_plan_id");
+      await refreshUserData();
+      toast({ title: "Pagamento confirmado!", description: "Seu plano já está liberado." });
+      navigate(destination, { replace: true });
+      return true;
+    }
+
     const { data } = await supabase.rpc("get_effective_subscription", { _user_id: user.id });
     const current = Array.isArray(data) ? data[0] : null;
     if (current?.status !== "active" && current?.status !== "trial") return false;
