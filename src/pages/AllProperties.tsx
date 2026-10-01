@@ -1,7 +1,6 @@
 import { PublicMobileNav } from "@/components/PublicMobileNav";
 import { PLACEHOLDER_IMAGE } from "@/lib/placeholderImage";
 import { getPropertyUnitParts } from "@/lib/propertyIdentity";
-import { PUBLIC_IMOVEL_COLUMNS } from "@/lib/publicImovelColumns";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { formatCurrency } from "@/data/mockData";
@@ -267,12 +266,13 @@ export default function AllProperties() {
   useEffect(() => {
     const fetchProperties = async () => {
       setLoading(true);
-      let query: any = (supabase.from('imoveis') as any)
-        .select(`${PUBLIC_IMOVEL_COLUMNS}, edificios(nome), condominios(nome), empreendimentos(nome)`);
+      let query: any = (supabase as any)
+        .from('public_imoveis')
+        .select('*');
       if (sharedIds && sharedIds.length) {
         query = query.in('id', sharedIds);
       } else {
-        query = query.eq('ativo_site', true).neq('status', 'Vendido');
+        query = query.neq('status', 'Vendido');
       }
       const { data, error } = await query;
 

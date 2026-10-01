@@ -6,7 +6,6 @@ import {
   BedDouble, Bath, Car, Ruler, X, ArrowLeft, RefreshCw, Navigation, ChevronUp, ChevronDown,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { PUBLIC_IMOVEL_COLUMNS } from "@/lib/publicImovelColumns";
 import { PLACEHOLDER_IMAGE } from "@/lib/placeholderImage";
 import { FallbackImage } from "@/components/FallbackImage";
 import { useGoogleMapsLoader } from "@/hooks/useGoogleMapsLoader";
@@ -44,15 +43,6 @@ type Imovel = {
   edificios?: { nome: string } | null;
   empreendimentos?: { nome: string } | null;
 };
-
-const COLS = [
-  "id", "titulo", "tipo", "preco", "quartos", "suites", "banheiros", "vagas",
-  "area", "area_privativa", "bairro", "cidade", "endereco", "empreendimento",
-  "imagens", "latitude", "longitude", "vista_mar", "decorado", "aceita_permuta",
-  "condominio_id",
-].join(", ");
-
-void PUBLIC_IMOVEL_COLUMNS;
 
 function fmtPrice(v: number | null) {
   if (!v || v <= 0) return "Consulte";
@@ -124,9 +114,8 @@ export default function ExplorarMapa() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const { data } = await (supabase.from("imoveis") as any)
-        .select(`${COLS}, edificios(nome), condominios(nome), empreendimentos(nome)`)
-        .eq("ativo_site", true)
+      const { data } = await (supabase as any).from("public_imoveis")
+        .select("*")
         .eq("status", "Disponível")
         .order("created_at", { ascending: false })
         .limit(500);

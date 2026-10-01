@@ -4,7 +4,6 @@ import { PLACEHOLDER_IMAGE } from "@/lib/placeholderImage";
 import { FallbackImage } from "@/components/FallbackImage";
 import { RASTER_RENDERING } from "@/lib/mapUtils";
 import { getPropertyUnitParts } from "@/lib/propertyIdentity";
-import { PUBLIC_IMOVEL_COLUMNS } from "@/lib/publicImovelColumns";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
@@ -821,7 +820,7 @@ export default function Site() {
     const fetchProperties = async () => {
       setLoading(true);
       const [{ data, error }, { data: brokersData }] = await Promise.all([
-        (supabase.from("imoveis") as any).select(`${PUBLIC_IMOVEL_COLUMNS}, edificios(nome), condominios(nome), empreendimentos(nome)`).eq("ativo_site", true).neq("status", "Vendido"),
+        (supabase as any).from("public_imoveis").select("*").neq("status", "Vendido"),
         supabase.from("subscriber_brokers").select("name, phone").eq("status", "active"),
       ]);
 

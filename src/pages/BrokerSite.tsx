@@ -384,9 +384,9 @@ export default function BrokerSite() {
           .from("subscriber_brokers")
           .select("name, phone, creci, email")
           .eq("status", "active"),
-        supabase
-          .from("imoveis")
-          .select("id, user_id, titulo, endereco, cidade, tipo, status, preco, area, quartos, banheiros, vagas, comissao, imagens, vista_mar, decorado, aceita_permuta, condicoes_pagamento, empreendimento, unidade, box, quadra, lote, bairro, corretor_nome, created_at, data_venda, termo_exclusividade_url, link_material, drive_fotos_url, fotos_pdf_url, ativo_site"),
+        (supabase as any)
+          .from("public_imoveis")
+          .select("id, user_id, titulo, endereco, cidade, tipo, status, preco, area, quartos, banheiros, vagas, imagens, vista_mar, decorado, aceita_permuta, condicoes_pagamento, empreendimento, unidade, box, quadra, lote, bairro, corretor_nome, created_at, data_venda, termo_exclusividade_url, link_material, drive_fotos_url, fotos_pdf_url, ativo_site"),
         (supabase as any).from("public_broker_profiles").select("user_id, full_name, phone, avatar_url"),
       ]);
 
@@ -409,8 +409,6 @@ export default function BrokerSite() {
           if (matchedProfile && property.user_id === matchedProfile.user_id) return true;
           return toSlug(property.corretor_nome || "") === slug;
         })
-        // visitantes só veem imóveis ativos; o corretor dono vê também os ocultos
-        .filter((property) => property.ativo_site || (!!uid && property.user_id === uid))
         .sort((a, b) => Number(b.preco) - Number(a.preco));
 
 

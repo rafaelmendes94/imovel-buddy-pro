@@ -30,6 +30,7 @@ import { ImportImoveisWizard } from "@/components/ImportImoveisWizard";
 import { ImportPdfTabelaBeta } from "@/components/ImportPdfTabelaBeta";
 import { getPropertyUnitParts } from "@/lib/propertyIdentity";
 import { exportImoveisXls } from "@/lib/exportImoveisXls";
+import { canManageProperty } from "@/lib/propertyAccess";
 import { FallbackImage } from "@/components/FallbackImage";
 
 // Broker info
@@ -434,6 +435,7 @@ export default function Properties() {
   const canEditImoveis = isSuperAdmin || isBroker || (isAdminStaff && hasModuleAccess("imoveis", "edit"));
   const canDeleteImoveis = isSuperAdmin || isBroker || (isAdminStaff && hasModuleAccess("imoveis", "delete"));
   const canBulkSelectImoveis = canEditImoveis || canDeleteImoveis;
+  const canViewAllInternal = isSuperAdmin || (isAdminStaff && hasModuleAccess("imoveis", "view"));
   const [currentImoveis, setCurrentImoveis] = useState(0);
   const [importOpen, setImportOpen] = useState(false);
   const [pdfImportOpen, setPdfImportOpen] = useState(false);
@@ -447,6 +449,20 @@ export default function Properties() {
   }, [user, subscription?.id]);
 
   const [propertyList, setPropertyList] = useState<Property[]>([]);
+  const propertyCanEdit = (property: Property) => canManageProperty({
+    viewerId: user?.id,
+    ownerId: property.userId,
+    isSuperAdmin,
+    isAdminStaff,
+    staffCanEdit: hasModuleAccess("imoveis", "edit"),
+  }, "edit");
+  const propertyCanDelete = (property: Property) => canManageProperty({
+    viewerId: user?.id,
+    ownerId: property.userId,
+    isSuperAdmin,
+    isAdminStaff,
+    staffCanDelete: hasModuleAccess("imoveis", "delete"),
+  }, "delete");
   const [loadingProperties, setLoadingProperties] = useState(true);
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<Category>("todos");
@@ -486,7 +502,9 @@ export default function Properties() {
   };
 
   const selectAllVisible = () => {
-    const visibleIds = paginated.map((p) => p.id);
+    const visibleIds = paginated
+      .filter((property) => propertyCanEdit(property) || propertyCanDelete(property))
+      .map((property) => property.id);
     const allSelected = visibleIds.every((id) => selectedIds.has(id));
     setSelectedIds((prev) => {
       const next = new Set(prev);
@@ -538,10 +556,22 @@ export default function Properties() {
 
     const fetchProperties = async () => {
       setLoadingProperties(true);
-      const { data, error } = await supabase
+      const internalQuery = supabase
         .from("imoveis")
         .select("*")
         .order("created_at", { ascending: false });
+
+      const [internalResult, publicResult] = canViewAllInternal
+        ? [await internalQuery, { data: [], error: null }]
+        : await Promise.all([
+            internalQuery.eq("user_id", user.id),
+            (supabase as any).from("public_imoveis")
+              .select("*")
+              .neq("user_id", user.id)
+              .order("created_at", { ascending: false }),
+          ]);
+
+      const error = internalResult.error || publicResult.error;
 
       if (error) {
         console.error("Erro ao carregar imóveis", error);
@@ -551,7 +581,10 @@ export default function Properties() {
         return;
       }
 
-      const rows = data || [];
+      const rows: any[] = Array.from(new globalThis.Map<string, any>([
+        ...((internalResult.data || []) as any[]),
+        ...((publicResult.data || []) as any[]),
+      ].map((row) => [row.id, row])).values());
       const byId = async (table: "edificios" | "condominios" | "empreendimentos", ids: string[]) => {
         if (!ids.length) return new globalThis.Map<string, string>();
         const { data: related, error: relatedError } = await (supabase as any)
@@ -671,7 +704,7 @@ export default function Properties() {
     };
 
     fetchProperties();
-  }, [user?.id]);
+  }, [user?.id, canViewAllInternal]);
 
   // Load favorites from DB
   useEffect(() => {
@@ -716,8 +749,11 @@ export default function Properties() {
   };
 
   const handleExportXml = (portal: XmlPortal) => {
-    const available = propertyList.filter((p) => p.status === "Disponível");
-    const xml = generateXml(available.length > 0 ? available : propertyList, portal);
+    const exportable = isBroker && !isSuperAdmin
+      ? propertyList.filter((property) => property.userId === user?.id)
+      : propertyList;
+    const available = exportable.filter((p) => p.status === "Disponível");
+    const xml = generateXml(available.length > 0 ? available : exportable, portal);
     downloadXml(xml, portal);
     setShowXmlMenu(false);
   };
@@ -742,7 +778,8 @@ export default function Properties() {
     newStatus: Property["status"],
     extra: Record<string, any> = {}
   ) => {
-    if (!canEditImoveis) {
+    const target = propertyList.find((property) => property.id === propertyId);
+    if (!target || !propertyCanEdit(target)) {
       toast.error("Sem permissão para editar imóveis.");
       return false;
     }
@@ -809,7 +846,8 @@ export default function Properties() {
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const handleDelete = async (propertyId: string) => {
-    if (!canDeleteImoveis) {
+    const target = propertyList.find((property) => property.id === propertyId);
+    if (!target || !propertyCanDelete(target)) {
       toast.error("Sem permissão para excluir imóveis.");
       return;
     }
@@ -828,7 +866,10 @@ export default function Properties() {
       toast.error("Sem permissão para excluir imóveis.");
       return;
     }
-    const ids = Array.from(selectedIds);
+    const ids = Array.from(selectedIds).filter((id) => {
+      const property = propertyList.find((item) => item.id === id);
+      return !!property && propertyCanDelete(property);
+    });
     const uuids = ids.filter((id) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id));
     if (uuids.length === 0) {
       toast.error("Nenhum imóvel válido selecionado");
@@ -848,7 +889,8 @@ export default function Properties() {
   };
 
   const handlePriceChange = (propertyId: string, field: "price" | "priceInstallment", value: number) => {
-    if (!canEditImoveis) {
+    const target = propertyList.find((property) => property.id === propertyId);
+    if (!target || !propertyCanEdit(target)) {
       toast.error("Sem permissão para editar imóveis.");
       return;
     }
@@ -857,7 +899,8 @@ export default function Properties() {
   };
 
   const handleDealLabelChange = (propertyId: string, label: Property["dealLabel"]) => {
-    if (!canEditImoveis) {
+    const target = propertyList.find((property) => property.id === propertyId);
+    if (!target || !propertyCanEdit(target)) {
       toast.error("Sem permissão para editar imóveis.");
       return;
     }
@@ -911,7 +954,8 @@ export default function Properties() {
   };
 
   const handleQuickUpdate = (id: string) => {
-    if (!canEditImoveis) {
+    const target = propertyList.find((property) => property.id === id);
+    if (!target || !propertyCanEdit(target)) {
       toast.error("Sem permissão para editar imóveis.");
       return;
     }
@@ -927,7 +971,10 @@ export default function Properties() {
       return;
     }
     const original = propertyList.find(p => p.id === id);
-    if (!original) return;
+    if (!original || !propertyCanEdit(original)) {
+      toast.error("Você só pode duplicar seus próprios imóveis.");
+      return;
+    }
     const newId = `dup-${Date.now()}`;
     const newCode = `MV${String(propertyList.length + 1).padStart(2, "0")}`;
     const duplicate: Property = {
@@ -1051,8 +1098,11 @@ export default function Properties() {
   const routeProperties = propertyList.filter((p) => routeIds.includes(p.id));
 
   // Stats
-  const totalVGV = propertyList.filter(p => p.status === "Disponível").reduce((s, p) => s + p.price, 0);
-  const totalSold = propertyList.filter(p => p.status === "Vendido").reduce((s, p) => s + p.price, 0);
+  const metricsProperties = isBroker && !isSuperAdmin
+    ? propertyList.filter((property) => property.userId === user?.id)
+    : propertyList;
+  const totalVGV = metricsProperties.filter(p => p.status === "Disponível").reduce((s, p) => s + p.price, 0);
+  const totalSold = metricsProperties.filter(p => p.status === "Vendido").reduce((s, p) => s + p.price, 0);
 
   return (
     <AppLayout>
@@ -1142,7 +1192,7 @@ export default function Properties() {
                 )}
                 {isBroker && maxImoveis > 0 && (
                   <span className={cn("col-span-2 text-right text-[10px] font-medium sm:basis-full lg:basis-auto", limitReached ? "text-destructive" : "text-muted-foreground")}>
-                    {currentImoveis} de {maxImoveis} imóveis
+                    {currentImoveis} de {maxImoveis} imóveis próprios
                   </span>
                 )}
               </div>
@@ -1154,36 +1204,36 @@ export default function Properties() {
             <div className="flex items-center gap-2.5 px-3 sm:px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
               <TrendingUp className="w-5 h-5 text-emerald-600 shrink-0" />
               <div className="min-w-0">
-                <p className="text-[9px] sm:text-[10px] font-bold uppercase text-emerald-600 leading-none truncate">VGV Ativo <span className="text-muted-foreground font-medium">({propertyList.filter(p => p.status === "Disponível" || p.status === "Reservado").length})</span></p>
+                <p className="text-[9px] sm:text-[10px] font-bold uppercase text-emerald-600 leading-none truncate">VGV Ativo <span className="text-muted-foreground font-medium">({metricsProperties.filter(p => p.status === "Disponível" || p.status === "Reservado").length})</span></p>
                 <p className="text-sm sm:text-base font-black text-foreground leading-tight truncate">
-                  {formatCurrency(propertyList.filter(p => p.status === "Disponível" || p.status === "Reservado").reduce((sum, p) => sum + p.price, 0))}
+                  {formatCurrency(metricsProperties.filter(p => p.status === "Disponível" || p.status === "Reservado").reduce((sum, p) => sum + p.price, 0))}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2.5 px-3 sm:px-4 py-3 rounded-xl bg-blue-500/10 border border-blue-500/20">
               <DollarSign className="w-5 h-5 text-blue-600 shrink-0" />
               <div className="min-w-0">
-                <p className="text-[9px] sm:text-[10px] font-bold uppercase text-blue-600 leading-none truncate">Comissão Est. <span className="text-muted-foreground font-medium">({propertyList.filter(p => p.status === "Disponível" || p.status === "Reservado").length})</span></p>
+                <p className="text-[9px] sm:text-[10px] font-bold uppercase text-blue-600 leading-none truncate">Comissão Est. <span className="text-muted-foreground font-medium">({metricsProperties.filter(p => p.status === "Disponível" || p.status === "Reservado").length})</span></p>
                 <p className="text-sm sm:text-base font-black text-foreground leading-tight truncate">
-                  {formatCurrency(propertyList.filter(p => p.status === "Disponível" || p.status === "Reservado").reduce((sum, p) => sum + (p.price * (p.commission || 0) / 100), 0))}
+                  {formatCurrency(metricsProperties.filter(p => p.status === "Disponível" || p.status === "Reservado").reduce((sum, p) => sum + (p.price * (p.commission || 0) / 100), 0))}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2.5 px-3 sm:px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20">
               <Trophy className="w-5 h-5 text-red-600 shrink-0" />
               <div className="min-w-0">
-                <p className="text-[9px] sm:text-[10px] font-bold uppercase text-red-600 leading-none truncate">VGV Vendidos <span className="text-muted-foreground font-medium">({propertyList.filter(p => p.status === "Vendido").length})</span></p>
+                <p className="text-[9px] sm:text-[10px] font-bold uppercase text-red-600 leading-none truncate">VGV Vendidos <span className="text-muted-foreground font-medium">({metricsProperties.filter(p => p.status === "Vendido").length})</span></p>
                 <p className="text-sm sm:text-base font-black text-foreground leading-tight truncate">
-                  {formatCurrency(propertyList.filter(p => p.status === "Vendido").reduce((sum, p) => sum + p.price, 0))}
+                  {formatCurrency(metricsProperties.filter(p => p.status === "Vendido").reduce((sum, p) => sum + p.price, 0))}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2.5 px-3 sm:px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
               <Wallet className="w-5 h-5 text-amber-600 shrink-0" />
               <div className="min-w-0">
-                <p className="text-[9px] sm:text-[10px] font-bold uppercase text-amber-600 leading-none truncate">Comissões Pagas <span className="text-muted-foreground font-medium">({propertyList.filter(p => p.status === "Vendido").length})</span></p>
+                <p className="text-[9px] sm:text-[10px] font-bold uppercase text-amber-600 leading-none truncate">Comissões Pagas <span className="text-muted-foreground font-medium">({metricsProperties.filter(p => p.status === "Vendido").length})</span></p>
                 <p className="text-sm sm:text-base font-black text-foreground leading-tight truncate">
-                  {formatCurrency(propertyList.filter(p => p.status === "Vendido").reduce((sum, p) => sum + (p.price * (p.commission || 0) / 100), 0))}
+                  {formatCurrency(metricsProperties.filter(p => p.status === "Vendido").reduce((sum, p) => sum + (p.price * (p.commission || 0) / 100), 0))}
                 </p>
               </div>
             </div>
@@ -1191,7 +1241,7 @@ export default function Properties() {
               const now = new Date();
               const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
               const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
-              const soldThisMonth = propertyList.filter(p => {
+              const soldThisMonth = metricsProperties.filter(p => {
                 if (p.status !== "Vendido") return false;
                 const d = new Date(p.updatedAt || p.createdAt);
                 return d >= firstDay && d <= lastDay;
@@ -1223,7 +1273,7 @@ export default function Properties() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider text-primary">Imóveis</p>
-                <p className="text-xl sm:text-3xl font-black text-foreground mt-0.5 sm:mt-1">{propertyList.filter(p => p.status === "Disponível" || p.status === "Reservado").length}</p>
+                <p className="text-xl sm:text-3xl font-black text-foreground mt-0.5 sm:mt-1">{metricsProperties.filter(p => p.status === "Disponível" || p.status === "Reservado").length}</p>
                 <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5 hidden sm:block">ativos no portfólio</p>
               </div>
               <Building2 className="hidden sm:block w-6 h-6 sm:w-8 sm:h-8 text-primary/40 group-hover:text-primary/60 transition-colors" />
@@ -1565,7 +1615,9 @@ export default function Properties() {
               <label className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-card border border-border text-sm font-medium text-foreground cursor-pointer hover:bg-muted transition-colors">
                 <input
                   type="checkbox"
-                  checked={paginated.length > 0 && paginated.every((p) => selectedIds.has(p.id))}
+                  checked={paginated.some((p) => propertyCanEdit(p) || propertyCanDelete(p)) && paginated
+                    .filter((p) => propertyCanEdit(p) || propertyCanDelete(p))
+                    .every((p) => selectedIds.has(p.id))}
                   onChange={selectAllVisible}
                   className="w-4 h-4 rounded border-border text-primary focus:ring-ring"
                 />
@@ -1608,12 +1660,12 @@ export default function Properties() {
                 onFilterByTitle={(title) => { setSearch(title.split(" ").slice(0, 2).join(" ")); setActiveCategory("todos"); }}
                 onFilterByCondition={(cond) => { setFilterCondition(cond); setShowFilters(true); setActiveCategory("todos"); }}
                 onFilterByOwner={(owner) => { setFilterOwner(owner); setShowFilters(true); setActiveCategory("todos"); }}
-                canManage={canEditImoveis}
-                canDelete={canDeleteImoveis}
+                canManage={propertyCanEdit(property)}
+                canDelete={propertyCanDelete(property)}
                 onDelete={(id) => setDeleteConfirmId(id)}
                 isSelected={selectedIds.has(property.id)}
                 onToggleSelection={toggleSelection}
-                showSelector={canBulkSelectImoveis}
+                showSelector={propertyCanEdit(property) || propertyCanDelete(property)}
               />
             ))}
           </div>
@@ -1639,13 +1691,13 @@ export default function Properties() {
                 onNavigateToContract={handleNavigateToContract}
                 onQuickUpdate={handleQuickUpdate}
                 onDuplicate={handleDuplicate}
-                canManage={canEditImoveis}
-                canDelete={canDeleteImoveis}
-                canDuplicate={canCreateImoveis}
+                canManage={propertyCanEdit(property)}
+                canDelete={propertyCanDelete(property)}
+                canDuplicate={canCreateImoveis && propertyCanEdit(property)}
                 onDelete={(id) => setDeleteConfirmId(id)}
                 isSelected={selectedIds.has(property.id)}
                 onToggleSelection={toggleSelection}
-                showSelector={canBulkSelectImoveis}
+                showSelector={propertyCanEdit(property) || propertyCanDelete(property)}
               />
             ))}
           </div>
@@ -2057,7 +2109,7 @@ export default function Properties() {
         const now = new Date();
         const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
         const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
-        const soldThisMonth = propertyList.filter(p => {
+        const soldThisMonth = metricsProperties.filter(p => {
           if (p.status !== "Vendido") return false;
           const d = new Date(p.updatedAt || p.createdAt);
           return d >= firstDay && d <= lastDay;

@@ -127,12 +127,28 @@ export default function ImovelPublico() {
     (async () => {
       setLoading(true);
       setNotFound(false);
-      let query = supabase
-        .from("imoveis")
-        .select(`${PUBLIC_IMOVEL_COLUMNS}, edificios(nome, endereco, numero, complemento, bairro, cidade, estado, cep, latitude, longitude), condominios(nome, endereco, numero, complemento, bairro, cidade, estado, cep, latitude, longitude, mapa_pdf_url, implantacao_url), empreendimentos(nome, endereco, numero, complemento, bairro, cidade, estado, cep, latitude, longitude)`)
-        .eq("id", id);
-      if (!user) query = query.eq("ativo_site", true);
-      const { data, error } = await query.maybeSingle();
+      let data: unknown = null;
+      let error: unknown = null;
+
+      if (user) {
+        const internalResult = await supabase
+          .from("imoveis")
+          .select(`${PUBLIC_IMOVEL_COLUMNS}, edificios(nome, endereco, numero, complemento, bairro, cidade, estado, cep, latitude, longitude), condominios(nome, endereco, numero, complemento, bairro, cidade, estado, cep, latitude, longitude, mapa_pdf_url, implantacao_url), empreendimentos(nome, endereco, numero, complemento, bairro, cidade, estado, cep, latitude, longitude)`)
+          .eq("id", id)
+          .maybeSingle();
+        data = internalResult.data;
+        error = internalResult.error;
+      }
+
+      if (!data) {
+        const publicResult = await (supabase as any)
+          .from("public_imoveis")
+          .select("*")
+          .eq("id", id)
+          .maybeSingle();
+        data = publicResult.data;
+        error = publicResult.error;
+      }
       if (error || !data) {
         setNotFound(true);
       } else {

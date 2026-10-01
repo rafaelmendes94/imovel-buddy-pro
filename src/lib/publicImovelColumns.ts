@@ -1,11 +1,10 @@
 /**
- * Colunas de `imoveis` liberadas para visitantes não autenticados.
+ * Colunas públicas usadas ao consultar a tabela interna como dono ou equipe.
  *
  * Os campos do proprietário (`proprietario`, `proprietario_telefone`,
  * `proprietario_tipo`) e campos operacionais (`local_chaves`, `comissao`,
- * `bonus`, `publicar_xml`) são dados internos e ficam restritos a usuários
- * autenticados no banco, portanto NÃO podem ser pedidos em páginas públicas
- * (usar `select("*")` numa página pública causa erro de permissão).
+ * `bonus`, `publicar_xml`) são dados internos. Páginas públicas devem consultar
+ * exclusivamente a view `public_imoveis`, nunca a tabela base.
  */
 export const PUBLIC_IMOVEL_COLUMNS = [
   "id", "user_id", "titulo", "endereco", "cidade", "tipo", "preco", "quartos",
