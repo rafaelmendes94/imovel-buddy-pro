@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Loader2, MailCheck } from "lucide-react";
 import logoImg from "@/assets/logo.png";
 import { PlanPaymentCheckout } from "@/components/PlanPaymentCheckout";
+import { formatBrazilianPhone, onlyPhoneDigits } from "@/lib/phone";
 
 type Plan = {
   id: string;
@@ -109,7 +110,7 @@ export default function Registro() {
       options: {
         data: {
           full_name: fullName.trim(),
-          phone: phone.trim(),
+          phone: onlyPhoneDigits(phone),
           account_type: accountType,
           selected_plan_id: selectedPlanId || undefined,
         },
@@ -185,7 +186,15 @@ export default function Registro() {
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-slate-800">Telefone / WhatsApp</label>
-                  <Input placeholder="(99) 99999-9999" value={phone} onChange={(event) => setPhone(event.target.value)} autoComplete="tel" />
+                  <Input
+                    type="tel"
+                    inputMode="tel"
+                    maxLength={15}
+                    placeholder="(99) 99999-9999"
+                    value={phone}
+                    onChange={(event) => setPhone(formatBrazilianPhone(event.target.value))}
+                    autoComplete="tel"
+                  />
                 </div>
                 <div className="space-y-2 sm:col-span-2">
                   <label className="text-sm font-medium text-slate-800">Senha</label>
