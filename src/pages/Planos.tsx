@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -26,6 +26,13 @@ interface Plan {
   plan_type: string;
 }
 
+type BillingPeriod = "monthly" | "semiannual";
+
+const BILLING_PERIODS: { value: BillingPeriod; label: string; description: string }[] = [
+  { value: "monthly", label: "Mensal", description: "Pagamento todos os meses" },
+  { value: "semiannual", label: "Semestral", description: "Pagamento a cada 6 meses" },
+];
+
 const PLAN_ICONS: Record<string, typeof Star> = {
   0: Star,
   1: Zap,
@@ -49,6 +56,7 @@ const CYCLE_LABELS: Record<string, string> = {
 
 export default function Planos() {
   const [plans, setPlans] = useState<Plan[]>([]);
+  const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>("monthly");
   const [loading, setLoading] = useState(true);
   const [checkoutPlanId, setCheckoutPlanId] = useState<string | null>(null);
   const { user, profile, signOut } = useAuth();
@@ -68,6 +76,18 @@ export default function Planos() {
     };
     fetchPlans();
   }, []);
+
+  const brokerPlans = useMemo(
+    () => plans
+      .filter((plan) => plan.plan_type === "corretor")
+      .sort((a, b) => a.max_properties - b.max_properties || a.price - b.price),
+    [plans],
+  );
+
+  const visiblePlans = useMemo(
+    () => brokerPlans.filter((plan) => plan.billing_cycle === billingPeriod),
+    [billingPeriod, brokerPlans],
+  );
 
   const handlePlanClick = async (plan: Plan) => {
     if (!user) {
@@ -173,33 +193,62 @@ export default function Planos() {
           <span className="text-primary">para o seu negócio</span>
         </h1>
         <p className="text-gray-500 text-base sm:text-lg max-w-2xl mx-auto">
-          Planos mensais para corretores organizarem imóveis, contatos e vendas em uma plataforma simples e completa.
+          Escolha a periodicidade e o limite de imóveis ideal para organizar seus contatos e vendas.
         </p>
       </section>
 
       {/* Plans Grid */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 pt-8">
+        <div className="mx-auto mb-10 grid w-full max-w-md grid-cols-2 rounded-lg border border-gray-200 bg-gray-100 p-1">
+          {BILLING_PERIODS.map((period) => {
+            const active = billingPeriod === period.value;
+            const planCount = brokerPlans.filter((plan) => plan.billing_cycle === period.value).length;
+
+            return (
+              <button
+                key={period.value}
+                type="button"
+                onClick={() => setBillingPeriod(period.value)}
+                className={cn(
+                  "min-w-0 rounded-md px-3 py-2.5 text-center transition-colors",
+                  active
+                    ? "bg-white text-gray-950 shadow-sm"
+                    : "text-gray-500 hover:text-gray-800",
+                )}
+                aria-pressed={active}
+              >
+                <span className="block text-sm font-bold">
+                  {period.label}
+                  {planCount > 0 && <span className="ml-1 text-xs font-medium text-gray-400">({planCount})</span>}
+                </span>
+                <span className="mt-0.5 hidden text-[11px] sm:block">{period.description}</span>
+              </button>
+            );
+          })}
+        </div>
+
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3].map(i => (
               <div key={i} className="h-96 rounded-2xl bg-gray-100 animate-pulse" />
             ))}
           </div>
-        ) : (() => {
-          const filtered = plans.filter(p => p.plan_type === "corretor");
-          if (filtered.length === 0) return <p className="text-center text-gray-500 py-16">Nenhum plano disponível no momento.</p>;
-          return (
+        ) : visiblePlans.length === 0 ? (
+          <p className="text-center text-gray-500 py-16">
+            Nenhum plano {billingPeriod === "monthly" ? "mensal" : "semestral"} disponível no momento.
+          </p>
+        ) : (
           <div className={cn(
             "grid gap-6",
-            filtered.length === 1 && "grid-cols-1 max-w-md mx-auto",
-            filtered.length === 2 && "grid-cols-1 sm:grid-cols-2 max-w-3xl mx-auto",
-            filtered.length >= 3 && "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
-            filtered.length === 4 && "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4",
+            visiblePlans.length === 1 && "grid-cols-1 max-w-md mx-auto",
+            visiblePlans.length === 2 && "grid-cols-1 sm:grid-cols-2 max-w-3xl mx-auto",
+            visiblePlans.length >= 3 && "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
+            visiblePlans.length === 4 && "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4",
           )}>
-            {filtered.map((plan, idx) => {
+            {visiblePlans.map((plan, idx) => {
               const colors = PLAN_COLORS[idx % PLAN_COLORS.length];
               const Icon = PLAN_ICONS[idx] || Star;
-              const isPopular = idx === Math.min(plans.length - 1, 1);
+              const isPopular = idx === Math.min(visiblePlans.length - 1, 1);
               const modules = Array.isArray(plan.modules) ? plan.modules as string[] : [];
 
               return (
@@ -267,8 +316,7 @@ export default function Planos() {
               );
             })}
           </div>
-          );
-        })()}
+        )}
       </section>
 
       {/* FAQ Section */}

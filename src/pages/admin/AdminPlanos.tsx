@@ -62,7 +62,21 @@ export default function AdminPlanos() {
   useEffect(() => { fetchPlans(); }, []);
 
   const handleSave = async () => {
-    if (!form.name || form.price === "") return;
+    const price = Number(form.price);
+    const maxProperties = Number.parseInt(form.max_properties, 10);
+
+    if (!form.name.trim() || (!form.is_free && (!Number.isFinite(price) || price < 0))) {
+      toast({ title: "Revise o plano", description: "Informe o nome e um preço válido.", variant: "destructive" });
+      return;
+    }
+    if (!Number.isInteger(maxProperties) || maxProperties <= 0) {
+      toast({ title: "Quantidade inválida", description: "Informe quantos imóveis a conta poderá cadastrar.", variant: "destructive" });
+      return;
+    }
+    if (!["monthly", "semiannual"].includes(form.billing_cycle)) {
+      toast({ title: "Periodicidade inválida", description: "Selecione Mensal ou Semestral.", variant: "destructive" });
+      return;
+    }
     setSaving(true);
 
     // Validação: só 1 plano free por plan_type
@@ -76,11 +90,11 @@ export default function AdminPlanos() {
     }
 
     const payload = {
-      name: form.name,
-      price: form.is_free ? 0 : parseFloat(form.price),
+      name: form.name.trim(),
+      price: form.is_free ? 0 : price,
       billing_cycle: form.billing_cycle as any,
       trial_days: form.is_free ? 0 : parseInt(form.trial_days),
-      max_properties: parseInt(form.max_properties),
+      max_properties: maxProperties,
       max_brokers: 1,
       modules: form.modules,
       plan_type: form.plan_type,
@@ -90,13 +104,17 @@ export default function AdminPlanos() {
       notes: form.notes || null,
     };
 
-    if (editId) {
-      await supabase.from("plans").update(payload).eq("id", editId);
-      toast({ title: "Plano atualizado!" });
-    } else {
-      await supabase.from("plans").insert(payload as any);
-      toast({ title: "Plano criado!" });
+    const { error } = editId
+      ? await supabase.from("plans").update(payload).eq("id", editId)
+      : await supabase.from("plans").insert(payload as any);
+
+    if (error) {
+      toast({ title: "Erro ao salvar o plano", description: error.message, variant: "destructive" });
+      setSaving(false);
+      return;
     }
+
+    toast({ title: editId ? "Plano atualizado!" : "Plano criado!" });
 
     setDialogOpen(false);
     setEditId(null);
@@ -185,9 +203,7 @@ export default function AdminPlanos() {
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="monthly">Mensal</SelectItem>
-                      <SelectItem value="quarterly">Trimestral</SelectItem>
                       <SelectItem value="semiannual">Semestral</SelectItem>
-                      <SelectItem value="annual">Anual</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -207,8 +223,14 @@ export default function AdminPlanos() {
                   <Input placeholder="Descrição / público" value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} />
                 </div>
                 <Input placeholder="Observações internas" value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} />
-                <div className="grid grid-cols-2 gap-3">
-                  <Input type="number" placeholder="Máx imóveis" value={form.max_properties} onChange={e => setForm(p => ({ ...p, max_properties: e.target.value }))} />
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-foreground" htmlFor="plan-max-properties">
+                    Quantidade de imóveis liberada na conta
+                  </label>
+                  <Input id="plan-max-properties" type="number" min="1" step="1" placeholder="Ex.: 20" value={form.max_properties} onChange={e => setForm(p => ({ ...p, max_properties: e.target.value }))} />
+                  <p className="text-xs text-muted-foreground">
+                    Este limite é aplicado automaticamente quando o pagamento ativa a assinatura.
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-foreground mb-2">Módulos inclusos</p>
