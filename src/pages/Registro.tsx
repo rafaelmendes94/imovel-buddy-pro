@@ -30,7 +30,10 @@ export default function Registro() {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [accountType, setAccountType] = useState<"corretor" | "imobiliaria" | "parceiro">("corretor");
-  const [selectedPlanId, setSelectedPlanId] = useState("");
+  const [selectedPlanId, setSelectedPlanId] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("plan_id") || params.get("plan") || window.localStorage.getItem("mv_connect_pending_plan_id") || "";
+  });
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [loadingPlan, setLoadingPlan] = useState(true);
   const [emailEnviado, setEmailEnviado] = useState(false);
@@ -39,13 +42,8 @@ export default function Registro() {
   const { toast } = useToast();
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const planId = params.get("plan_id") || params.get("plan");
-    if (planId) {
-      setSelectedPlanId(planId);
-      window.localStorage.setItem("mv_connect_pending_plan_id", planId);
-    }
-  }, []);
+    if (selectedPlanId) window.localStorage.setItem("mv_connect_pending_plan_id", selectedPlanId);
+  }, [selectedPlanId]);
 
   useEffect(() => {
     const loadPlan = async () => {
