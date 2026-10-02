@@ -996,6 +996,11 @@ export default function Properties() {
   const types = useMemo(() => [...new Set([...propertyList.map(p => p.type), "Apartamento", "Casa", "Comercial", "Terreno", "Lote", "Condomínio"])].sort(), [propertyList]);
   const neighborhoods = useMemo(() => [...new Set(propertyList.map(p => p.neighborhood).filter(Boolean))].sort() as string[], [propertyList]);
   const streets = useMemo(() => [...new Set(propertyList.map(p => p.address))].sort(), [propertyList]);
+  const metricsProperties = useMemo(() => (
+    isBroker && !isSuperAdmin
+      ? propertyList.filter((property) => property.userId === user?.id)
+      : propertyList
+  ), [isBroker, isSuperAdmin, propertyList, user?.id]);
 
   // Freshness helpers
   const now = new Date();
@@ -1006,14 +1011,14 @@ export default function Properties() {
 
   const freshnessStats = useMemo(() => {
     let within30 = 0, within60 = 0, over90 = 0;
-    propertyList.forEach(p => {
+    metricsProperties.forEach(p => {
       const days = getDaysSinceUpdate(p);
       if (days <= 30) within30++;
       else if (days <= 60) within60++;
       else if (days > 90) over90++;
     });
     return { within30, within60, over90 };
-  }, [propertyList]);
+  }, [metricsProperties]);
 
   const filtered = useMemo(() => {
     return propertyList.filter((p) => {
@@ -1098,9 +1103,6 @@ export default function Properties() {
   const routeProperties = propertyList.filter((p) => routeIds.includes(p.id));
 
   // Stats
-  const metricsProperties = isBroker && !isSuperAdmin
-    ? propertyList.filter((property) => property.userId === user?.id)
-    : propertyList;
   const totalVGV = metricsProperties.filter(p => p.status === "Disponível").reduce((s, p) => s + p.price, 0);
   const totalSold = metricsProperties.filter(p => p.status === "Vendido").reduce((s, p) => s + p.price, 0);
 
