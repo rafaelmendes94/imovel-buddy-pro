@@ -105,6 +105,45 @@ function propertyBedrooms(p: any) {
   return Number(p.quartos || p.dormitorios || 0);
 }
 
+function propertySuites(p: any) {
+  return Number(p.suites || 0);
+}
+
+function wholeNumber(value: unknown) {
+  const parsed = Number(value || 0);
+  return Number.isFinite(parsed) ? Math.round(parsed) : 0;
+}
+
+function secureMediaUrl(value: unknown) {
+  return String(value || "").trim().replace(/^http:\/\//i, "https://");
+}
+
+const FEATURE_NAMES: Record<string, string> = {
+  piscina: "Pool",
+  academia: "Gym",
+  "salao de festas": "Party Room",
+  churrasqueira: "Barbecue Grill",
+  playground: "Playground",
+  quadra: "Sports Court",
+  "quadra esportiva": "Sports Court",
+  "seguranca 24h": "Security Guard on Duty",
+  "portaria 24h": "Security Guard on Duty",
+  portaria: "Security Guard on Duty",
+  elevador: "Elevator",
+  sauna: "Sauna",
+  brinquedoteca: "Kids Room",
+  "pet place": "Pet Space",
+  lavanderia: "Laundry",
+  coworking: "Coworking",
+  "area verde": "Green Space",
+  "espaco gourmet": "Gourmet Space",
+};
+
+function vrsyncFeature(value: unknown) {
+  const text = String(value || "").trim();
+  return FEATURE_NAMES[norm(text)] || text;
+}
+
 function propertyLocation(p: any) {
   const tipo = normalizePropertyType(firstText(p.tipo, p.tipo_imovel, p.titulo));
   const parsed = parseQuadraLoteReference([p.unidade, p.complemento].filter(Boolean).join(" - "));
@@ -162,10 +201,11 @@ function parseQuadraLoteReference(value: string) {
 function vrsyncType(tipo: string): { type: string; sub: string } {
   const normalized = normalizePropertyType(tipo);
   if (normalized === "Apartamento")
-    return { type: "Residential", sub: "Apartment" };
-  if (normalized === "Casa" || normalized === "Casa em condominio") return { type: "Residential", sub: "Home" };
-  if (normalized === "Lote" || normalized === "Lote em condominio") return { type: "Residential", sub: "ResidentialAllotmentLand" };
-  return { type: "Residential", sub: "Apartment" };
+    return { type: "Residential / Apartment", sub: "Apartment" };
+  if (normalized === "Casa em condominio") return { type: "Residential / Condo", sub: "Condo" };
+  if (normalized === "Casa") return { type: "Residential / Home", sub: "Home" };
+  if (normalized === "Lote" || normalized === "Lote em condominio") return { type: "Residential / Land Lot", sub: "ResidentialAllotmentLand" };
+  return { type: "Residential / Apartment", sub: "Apartment" };
 }
 
 // Map internal "tipo" → Imovelweb TipoImovel
@@ -187,7 +227,7 @@ function buildVrsync(properties: any[], contact: { name: string; email: string; 
   const items = properties.map((p) => {
     const loc = propertyLocation(p);
     const { type, sub } = vrsyncType(loc.tipo);
-    const images = Array.isArray(p.imagens) ? p.imagens.filter(Boolean) : [];
+    const images = Array.isArray(p.imagens) ? p.imagens.filter(Boolean).map(secureMediaUrl) : [];
     const media = images
       .map(
         (url: string, i: number) =>
@@ -199,7 +239,7 @@ function buildVrsync(properties: any[], contact: { name: string; email: string; 
       ...(Array.isArray(p.outras_caracteristicas) ? p.outras_caracteristicas : []),
     ]
       .filter(Boolean)
-      .map((f: string) => `<Feature>${esc(f)}</Feature>`)
+      .map((f: string) => `<Feature>${esc(vrsyncFeature(f))}</Feature>`)
       .join("");
     return `
     <Listing>
@@ -207,7 +247,8 @@ function buildVrsync(properties: any[], contact: { name: string; email: string; 
       <updatedAt>${esc(xmlUpdatedAt(p))}</updatedAt>
       <Title>${esc(p.titulo)}</Title>
       <TransactionType>For Sale</TransactionType>
-      <ListPrice currency="BRL">${Number(p.preco || 0)}</ListPrice>
+      <PublicationType>STANDARD</PublicationType>
+      <ListPrice currency="BRL">${wholeNumber(p.preco)}</ListPrice>
       <PropertyType>${type}</PropertyType>
       <PropertySubType>${sub}</PropertySubType>
       <TipoImovel>${esc(loc.tipo)}</TipoImovel>
@@ -216,9 +257,10 @@ function buildVrsync(properties: any[], contact: { name: string; email: string; 
       <Lote>${esc(loc.lote)}</Lote>
       <Numero>${esc(loc.numero)}</Numero>
       <Details>
-        <LivingArea unit="square metres">${Number(p.area_privativa || propertyAreaTotal(p) || 0)}</LivingArea>
-        <LotArea unit="square metres">${propertyAreaTotal(p)}</LotArea>
+        <LivingArea unit="square metres">${wholeNumber(p.area_privativa || propertyAreaTotal(p))}</LivingArea>
+        <LotArea unit="square metres">${wholeNumber(propertyAreaTotal(p))}</LotArea>
         <Bedrooms>${propertyBedrooms(p)}</Bedrooms>
+        <Suites>${propertySuites(p)}</Suites>
         <Bathrooms>${Number(p.banheiros || 0)}</Bathrooms>
         <Garage type="Parking Space">${Number(p.vagas || 0)}</Garage>
         <Description>${cdata(p.descricao || p.titulo)}</Description>
@@ -253,7 +295,7 @@ function buildVrsync(properties: any[], contact: { name: string; email: string; 
 function buildImovelweb(properties: any[], contact: { name: string; email: string; phone: string }) {
   const items = properties.map((p) => {
     const loc = propertyLocation(p);
-    const images = Array.isArray(p.imagens) ? p.imagens.filter(Boolean) : [];
+    const images = Array.isArray(p.imagens) ? p.imagens.filter(Boolean).map(secureMediaUrl) : [];
     const fotos = images
       .map((url: string, i: number) => {
         const name = (url.split("/").pop() || `foto-${i + 1}.jpg`).split("?")[0];
@@ -282,11 +324,11 @@ function buildImovelweb(properties: any[], contact: { name: string; email: strin
       <Complemento>${esc(loc.complemento)}</Complemento>
       <Latitude>${Number(p.latitude || 0)}</Latitude>
       <Longitude>${Number(p.longitude || 0)}</Longitude>
-      <PrecoVenda>${Number(p.preco || 0)}</PrecoVenda>
-      <AreaUtil>${Number(p.area_privativa || propertyAreaTotal(p) || 0)}</AreaUtil>
-      <AreaTotal>${propertyAreaTotal(p)}</AreaTotal>
+      <PrecoVenda>${wholeNumber(p.preco)}</PrecoVenda>
+      <AreaUtil>${wholeNumber(p.area_privativa || propertyAreaTotal(p))}</AreaUtil>
+      <AreaTotal>${wholeNumber(propertyAreaTotal(p))}</AreaTotal>
       <QtdDormitorios>${propertyBedrooms(p)}</QtdDormitorios>
-      <QtdSuites>0</QtdSuites>
+      <QtdSuites>${propertySuites(p)}</QtdSuites>
       <QtdBanheiros>${Number(p.banheiros || 0)}</QtdBanheiros>
       <QtdVagas>${Number(p.vagas || 0)}</QtdVagas>
       <Fotos>${fotos}</Fotos>
@@ -310,7 +352,7 @@ async function loadLinkedEntities(supabase: any, table: string, ids: string[]) {
 
   const { data, error } = await supabase
     .from(table)
-    .select("id, numero, logradouro")
+    .select("*")
     .in("id", uniqueIds);
 
   if (error) {
@@ -358,7 +400,7 @@ export async function handler(req: Request) {
     // Resolve slug → profile (broker or agency owner)
     const { data: profiles, error: profilesError } = await supabase
       .from("profiles")
-      .select("id, full_name, phone")
+      .select("user_id, full_name, email, phone, agency_id")
       .not("full_name", "is", null)
       .range(0, 9999);
     if (profilesError) {
@@ -366,33 +408,44 @@ export async function handler(req: Request) {
       return new Response("Profiles query error", { status: 500, headers: CORS });
     }
 
-    const match = (profiles || []).find((p: any) => p.full_name && toSlug(p.full_name) === slugParam);
+    const match = (profiles || []).find((p: any) =>
+      p.user_id === slugParam || (p.full_name && toSlug(p.full_name) === slugParam)
+    );
     if (!match) {
       return new Response("Broker not found", { status: 404, headers: CORS });
     }
 
     // Collect user_ids: the owner + any brokers under this agency
-    const ids = new Set<string>([match.id]);
+    const ownerId = match.agency_id || match.user_id;
+    const ids = new Set<string>([ownerId, match.user_id]);
+    (profiles || []).forEach((profile: any) => {
+      if (profile.agency_id === ownerId) ids.add(profile.user_id);
+    });
 
     // Check active subscription via RPC
-    const { data: hasSub } = await supabase.rpc("imovel_owner_has_active_sub", { _owner: match.id });
+    const { data: hasSub } = await supabase.rpc("imovel_owner_has_active_sub", { _owner: match.user_id });
 
     let properties: any[] = [];
     if (hasSub) {
-      const { data } = await supabase
+      const ownerIds = Array.from(ids);
+      const { data, error } = await supabase
         .from("imoveis")
         .select("*")
-        .in("corretor_id", Array.from(ids))
+        .or(`user_id.in.(${ownerIds.join(",")}),corretor_id.in.(${ownerIds.join(",")})`)
         .eq("ativo_site", true)
         .eq("publicar_xml", true)
-        .neq("status_imovel", "Vendido");
+        .neq("status", "Vendido");
+      if (error) {
+        console.error("property-feed properties query error", error);
+        return new Response("Properties query error", { status: 500, headers: CORS });
+      }
       properties = data || [];
       properties = await enrichPropertiesWithLinkedAddresses(supabase, properties);
     }
 
     const contact = {
       name: match.full_name || "",
-      email: "",
+      email: match.email || "",
       phone: normalizePhone(match.phone || ""),
     };
 

@@ -59,12 +59,17 @@ export default function Brick() {
   const [existingImages, setExistingImages] = useState<string[]>([]);
 
   const fetchItems = async () => {
-    if (!user) return;
-    const { data } = await supabase
+    if (!user) { setLoading(false); return; }
+    const { data, error } = await supabase
       .from("brick_items" as any)
       .select("*")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
+    if (error) {
+      toast({ title: "Erro ao carregar anúncios", description: error.message, variant: "destructive" });
+      setLoading(false);
+      return;
+    }
     setItems((data as any as BrickItem[]) || []);
     setLoading(false);
   };
@@ -140,12 +145,21 @@ export default function Brick() {
   };
 
   const toggleVendido = async (item: BrickItem) => {
-    await supabase.from("brick_items" as any).update({ vendido: !item.vendido }).eq("id", item.id);
+    const { error } = await supabase.from("brick_items" as any).update({ vendido: !item.vendido }).eq("id", item.id);
+    if (error) {
+      toast({ title: "Não foi possível atualizar o anúncio", description: error.message, variant: "destructive" });
+      return;
+    }
     fetchItems();
   };
 
   const deleteItem = async (id: string) => {
-    await supabase.from("brick_items" as any).delete().eq("id", id);
+    if (!window.confirm("Excluir este anúncio permanentemente?")) return;
+    const { error } = await supabase.from("brick_items" as any).delete().eq("id", id);
+    if (error) {
+      toast({ title: "Não foi possível excluir", description: error.message, variant: "destructive" });
+      return;
+    }
     fetchItems();
     toast({ title: "Removido" });
   };

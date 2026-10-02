@@ -1080,7 +1080,7 @@ export default function Site() {
                     {profile?.full_name && (
                       <>
                         <a
-                          href={`/corretor/${profile.user_id || toSlug(profile.full_name)}`}
+                          href={`/corretor/${user.id}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={() => setUserMenuOpen(false)}
@@ -1090,7 +1090,7 @@ export default function Site() {
                         </a>
                         <button
                           onClick={async () => {
-                            const url = `${window.location.origin}/corretor/${profile.user_id || toSlug(profile.full_name)}`;
+                            const url = `${window.location.origin}/corretor/${user.id}`;
                             try {
                               await navigator.clipboard.writeText(url);
                               toast.success("Link copiado! Compartilhe com seus clientes.");

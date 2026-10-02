@@ -64,7 +64,10 @@ const fadeUp = { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, 
 
 export default function ConstrutoraDetail() {
   const { id } = useParams<{ id: string }>();
-  const { user } = useAuth();
+  const { isSuperAdmin, isAdminStaff, hasModuleAccess } = useAuth();
+  const canCreate = isSuperAdmin || (isAdminStaff && hasModuleAccess("edificios", "create"));
+  const canEdit = isSuperAdmin || (isAdminStaff && hasModuleAccess("edificios", "edit"));
+  const canDelete = isSuperAdmin || (isAdminStaff && hasModuleAccess("edificios", "delete"));
   const { getValues } = useQuickValues([
     { table: "construtora_empreendimentos", column: "cidade" },
     { table: "construtora_empreendimentos", column: "endereco" },
@@ -131,7 +134,7 @@ export default function ConstrutoraDetail() {
   };
 
   const uploadImage = async (file: File, type: 'cover' | 'perfil') => {
-    if (!id) return;
+    if (!id || !canEdit) return toast.error("Sem permissão para alterar esta construtora");
     setUploading(true);
     try {
       const publicUrl = await uploadImageToCloudflare(file, { folder: `construtoras/${id}`, source: `construtora-${type}` });
@@ -150,6 +153,7 @@ export default function ConstrutoraDetail() {
 
   const saveEmpreendimento = async () => {
     if (!empForm.nome || !id) return;
+    if ((editingEmpId && !canEdit) || (!editingEmpId && !canCreate)) return toast.error("Sem permissão para salvar empreendimentos");
     if (editingEmpId) {
       await supabase.from("construtora_empreendimentos").update({ ...empForm, updated_at: new Date().toISOString() }).eq("id", editingEmpId);
     } else {
@@ -160,6 +164,7 @@ export default function ConstrutoraDetail() {
   };
 
   const deleteEmpreendimento = async (empId: string) => {
+    if (!canDelete) return toast.error("Sem permissão para excluir empreendimentos");
     if (!confirm("Excluir empreendimento?")) return;
     await supabase.from("construtora_empreendimentos").delete().eq("id", empId);
     fetchAll(); toast.success("Excluído!");
@@ -167,6 +172,7 @@ export default function ConstrutoraDetail() {
 
   const saveUnit = async () => {
     if (!unitForm.numero || !unitEmpId) return;
+    if (!canCreate) return toast.error("Sem permissão para adicionar unidades");
     await supabase.from("construtora_unidades").insert({ ...unitForm, empreendimento_id: unitEmpId });
     setShowUnitForm(false);
     setUnitForm({ numero: "", andar: "", tipo: "Apartamento", area: 0, quartos: 0, preco: 0, status: "Disponível", observacao: "" });
@@ -174,17 +180,20 @@ export default function ConstrutoraDetail() {
   };
 
   const updateUnitStatus = async (unitId: string, newStatus: string) => {
+    if (!canEdit) return toast.error("Sem permissão para atualizar unidades");
     await supabase.from("construtora_unidades").update({ status: newStatus }).eq("id", unitId);
     fetchAll();
   };
 
   const deleteUnit = async (unitId: string) => {
+    if (!canDelete) return toast.error("Sem permissão para excluir unidades");
     await supabase.from("construtora_unidades").delete().eq("id", unitId);
     fetchAll(); toast.success("Removida!");
   };
 
   const saveColors = async () => {
     if (!id) return;
+    if (!canEdit) return toast.error("Sem permissão para alterar as cores");
     await supabase.from("construtoras").update({ ...colorsForm, updated_at: new Date().toISOString() }).eq("id", id);
     setShowColors(false); fetchAll(); toast.success("Cores atualizadas!");
   };
@@ -214,13 +223,15 @@ export default function ConstrutoraDetail() {
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
           <div className="absolute top-4 left-4"><BackButton /></div>
           <div className="absolute top-4 right-4 flex gap-2">
-            <label className="w-8 h-8 rounded-lg bg-card/80 backdrop-blur-sm flex items-center justify-center hover:bg-card transition-colors cursor-pointer shadow-sm">
-              <Upload className="w-4 h-4 text-foreground" />
-              <input type="file" accept="image/*" className="hidden" onChange={e => { if (e.target.files?.[0]) uploadImage(e.target.files[0], 'cover'); }} />
-            </label>
-            <button onClick={() => setShowColors(true)} className="w-8 h-8 rounded-lg bg-card/80 backdrop-blur-sm flex items-center justify-center hover:bg-card transition-colors shadow-sm">
-              <Palette className="w-4 h-4 text-foreground" />
-            </button>
+            {canEdit && <>
+              <label className="w-8 h-8 rounded-lg bg-card/80 backdrop-blur-sm flex items-center justify-center hover:bg-card transition-colors cursor-pointer shadow-sm">
+                <Upload className="w-4 h-4 text-foreground" />
+                <input type="file" accept="image/*" className="hidden" onChange={e => { if (e.target.files?.[0]) uploadImage(e.target.files[0], 'cover'); }} />
+              </label>
+              <button onClick={() => setShowColors(true)} className="w-8 h-8 rounded-lg bg-card/80 backdrop-blur-sm flex items-center justify-center hover:bg-card transition-colors shadow-sm">
+                <Palette className="w-4 h-4 text-foreground" />
+              </button>
+            </>}
             <Link to={`/construtora/${construtora.slug}`} target="_blank" className="w-8 h-8 rounded-lg bg-card/80 backdrop-blur-sm flex items-center justify-center hover:bg-card transition-colors shadow-sm">
               <ExternalLink className="w-4 h-4 text-foreground" />
             </Link>
@@ -230,14 +241,16 @@ export default function ConstrutoraDetail() {
         {/* Profile info */}
         <div className="px-4 sm:px-6 lg:px-8 -mt-12 relative z-10">
           <div className="flex items-end gap-4">
-            <label className="relative cursor-pointer group flex-shrink-0">
+            <label className={cn("relative group flex-shrink-0", canEdit && "cursor-pointer")}>
               <div className="w-24 h-24 rounded-2xl border-4 border-card overflow-hidden bg-card flex items-center justify-center shadow-xl">
                 {construtora.perfil_url ? <img src={construtora.perfil_url} alt="" className="w-full h-full object-cover" /> : <Building2 className="w-10 h-10 text-muted-foreground" />}
               </div>
-              <div className="absolute inset-0 rounded-2xl bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                <Upload className="w-5 h-5 text-white" />
-              </div>
-              <input type="file" accept="image/*" className="hidden" onChange={e => { if (e.target.files?.[0]) uploadImage(e.target.files[0], 'perfil'); }} />
+              {canEdit && <>
+                <div className="absolute inset-0 rounded-2xl bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                  <Upload className="w-5 h-5 text-white" />
+                </div>
+                <input type="file" accept="image/*" className="hidden" onChange={e => { if (e.target.files?.[0]) uploadImage(e.target.files[0], 'perfil'); }} />
+              </>}
             </label>
             <div className="pb-2 flex-1">
               <h1 className="text-2xl font-bold text-foreground">{construtora.nome}</h1>
@@ -309,10 +322,10 @@ export default function ConstrutoraDetail() {
             <TabsContent value="empreendimentos" className="pt-4 space-y-4">
               <div className="flex justify-between items-center">
                 <h3 className="font-bold text-foreground text-lg">Empreendimentos</h3>
-                <button onClick={() => { setEmpForm(emptyEmpForm); setEditingEmpId(null); setShowEmpForm(true); }}
+                {canCreate && <button onClick={() => { setEmpForm(emptyEmpForm); setEditingEmpId(null); setShowEmpForm(true); }}
                   className="flex items-center gap-1.5 px-4 py-2 rounded-xl gradient-gold text-primary text-xs font-semibold hover:opacity-90 shadow-md">
                   <Plus className="w-3.5 h-3.5" /> Novo Empreendimento
-                </button>
+                </button>}
               </div>
               {empreendimentos.map((emp, idx) => {
                 const empUnits = unidades[emp.id] || [];
@@ -334,10 +347,10 @@ export default function ConstrutoraDetail() {
                           </div>
                           {emp.descricao && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{emp.descricao}</p>}
                         </div>
-                        <div className="flex gap-1">
-                          <button onClick={() => { setEmpForm({ nome: emp.nome, endereco: emp.endereco, cidade: emp.cidade, status: emp.status, tipo: emp.tipo, total_unidades: emp.total_unidades, previsao_entrega: emp.previsao_entrega, descricao: emp.descricao }); setEditingEmpId(emp.id); setShowEmpForm(true); }} className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors"><Edit className="w-3.5 h-3.5" /></button>
-                          <button onClick={() => deleteEmpreendimento(emp.id)} className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center hover:bg-destructive/20 transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
-                        </div>
+                        {(canEdit || canDelete) && <div className="flex gap-1">
+                          {canEdit && <button onClick={() => { setEmpForm({ nome: emp.nome, endereco: emp.endereco, cidade: emp.cidade, status: emp.status, tipo: emp.tipo, total_unidades: emp.total_unidades, previsao_entrega: emp.previsao_entrega, descricao: emp.descricao }); setEditingEmpId(emp.id); setShowEmpForm(true); }} className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center hover:bg-muted transition-colors"><Edit className="w-3.5 h-3.5" /></button>}
+                          {canDelete && <button onClick={() => deleteEmpreendimento(emp.id)} className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center hover:bg-destructive/20 transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>}
+                        </div>}
                       </div>
                       {emp.endereco && <p className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="w-3 h-3" />{emp.endereco}{emp.cidade ? `, ${emp.cidade}` : ""}</p>}
                       
@@ -362,7 +375,7 @@ export default function ConstrutoraDetail() {
                       <div className="border-t border-border pt-3">
                         <div className="flex justify-between items-center mb-3">
                           <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Espelho de Vendas</span>
-                          <button onClick={() => { setUnitEmpId(emp.id); setShowUnitForm(true); }} className="text-[10px] text-info hover:underline flex items-center gap-1 font-semibold"><Plus className="w-3 h-3" />Adicionar Unidade</button>
+                          {canCreate && <button onClick={() => { setUnitEmpId(emp.id); setShowUnitForm(true); }} className="text-[10px] text-info hover:underline flex items-center gap-1 font-semibold"><Plus className="w-3 h-3" />Adicionar Unidade</button>}
                         </div>
                         {empUnits.length > 0 ? (
                           <div className="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 gap-1.5">
@@ -371,13 +384,14 @@ export default function ConstrutoraDetail() {
                                 <select
                                   value={u.status}
                                   onChange={(e) => updateUnitStatus(u.id, e.target.value)}
+                                  disabled={!canEdit}
                                   className={cn("w-full text-center py-2 rounded-lg text-[9px] font-bold cursor-pointer appearance-none border-0 shadow-sm transition-all hover:shadow-md", unitStatusColors[u.status] || "bg-muted text-muted-foreground")}
                                 >
                                   <option>Disponível</option><option>Reservado</option><option>Vendido</option><option>Decorado</option>
                                 </select>
                                 <span className="block text-center text-[9px] text-muted-foreground mt-0.5 font-medium">{u.numero}</span>
                                 {u.preco > 0 && <span className="block text-center text-[8px] text-muted-foreground/70">{formatCurrency(u.preco)}</span>}
-                                <button onClick={() => deleteUnit(u.id)} className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive text-destructive-foreground hidden group-hover:flex items-center justify-center text-[8px] shadow-sm">×</button>
+                                {canDelete && <button onClick={() => deleteUnit(u.id)} className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive text-destructive-foreground hidden group-hover:flex items-center justify-center text-[8px] shadow-sm">×</button>}
                               </div>
                             ))}
                           </div>
@@ -502,7 +516,7 @@ export default function ConstrutoraDetail() {
 
         {/* Modals */}
         <AnimatePresence>
-          {showEmpForm && (
+          {showEmpForm && (canCreate || canEdit) && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-foreground/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
               <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }} className="bg-card rounded-2xl border border-border shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between p-5 border-b border-border sticky top-0 bg-card z-10">
@@ -529,7 +543,7 @@ export default function ConstrutoraDetail() {
         </AnimatePresence>
 
         <AnimatePresence>
-          {showUnitForm && (
+          {showUnitForm && canCreate && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-foreground/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
               <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }} className="bg-card rounded-2xl border border-border shadow-2xl w-full max-w-md">
                 <div className="flex items-center justify-between p-5 border-b border-border">
@@ -555,7 +569,7 @@ export default function ConstrutoraDetail() {
         </AnimatePresence>
 
         <AnimatePresence>
-          {showColors && (
+          {showColors && canEdit && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-foreground/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
               <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }} className="bg-card rounded-2xl border border-border shadow-2xl w-full max-w-sm">
                 <div className="flex items-center justify-between p-5 border-b border-border">

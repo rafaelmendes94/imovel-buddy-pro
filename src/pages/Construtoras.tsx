@@ -59,7 +59,10 @@ export default function Construtoras() {
   const [form, setForm] = useState(emptyForm);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState(0); // 0=dados, 1=contato, 2=cores
-  const { user } = useAuth();
+  const { user, isSuperAdmin, isAdminStaff, hasModuleAccess } = useAuth();
+  const canCreate = isSuperAdmin || (isAdminStaff && hasModuleAccess("edificios", "create"));
+  const canEdit = isSuperAdmin || (isAdminStaff && hasModuleAccess("edificios", "edit"));
+  const canDelete = isSuperAdmin || (isAdminStaff && hasModuleAccess("edificios", "delete"));
   const navigate = useNavigate();
   const { getValues } = useQuickValues([
     { table: "construtoras", column: "cidade" },
@@ -87,6 +90,10 @@ export default function Construtoras() {
 
   const handleSubmit = async () => {
     if (!form.nome || !user) return;
+    if ((editingId && !canEdit) || (!editingId && !canCreate)) {
+      toast.error("Sem permissão para alterar construtoras");
+      return;
+    }
     const slug = form.slug || generateSlug(form.nome);
     if (editingId) {
       const { error } = await supabase.from("construtoras").update({ ...form, slug, updated_at: new Date().toISOString() }).eq("id", editingId);
@@ -143,12 +150,14 @@ export default function Construtoras() {
             </h1>
             <p className="text-sm text-muted-foreground mt-1">{construtoras.length} construtoras cadastradas</p>
           </div>
-          <button
-            onClick={() => { setForm(emptyForm); setEditingId(null); setActiveTab(0); setShowForm(true); }}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl gradient-gold text-primary text-sm font-semibold hover:opacity-90 transition-all shadow-md hover:shadow-lg self-start"
-          >
-            <Plus className="w-4 h-4" /> Nova Construtora
-          </button>
+          {canCreate && (
+            <button
+              onClick={() => { setForm(emptyForm); setEditingId(null); setActiveTab(0); setShowForm(true); }}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl gradient-gold text-primary text-sm font-semibold hover:opacity-90 transition-all shadow-md hover:shadow-lg self-start"
+            >
+              <Plus className="w-4 h-4" /> Nova Construtora
+            </button>
+          )}
         </motion.div>
 
         <div className="relative max-w-md">
@@ -284,12 +293,16 @@ export default function Construtoras() {
                   {c.cover_url && <img src={c.cover_url} alt="" className="w-full h-full object-cover opacity-80 group-hover:scale-110 transition-transform duration-700" />}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
                   <div className="absolute top-3 right-3 flex gap-1.5">
-                    <button onClick={(e) => { e.stopPropagation(); handleEdit(c); }} className="w-7 h-7 rounded-lg bg-card/90 backdrop-blur-sm flex items-center justify-center hover:bg-card transition-colors shadow-sm">
-                      <Edit className="w-3.5 h-3.5 text-foreground" />
-                    </button>
-                    <button onClick={(e) => { e.stopPropagation(); handleDelete(c.id); }} className="w-7 h-7 rounded-lg bg-card/90 backdrop-blur-sm flex items-center justify-center hover:bg-destructive/90 transition-colors shadow-sm">
-                      <Trash2 className="w-3.5 h-3.5 text-foreground" />
-                    </button>
+                    {canEdit && (
+                      <button onClick={(e) => { e.stopPropagation(); handleEdit(c); }} className="w-7 h-7 rounded-lg bg-card/90 backdrop-blur-sm flex items-center justify-center hover:bg-card transition-colors shadow-sm">
+                        <Edit className="w-3.5 h-3.5 text-foreground" />
+                      </button>
+                    )}
+                    {canDelete && (
+                      <button onClick={(e) => { e.stopPropagation(); handleDelete(c.id); }} className="w-7 h-7 rounded-lg bg-card/90 backdrop-blur-sm flex items-center justify-center hover:bg-destructive/90 transition-colors shadow-sm">
+                        <Trash2 className="w-3.5 h-3.5 text-foreground" />
+                      </button>
+                    )}
                     <button onClick={(e) => { e.stopPropagation(); window.open(`/construtora/${c.slug}`, '_blank'); }} className="w-7 h-7 rounded-lg bg-card/90 backdrop-blur-sm flex items-center justify-center hover:bg-info/90 transition-colors shadow-sm" title="Ver página externa">
                       <ExternalLink className="w-3.5 h-3.5 text-foreground" />
                     </button>
@@ -329,7 +342,7 @@ export default function Construtoras() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-16 text-muted-foreground">
             <Building2 className="w-12 h-12 mx-auto mb-3 opacity-40" />
             <p className="font-medium">Nenhuma construtora encontrada</p>
-            <p className="text-sm mt-1">Cadastre sua primeira construtora</p>
+            <p className="text-sm mt-1">{canCreate ? "Cadastre sua primeira construtora" : "A base ainda não possui construtoras cadastradas"}</p>
           </motion.div>
         )}
       </div>

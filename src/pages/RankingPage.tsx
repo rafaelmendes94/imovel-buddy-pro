@@ -129,6 +129,7 @@ type SortFilter = "vgv" | "count" | "ticket";
 export default function RankingPage() {
   const goBack = useSmartBack("/dashboard");
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [allSales, setAllSales] = useState<SaleRow[]>([]);
   const [selectedBroker, setSelectedBroker] = useState<BrokerRank | null>(null);
   const [filterType, setFilterType] = useState("Todos");
@@ -143,11 +144,20 @@ export default function RankingPage() {
   }, []);
 
   const loadRanking = async () => {
-    const { data: soldProperties } = await supabase
+    setLoading(true);
+    setLoadError("");
+    const { data: soldProperties, error: salesError } = await supabase
       .from("imoveis")
       .select("id, titulo, tipo, cidade, bairro, preco, data_venda, created_at, updated_at, imagens, corretor_nome, corretor_id, user_id")
       .ilike("status", "%vendid%")
       .order("data_venda", { ascending: false, nullsFirst: false });
+
+    if (salesError) {
+      setAllSales([]);
+      setLoadError("Não foi possível carregar as vendas do ranking.");
+      setLoading(false);
+      return;
+    }
 
     if (!soldProperties || soldProperties.length === 0) {
       setAllSales([]);
@@ -285,6 +295,18 @@ export default function RankingPage() {
     return (
       <div className="min-h-screen bg-gray-950 flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-amber-400 animate-spin" />
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="min-h-screen bg-gray-950 flex flex-col items-center justify-center gap-4 px-6 text-center">
+        <Trophy className="w-10 h-10 text-gray-600" />
+        <p className="text-gray-300">{loadError}</p>
+        <button onClick={loadRanking} className="rounded-lg bg-amber-400 px-4 py-2 text-sm font-bold text-gray-950 hover:bg-amber-300">
+          Tentar novamente
+        </button>
       </div>
     );
   }

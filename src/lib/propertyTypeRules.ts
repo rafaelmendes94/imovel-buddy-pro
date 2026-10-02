@@ -23,7 +23,10 @@ export function normalizePropertyType(value?: string | null): string {
   const raw = strip(value || "");
   if (!raw) return "Apartamento";
 
-  if (raw.includes("apart") || raw === "ap" || raw === "apto") return "Apartamento";
+  if (
+    raw.includes("apart") || raw === "ap" || raw === "apto" ||
+    raw.includes("studio") || raw.includes("estudio") || raw.includes("loft") || raw.includes("flat")
+  ) return "Apartamento";
   if (raw.includes("casa") && raw.includes("cond")) return "Casa em condomínio";
   if (raw.includes("lote") && raw.includes("cond")) return "Lote em condomínio";
   if (raw.includes("terreno")) return "Terreno";

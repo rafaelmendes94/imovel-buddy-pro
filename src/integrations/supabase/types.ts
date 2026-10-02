@@ -1434,6 +1434,33 @@ export type Database = {
         }
         Relationships: []
       }
+      material_extra_records: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          data: Json
+          id: string
+          record_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          data?: Json
+          id?: string
+          record_type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          data?: Json
+          id?: string
+          record_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       partner_ratings: {
         Row: {
           comment: string

@@ -142,6 +142,7 @@ const App = () => (
             <Route path="/painel/imoveis" element={protectedRoute(<Properties />, { adminModule: "imoveis", brokerModule: "imoveis" })} />
             <Route path="/painel/mapas" element={protectedRoute(<Maps />, { adminModule: "imoveis", brokerModule: "imoveis" })} />
             <Route path="/painel/edificios" element={protectedRoute(<Buildings />, { adminModule: "edificios", brokerModule: "edificios" })} />
+            <Route path="/painel/construtoras" element={protectedRoute(<Construtoras />, { adminModule: "edificios", brokerModule: "edificios" })} />
             <Route path="/painel/edificios/:id" element={protectedRoute(<BuildingDetail />, { adminModule: "edificios", brokerModule: "edificios" })} />
             <Route path="/painel/condominios" element={protectedRoute(<Condominiums />, { adminModule: "condominios", brokerModule: "condominios" })} />
             <Route path="/painel/condominios/:id" element={protectedRoute(<CondominiumDetail />, { adminModule: "condominios", brokerModule: "condominios" })} />

@@ -68,11 +68,11 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({});
-  const { isSuperAdmin, isAdminStaff, isBroker, subscription, profile } = useAuth();
+  const { user, isSuperAdmin, isAdminStaff, isBroker, subscription, profile } = useAuth();
 
   const isAdmin = isSuperAdmin || isAdminStaff;
   const enabledModules: string[] = subscription?.plan?.modules || [];
-  const brokerPageKey = profile?.user_id || (profile?.full_name ? toSlug(profile.full_name) : "");
+  const brokerPageKey = user?.id || (profile?.full_name ? toSlug(profile.full_name) : "");
   const showMyPage = isBroker && !isAdmin && !!brokerPageKey;
   const myPageUrl = brokerPageKey ? `${window.location.origin}/corretor/${brokerPageKey}` : "";
 
@@ -94,7 +94,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
       "/mapas-condominio": "/painel/mapas-condominio",
       "/site-editor": "/painel/site",
       "/cadastro-corretores": "/painel/corretores",
-      "/construtoras": "/painel/edificios",
+      "/construtoras": "/painel/construtoras",
       "/avaliacoes": "/painel/avaliacoes",
       "/tabelas": "/painel/tabelas",
       "/ferramentas/gerador-tabela": "/painel/gerador-tabela",

@@ -60,42 +60,55 @@ export default function GeradorTabela() {
   /* ---------------- dados reais ---------------- */
   const loadData = useCallback(async () => {
     setLoading(true);
-    const [props, brokers, config] = await Promise.all([
-      fetchTabelaImoveis(),
-      (supabase.from("corretores") as any)
-        .select("id, nome, telefone, creci, foto_url")
-        .eq("ativo", true)
-        .order("nome"),
-      (supabase.from("site_config") as any)
-        .select("logo_url, header_color, accent_color, footer_color, title_color")
-        .limit(1),
-    ]);
-    setImoveis(props);
-    setCorretores((brokers?.data as TabelaCorretor[]) || []);
-    const cfg = config?.data?.[0];
-    setLogoUrl(cfg?.logo_url || null);
-    setCompanyPalette(
-      cfg?.header_color
-        ? {
-            id: "minha-imobiliaria",
-            name: "Minha imobiliária",
-            principal: cfg.header_color,
-            secundaria: cfg.footer_color || cfg.header_color,
-            destaque: cfg.accent_color || "#D6A23A",
-            fundo: "#FFFFFF",
-            texto: cfg.title_color || "#10233F",
-          }
-        : null
-    );
-    setLoading(false);
+    try {
+      const [props, brokers, config] = await Promise.all([
+        fetchTabelaImoveis(),
+        (supabase.from("corretores") as any)
+          .select("id, nome, telefone, creci, foto_url")
+          .eq("ativo", true)
+          .order("nome"),
+        (supabase.from("site_config") as any)
+          .select("logo_url, header_color, accent_color, footer_color, title_color")
+          .limit(1),
+      ]);
+      if (brokers?.error) throw brokers.error;
+      if (config?.error) throw config.error;
+      setImoveis(props);
+      setCorretores((brokers?.data as TabelaCorretor[]) || []);
+      const cfg = config?.data?.[0];
+      setLogoUrl(cfg?.logo_url || null);
+      setCompanyPalette(
+        cfg?.header_color
+          ? {
+              id: "minha-imobiliaria",
+              name: "Minha imobiliária",
+              principal: cfg.header_color,
+              secundaria: cfg.footer_color || cfg.header_color,
+              destaque: cfg.accent_color || "#D6A23A",
+              fundo: "#FFFFFF",
+              texto: cfg.title_color || "#10233F",
+            }
+          : null
+      );
+    } catch (error: any) {
+      toast.error("Não foi possível carregar os dados do gerador", { description: error?.message });
+      setImoveis([]);
+      setCorretores([]);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   const loadSaved = useCallback(async () => {
     if (!user) return;
-    const { data } = await (supabase.from("tabela_apresentacoes") as any)
+    const { data, error } = await (supabase.from("tabela_apresentacoes") as any)
       .select("*")
       .eq("user_id", user.id)
       .order("updated_at", { ascending: false });
+    if (error) {
+      toast.error("Não foi possível carregar as apresentações salvas");
+      return;
+    }
     setSaved((data as SavedTable[]) || []);
   }, [user]);
 

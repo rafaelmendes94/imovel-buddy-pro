@@ -220,11 +220,13 @@ export interface NormalizedImovel {
 }
 
 export function normalizeAiImovel(ai: AiImovel): NormalizedImovel {
-  const tipo = normalizePropertyType(txt(ai.tipo) || "Apartamento");
+  let tipo = normalizePropertyType(txt(ai.tipo) || "Apartamento");
+  const rawUnidade = txt(ai.unidade);
+  if (tipo === "Casa" && looksLikeQuadraLote(rawUnidade)) tipo = "Casa em condomínio";
   const quadraLoteTipo = usesQuadraLote(tipo);
 
   let empreendimento = txt(ai.empreendimento).replace(EMP_PREFIX, "").trim();
-  let unidade = cleanUnidade(txt(ai.unidade));
+  let unidade = cleanUnidade(rawUnidade);
   let quadra = txt(ai.quadra).toUpperCase();
   let lote = txt(ai.lote);
 

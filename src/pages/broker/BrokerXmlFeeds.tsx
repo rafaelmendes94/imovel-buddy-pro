@@ -1,7 +1,6 @@
 import { BrokerLayout } from "@/components/BrokerLayout";
 import { BackButton } from "@/components/BackButton";
 import { useAuth } from "@/hooks/useAuth";
-import { toSlug } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,12 +14,12 @@ const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL as string | undefined)?.
 const FN_BASE = SUPABASE_URL ? `${SUPABASE_URL}/functions/v1/property-feed` : "";
 
 export default function BrokerXmlFeeds() {
-  const { profile, user } = useAuth();
+  const { user } = useAuth();
   const [count, setCount] = useState<number | null>(null);
-  const slug = profile?.full_name ? toSlug(profile.full_name) : "";
+  const ownerKey = user?.id || "";
 
-  const vrsyncUrl = slug && FN_BASE ? `${FN_BASE}?slug=${slug}&format=vrsync` : "";
-  const imovelwebUrl = slug && FN_BASE ? `${FN_BASE}?slug=${slug}&format=imovelweb` : "";
+  const vrsyncUrl = ownerKey && FN_BASE ? `${FN_BASE}?slug=${ownerKey}&format=vrsync` : "";
+  const imovelwebUrl = ownerKey && FN_BASE ? `${FN_BASE}?slug=${ownerKey}&format=imovelweb` : "";
 
   useEffect(() => {
     if (!user?.id) return;
@@ -55,9 +54,9 @@ export default function BrokerXmlFeeds() {
           </p>
         </div>
 
-        {!slug && (
+        {!ownerKey && (
           <Card className="p-4 border-destructive/50">
-            Complete seu nome completo no perfil para gerar os links.
+            Entre novamente para gerar os links do feed.
           </Card>
         )}
 
@@ -82,10 +81,10 @@ export default function BrokerXmlFeeds() {
           </div>
           <div className="flex gap-2">
             <Input readOnly value={vrsyncUrl} className="font-mono text-xs" />
-            <Button variant="outline" size="icon" onClick={() => copy(vrsyncUrl)} disabled={!slug}>
+            <Button variant="outline" size="icon" onClick={() => copy(vrsyncUrl)} disabled={!ownerKey}>
               <Copy className="w-4 h-4" />
             </Button>
-            <Button variant="outline" size="icon" asChild disabled={!slug}>
+            <Button variant="outline" size="icon" asChild disabled={!ownerKey}>
               <a href={vrsyncUrl} target="_blank" rel="noreferrer"><ExternalLink className="w-4 h-4" /></a>
             </Button>
           </div>
@@ -98,10 +97,10 @@ export default function BrokerXmlFeeds() {
           </div>
           <div className="flex gap-2">
             <Input readOnly value={imovelwebUrl} className="font-mono text-xs" />
-            <Button variant="outline" size="icon" onClick={() => copy(imovelwebUrl)} disabled={!slug}>
+            <Button variant="outline" size="icon" onClick={() => copy(imovelwebUrl)} disabled={!ownerKey}>
               <Copy className="w-4 h-4" />
             </Button>
-            <Button variant="outline" size="icon" asChild disabled={!slug}>
+            <Button variant="outline" size="icon" asChild disabled={!ownerKey}>
               <a href={imovelwebUrl} target="_blank" rel="noreferrer"><ExternalLink className="w-4 h-4" /></a>
             </Button>
           </div>

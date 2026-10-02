@@ -31,6 +31,13 @@ export default function Tabelas() {
   const [configId, setConfigId] = useState<string | null>(null);
   const [viewerOpen, setViewerOpen] = useState(false);
 
+  const storagePathFromUrl = (url: string | null) => {
+    if (!url) return null;
+    const marker = "/storage/v1/object/public/tabelas/";
+    const index = url.indexOf(marker);
+    return index >= 0 ? decodeURIComponent(url.slice(index + marker.length).split("?")[0]) : null;
+  };
+
   const slug = profile?.full_name ? toSlug(profile.full_name) : "";
   const ownerKey = user?.id || slug;
   const brokerName = profile?.full_name || "Corretor";
@@ -39,11 +46,16 @@ export default function Tabelas() {
   const fetchTabela = async () => {
     if (!ownerKey) { setLoading(false); return; }
     setLoading(true);
-    const { data } = await (supabase.from("site_config") as any)
+    const { data, error } = await (supabase.from("site_config") as any)
       .select("id, tabela_url")
       .eq("config_type", "broker_page")
       .in("owner_id", Array.from(new Set([ownerKey, slug].filter(Boolean))))
       .limit(1);
+    if (error) {
+      toast.error("Não foi possível carregar sua tabela");
+      setLoading(false);
+      return;
+    }
     const row = Array.isArray(data) ? data[0] : null;
     if (row) {
       setConfigId(row.id);
@@ -65,6 +77,11 @@ export default function Tabelas() {
     if (!file) return;
     if (file.type !== "application/pdf") {
       toast.error("Apenas arquivos PDF são permitidos");
+      e.target.value = "";
+      return;
+    }
+    if (file.size > 25 * 1024 * 1024) {
+      toast.error("O PDF deve ter no máximo 25 MB");
       e.target.value = "";
       return;
     }
@@ -100,6 +117,11 @@ export default function Tabelas() {
         if (error) throw error;
         if (data) setConfigId(data.id);
       }
+      const previousPath = storagePathFromUrl(tabelaUrl);
+      if (previousPath && previousPath !== path) {
+        const { error: removeError } = await supabase.storage.from("tabelas").remove([previousPath]);
+        if (removeError) console.warn("Não foi possível remover o PDF anterior", removeError);
+      }
       setTabelaUrl(url);
       toast.success("Tabela enviada! Já está disponível na sua página pública.");
     } catch (err: any) {
@@ -119,6 +141,11 @@ export default function Tabelas() {
     if (error) {
       toast.error("Erro ao remover tabela");
     } else {
+      const previousPath = storagePathFromUrl(tabelaUrl);
+      if (previousPath) {
+        const { error: removeError } = await supabase.storage.from("tabelas").remove([previousPath]);
+        if (removeError) console.warn("Não foi possível remover o PDF", removeError);
+      }
       setTabelaUrl(null);
       toast.success("Tabela removida");
     }

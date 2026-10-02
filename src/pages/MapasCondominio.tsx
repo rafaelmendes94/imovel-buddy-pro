@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { formatProperName } from "@/lib/nameFormat";
+import { toast } from "sonner";
 
 interface Condominio {
   id: string;
@@ -24,18 +25,24 @@ export default function MapasCondominio() {
 
   useEffect(() => {
     const load = async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("condominios")
         .select("id, nome, imagem_url, endereco, cidade, mapa_pdf_url")
         .order("nome");
+      if (error) {
+        toast.error("Não foi possível carregar os mapas dos condomínios");
+        setLoading(false);
+        return;
+      }
       setCondominios((data || []).map(c => ({ ...c, nome: formatProperName(c.nome) })));
       setLoading(false);
     };
     load();
   }, []);
 
+  const query = search.trim().toLocaleLowerCase("pt-BR");
   const filtered = condominios.filter((c) =>
-    c.nome.toLowerCase().includes(search.toLowerCase())
+    [c.nome, c.endereco, c.cidade].some((value) => value?.toLocaleLowerCase("pt-BR").includes(query))
   );
 
   return (
