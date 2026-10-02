@@ -57,6 +57,13 @@ const CYCLE_LABELS: Record<string, string> = {
   annual: "/ano",
 };
 
+const formatPlanPrice = (value: number) => new Intl.NumberFormat("pt-BR", {
+  style: "currency",
+  currency: "BRL",
+  minimumFractionDigits: Number.isInteger(Number(value)) ? 0 : 2,
+  maximumFractionDigits: 2,
+}).format(Number(value));
+
 export default function Planos() {
   const [searchParams] = useSearchParams();
   const [plans, setPlans] = useState<Plan[]>([]);
@@ -311,7 +318,7 @@ export default function Planos() {
                     )}
                     <div className="flex items-baseline gap-1">
                       <span className="text-3xl sm:text-4xl font-extrabold text-gray-900">
-                        {formatCurrency(plan.price)}
+                        {formatPlanPrice(plan.price)}
                       </span>
                       <span className="text-sm text-gray-500 font-medium">
                         {CYCLE_LABELS[plan.billing_cycle] || "/mês"}
