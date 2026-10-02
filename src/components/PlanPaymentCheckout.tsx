@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { getPartnerPlanFeatures } from "@/lib/partnerPlans";
 
 export type CheckoutPlan = {
   id: string;
@@ -156,6 +157,7 @@ export function PlanPaymentCheckout({
     ? pix.encodedImage
     : `data:image/png;base64,${pix?.encodedImage || ""}`;
   const isPartnerPlan = plan.plan_type === "parceiro";
+  const partnerFeatures = getPartnerPlanFeatures(plan.modules);
 
   return (
     <div className={cn("grid overflow-hidden border border-slate-200 bg-white shadow-xl lg:grid-cols-[minmax(0,1fr)_400px]", embedded ? "rounded-3xl" : "rounded-2xl")}>
@@ -274,14 +276,11 @@ export function PlanPaymentCheckout({
         </div>
         <div className="mt-6 space-y-3 text-sm text-slate-200">
           {isPartnerPlan ? (
-            <>
-              <div className="flex items-center gap-2"><Check className="h-4 w-4 text-emerald-400" /> Página pública da empresa</div>
-              <div className="flex items-center gap-2"><Check className="h-4 w-4 text-emerald-400" /> Presença no catálogo de parceiros</div>
-              <div className="flex items-center gap-2"><Check className="h-4 w-4 text-emerald-400" /> Contato direto com corretores</div>
-              {(plan.modules || []).includes("destaque") && (
-                <div className="flex items-center gap-2"><Check className="h-4 w-4 text-emerald-400" /> Destaque na página inicial</div>
-              )}
-            </>
+            partnerFeatures.map((feature) => (
+              <div key={feature} className="flex items-center gap-2">
+                <Check className="h-4 w-4 shrink-0 text-emerald-400" /> {feature}
+              </div>
+            ))
           ) : (
             <>
               <div className="flex items-center gap-2"><Check className="h-4 w-4 text-emerald-400" /> Até {plan.max_properties} imóveis</div>

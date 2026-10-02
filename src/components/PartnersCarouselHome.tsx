@@ -26,6 +26,7 @@ function shuffle<T>(arr: T[]): T[] {
 
 export function PartnersCarouselHome() {
   const [partners, setPartners] = useState<Partner[]>([]);
+  const [activeSlide, setActiveSlide] = useState(0);
   const scrollerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -34,10 +35,24 @@ export function PartnersCarouselHome() {
       .select("id,slug,name,category,city,logo_url,cover_url,description")
       .eq("status", "active")
       .eq("featured", true)
-      .then(({ data }) => setPartners(shuffle(data || [])));
+      .then(({ data }) => setPartners(shuffle(data || []).slice(0, 10)));
   }, []);
 
   const shuffled = useMemo(() => partners, [partners]);
+  const totalSlides = shuffled.length + 1;
+  const activePartner = activeSlide === 0 ? null : shuffled[activeSlide - 1];
+
+  useEffect(() => {
+    if (totalSlides <= 1) return;
+    const timer = window.setInterval(() => {
+      setActiveSlide((current) => (current + 1) % totalSlides);
+    }, 6000);
+    return () => window.clearInterval(timer);
+  }, [totalSlides]);
+
+  useEffect(() => {
+    if (activeSlide >= totalSlides) setActiveSlide(0);
+  }, [activeSlide, totalSlides]);
 
   const scrollBy = (dir: 1 | -1) => {
     const el = scrollerRef.current;
@@ -50,38 +65,85 @@ export function PartnersCarouselHome() {
   return (
     <section className="py-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <Link
-          to="/planos?tipo=parceiro"
-          aria-label="Conhecer os planos para parceiros"
-          className="group relative flex min-h-[340px] overflow-hidden rounded-lg border border-slate-800 bg-slate-950 shadow-lg sm:min-h-[300px]"
-        >
-          <img
-            src={partnerAdBanner}
-            alt="Profissionais fechando uma parceria no mercado imobiliário"
-            className="absolute inset-0 h-full w-full object-cover object-[66%_center] transition-transform duration-700 group-hover:scale-[1.02] sm:object-center"
-          />
-          <div className="absolute inset-0 bg-slate-950/45 sm:bg-slate-950/25" />
-          <div className="relative z-10 flex w-full max-w-xl flex-col justify-center p-6 text-white sm:p-9 lg:p-11">
-            <div className="mb-5 flex items-center gap-2 text-xs font-bold uppercase text-cyan-300">
-              <Building2 className="h-4 w-4" />
-              MV Broker Connect Parceiros
+        <div className="relative">
+          <Link
+            to={activePartner ? `/parceiro/${activePartner.slug}` : "/planos?tipo=parceiro"}
+            aria-label={activePartner ? `Conhecer ${activePartner.name}` : "Conhecer os planos para parceiros"}
+            className="group relative flex min-h-[340px] overflow-hidden rounded-lg border border-slate-800 bg-slate-950 shadow-lg sm:min-h-[300px]"
+          >
+            <img
+              src={activePartner?.cover_url || partnerAdBanner}
+              alt={activePartner ? `Capa de ${activePartner.name}` : "Profissionais fechando uma parceria no mercado imobiliário"}
+              className="absolute inset-0 h-full w-full object-cover object-[66%_center] transition-transform duration-700 group-hover:scale-[1.02] sm:object-center"
+            />
+            <div className="absolute inset-0 bg-slate-950/50 sm:bg-slate-950/35" />
+            <div className="relative z-10 flex w-full max-w-xl flex-col justify-center p-6 text-white sm:p-9 lg:p-11">
+              <div className="mb-5 flex items-center gap-2 text-xs font-bold uppercase text-cyan-300">
+                {activePartner?.logo_url ? (
+                  <img src={activePartner.logo_url} alt="" className="h-7 w-7 rounded-md bg-white object-cover" />
+                ) : (
+                  <Building2 className="h-4 w-4" />
+                )}
+                {activePartner?.category || "MV Broker Connect Parceiros"}
+              </div>
+              {activePartner ? (
+                <>
+                  <h2 className="max-w-lg text-3xl font-extrabold leading-tight sm:text-5xl">
+                    {activePartner.name}
+                  </h2>
+                  <p className="mt-3 max-w-md text-sm leading-relaxed text-white/85 sm:text-base line-clamp-3">
+                    {activePartner.description || "Conheça este parceiro em destaque no MV Broker Connect."}
+                  </p>
+                  {activePartner.city && <p className="mt-4 text-sm font-semibold text-white/90">{activePartner.city}</p>}
+                  <span className="mt-7 inline-flex w-fit items-center gap-2 rounded-lg bg-cyan-400 px-5 py-3 text-sm font-extrabold text-slate-950 transition-colors group-hover:bg-cyan-300">
+                    Conheça a empresa <ArrowRight className="h-4 w-4" />
+                  </span>
+                </>
+              ) : (
+                <>
+                  <h2 className="max-w-md text-4xl font-extrabold leading-tight sm:text-5xl">
+                    Anuncie <span className="text-cyan-300">aqui</span>
+                  </h2>
+                  <p className="mt-3 max-w-md text-sm leading-relaxed text-white/85 sm:text-base">
+                    Sua empresa em destaque para corretores, investidores e clientes do mercado imobiliário.
+                  </p>
+                  <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-xs font-semibold text-white/90 sm:text-sm">
+                    <span>Mais visibilidade</span>
+                    <span>Contato direto</span>
+                    <span>Presença regional</span>
+                  </div>
+                  <span className="mt-7 inline-flex w-fit items-center gap-2 rounded-lg bg-cyan-400 px-5 py-3 text-sm font-extrabold text-slate-950 transition-colors group-hover:bg-cyan-300">
+                    Divulgue sua empresa <ArrowRight className="h-4 w-4" />
+                  </span>
+                </>
+              )}
             </div>
-            <h2 className="max-w-md text-4xl font-extrabold leading-tight sm:text-5xl">
-              Anuncie <span className="text-cyan-300">aqui</span>
-            </h2>
-            <p className="mt-3 max-w-md text-sm leading-relaxed text-white/85 sm:text-base">
-              Sua empresa em destaque para corretores, investidores e clientes do mercado imobiliário.
-            </p>
-            <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-xs font-semibold text-white/90 sm:text-sm">
-              <span>Mais visibilidade</span>
-              <span>Contato direto</span>
-              <span>Presença regional</span>
+          </Link>
+
+          {totalSlides > 1 && (
+            <div className="absolute bottom-4 right-4 z-20 flex items-center gap-2 rounded-lg bg-slate-950/70 p-1.5 backdrop-blur-sm">
+              <button
+                type="button"
+                onClick={() => setActiveSlide((activeSlide - 1 + totalSlides) % totalSlides)}
+                className="flex h-8 w-8 items-center justify-center rounded-md text-white hover:bg-white/15"
+                aria-label="Anúncio anterior"
+                title="Anúncio anterior"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <span className="min-w-10 text-center text-xs font-bold text-white">{activeSlide + 1}/{totalSlides}</span>
+              <button
+                type="button"
+                onClick={() => setActiveSlide((activeSlide + 1) % totalSlides)}
+                className="flex h-8 w-8 items-center justify-center rounded-md text-white hover:bg-white/15"
+                aria-label="Próximo anúncio"
+                title="Próximo anúncio"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
             </div>
-            <span className="mt-7 inline-flex w-fit items-center gap-2 rounded-lg bg-cyan-400 px-5 py-3 text-sm font-extrabold text-slate-950 transition-colors group-hover:bg-cyan-300">
-              Divulgue sua empresa <ArrowRight className="h-4 w-4" />
-            </span>
-          </div>
-        </Link>
+          )}
+        </div>
 
         {shuffled.length > 0 && (
           <div className="mt-10">

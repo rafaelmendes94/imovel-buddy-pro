@@ -10,6 +10,7 @@ import {
   ChevronDown, User, LayoutDashboard, CreditCard, LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getPartnerPlanFeatures } from "@/lib/partnerPlans";
 import { SharkAI } from "@/components/SharkAI";
 
 interface Plan {
@@ -23,14 +24,16 @@ interface Plan {
   trial_days: number;
   is_active: boolean;
   plan_type: string;
+  discount_percent?: number;
 }
 
-type BillingPeriod = "monthly" | "semiannual";
+type BillingPeriod = "monthly" | "semiannual" | "annual";
 type PlanAudience = "corretor" | "parceiro";
 
 const BILLING_PERIODS: { value: BillingPeriod; label: string; description: string }[] = [
   { value: "monthly", label: "Mensal", description: "Pagamento todos os meses" },
-  { value: "semiannual", label: "Semestral", description: "Pagamento a cada 6 meses" },
+  { value: "semiannual", label: "6 meses", description: "15% de desconto" },
+  { value: "annual", label: "12 meses", description: "25% de desconto" },
 ];
 
 const PLAN_ICONS: Record<string, typeof Star> = {
@@ -97,7 +100,7 @@ export default function Planos() {
     if (audiencePlans.some((plan) => plan.billing_cycle === billingPeriod)) return;
     const availableCycle = audiencePlans.find((plan) => plan.billing_cycle === "monthly")?.billing_cycle
       || audiencePlans[0]?.billing_cycle;
-    if (availableCycle === "monthly" || availableCycle === "semiannual") setBillingPeriod(availableCycle);
+    if (availableCycle === "monthly" || availableCycle === "semiannual" || availableCycle === "annual") setBillingPeriod(availableCycle);
   }, [audiencePlans, billingPeriod]);
 
   const handlePlanClick = (plan: Plan) => {
@@ -213,7 +216,7 @@ export default function Planos() {
             </button>
           ))}
         </div>
-        <div className="mx-auto mb-10 grid w-full max-w-md grid-cols-2 rounded-lg border border-gray-200 bg-gray-100 p-1">
+        <div className="mx-auto mb-10 grid w-full max-w-2xl grid-cols-3 rounded-lg border border-gray-200 bg-gray-100 p-1">
           {BILLING_PERIODS.map((period) => {
             const active = billingPeriod === period.value;
             const planCount = audiencePlans.filter((plan) => plan.billing_cycle === period.value).length;
@@ -251,7 +254,7 @@ export default function Planos() {
           </div>
         ) : visiblePlans.length === 0 ? (
           <p className="text-center text-gray-500 py-16">
-            Nenhum plano {billingPeriod === "monthly" ? "mensal" : "semestral"} disponível no momento.
+            Nenhum plano {billingPeriod === "monthly" ? "mensal" : billingPeriod === "semiannual" ? "semestral" : "anual"} disponível no momento.
           </p>
         ) : (
           <div className={cn(
@@ -264,8 +267,14 @@ export default function Planos() {
             {visiblePlans.map((plan, idx) => {
               const colors = PLAN_COLORS[idx % PLAN_COLORS.length];
               const Icon = PLAN_ICONS[idx] || Star;
-              const isPopular = idx === Math.min(visiblePlans.length - 1, 1);
               const modules = Array.isArray(plan.modules) ? plan.modules as string[] : [];
+              const isPopular = planAudience === "parceiro"
+                ? modules.includes("destaque")
+                : idx === Math.min(visiblePlans.length - 1, 1);
+              const partnerFeatures = getPartnerPlanFeatures(modules);
+              const monthsInCycle = plan.billing_cycle === "annual" ? 12 : plan.billing_cycle === "semiannual" ? 6 : 1;
+              const monthlyEquivalent = Number(plan.price) / monthsInCycle;
+              const displayName = plan.name.replace(/ (Semestral|Anual)$/, "");
 
               return (
                 <div
@@ -287,7 +296,7 @@ export default function Planos() {
                       <Icon className={cn("w-5 h-5", colors.accent)} />
                     </div>
                     <div>
-                      <h3 className="text-lg font-bold text-gray-900">{plan.name}</h3>
+                      <h3 className="text-lg font-bold text-gray-900">{displayName}</h3>
                       {plan.trial_days > 0 && (
                         <p className="text-[10px] text-gray-500 font-medium">{plan.trial_days} dias grátis</p>
                       )}
@@ -295,6 +304,11 @@ export default function Planos() {
                   </div>
 
                   <div className="mb-6">
+                    {Number(plan.discount_percent) > 0 && (
+                      <span className="mb-2 inline-flex rounded-md bg-emerald-100 px-2 py-1 text-[11px] font-bold text-emerald-700">
+                        Economize {plan.discount_percent}%
+                      </span>
+                    )}
                     <div className="flex items-baseline gap-1">
                       <span className="text-3xl sm:text-4xl font-extrabold text-gray-900">
                         {formatCurrency(plan.price)}
@@ -303,19 +317,22 @@ export default function Planos() {
                         {CYCLE_LABELS[plan.billing_cycle] || "/mês"}
                       </span>
                     </div>
+                    {monthsInCycle > 1 && (
+                      <p className="mt-1 text-xs font-medium text-gray-500">
+                        Equivale a {formatCurrency(monthlyEquivalent)} por mês
+                      </p>
+                    )}
                   </div>
 
                   <div className="space-y-3 flex-1 mb-6">
                     {planAudience === "parceiro" ? (
-                      <>
-                        <FeatureItem icon={Building2} text="Página pública da empresa" />
-                        <FeatureItem icon={Check} text="Presença no catálogo de parceiros" />
-                        <FeatureItem icon={Check} text="Avaliações e contato direto" />
+                      partnerFeatures.map((feature) => (
                         <FeatureItem
-                          icon={Crown}
-                          text={modules.includes("destaque") ? "Destaque no carrossel da página inicial" : "Exibição padrão no catálogo"}
+                          key={feature}
+                          icon={feature.includes("Capa") ? Crown : Check}
+                          text={feature}
                         />
-                      </>
+                      ))
                     ) : (
                       <>
                         <FeatureItem icon={Building2} text={`Até ${plan.max_properties} imóveis`} />

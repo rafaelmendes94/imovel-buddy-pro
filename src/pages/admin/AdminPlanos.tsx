@@ -11,6 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { PLAN_MODULES } from "@/lib/moduleCatalog";
+import { PARTNER_PLAN_MODULES } from "@/lib/partnerPlans";
 
 interface PlanForm {
   name: string;
@@ -39,8 +40,6 @@ const CYCLE_LABELS: Record<string, string> = {
   semiannual: "Semestral",
   annual: "Anual",
 };
-
-const PARTNER_MODULE = { key: "destaque", label: "Destaque na página inicial" };
 
 export default function AdminPlanos() {
   const [plans, setPlans] = useState<any[]>([]);
@@ -75,8 +74,8 @@ export default function AdminPlanos() {
       toast({ title: "Quantidade inválida", description: "Informe quantos imóveis a conta poderá cadastrar.", variant: "destructive" });
       return;
     }
-    if (!["monthly", "semiannual"].includes(form.billing_cycle)) {
-      toast({ title: "Periodicidade inválida", description: "Selecione Mensal ou Semestral.", variant: "destructive" });
+    if (!["monthly", "semiannual", "annual"].includes(form.billing_cycle)) {
+      toast({ title: "Periodicidade inválida", description: "Selecione Mensal, Semestral ou Anual.", variant: "destructive" });
       return;
     }
     setSaving(true);
@@ -200,7 +199,9 @@ export default function AdminPlanos() {
                     plan_type: v,
                     max_brokers: v === "parceiro" ? "0" : "1",
                     max_properties: v === "parceiro" ? "0" : (Number(p.max_properties) > 0 ? p.max_properties : "50"),
-                    modules: v === "parceiro" ? p.modules.filter((module) => module === "destaque") : p.modules.filter((module) => module !== "destaque"),
+                    modules: v === "parceiro"
+                      ? p.modules.filter((module) => PARTNER_PLAN_MODULES.some((partnerModule) => partnerModule.key === module))
+                      : p.modules.filter((module) => !PARTNER_PLAN_MODULES.some((partnerModule) => partnerModule.key === module)),
                   }))}>
                     <SelectTrigger><SelectValue placeholder="Tipo" /></SelectTrigger>
                     <SelectContent>
@@ -213,6 +214,7 @@ export default function AdminPlanos() {
                     <SelectContent>
                       <SelectItem value="monthly">Mensal</SelectItem>
                       <SelectItem value="semiannual">Semestral</SelectItem>
+                      <SelectItem value="annual">Anual</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -244,7 +246,7 @@ export default function AdminPlanos() {
                 <div>
                   <p className="text-sm font-medium text-foreground mb-2">Módulos inclusos</p>
                   <div className="grid grid-cols-2 gap-2">
-                    {(form.plan_type === "parceiro" ? [PARTNER_MODULE] : PLAN_MODULES).map(m => (
+                    {(form.plan_type === "parceiro" ? PARTNER_PLAN_MODULES : PLAN_MODULES).map(m => (
                       <label key={m.key} className="flex items-center gap-2 text-sm">
                         <Switch checked={form.modules.includes(m.key)} onCheckedChange={() => toggleModule(m.key)} />
                         {m.label}
