@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   ArrowLeft, Building2, Star, Phone, MapPin, Globe, Mail,
-  MessageSquare, Send, ThumbsUp, Clock, Users, X, Settings as SettingsIcon
+  MessageSquare, Send, ThumbsUp, Clock, Users, X, Settings as SettingsIcon,
+  FileText, ExternalLink
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SiteConfigDialog } from "@/components/SiteConfigDialog";
@@ -42,6 +43,7 @@ export default function PartnerDetail() {
   const [submitted, setSubmitted] = useState(false);
   const [showConfig, setShowConfig] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [catalogMaterial, setCatalogMaterial] = useState<{ title: string; description: string; cta_url: string; media_urls: string[] } | null>(null);
 
   const loadRatings = async (partnerId: string) => {
     const { data } = await supabase
@@ -71,7 +73,17 @@ export default function PartnerDetail() {
         .eq("status", "active")
         .maybeSingle();
       setPartner(data as any);
-      if (data) await loadRatings((data as any).id);
+      if (data) {
+        await loadRatings((data as any).id);
+        const { data: material } = await (supabase as any)
+          .from("partner_materials")
+          .select("title,description,cta_url,media_urls")
+          .eq("partner_id", (data as any).id)
+          .eq("material_type", "catalog")
+          .eq("status", "approved")
+          .maybeSingle();
+        setCatalogMaterial(material || null);
+      }
       setLoading(false);
     })();
   }, [slug]);
@@ -209,6 +221,36 @@ export default function PartnerDetail() {
             )}
           </div>
         </div>
+
+        {catalogMaterial && catalogMaterial.media_urls.length > 0 && (
+          <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+            <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-bold text-gray-900">{catalogMaterial.title || "Portfólio"}</h2>
+                {catalogMaterial.description && <p className="mt-1 text-sm text-gray-600">{catalogMaterial.description}</p>}
+              </div>
+              {catalogMaterial.cta_url && (
+                <a href={catalogMaterial.cta_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2 text-sm font-bold text-white hover:bg-amber-600">
+                  Saiba mais <ExternalLink className="h-4 w-4" />
+                </a>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+              {catalogMaterial.media_urls.map((url) => {
+                const isImage = /\.(jpg|jpeg|png|webp|gif|avif)($|\?)/i.test(url) || url.includes("imagedelivery.net");
+                return (
+                  <a key={url} href={url} target="_blank" rel="noreferrer" className="group flex aspect-square items-center justify-center overflow-hidden rounded-xl border bg-gray-50">
+                    {isImage ? (
+                      <img src={url} alt="" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                    ) : (
+                      <div className="text-center text-gray-500"><FileText className="mx-auto h-8 w-8" /><span className="mt-2 block text-xs">Abrir arquivo</span></div>
+                    )}
+                  </a>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
         <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
           <div className="flex items-center justify-between mb-4">

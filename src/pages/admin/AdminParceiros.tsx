@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { MediaGalleryUpload } from "@/components/MediaGalleryUpload";
+import { AdminPartnerMaterialsQueue } from "@/components/partner/AdminPartnerMaterialsQueue";
 import { toast } from "sonner";
 import { CheckCircle2, ExternalLink, Handshake, Pencil, Plus, Search, Trash2, XCircle } from "lucide-react";
 
@@ -201,6 +202,8 @@ export default function AdminParceiros() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input placeholder="Buscar parceiro..." value={search} onChange={e => setSearch(e.target.value)} className="pl-10" />
         </div>
+
+        <AdminPartnerMaterialsQueue />
 
         <Card>
           <CardContent className="p-0">

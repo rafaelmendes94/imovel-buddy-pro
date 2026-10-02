@@ -13,6 +13,10 @@ interface Partner {
   logo_url: string | null;
   cover_url: string | null;
   description: string | null;
+  ad_title?: string | null;
+  ad_description?: string | null;
+  ad_cta_url?: string | null;
+  ad_image_url?: string | null;
 }
 
 function shuffle<T>(arr: T[]): T[] {
@@ -30,12 +34,32 @@ export function PartnersCarouselHome() {
   const scrollerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    supabase
-      .from("partners")
-      .select("id,slug,name,category,city,logo_url,cover_url,description")
-      .eq("status", "active")
-      .eq("featured", true)
-      .then(({ data }) => setPartners(shuffle(data || []).slice(0, 10)));
+    Promise.all([
+      supabase
+        .from("partners")
+        .select("id,slug,name,category,city,logo_url,cover_url,description")
+        .eq("status", "active")
+        .eq("featured", true),
+      (supabase as any)
+        .from("partner_materials")
+        .select("partner_id,title,description,cta_url,media_urls")
+        .eq("material_type", "home_banner")
+        .eq("status", "approved"),
+    ]).then(([partnersResult, materialsResult]) => {
+      const bannerByPartner = new Map((materialsResult.data || []).map((material: any) => [material.partner_id, material]));
+      const approvedPartners = (partnersResult.data || []).flatMap((partner) => {
+        const material: any = bannerByPartner.get(partner.id);
+        if (!material?.media_urls?.[0]) return [];
+        return [{
+          ...partner,
+          ad_title: material.title,
+          ad_description: material.description,
+          ad_cta_url: material.cta_url,
+          ad_image_url: material.media_urls[0],
+        }];
+      });
+      setPartners(shuffle(approvedPartners).slice(0, 10));
+    });
   }, []);
 
   const shuffled = useMemo(() => partners, [partners]);
@@ -67,12 +91,12 @@ export function PartnersCarouselHome() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="relative">
           <Link
-            to={activePartner ? `/parceiro/${activePartner.slug}` : "/planos?tipo=parceiro"}
+            to={activePartner ? (activePartner.ad_cta_url || `/parceiro/${activePartner.slug}`) : "/planos?tipo=parceiro"}
             aria-label={activePartner ? `Conhecer ${activePartner.name}` : "Conhecer os planos para parceiros"}
             className="group relative flex min-h-[340px] overflow-hidden rounded-lg border border-slate-800 bg-slate-950 shadow-lg sm:min-h-[300px]"
           >
             <img
-              src={activePartner?.cover_url || partnerAdBanner}
+              src={activePartner?.ad_image_url || partnerAdBanner}
               alt={activePartner ? `Capa de ${activePartner.name}` : "Profissionais fechando uma parceria no mercado imobiliário"}
               className="absolute inset-0 h-full w-full object-cover object-[66%_center] transition-transform duration-700 group-hover:scale-[1.02] sm:object-center"
             />
@@ -89,10 +113,10 @@ export function PartnersCarouselHome() {
               {activePartner ? (
                 <>
                   <h2 className="max-w-lg text-3xl font-extrabold leading-tight sm:text-5xl">
-                    {activePartner.name}
+                    {activePartner.ad_title || activePartner.name}
                   </h2>
                   <p className="mt-3 max-w-md text-sm leading-relaxed text-white/85 sm:text-base line-clamp-3">
-                    {activePartner.description || "Conheça este parceiro em destaque no MV Broker Connect."}
+                    {activePartner.ad_description || activePartner.description || "Conheça este parceiro em destaque no MV Broker Connect."}
                   </p>
                   {activePartner.city && <p className="mt-4 text-sm font-semibold text-white/90">{activePartner.city}</p>}
                   <span className="mt-7 inline-flex w-fit items-center gap-2 rounded-lg bg-cyan-400 px-5 py-3 text-sm font-extrabold text-slate-950 transition-colors group-hover:bg-cyan-300">

@@ -10,6 +10,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { MediaGalleryUpload } from "@/components/MediaGalleryUpload";
+import { PartnerMaterialsPanel } from "@/components/partner/PartnerMaterialsPanel";
+import { PartnerBillingPanel } from "@/components/partner/PartnerBillingPanel";
 import { toast } from "sonner";
 import {
   Handshake, ExternalLink, LogOut, Star, MessageSquare, Crown, Loader2, Save,
@@ -58,7 +60,7 @@ export default function PainelParceiro() {
 
   const load = async () => {
     if (!user) return;
-    const [{ data: p, error: partnerError }, { data: rs, error: ratingsError }] = await Promise.all([
+    const [{ data: p, error: partnerError }, { data: rs, error: ratingsError }] = await Promise.all<any>([
       supabase.from("partners").select("*").eq("user_id", user.id).maybeSingle(),
       (async () => {
         const { data: own } = await supabase.from("partners").select("id").eq("user_id", user.id).maybeSingle();
@@ -224,6 +226,18 @@ export default function PainelParceiro() {
             </Button>
           </div>
         </Card>
+
+        <PartnerMaterialsPanel
+          partnerId={partner.id}
+          planModules={subscription?.plan?.modules || []}
+        />
+
+        <PartnerBillingPanel
+          subscriptionId={subscription?.id}
+          planName={planName}
+          status={subscription?.status}
+          periodEnd={subscription?.current_period_end}
+        />
 
         {/* Avaliações */}
         <Card>
