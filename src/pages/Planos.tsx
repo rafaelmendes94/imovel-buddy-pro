@@ -121,6 +121,20 @@ export default function Planos() {
     navigate(`/checkout?plan_id=${plan.id}`);
   };
 
+  const faqs = planAudience === "parceiro"
+    ? [
+        { q: "Posso trocar de plano depois?", a: "Sim. Você pode mudar de plano ou periodicidade conforme a necessidade da sua empresa." },
+        { q: "Quando minha empresa será publicada?", a: "Após a confirmação do pagamento e a aprovação administrativa do cadastro." },
+        { q: "Como funciona o pagamento?", a: "O pagamento é processado em uma página segura do Asaas, com opções de Pix e cartão." },
+        { q: "Como funciona o PDF semanal?", a: "As empresas desse plano entram no material enviado aos corretores toda quinta-feira." },
+      ]
+    : [
+        { q: "Posso trocar de plano depois?", a: "Sim! Você pode fazer upgrade ou downgrade a qualquer momento." },
+        { q: "Existe período de teste?", a: "Os dias de teste disponíveis são informados diretamente em cada plano." },
+        { q: "Como funciona o pagamento?", a: "O pagamento é processado em uma página segura do Asaas, com opções de Pix e cartão." },
+        { q: "Posso cancelar a qualquer momento?", a: "Sim, sem multas ou taxas de cancelamento. Você mantém acesso até o fim do período pago." },
+      ];
+
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
@@ -197,7 +211,7 @@ export default function Planos() {
       </section>
 
       {/* Plans Grid */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 pt-8">
+      <section id="planos-disponiveis" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 pt-8">
         <div className="mx-auto mb-4 grid w-full max-w-md grid-cols-2 rounded-lg border border-gray-200 bg-gray-100 p-1">
           {([
             { value: "corretor" as const, label: "Corretor" },
@@ -374,12 +388,7 @@ export default function Planos() {
           <h2 className="text-2xl font-bold text-gray-900">Perguntas Frequentes</h2>
         </div>
         <div className="max-w-3xl mx-auto space-y-4">
-          {[
-            { q: "Posso trocar de plano depois?", a: "Sim! Você pode fazer upgrade ou downgrade a qualquer momento." },
-            { q: "Existe período de teste?", a: "Sim, todos os planos oferecem período de teste gratuito para você experimentar a plataforma." },
-            { q: "Como funciona o pagamento?", a: "O pagamento é processado em uma página segura do Asaas, com opções de Pix e cartão." },
-            { q: "Posso cancelar a qualquer momento?", a: "Sim, sem multas ou taxas de cancelamento. Você mantém acesso até o fim do período pago." },
-          ].map((faq, i) => (
+          {faqs.map((faq, i) => (
             <div key={i} className="bg-white rounded-xl border border-gray-200 p-5">
               <h3 className="text-sm font-semibold text-gray-900 mb-1">{faq.q}</h3>
               <p className="text-sm text-gray-500">{faq.a}</p>
@@ -390,13 +399,17 @@ export default function Planos() {
 
       {/* Footer CTA */}
       <section className="py-16 text-center px-4">
-        <h2 className="text-2xl font-bold text-gray-900 mb-3">Pronto para começar?</h2>
-        <p className="text-gray-500 mb-6">Cadastre-se agora e experimente gratuitamente.</p>
+        <h2 className="text-2xl font-bold text-gray-900 mb-3">
+          {planAudience === "parceiro" ? "Pronto para divulgar sua empresa?" : "Pronto para começar?"}
+        </h2>
+        <p className="text-gray-500 mb-6">
+          {planAudience === "parceiro" ? "Escolha o plano que combina com a sua estratégia de divulgação." : "Cadastre-se agora e escolha seu plano."}
+        </p>
         <Link
-          to={user ? "/painel/assinatura" : "/registro"}
+          to={planAudience === "parceiro" ? "#planos-disponiveis" : user ? "/painel/assinatura" : "/registro"}
           className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white font-bold text-sm hover:opacity-90 transition-opacity"
         >
-          {user ? "Ver Minha Assinatura" : "Criar Conta Grátis"}
+          {planAudience === "parceiro" ? "Ver planos" : user ? "Ver Minha Assinatura" : "Criar conta"}
           <ArrowRight className="w-4 h-4" />
         </Link>
       </section>
