@@ -155,6 +155,7 @@ export function PlanPaymentCheckout({
   const qrSource = pix?.encodedImage.startsWith("data:")
     ? pix.encodedImage
     : `data:image/png;base64,${pix?.encodedImage || ""}`;
+  const isPartnerPlan = plan.plan_type === "parceiro";
 
   return (
     <div className={cn("grid overflow-hidden border border-slate-200 bg-white shadow-xl lg:grid-cols-[minmax(0,1fr)_400px]", embedded ? "rounded-3xl" : "rounded-2xl")}>
@@ -272,11 +273,24 @@ export function PlanPaymentCheckout({
           <span className="ml-2 text-sm text-slate-400">{cycleLabel(plan.billing_cycle)}</span>
         </div>
         <div className="mt-6 space-y-3 text-sm text-slate-200">
-          <div className="flex items-center gap-2"><Check className="h-4 w-4 text-emerald-400" /> Até {plan.max_properties} imóveis</div>
-          {plan.max_brokers > 0 && <div className="flex items-center gap-2"><Check className="h-4 w-4 text-emerald-400" /> Até {plan.max_brokers} corretores</div>}
-          {(plan.modules || []).slice(0, 6).map((module) => (
-            <div key={module} className="flex items-center gap-2 capitalize"><Check className="h-4 w-4 text-emerald-400" /> {module}</div>
-          ))}
+          {isPartnerPlan ? (
+            <>
+              <div className="flex items-center gap-2"><Check className="h-4 w-4 text-emerald-400" /> Página pública da empresa</div>
+              <div className="flex items-center gap-2"><Check className="h-4 w-4 text-emerald-400" /> Presença no catálogo de parceiros</div>
+              <div className="flex items-center gap-2"><Check className="h-4 w-4 text-emerald-400" /> Contato direto com corretores</div>
+              {(plan.modules || []).includes("destaque") && (
+                <div className="flex items-center gap-2"><Check className="h-4 w-4 text-emerald-400" /> Destaque na página inicial</div>
+              )}
+            </>
+          ) : (
+            <>
+              <div className="flex items-center gap-2"><Check className="h-4 w-4 text-emerald-400" /> Até {plan.max_properties} imóveis</div>
+              {plan.max_brokers > 0 && <div className="flex items-center gap-2"><Check className="h-4 w-4 text-emerald-400" /> Até {plan.max_brokers} corretores</div>}
+              {(plan.modules || []).slice(0, 6).map((module) => (
+                <div key={module} className="flex items-center gap-2 capitalize"><Check className="h-4 w-4 text-emerald-400" /> {module}</div>
+              ))}
+            </>
+          )}
         </div>
         <div className="mt-8 flex items-center gap-3 border-t border-white/10 pt-5 text-sm text-slate-300">
           <CheckCircle2 className="h-5 w-5 text-emerald-400" /> Pagamento processado pelo Asaas

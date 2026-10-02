@@ -1,7 +1,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { LogOut, XCircle } from "lucide-react";
+import { Clock3, LogOut, XCircle } from "lucide-react";
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -75,6 +75,31 @@ export function AuthGuard({ children, requiredRoles, allowBlocked = false, allow
   // Sem subscription efetiva → escolher plano (exceto staff e rotas livres)
   if (!isStaff && !subscription && !allowNoSubscription) {
     return <Navigate to="/escolher-plano" replace />;
+  }
+
+  const hasPaidPartnerPlan =
+    profile?.account_type === "parceiro" &&
+    approvalStatus === "pending" &&
+    ["active", "trial"].includes(subscription?.status || "");
+
+  if (!isStaff && hasPaidPartnerPlan && !allowNoSubscription) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background px-4">
+        <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 text-center shadow-sm">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 text-amber-700">
+            <Clock3 className="h-6 w-6" />
+          </div>
+          <h1 className="text-xl font-bold text-foreground">Pagamento confirmado</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Seu cadastro de parceiro está em análise. Assim que a administração aprovar, você poderá preencher sua página e ela será publicada no catálogo.
+          </p>
+          <Button variant="outline" className="mt-5 gap-2" onClick={signOut}>
+            <LogOut className="h-4 w-4" />
+            Sair
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   // Trial expirado conta como pending_payment

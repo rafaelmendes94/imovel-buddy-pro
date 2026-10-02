@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Search, Building2, Paintbrush, Wrench, DollarSign, Shield, Zap, Home, ChevronRight, X, Handshake, Scale, Truck, FileDown, ChevronDown } from "lucide-react";
+import { Search, Building2, Paintbrush, Wrench, DollarSign, Shield, Zap, Home, ChevronRight, X, Handshake, Scale, Truck, FileDown, ChevronDown, Megaphone } from "lucide-react";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -450,6 +450,12 @@ export default function Parceiros() {
                 </button>
               )}
             </div>
+            <Link
+              to="/planos?tipo=parceiro"
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-500 px-5 py-2.5 text-sm font-bold text-white shadow-md transition-colors hover:bg-blue-400"
+            >
+              <Megaphone className="h-4 w-4" /> Quero anunciar
+            </Link>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button

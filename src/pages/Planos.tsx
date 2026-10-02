@@ -1,8 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/data/mockData";
 import logoImg from "@/assets/logo.png";
 import sharkFriendlyIcon from "@/assets/shark-friendly.png";
@@ -27,6 +26,7 @@ interface Plan {
 }
 
 type BillingPeriod = "monthly" | "semiannual";
+type PlanAudience = "corretor" | "parceiro";
 
 const BILLING_PERIODS: { value: BillingPeriod; label: string; description: string }[] = [
   { value: "monthly", label: "Mensal", description: "Pagamento todos os meses" },
@@ -55,12 +55,12 @@ const CYCLE_LABELS: Record<string, string> = {
 };
 
 export default function Planos() {
+  const [searchParams] = useSearchParams();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>("monthly");
+  const [planAudience, setPlanAudience] = useState<PlanAudience>(() => searchParams.get("tipo") === "parceiro" ? "parceiro" : "corretor");
   const [loading, setLoading] = useState(true);
-  const [checkoutPlanId, setCheckoutPlanId] = useState<string | null>(null);
   const { user, profile, signOut } = useAuth();
-  const { toast } = useToast();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -77,51 +77,38 @@ export default function Planos() {
     fetchPlans();
   }, []);
 
-  const brokerPlans = useMemo(
+  useEffect(() => {
+    if (profile?.account_type === "parceiro") setPlanAudience("parceiro");
+  }, [profile?.account_type]);
+
+  const audiencePlans = useMemo(
     () => plans
-      .filter((plan) => plan.plan_type === "corretor")
+      .filter((plan) => plan.plan_type === planAudience)
       .sort((a, b) => a.max_properties - b.max_properties || a.price - b.price),
-    [plans],
+    [planAudience, plans],
   );
 
   const visiblePlans = useMemo(
-    () => brokerPlans.filter((plan) => plan.billing_cycle === billingPeriod),
-    [billingPeriod, brokerPlans],
+    () => audiencePlans.filter((plan) => plan.billing_cycle === billingPeriod),
+    [audiencePlans, billingPeriod],
   );
 
-  const handlePlanClick = async (plan: Plan) => {
+  useEffect(() => {
+    if (audiencePlans.some((plan) => plan.billing_cycle === billingPeriod)) return;
+    const availableCycle = audiencePlans.find((plan) => plan.billing_cycle === "monthly")?.billing_cycle
+      || audiencePlans[0]?.billing_cycle;
+    if (availableCycle === "monthly" || availableCycle === "semiannual") setBillingPeriod(availableCycle);
+  }, [audiencePlans, billingPeriod]);
+
+  const handlePlanClick = (plan: Plan) => {
+    window.localStorage.setItem("mv_connect_pending_plan_id", plan.id);
+
     if (!user) {
       navigate(`/registro?plan_id=${plan.id}`);
       return;
     }
 
-    setCheckoutPlanId(plan.id);
-    try {
-      const { data, error } = await supabase.functions.invoke("asaas-checkout", {
-        body: { plan_id: plan.id, user_id: user.id },
-      });
-
-      if (error) throw error;
-
-      if (data?.invoiceUrl) {
-        window.location.href = data.invoiceUrl;
-        return;
-      }
-
-      toast({
-        title: "Checkout não disponível",
-        description: data?.error || "Não foi possível abrir o checkout do Asaas para este plano.",
-        variant: "destructive",
-      });
-    } catch (err: any) {
-      toast({
-        title: "Erro no checkout",
-        description: err?.message || "Tente novamente em alguns instantes.",
-        variant: "destructive",
-      });
-    } finally {
-      setCheckoutPlanId(null);
-    }
+    navigate(`/checkout?plan_id=${plan.id}`);
   };
 
   return (
@@ -189,31 +176,60 @@ export default function Planos() {
       {/* Hero */}
       <section className="py-16 sm:py-24 text-center px-4">
         <h1 className="text-3xl sm:text-5xl font-extrabold text-gray-900 mb-4">
-          Escolha o plano ideal <br className="hidden sm:block" />
-          <span className="text-primary">para o seu negócio</span>
+          {planAudience === "parceiro" ? "Anuncie para quem vende imóveis" : "Escolha o plano ideal"} <br className="hidden sm:block" />
+          <span className="text-primary">{planAudience === "parceiro" ? "em toda a nossa rede" : "para o seu negócio"}</span>
         </h1>
         <p className="text-gray-500 text-base sm:text-lg max-w-2xl mx-auto">
-          Escolha a periodicidade e o limite de imóveis ideal para organizar seus contatos e vendas.
+          {planAudience === "parceiro"
+            ? "Tenha uma página pública, apareça no catálogo e apresente sua empresa aos corretores do MV Broker Connect."
+            : "Escolha a periodicidade e o limite de imóveis ideal para organizar seus contatos e vendas."}
         </p>
       </section>
 
       {/* Plans Grid */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 pt-8">
+        <div className="mx-auto mb-4 grid w-full max-w-md grid-cols-2 rounded-lg border border-gray-200 bg-gray-100 p-1">
+          {([
+            { value: "corretor" as const, label: "Corretor" },
+            { value: "parceiro" as const, label: "Parceiro" },
+          ]).map((audience) => (
+            <button
+              key={audience.value}
+              type="button"
+              onClick={() => {
+                setPlanAudience(audience.value);
+                const url = audience.value === "parceiro" ? "/planos?tipo=parceiro" : "/planos";
+                navigate(url, { replace: true });
+              }}
+              className={cn(
+                "rounded-md px-3 py-2.5 text-sm font-bold transition-colors",
+                planAudience === audience.value
+                  ? "bg-white text-gray-950 shadow-sm"
+                  : "text-gray-500 hover:text-gray-800",
+              )}
+              aria-pressed={planAudience === audience.value}
+            >
+              {audience.label}
+            </button>
+          ))}
+        </div>
         <div className="mx-auto mb-10 grid w-full max-w-md grid-cols-2 rounded-lg border border-gray-200 bg-gray-100 p-1">
           {BILLING_PERIODS.map((period) => {
             const active = billingPeriod === period.value;
-            const planCount = brokerPlans.filter((plan) => plan.billing_cycle === period.value).length;
+            const planCount = audiencePlans.filter((plan) => plan.billing_cycle === period.value).length;
 
             return (
               <button
                 key={period.value}
                 type="button"
                 onClick={() => setBillingPeriod(period.value)}
+                disabled={planCount === 0}
                 className={cn(
                   "min-w-0 rounded-md px-3 py-2.5 text-center transition-colors",
                   active
                     ? "bg-white text-gray-950 shadow-sm"
                     : "text-gray-500 hover:text-gray-800",
+                  planCount === 0 && "cursor-not-allowed opacity-45",
                 )}
                 aria-pressed={active}
               >
@@ -290,26 +306,35 @@ export default function Planos() {
                   </div>
 
                   <div className="space-y-3 flex-1 mb-6">
-                    <FeatureItem icon={Building2} text={`Até ${plan.max_properties} imóveis`} />
-                    {modules.map((mod, i) => (
-                      <FeatureItem key={i} icon={Check} text={String(mod)} />
-                    ))}
+                    {planAudience === "parceiro" ? (
+                      <>
+                        <FeatureItem icon={Building2} text="Página pública da empresa" />
+                        <FeatureItem icon={Check} text="Presença no catálogo de parceiros" />
+                        <FeatureItem icon={Check} text="Avaliações e contato direto" />
+                        <FeatureItem
+                          icon={Crown}
+                          text={modules.includes("destaque") ? "Destaque no carrossel da página inicial" : "Exibição padrão no catálogo"}
+                        />
+                      </>
+                    ) : (
+                      <>
+                        <FeatureItem icon={Building2} text={`Até ${plan.max_properties} imóveis`} />
+                        {modules.map((mod, i) => (
+                          <FeatureItem key={i} icon={Check} text={String(mod)} />
+                        ))}
+                      </>
+                    )}
                   </div>
 
                   <button
                     type="button"
-                    disabled={checkoutPlanId === plan.id}
                     onClick={() => handlePlanClick(plan)}
                     className={cn(
-                      "w-full py-3 rounded-xl text-white text-sm font-bold flex items-center justify-center gap-2 transition-all disabled:cursor-wait disabled:opacity-70",
+                      "w-full py-3 rounded-xl text-white text-sm font-bold flex items-center justify-center gap-2 transition-all",
                       colors.btn
                     )}
                   >
-                    {checkoutPlanId === plan.id
-                      ? "Abrindo checkout..."
-                      : user
-                        ? "Assinar com Asaas"
-                        : "Começar Agora"}
+                    {user ? "Assinar com Asaas" : "Começar Agora"}
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>

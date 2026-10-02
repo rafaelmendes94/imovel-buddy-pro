@@ -40,6 +40,8 @@ const CYCLE_LABELS: Record<string, string> = {
   annual: "Anual",
 };
 
+const PARTNER_MODULE = { key: "destaque", label: "Destaque na página inicial" };
+
 export default function AdminPlanos() {
   const [plans, setPlans] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,7 +71,7 @@ export default function AdminPlanos() {
       toast({ title: "Revise o plano", description: "Informe o nome e um preço válido.", variant: "destructive" });
       return;
     }
-    if (!Number.isInteger(maxProperties) || maxProperties <= 0) {
+    if (form.plan_type !== "parceiro" && (!Number.isInteger(maxProperties) || maxProperties <= 0)) {
       toast({ title: "Quantidade inválida", description: "Informe quantos imóveis a conta poderá cadastrar.", variant: "destructive" });
       return;
     }
@@ -94,8 +96,8 @@ export default function AdminPlanos() {
       price: form.is_free ? 0 : price,
       billing_cycle: form.billing_cycle as any,
       trial_days: form.is_free ? 0 : parseInt(form.trial_days),
-      max_properties: maxProperties,
-      max_brokers: 1,
+      max_properties: form.plan_type === "parceiro" ? 0 : maxProperties,
+      max_brokers: form.plan_type === "parceiro" ? 0 : 1,
       modules: form.modules,
       plan_type: form.plan_type,
       is_free: form.is_free,
@@ -193,10 +195,17 @@ export default function AdminPlanos() {
               <div className="space-y-3 max-h-[60vh] overflow-y-auto">
                 <Input placeholder="Nome do plano" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} />
                 <div className="grid grid-cols-2 gap-3">
-                  <Select value={form.plan_type} onValueChange={v => setForm(p => ({ ...p, plan_type: v, max_brokers: "1" }))}>
+                  <Select value={form.plan_type} onValueChange={v => setForm(p => ({
+                    ...p,
+                    plan_type: v,
+                    max_brokers: v === "parceiro" ? "0" : "1",
+                    max_properties: v === "parceiro" ? "0" : (Number(p.max_properties) > 0 ? p.max_properties : "50"),
+                    modules: v === "parceiro" ? p.modules.filter((module) => module === "destaque") : p.modules.filter((module) => module !== "destaque"),
+                  }))}>
                     <SelectTrigger><SelectValue placeholder="Tipo" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="corretor">Corretor</SelectItem>
+                      <SelectItem value="parceiro">Parceiro</SelectItem>
                     </SelectContent>
                   </Select>
                   <Select value={form.billing_cycle} onValueChange={v => setForm(p => ({ ...p, billing_cycle: v }))}>
@@ -223,7 +232,7 @@ export default function AdminPlanos() {
                   <Input placeholder="Descrição / público" value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} />
                 </div>
                 <Input placeholder="Observações internas" value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} />
-                <div className="space-y-1.5">
+                {form.plan_type !== "parceiro" && <div className="space-y-1.5">
                   <label className="text-sm font-medium text-foreground" htmlFor="plan-max-properties">
                     Quantidade de imóveis liberada na conta
                   </label>
@@ -231,11 +240,11 @@ export default function AdminPlanos() {
                   <p className="text-xs text-muted-foreground">
                     Este limite é aplicado automaticamente quando o pagamento ativa a assinatura.
                   </p>
-                </div>
+                </div>}
                 <div>
                   <p className="text-sm font-medium text-foreground mb-2">Módulos inclusos</p>
                   <div className="grid grid-cols-2 gap-2">
-                    {PLAN_MODULES.map(m => (
+                    {(form.plan_type === "parceiro" ? [PARTNER_MODULE] : PLAN_MODULES).map(m => (
                       <label key={m.key} className="flex items-center gap-2 text-sm">
                         <Switch checked={form.modules.includes(m.key)} onCheckedChange={() => toggleModule(m.key)} />
                         {m.label}
@@ -265,8 +274,8 @@ export default function AdminPlanos() {
                     {plan.is_free && (
                       <Badge className="bg-accent text-accent-foreground">FREE</Badge>
                     )}
-                    <Badge variant="outline" className={plan.plan_type === "imobiliaria" ? "border-blue-400 text-blue-600" : "border-emerald-400 text-emerald-600"}>
-                      {plan.plan_type === "imobiliaria" ? "Imobiliária" : "Corretor"}
+                    <Badge variant="outline" className={plan.plan_type === "parceiro" ? "border-amber-400 text-amber-700" : "border-emerald-400 text-emerald-600"}>
+                      {plan.plan_type === "parceiro" ? "Parceiro" : "Corretor"}
                     </Badge>
                     <Badge variant={plan.is_active ? "default" : "secondary"}>
                       {plan.is_active ? "Ativo" : "Inativo"}
@@ -277,7 +286,8 @@ export default function AdminPlanos() {
                 <p className="text-xs text-muted-foreground">
                   {CYCLE_LABELS[plan.billing_cycle] || plan.billing_cycle}
                   {Number(plan.discount_percent) > 0 ? ` · ${plan.discount_percent}% desc.` : ""}
-                  {" · "}{plan.trial_days} dias trial · {plan.max_properties} imóveis · {plan.max_brokers} corretores
+                  {" · "}{plan.trial_days} dias trial
+                  {plan.plan_type !== "parceiro" && ` · ${plan.max_properties} imóveis · ${plan.max_brokers} corretores`}
                 </p>
                 <div className="flex flex-wrap gap-1">
                   {(Array.isArray(plan.modules) ? plan.modules : []).map((m: string) => (
